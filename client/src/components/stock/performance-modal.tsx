@@ -3,12 +3,12 @@ import { Button } from "@/components/ui/button";
 import { X, TrendingUp, TrendingDown } from "lucide-react";
 import { LineChart, Line, ResponsiveContainer, Tooltip } from "recharts";
 import { cn } from "@/lib/utils";
-import type { Stock } from "@shared/schema";
+import type { MockStock } from "@/lib/mock-api";
 
 interface PerformanceModalProps {
   isOpen: boolean;
   onClose: () => void;
-  stock: Stock | null;
+  stock: MockStock | null;
 }
 
 interface PerformanceMetric {

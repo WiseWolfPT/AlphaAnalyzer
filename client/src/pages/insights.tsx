@@ -8,20 +8,21 @@ import { PerformanceModal } from "@/components/stock/performance-modal";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { TrendingUp, Activity, Target } from "lucide-react";
+import type { MockStock } from "@/lib/mock-api";
 import type { Stock } from "@shared/schema";
 
 export default function Insights() {
   const [selectedSector, setSelectedSector] = useState<string>("S&P 500");
-  const [selectedStock, setSelectedStock] = useState<Stock | null>(null);
+  const [selectedStock, setSelectedStock] = useState<MockStock | null>(null);
   const [showPerformanceModal, setShowPerformanceModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
-  const { data: stocks, isLoading, error } = useQuery<Stock[]>({
+  const { data: stocks, isLoading, error } = useQuery<MockStock[]>({
     queryKey: ["/api/stocks"],
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
-  const { data: searchResults } = useQuery<Stock[]>({
+  const { data: searchResults } = useQuery<MockStock[]>({
     queryKey: [`/api/stocks/search?q=${encodeURIComponent(searchQuery)}`],
     enabled: searchQuery.length > 0,
     staleTime: 30 * 1000, // 30 seconds
@@ -44,7 +45,7 @@ export default function Insights() {
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, []);
 
-  const handlePerformanceClick = (stock: Stock) => {
+  const handlePerformanceClick = (stock: MockStock) => {
     setSelectedStock(stock);
     setShowPerformanceModal(true);
   };

@@ -1,5 +1,13 @@
+import type { Stock } from "@shared/schema";
+
+// Extended stock type for mock data with additional properties
+export interface MockStock extends Omit<Stock, 'id' | 'lastUpdated'> {
+  intrinsicValue?: string;
+  valuation?: string;
+}
+
 // Mock API data for demo purposes
-export const mockStocks = [
+export const mockStocks: MockStock[] = [
   {
     symbol: 'AAPL',
     name: 'Apple Inc.',

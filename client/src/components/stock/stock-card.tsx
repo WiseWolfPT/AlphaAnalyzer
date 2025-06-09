@@ -4,10 +4,10 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { BarChart3, Target, TrendingUp, TrendingDown } from "lucide-react";
 import { cn } from "@/lib/utils";
-import type { Stock } from "@shared/schema";
+import type { MockStock } from "@/lib/mock-api";
 
 interface StockCardProps {
-  stock: Stock;
+  stock: MockStock;
   onPerformanceClick: () => void;
 }
 

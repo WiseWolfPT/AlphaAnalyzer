@@ -12,7 +12,7 @@ import { LineChart, Line, ResponsiveContainer, Tooltip, XAxis, YAxis, CartesianG
 import { Link } from "wouter";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
-import { getMockApiData } from "@/lib/mock-api";
+import { getMockApiData, type MockStock } from "@/lib/mock-api";
 import type { Stock } from "@shared/schema";
 
 export default function StockDetail() {
@@ -20,7 +20,7 @@ export default function StockDetail() {
   const [selectedTimeframe, setSelectedTimeframe] = useState("1M");
   
   // Get stock data directly from mock data
-  const getAllStocks = () => getMockApiData('/api/stocks') as Stock[];
+  const getAllStocks = () => getMockApiData('/api/stocks') as MockStock[];
   const allStocks = getAllStocks();
   const stock = symbol ? allStocks.find(s => s.symbol === symbol.toUpperCase()) : null;
   const finalStock = stock || allStocks[0]; // Always fallback to first stock
