@@ -40,11 +40,29 @@ export const getQueryFn: <T>(options: {
   async ({ queryKey }) => {
     const url = queryKey[0] as string;
     
-    // Always use mock data for now (since we don't have backend deployed)
-    console.log('Using mock data for:', url);
-    // Simulate network delay
-    await new Promise(resolve => setTimeout(resolve, 500));
-    return getMockApiData(url);
+    try {
+      // Always use mock data for now (since we don't have backend deployed)
+      console.log('Using mock data for:', url);
+      
+      // Simulate network delay
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      const result = getMockApiData(url);
+      console.log('Mock data result:', result);
+      
+      // Only throw error if result is null/undefined, not for empty arrays or objects
+      if (result === null || result === undefined) {
+        console.log('No data found for URL:', url);
+        if (url.includes('/api/stocks/') && !url.includes('search')) {
+          throw new Error('Stock not found');
+        }
+      }
+      
+      return result;
+    } catch (error) {
+      console.error('Query function error:', error);
+      throw error;
+    }
 
     // Commented out real API calls for now
     // const res = await fetch(url, {

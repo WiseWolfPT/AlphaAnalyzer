@@ -160,7 +160,10 @@ export const mockMarketIndices = {
 
 // Helper function to get mock data based on URL
 export function getMockApiData(url: string) {
+  console.log('getMockApiData called with URL:', url);
+  
   if (url === '/api/stocks') {
+    console.log('Returning all stocks:', mockStocks.length);
     return mockStocks;
   }
   
@@ -169,17 +172,33 @@ export function getMockApiData(url: string) {
     if (!queryParam) return [];
     
     const searchTerm = decodeURIComponent(queryParam).toLowerCase();
-    return mockStocks.filter(stock => 
+    const results = mockStocks.filter(stock => 
       stock.symbol.toLowerCase().includes(searchTerm) ||
       stock.name.toLowerCase().includes(searchTerm)
     );
+    console.log('Search results for', searchTerm, ':', results.length);
+    return results;
   }
   
-  if (url.startsWith('/api/stocks/')) {
+  if (url.startsWith('/api/stocks/') && !url.includes('search')) {
     const pathParts = url.split('/');
     const symbol = pathParts[pathParts.length - 1]?.toUpperCase();
-    const stock = mockStocks.find(s => s.symbol === symbol);
-    return stock || mockStocks[0]; // Return first stock if not found
+    console.log('Looking for stock symbol:', symbol);
+    console.log('Available symbols:', mockStocks.map(s => s.symbol));
+    
+    // Handle query parameters (remove them for symbol lookup)
+    const cleanSymbol = symbol?.split('?')[0];
+    console.log('Clean symbol:', cleanSymbol);
+    
+    const stock = mockStocks.find(s => s.symbol === cleanSymbol);
+    console.log('Found stock:', stock ? stock.symbol : 'NOT FOUND');
+    
+    if (!stock) {
+      console.log('Stock not found, returning first stock as fallback');
+      return mockStocks[0];
+    }
+    
+    return stock;
   }
   
   if (url === '/api/watchlists') {
@@ -199,5 +218,6 @@ export function getMockApiData(url: string) {
     return mockMarketIndices;
   }
   
+  console.log('No match found for URL:', url);
   return [];
 }
