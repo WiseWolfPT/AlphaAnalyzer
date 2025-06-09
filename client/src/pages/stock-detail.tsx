@@ -12,6 +12,7 @@ import { LineChart, Line, ResponsiveContainer, Tooltip, XAxis, YAxis, CartesianG
 import { Link } from "wouter";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
+import { getMockApiData } from "@/lib/mock-api";
 import type { Stock } from "@shared/schema";
 
 export default function StockDetail() {
@@ -20,6 +21,18 @@ export default function StockDetail() {
   
   const { data: stock, isLoading, error } = useQuery<Stock>({
     queryKey: [`/api/stocks/${symbol}`],
+    queryFn: async () => {
+      console.log('Stock Detail query for symbol:', symbol);
+      const result = getMockApiData(`/api/stocks/${symbol}`);
+      console.log('Stock Detail result:', result);
+      
+      if (!result) {
+        console.log('No stock found, throwing error');
+        throw new Error('Stock not found');
+      }
+      
+      return result;
+    },
     enabled: !!symbol,
   });
 
