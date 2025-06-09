@@ -5,7 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { ThemeProvider } from "@/hooks/use-theme";
 import { SimpleAuthProvider } from "@/contexts/simple-auth";
 import NotFound from "@/pages/not-found";
-import Dashboard from "@/pages/dashboard-test";
+import Dashboard from "@/pages/simple-dashboard";
 import StockDetail from "@/pages/stock-detail";
 import Portfolios from "@/pages/portfolios";
 import Watchlists from "@/pages/watchlists";
@@ -16,15 +16,8 @@ import IntrinsicValue from "@/pages/intrinsic-value";
 function Router() {
   return (
     <Switch>
-      <Route path="/" component={Dashboard} />
       <Route path="/dashboard" component={Dashboard} />
-      <Route path="/insights" component={Dashboard} />
-      <Route path="/stock/:symbol" component={StockDetail} />
-      <Route path="/portfolios" component={Portfolios} />
-      <Route path="/watchlists" component={Watchlists} />
-      <Route path="/earnings" component={Earnings} />
-      <Route path="/profile" component={Profile} />
-      <Route path="/intrinsic-value" component={IntrinsicValue} />
+      <Route path="/" component={Dashboard} />
       <Route component={NotFound} />
     </Switch>
   );
