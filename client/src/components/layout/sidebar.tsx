@@ -55,7 +55,7 @@ export function Sidebar() {
         <nav className="space-y-1">
           {navigation.map((item) => {
             const isActive = location === item.href || 
-              (item.href === "/dashboard" && (location === "/insights" || location === "/dashboard"));
+              (item.href === "/dashboard" && (location === "/" || location === "/insights" || location === "/dashboard"));
             
             return (
               <Link key={item.name} href={item.href}>
