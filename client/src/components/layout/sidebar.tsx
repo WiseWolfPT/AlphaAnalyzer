@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useLocation } from "wouter";
+import { useLocation } from "wouter";
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import { recentSearchesApi } from "@/lib/api";
@@ -57,10 +57,10 @@ export function Sidebar() {
             const isActive = location === item.href;
             
             return (
-              <Link key={item.name} href={item.href}>
+              <a key={item.name} href={item.href}>
                 <div
                   className={cn(
-                    "flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 group",
+                    "flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 group cursor-pointer",
                     isActive
                       ? "bg-primary/10 text-primary border border-primary/20"
                       : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
@@ -72,7 +72,7 @@ export function Sidebar() {
                   )} />
                   <span>{item.name}</span>
                 </div>
-              </Link>
+              </a>
             );
           })}
         </nav>
@@ -118,7 +118,7 @@ function RecentSearches() {
       <div className="space-y-1">
         {recentSearches.length > 0 ? (
           recentSearches.map((search) => (
-            <Link key={search.id} href={`/stock/${search.symbol}`}>
+            <a key={search.id} href={`/stock/${search.symbol}`}>
               <div className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-secondary/50 cursor-pointer transition-all duration-200 group">
                 <div className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center text-xs font-bold text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
                   {search.symbol.charAt(0)}
@@ -130,7 +130,7 @@ function RecentSearches() {
                   </span>
                 </div>
               </div>
-            </Link>
+            </a>
           ))
         ) : (
           <div className="px-3 py-4 text-center">
