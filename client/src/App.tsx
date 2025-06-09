@@ -1,25 +1,18 @@
-import { Switch, Route } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { ThemeProvider } from "@/hooks/use-theme";
 import { SimpleAuthProvider } from "@/contexts/simple-auth";
-import NotFound from "@/pages/not-found";
+import { SimpleRouter, Route } from "./simple-router";
 import Dashboard from "@/pages/simple-dashboard";
-import StockDetail from "@/pages/stock-detail";
-import Portfolios from "@/pages/portfolios";
-import Watchlists from "@/pages/watchlists";
-import Earnings from "@/pages/earnings";
-import Profile from "@/pages/profile";
-import IntrinsicValue from "@/pages/intrinsic-value";
 
 function Router() {
   return (
-    <Switch>
-      <Route path="/dashboard" component={Dashboard} />
+    <SimpleRouter>
       <Route path="/" component={Dashboard} />
-      <Route component={NotFound} />
-    </Switch>
+      <Route path="/dashboard" component={Dashboard} />
+      <Route path="*" component={() => <div className="p-8 text-white bg-gray-900 min-h-screen"><h1>404 - Custom Not Found</h1><p>Path: {window.location.pathname}</p></div>} />
+    </SimpleRouter>
   );
 }
 
