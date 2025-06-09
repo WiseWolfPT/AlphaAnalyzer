@@ -1,0 +1,189 @@
+Create a stock analysis webapp for beginner investors with the following features, using a dark-themed UI and free APIs. The app should be responsive, accessible, and optimized for performance.
+
+Insights-Home Page:
+
+Search Bar: At the top center, with autocomplete (max 10 tickers, 300ms debounce). Fetch tickers from IEXCloud or Alpha Vantage (free tier).
+
+Sector Tabs: Tabs like 'S&P 500', 'Most Trending', 'Growth', 'Dividend Growth', with a 'More ▾' dropdown. Each tab filters the grid below.
+
+Grid of Cards: Show 25 cards for popular stocks (e.g., AAPL, MSFT, GOOGL, AMZN, TSLA).
+
+Each card displays:
+
+Company logo (fetch from Clearbit API, free).
+
+Ticker (e.g., AAPL).
+
+Short name (e.g., Apple).
+
+Current price (fetch from free APIs).
+
+Daily price change % (green #17a65c for positive, red #d64545 for negative).
+
+Market cap (abbreviated, e.g., $2.7T).
+
+Include a 'Performance-view' icon (bars) in the card corner. On click, show a mini-box with performance metrics (1M, 3M, YTD).
+
+Sidebar (Fixed): Links to 'Insights', 'Watchlists', 'Earnings', 'Transcripts', 'Portfolios', 'Intrinsic Value', 'Settings'. Below, show 'Recent Searches' (store in localStorage).
+
+Top Bar: Currency selector (USD/EUR), live ticks for Dow/S&P/Nasdaq (fetch from free api), and dark/light theme toggle.
+
+Insights-Detail Page (Stock):
+
+Header: Search bar, logo, ticker, name, price, price change %, next earnings date, buttons '+Watchlist' and '+Portfolio'.
+
+Mini-Panels (4×2 Grid): Show 8 panels for Valuation, Cash Flow, Margins & Growth, Balance, Dividend (each with 3-6 text metrics, fetch from free api.
+
+Toggle View: Options 'Quarterly', 'Quarterly (TTM)', 'Annually'.
+
+Quarterly: Raw quarterly data (e.g., Q1 2024, Q2 2024).
+
+Quarterly (TTM): Sum/average of last 4 quarters.
+
+Annually: Sum per fiscal year (e.g., 2020, 2021).
+
+Chart Grid (12 Widgets): Show charts for:
+
+Price (line, #f4a261).
+
+Revenue (bars, #f4a261).
+
+Revenue by Segment (stacked, #f4a261).
+
+KPI (specific per company, e.g., MSFT: 365 Consumer Subscribers, fetch from free api).
+
+EBITDA (bars, #4aa8e2).
+
+Free Cash Flow (bars, #e76f51).
+
+Net Income (bars, #f4a261).
+
+EPS (bars, #f4a261).
+
+Cash vs Debt (stacked, Cash #2ecc71, Debt #e63946).
+
+Dividends (bars, #94a3b8).
+
+Return of Capital (stacked, dividend + buyback, #94a3b8).
+
+Shares Outstanding (line, #94a3b8).
+
+Each widget has a fullscreen button (↗) and tooltip on hover.
+
+Watchlists Page:
+
+Header: Dynamic title 'Watchlist – [name]'.
+
+Dropdown: Select active watchlist, with buttons to create ('+'), rename (edit icon), or delete (trash icon).
+
+Stocks List: Show each stock with logo, ticker, name, price, daily change % (green/red).
+
+Add a floating '+' button to open a modal 'Add a new stock' (search ticker/name, buttons 'Cancel'/'Add').
+
+Dip Finder Panel: Bar chart showing % deviation from SMA (10D, 50D, 200D options). Green for above SMA, red for below. Hover shows ticker + value.
+
+Upcoming Earnings Panel: List ticker, date/time, estimated EPS, and revenue.
+
+News Panel: Show headlines with link, source, date, and thumbnail.
+
+Earnings Calendar Page:
+
+Navigation Bar: Buttons '◀'/'▶' to change week, 'Today' button, label 'Earnings This/Next Week – 2 Jun → 8 Jun'.
+
+Filters: Search ticker/company, dropdowns for Market Cap (All, 100B+, 10B+), and Filter by Watchlist.
+
+Calendar Grid: Columns for Mon-Fri, with day number (bubble). Each day has 'Before Open' and 'After Close' sections.
+
+Show up to 12 logos + tickers per section (fetch from free api).
+
+Hover: Tooltip with estimated EPS/revenue.
+
+'View All' link opens a full list.
+
+Side Panel: On click, show:
+
+Header: Logo, name, price, change %.
+
+Next earnings: Date, countdown.
+
+Bar chart: Estimated Revenue vs. EPS (#4aa8e2 bars, red dot #e63946 for next estimate).
+
+Historical earnings (last 4 quarters): Expected vs. Actual (green #17a65c for beats, red #d64545 for misses).
+
+Button 'Show Estimates' to toggle estimate points.
+
+Intrinsic Value Page:
+
+Header: Search bar (autocomplete max 10 tickers, 300ms debounce), 'Use Advanced' button.
+
+Grid of Cards: 25 cards (same layout as Insights-Home, plus):
+
+Intrinsic Value (calculated below).
+
+Badge: 'Undervalued' (green #17a65c, if intrinsic value ≤ -3% current price), 'Overvalued' (red #d64545, if ≥ +3%), 'Neutral' (yellow #e2c04b, otherwise).
+
+Filters: Chips for Sector, Country, Watchlist, 'Undervalued only', 'Top 10 by upside'.
+
+Side Panel: On click, show:
+
+Header: Logo, name, live price.
+
+Tabs: 'Earnings (Khoo)' (default), 'Free Cash Flow' (placeholder).
+
+Form: Editable inputs for EPS (TTM), EPS Growth Rate, Horizon (10 years), PE Multiple (cap 35), Required Return (15%), Margin of Safety (25%, slider 0-50%).
+
+Results (400ms debounce): Future EPS, Future Price, Present Value, Intrinsic Value, Delta %, badge.
+
+Gauge: Speedometer for delta % (same colors).
+
+Buttons: 'Save Assumptions' (localStorage), 'Export PDF'.
+
+Use Advanced Drawer: Options for presets (Conservative, Base, Aggressive), manual CAGR by intervals (e.g., years 1-5, 6-10), discount rate (10%-20%), save presets in localStorage.
+
+Calculation Logic:
+
+Inputs: EPS (fetch), growth rate (capped 20%, default 10%), horizon (10 years), PE (min{current PE, 2×growth, 35}), required return (15%), margin of safety (25%).
+
+Future EPS = EPS * (1 + growth rate)^years.
+
+Future Price = Future EPS * PE.
+
+Present Value = Future Price / (1 + required return)^years.
+
+Intrinsic Value = Present Value * (1 - margin of safety).
+
+Delta % = (Intrinsic Value / Current Price - 1) * 100.
+
+Classification: Undervalued (delta ≤ -3%), Neutral (-3% < delta < 3%), Overvalued (delta ≥ 3%).
+
+General Design:
+
+Dark theme: Card background (#1b2432), hover (#243047).
+
+Accessibility: ARIA labels, focus states, 4px border on cards for colorblind users (same as badge color).
+
+Keyboard Shortcuts: '/' to focus search, 'Esc' to close panels.
+
+Performance: Cache API data for 30 minutes (localStorage), lazy-load cards.
+
+APIs:
+
+Use APIs (free tiers) for stock data (price, EPS, earnings).
+
+Fetch logos from Clearbit (free API).
+
+For specific KPIs (e.g., MSFT: 365 Consumer Subscribers), use also Free APIs.
+
+Deployment:
+
+Deploy to a subdomain (e.g., stock-analysis.emergent.sh).
+
+Ensure the app is live and accessible.
+
+Build this webapp with a clean, user-friendly UI for beginners. Optimize for performance and ensure all features are functional within the free tier constraints of the APIs."
+
+for the intrinsic value section I want to display some cards with the most searched or most traded companies or with the most market cap or most popular and in those card we must already see if the stock is undervalued, neutral ou overvalued vs it's current price. please use the adam khoo method on the backend to auto calculate this intrinsic values for this stocks. also add an advance tool tip where more advanced users could edit some data to found their intrinsic value.
+
+I will send you right now some printscreens from qualtrim platform that's the inspirational plataform. I will also send you screen shots from qualtrim cache .
+
+If you want me to provide more pictures from qualtrim just say it

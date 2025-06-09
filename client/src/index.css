@@ -1,0 +1,202 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Modern Dark Theme - More sophisticated color palette */
+  --background: 224 71% 4%; /* #0a0a0f */
+  --foreground: 213 31% 91%; /* #e4e7eb */
+  --card: 224 47% 8%; /* #0f1419 */
+  --card-foreground: 213 31% 91%; /* #e4e7eb */
+  --popover: 224 47% 8%; /* #0f1419 */
+  --popover-foreground: 213 31% 91%; /* #e4e7eb */
+  --primary: 210 98% 78%; /* #60a5fa */
+  --primary-foreground: 224 71% 4%; /* #0a0a0f */
+  --secondary: 215 25% 27%; /* #374151 */
+  --secondary-foreground: 213 31% 91%; /* #e4e7eb */
+  --muted: 215 16% 47%; /* #6b7280 */
+  --muted-foreground: 215 20% 65%; /* #9ca3af */
+  --accent: 216 87% 53%; /* #3b82f6 */
+  --accent-foreground: 224 71% 4%; /* #0a0a0f */
+  --destructive: 0 72% 51%; /* #dc2626 */
+  --destructive-foreground: 213 31% 91%; /* #e4e7eb */
+  --border: 215 14% 34%; /* #4b5563 */
+  --input: 215 25% 27%; /* #374151 */
+  --ring: 210 98% 78%; /* #60a5fa */
+  --chart-1: 31 81% 56%; /* #f59e0b */
+  --chart-2: 210 98% 78%; /* #60a5fa */
+  --chart-3: 0 72% 51%; /* #dc2626 */
+  --chart-4: 142 69% 58%; /* #10b981 */
+  --chart-5: 45 93% 58%; /* #eab308 */
+  --sidebar-background: 224 47% 8%; /* #0f1419 */
+  --sidebar-foreground: 213 31% 91%; /* #e4e7eb */
+  --sidebar-primary: 210 98% 78%; /* #60a5fa */
+  --sidebar-primary-foreground: 224 71% 4%; /* #0a0a0f */
+  --sidebar-accent: 215 25% 27%; /* #374151 */
+  --sidebar-accent-foreground: 213 31% 91%; /* #e4e7eb */
+  --sidebar-border: 215 14% 34%; /* #4b5563 */
+  --sidebar-ring: 210 98% 78%; /* #60a5fa */
+  --radius: 0.75rem;
+}
+
+.light {
+  --background: 0 0% 100%; /* #ffffff */
+  --foreground: 222 84% 4.9%; /* #0f172a */
+  --card: 0 0% 100%; /* #ffffff */
+  --card-foreground: 222 84% 4.9%; /* #0f172a */
+  --popover: 0 0% 100%; /* #ffffff */
+  --popover-foreground: 222 84% 4.9%; /* #0f172a */
+  --primary: 207 90% 54%; /* #4aa8e2 */
+  --primary-foreground: 210 40% 98%; /* #f8fafc */
+  --secondary: 210 40% 96%; /* #f1f5f9 */
+  --secondary-foreground: 222 47% 11%; /* #1e293b */
+  --muted: 210 40% 96%; /* #f1f5f9 */
+  --muted-foreground: 215 16% 47%; /* #64748b */
+  --accent: 210 40% 96%; /* #f1f5f9 */
+  --accent-foreground: 222 47% 11%; /* #1e293b */
+  --destructive: 0 84% 60%; /* #ef4444 */
+  --destructive-foreground: 210 40% 98%; /* #f8fafc */
+  --border: 214 32% 91%; /* #e2e8f0 */
+  --input: 214 32% 91%; /* #e2e8f0 */
+  --ring: 207 90% 54%; /* #4aa8e2 */
+  --chart-1: 24 70% 65%; /* #f4a261 */
+  --chart-2: 207 90% 54%; /* #4aa8e2 */
+  --chart-3: 0 78% 62%; /* #e76f51 */
+  --chart-4: 142 76% 36%; /* #17a65c */
+  --chart-5: 48 96% 89%; /* #e2c04b */
+  --sidebar-background: 0 0% 98%; /* #fafafa */
+  --sidebar-foreground: 222 47% 11%; /* #1e293b */
+  --sidebar-primary: 207 90% 54%; /* #4aa8e2 */
+  --sidebar-primary-foreground: 210 40% 98%; /* #f8fafc */
+  --sidebar-accent: 210 40% 96%; /* #f1f5f9 */
+  --sidebar-accent-foreground: 222 47% 11%; /* #1e293b */
+  --sidebar-border: 214 32% 91%; /* #e2e8f0 */
+  --sidebar-ring: 207 90% 54%; /* #4aa8e2 */
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+
+  /* Modern color classes */
+  .text-positive {
+    color: #10b981; /* emerald-500 */
+  }
+
+  .text-negative {
+    color: #ef4444; /* red-500 */
+  }
+
+  .text-neutral {
+    color: #f59e0b; /* amber-500 */
+  }
+
+  .bg-positive {
+    background-color: #10b981;
+  }
+
+  .bg-negative {
+    background-color: #ef4444;
+  }
+
+  .bg-neutral {
+    background-color: #f59e0b;
+  }
+
+  .border-positive {
+    border-color: #10b981;
+  }
+
+  .border-negative {
+    border-color: #ef4444;
+  }
+
+  .border-neutral {
+    border-color: #f59e0b;
+  }
+
+  /* Stock card hover effects */
+  .stock-card {
+    transition: all 0.2s ease-in-out;
+  }
+
+  .stock-card:hover {
+    background-color: hsl(var(--secondary));
+    border-color: hsl(var(--primary));
+  }
+
+  /* Performance animation */
+  .performance-icon {
+    opacity: 0;
+    transition: opacity 0.2s ease-in-out;
+  }
+
+  .stock-card:hover .performance-icon {
+    opacity: 1;
+  }
+
+  /* Smooth animations */
+  .fade-in {
+    animation: fadeIn 0.3s ease-in-out;
+  }
+
+  .slide-up {
+    animation: slideUp 0.2s ease-out;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  @keyframes slideUp {
+    from { 
+      transform: translateY(10px); 
+      opacity: 0; 
+    }
+    to { 
+      transform: translateY(0); 
+      opacity: 1; 
+    }
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: hsl(var(--background));
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: hsl(var(--muted));
+    border-radius: 4px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--muted-foreground));
+  }
+
+  /* Focus styles for accessibility */
+  .focus-visible:focus-visible {
+    outline: 2px solid hsl(var(--primary));
+    outline-offset: 2px;
+  }
+
+  /* Keyboard navigation */
+  .kbd {
+    background: hsl(var(--muted));
+    border: 1px solid hsl(var(--border));
+    border-radius: 0.25rem;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+    font-family: ui-monospace, monospace;
+  }
+}
