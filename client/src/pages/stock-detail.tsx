@@ -19,22 +19,14 @@ export default function StockDetail() {
   const { symbol } = useParams<{ symbol: string }>();
   const [selectedTimeframe, setSelectedTimeframe] = useState("1M");
   
-  const { data: stock, isLoading, error } = useQuery<Stock>({
-    queryKey: [`/api/stocks/${symbol}`],
-    queryFn: async () => {
-      console.log('Stock Detail query for symbol:', symbol);
-      const result = getMockApiData(`/api/stocks/${symbol}`);
-      console.log('Stock Detail result:', result);
-      
-      if (!result) {
-        console.log('No stock found, throwing error');
-        throw new Error('Stock not found');
-      }
-      
-      return result;
-    },
-    enabled: !!symbol,
-  });
+  // Get stock data directly from mock data
+  const getAllStocks = () => getMockApiData('/api/stocks') as Stock[];
+  const allStocks = getAllStocks();
+  const stock = symbol ? allStocks.find(s => s.symbol === symbol.toUpperCase()) : null;
+  const finalStock = stock || allStocks[0]; // Always fallback to first stock
+  
+  const isLoading = false;
+  const error = null;
 
   // Generate mock chart data based on timeframe
   const generateChartData = (timeframe: string, basePrice: number) => {
@@ -96,35 +88,16 @@ export default function StockDetail() {
   };
 
   const timeframes = ["1D", "1W", "1M", "3M", "6M", "1Y", "5Y"];
-  const chartData = stock ? generateChartData(selectedTimeframe, parseFloat(stock.price)) : [];
+  const chartData = generateChartData(selectedTimeframe, parseFloat(finalStock.price));
   const financialData = generateFinancialData();
-  const isPositive = stock ? parseFloat(stock.changePercent) >= 0 : false;
-
-  if (error) {
-    return (
-      <MainLayout>
-        <div className="flex items-center justify-center min-h-[50vh]">
-          <div className="text-center max-w-md">
-            <div className="p-4 bg-destructive/10 rounded-full w-20 h-20 mx-auto mb-6 flex items-center justify-center">
-              <ArrowLeft className="h-10 w-10 text-destructive" />
-            </div>
-            <h1 className="text-2xl font-bold text-destructive mb-2">Stock Not Found</h1>
-            <p className="text-muted-foreground mb-6">The stock symbol "{symbol}" could not be found.</p>
-            <Link href="/insights">
-              <Button className="bg-primary hover:bg-primary/90">Back to Dashboard</Button>
-            </Link>
-          </div>
-        </div>
-      </MainLayout>
-    );
-  }
+  const isPositive = parseFloat(finalStock.changePercent) >= 0;
 
   return (
     <MainLayout>
       <div className="container mx-auto px-6 py-8 max-w-7xl">
           {/* Back Button */}
           <div className="mb-6">
-            <Link href="/insights">
+            <Link href="/">
               <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Back to Dashboard
@@ -132,75 +105,50 @@ export default function StockDetail() {
             </Link>
           </div>
 
-          {isLoading ? (
-            <div className="space-y-6">
-              {/* Header Skeleton */}
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-4">
-                  <Skeleton className="h-16 w-16 rounded-lg" />
-                  <div className="space-y-2">
-                    <Skeleton className="h-8 w-32" />
-                    <Skeleton className="h-4 w-48" />
-                  </div>
-                </div>
-                <div className="flex space-x-2">
-                  <Skeleton className="h-10 w-24" />
-                  <Skeleton className="h-10 w-24" />
-                </div>
-              </div>
-              
-              {/* Content Skeleton */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {Array.from({ length: 8 }).map((_, i) => (
-                  <Skeleton key={i} className="h-32" />
-                ))}
-              </div>
-            </div>
-          ) : stock ? (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="space-y-8"
-            >
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="space-y-8"
+          >
               {/* Enhanced Header */}
               <div className="flex flex-col lg:flex-row lg:items-center justify-between space-y-4 lg:space-y-0">
                 <div className="flex items-center space-x-4">
                   <div className="w-16 h-16 rounded-xl bg-secondary/50 flex-shrink-0 flex items-center justify-center overflow-hidden border border-border/30">
-                    {stock.logo ? (
+                    {finalStock.logo ? (
                       <img 
-                        src={stock.logo} 
-                        alt={`${stock.name} logo`}
+                        src={finalStock.logo} 
+                        alt={`${finalStock.name} logo`}
                         className="w-full h-full object-cover rounded-xl"
                         onError={(e) => {
                           e.currentTarget.style.display = 'none';
                         }}
                       />
                     ) : (
-                      <span className="text-xl font-bold text-primary">{stock.symbol.charAt(0)}</span>
+                      <span className="text-xl font-bold text-primary">{finalStock.symbol.charAt(0)}</span>
                     )}
                   </div>
                   <div>
                     <div className="flex items-center space-x-3 mb-1">
-                      <h1 className="text-4xl font-bold">{stock.symbol}</h1>
-                      <Badge variant="secondary" className="text-sm">{stock.sector}</Badge>
-                      {stock.intrinsicValue && (
+                      <h1 className="text-4xl font-bold">{finalStock.symbol}</h1>
+                      <Badge variant="secondary" className="text-sm">{finalStock.sector}</Badge>
+                      {finalStock.intrinsicValue && (
                         <Badge 
-                          variant={parseFloat(stock.intrinsicValue) > parseFloat(stock.price) ? "default" : "secondary"}
+                          variant={parseFloat(finalStock.intrinsicValue) > parseFloat(finalStock.price) ? "default" : "secondary"}
                           className={cn(
                             "text-xs",
-                            parseFloat(stock.intrinsicValue) > parseFloat(stock.price)
+                            parseFloat(finalStock.intrinsicValue) > parseFloat(finalStock.price)
                               ? "bg-green-500/10 text-green-600 hover:bg-green-500/20" 
                               : "bg-red-500/10 text-red-600 hover:bg-red-500/20"
                           )}
                         >
-                          {parseFloat(stock.intrinsicValue) > parseFloat(stock.price) ? 'Undervalued' : 'Overvalued'}
+                          {parseFloat(finalStock.intrinsicValue) > parseFloat(finalStock.price) ? 'Undervalued' : 'Overvalued'}
                         </Badge>
                       )}
                     </div>
-                    <p className="text-xl text-muted-foreground mb-3">{stock.name}</p>
+                    <p className="text-xl text-muted-foreground mb-3">{finalStock.name}</p>
                     <div className="flex items-center space-x-6">
                       <div className="flex items-center space-x-2">
-                        <span className="text-4xl font-bold">${stock.price}</span>
+                        <span className="text-4xl font-bold">${finalStock.price}</span>
                         <div className={cn(
                           "flex items-center gap-1 px-3 py-1 rounded-lg text-lg font-semibold",
                           isPositive 
@@ -208,13 +156,13 @@ export default function StockDetail() {
                             : "bg-red-500/10 text-red-500"
                         )}>
                           {isPositive ? <TrendingUp className="h-4 w-4" /> : <TrendingDown className="h-4 w-4" />}
-                          {isPositive ? '+' : ''}${stock.change} ({stock.changePercent}%)
+                          {isPositive ? '+' : ''}${finalStock.change} ({finalStock.changePercent}%)
                         </div>
                       </div>
                     </div>
                     <div className="flex items-center space-x-6 mt-2 text-sm text-muted-foreground">
-                      <span>Day Range: ${(parseFloat(stock.price) * 0.98).toFixed(2)} - ${(parseFloat(stock.price) * 1.02).toFixed(2)}</span>
-                      <span>52W Range: ${(parseFloat(stock.price) * 0.85).toFixed(2)} - ${(parseFloat(stock.price) * 1.45).toFixed(2)}</span>
+                      <span>Day Range: ${(parseFloat(finalStock.price) * 0.98).toFixed(2)} - ${(parseFloat(finalStock.price) * 1.02).toFixed(2)}</span>
+                      <span>52W Range: ${(parseFloat(finalStock.price) * 0.85).toFixed(2)} - ${(parseFloat(finalStock.price) * 1.45).toFixed(2)}</span>
                       <span>Volume: {(Math.random() * 50 + 10).toFixed(1)}M</span>
                     </div>
                   </div>
@@ -319,20 +267,20 @@ export default function StockDetail() {
                   <CardContent className="space-y-2">
                     <div className="flex justify-between">
                       <span className="text-sm">P/E Ratio</span>
-                      <span className="text-sm font-medium">{stock.peRatio || 'N/A'}</span>
+                      <span className="text-sm font-medium">{finalStock.peRatio || 'N/A'}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-sm">Market Cap</span>
-                      <span className="text-sm font-medium">{stock.marketCap}</span>
+                      <span className="text-sm font-medium">{finalStock.marketCap}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-sm">EPS</span>
-                      <span className="text-sm font-medium">${stock.eps || 'N/A'}</span>
+                      <span className="text-sm font-medium">${finalStock.eps || 'N/A'}</span>
                     </div>
-                    {stock.intrinsicValue && (
+                    {finalStock.intrinsicValue && (
                       <div className="flex justify-between pt-1 border-t border-border/50">
                         <span className="text-sm">Intrinsic Value</span>
-                        <span className="text-sm font-medium text-primary">${stock.intrinsicValue}</span>
+                        <span className="text-sm font-medium text-primary">${finalStock.intrinsicValue}</span>
                       </div>
                     )}
                   </CardContent>
@@ -617,8 +565,8 @@ export default function StockDetail() {
                         <div className="h-64">
                           <ResponsiveContainer width="100%" height="100%">
                             <BarChart data={[
-                              { name: stock.symbol, pe: parseFloat(stock.peRatio || "25") },
-                              { name: "Sector Avg", pe: parseFloat(stock.peRatio || "25") * 1.2 },
+                              { name: finalStock.symbol, pe: parseFloat(finalStock.peRatio || "25") },
+                              { name: "Sector Avg", pe: parseFloat(finalStock.peRatio || "25") * 1.2 },
                               { name: "S&P 500", pe: 22.5 }
                             ]}>
                               <CartesianGrid strokeDasharray="3 3" stroke="#374151" opacity={0.3} />
@@ -639,7 +587,7 @@ export default function StockDetail() {
                     </Card>
 
                     {/* Intrinsic Value Analysis */}
-                    {stock.intrinsicValue && (
+                    {finalStock.intrinsicValue && (
                       <Card>
                         <CardHeader>
                           <CardTitle className="flex items-center gap-2">
@@ -653,22 +601,22 @@ export default function StockDetail() {
                               <div className="grid grid-cols-2 gap-8">
                                 <div>
                                   <div className="text-sm text-muted-foreground">Current Price</div>
-                                  <div className="text-3xl font-bold">${stock.price}</div>
+                                  <div className="text-3xl font-bold">${finalStock.price}</div>
                                 </div>
                                 <div>
                                   <div className="text-sm text-muted-foreground">Intrinsic Value</div>
-                                  <div className="text-3xl font-bold text-primary">${stock.intrinsicValue}</div>
+                                  <div className="text-3xl font-bold text-primary">${finalStock.intrinsicValue}</div>
                                 </div>
                               </div>
                               <div className={cn(
                                 "text-xl font-bold p-4 rounded-lg",
-                                parseFloat(stock.intrinsicValue) > parseFloat(stock.price)
+                                parseFloat(finalStock.intrinsicValue) > parseFloat(finalStock.price)
                                   ? "bg-green-500/10 text-green-600"
                                   : "bg-red-500/10 text-red-600"
                               )}>
-                                {parseFloat(stock.intrinsicValue) > parseFloat(stock.price) 
-                                  ? `${(((parseFloat(stock.intrinsicValue) - parseFloat(stock.price)) / parseFloat(stock.price)) * 100).toFixed(1)}% Undervalued`
-                                  : `${(((parseFloat(stock.price) - parseFloat(stock.intrinsicValue)) / parseFloat(stock.intrinsicValue)) * 100).toFixed(1)}% Overvalued`
+                                {parseFloat(finalStock.intrinsicValue) > parseFloat(finalStock.price) 
+                                  ? `${(((parseFloat(finalStock.intrinsicValue) - parseFloat(finalStock.price)) / parseFloat(finalStock.price)) * 100).toFixed(1)}% Undervalued`
+                                  : `${(((parseFloat(finalStock.price) - parseFloat(finalStock.intrinsicValue)) / parseFloat(finalStock.intrinsicValue)) * 100).toFixed(1)}% Overvalued`
                                 }
                               </div>
                             </div>
@@ -687,8 +635,7 @@ export default function StockDetail() {
                   </div>
                 </TabsContent>
               </Tabs>
-            </>
-          ) : null}
+          </motion.div>
       </div>
     </MainLayout>
   );
