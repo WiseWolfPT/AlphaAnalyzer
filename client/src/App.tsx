@@ -5,7 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { ThemeProvider } from "@/hooks/use-theme";
 import { SimpleAuthProvider } from "@/contexts/simple-auth";
 import NotFound from "@/pages/not-found";
-import Dashboard from "@/pages/insights";
+import Dashboard from "@/pages/dashboard-test";
 import StockDetail from "@/pages/stock-detail";
 import Portfolios from "@/pages/portfolios";
 import Watchlists from "@/pages/watchlists";
