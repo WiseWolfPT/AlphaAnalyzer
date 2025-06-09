@@ -23,7 +23,7 @@ import {
 } from "lucide-react";
 
 const navigation = [
-  { name: "Dashboard", href: "/", icon: ChartLine },
+  { name: "Home", href: "/", icon: ChartLine },
   { name: "Watchlists", href: "/watchlists", icon: Heart },
   { name: "Earnings", href: "/earnings", icon: Calendar },
   { name: "Transcripts", href: "#", icon: FileText },
@@ -57,7 +57,15 @@ export function Sidebar() {
             const isActive = location === item.href;
             
             return (
-              <a key={item.name} href={item.href}>
+              <a 
+                key={item.name} 
+                href={item.href}
+                id={`nav-${item.name.toLowerCase()}`}
+                onClick={(e) => {
+                  console.log(`Clicked ${item.name} -> ${item.href}`);
+                  // Don't prevent default - let it navigate normally
+                }}
+              >
                 <div
                   className={cn(
                     "flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 group cursor-pointer",
