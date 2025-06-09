@@ -4,9 +4,11 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/hooks/use-theme";
+import { AuthProvider } from "@/contexts/auth-context";
 import NotFound from "@/pages/not-found";
 import Dashboard from "@/pages/insights";
 import StockDetail from "@/pages/stock-detail";
+import Portfolios from "@/pages/portfolios";
 import Watchlists from "@/pages/watchlists";
 import Earnings from "@/pages/earnings";
 import Profile from "@/pages/profile";
@@ -18,6 +20,7 @@ function Router() {
       <Route path="/" component={Dashboard} />
       <Route path="/insights" component={Dashboard} />
       <Route path="/stock/:symbol" component={StockDetail} />
+      <Route path="/portfolios" component={Portfolios} />
       <Route path="/watchlists" component={Watchlists} />
       <Route path="/earnings" component={Earnings} />
       <Route path="/profile" component={Profile} />
@@ -30,12 +33,14 @@ function Router() {
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <ThemeProvider defaultTheme="dark" storageKey="alpha-analyzer-theme">
-        <TooltipProvider>
-          <Toaster />
-          <Router />
-        </TooltipProvider>
-      </ThemeProvider>
+      <AuthProvider>
+        <ThemeProvider defaultTheme="dark" storageKey="alpha-analyzer-theme">
+          <TooltipProvider>
+            <Toaster />
+            <Router />
+          </TooltipProvider>
+        </ThemeProvider>
+      </AuthProvider>
     </QueryClientProvider>
   );
 }

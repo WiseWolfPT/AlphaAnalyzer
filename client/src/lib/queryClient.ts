@@ -1,5 +1,6 @@
 import { QueryClient, QueryFunction } from "@tanstack/react-query";
 import { getMockApiData } from "./mock-api";
+import { realAPI } from "./real-api";
 
 async function throwIfResNotOk(res: Response) {
   if (!res.ok) {
@@ -41,18 +42,62 @@ export const getQueryFn: <T>(options: {
     const url = queryKey[0] as string;
     
     try {
-      // Always use mock data for now (since we don't have backend deployed)
-      console.log('Using mock data for:', url);
+      console.log('🔄 Query for:', url);
       
-      // Simulate network delay
-      await new Promise(resolve => setTimeout(resolve, 500));
+      // Try real API first for stock data
+      if (url === '/api/stocks') {
+        console.log('📊 Fetching all stocks with real API enhancement');
+        
+        // Get mock data as base
+        const mockData = getMockApiData(url);
+        
+        // Try to enhance first few stocks with real data
+        const enhanced = await Promise.all(
+          mockData.slice(0, 6).map(async (stock: any) => {
+            try {
+              const realData = await realAPI.getStockQuote(stock.symbol);
+              return realData || stock;
+            } catch {
+              return stock;
+            }
+          })
+        );
+        
+        // Combine enhanced data with remaining mock data
+        return [...enhanced, ...mockData.slice(6)];
+      }
+      
+      if (url.startsWith('/api/stocks/') && !url.includes('search')) {
+        console.log('📈 Fetching individual stock data');
+        
+        const pathParts = url.split('/');
+        const symbol = pathParts[pathParts.length - 1]?.toUpperCase();
+        
+        if (symbol) {
+          // Try real API first
+          const realData = await realAPI.getStockQuote(symbol);
+          if (realData) {
+            console.log('✅ Real API data found for', symbol);
+            return realData;
+          }
+        }
+        
+        console.log('📦 Falling back to mock data for', symbol);
+        const result = getMockApiData(url);
+        if (!result) {
+          throw new Error('Stock not found');
+        }
+        return result;
+      }
+      
+      // For other endpoints, use mock data with slight delay
+      await new Promise(resolve => setTimeout(resolve, 300));
       
       const result = getMockApiData(url);
-      console.log('Mock data result:', result);
+      console.log('📦 Mock data for:', url);
       
-      // Only throw error if result is null/undefined, not for empty arrays or objects
       if (result === null || result === undefined) {
-        console.log('No data found for URL:', url);
+        console.log('❌ No data found for URL:', url);
         if (url.includes('/api/stocks/') && !url.includes('search')) {
           throw new Error('Stock not found');
         }
@@ -60,7 +105,7 @@ export const getQueryFn: <T>(options: {
       
       return result;
     } catch (error) {
-      console.error('Query function error:', error);
+      console.error('❌ Query function error:', error);
       throw error;
     }
 

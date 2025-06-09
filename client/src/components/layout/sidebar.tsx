@@ -1,7 +1,12 @@
+import { useState } from "react";
 import { Link, useLocation } from "wouter";
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import { recentSearchesApi } from "@/lib/api";
+import { useAuth } from "@/contexts/auth-context";
+import { AuthModal } from "@/components/auth/auth-modal";
+import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { 
   BarChart3, 
   Heart, 
@@ -10,7 +15,11 @@ import {
   Briefcase, 
   Calculator, 
   Settings,
-  ChartLine
+  ChartLine,
+  LogIn,
+  LogOut,
+  User,
+  Crown
 } from "lucide-react";
 
 const navigation = [
@@ -18,13 +27,15 @@ const navigation = [
   { name: "Watchlists", href: "/watchlists", icon: Heart },
   { name: "Earnings", href: "/earnings", icon: Calendar },
   { name: "Transcripts", href: "#", icon: FileText },
-  { name: "Portfolios", href: "#", icon: Briefcase },
+  { name: "Portfolios", href: "/portfolios", icon: Briefcase },
   { name: "Intrinsic Value", href: "/intrinsic-value", icon: Calculator },
   { name: "Settings", href: "#", icon: Settings },
 ];
 
 export function Sidebar() {
   const [location] = useLocation();
+  const { user, profile, signOut } = useAuth();
+  const [showAuthModal, setShowAuthModal] = useState(false);
 
   return (
     <div className="w-72 bg-card border-r border-border flex-shrink-0 sticky top-0 h-screen overflow-y-auto">
@@ -67,8 +78,63 @@ export function Sidebar() {
           })}
         </nav>
 
+        {/* User Section */}
+        <div className="mt-8 pt-6 border-t border-border">
+          {user ? (
+            <div className="space-y-4">
+              {/* User Profile */}
+              <div className="flex items-center gap-3 p-3 bg-secondary/30 rounded-xl">
+                <Avatar className="h-10 w-10">
+                  <AvatarImage src={profile?.avatar_url} />
+                  <AvatarFallback className="bg-primary text-primary-foreground">
+                    {profile?.full_name?.charAt(0) || user.email?.charAt(0) || 'U'}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-foreground truncate">
+                    {profile?.full_name || user.email}
+                  </p>
+                  <div className="flex items-center gap-1">
+                    {profile?.subscription_tier === 'premium' && (
+                      <Crown className="h-3 w-3 text-amber-500" />
+                    )}
+                    <p className="text-xs text-muted-foreground capitalize">
+                      {profile?.subscription_tier || 'free'} plan
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Logout Button */}
+              <Button
+                variant="ghost"
+                size="sm"
+                className="w-full justify-start text-muted-foreground hover:text-foreground"
+                onClick={() => signOut()}
+              >
+                <LogOut className="h-4 w-4 mr-3" />
+                Sign Out
+              </Button>
+            </div>
+          ) : (
+            <Button
+              className="w-full"
+              onClick={() => setShowAuthModal(true)}
+            >
+              <LogIn className="h-4 w-4 mr-2" />
+              Sign In
+            </Button>
+          )}
+        </div>
+
         {/* Recent Searches */}
         <RecentSearches />
+
+        {/* Auth Modal */}
+        <AuthModal
+          isOpen={showAuthModal}
+          onClose={() => setShowAuthModal(false)}
+        />
       </div>
     </div>
   );

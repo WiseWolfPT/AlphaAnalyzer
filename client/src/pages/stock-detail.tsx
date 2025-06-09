@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
+import { EarningsTrends } from "@/components/stock/earnings-trends";
 import { ArrowLeft, Plus, TrendingUp, TrendingDown, Target, BarChart3, Activity, DollarSign, Calendar, Percent, Clock, Bell } from "lucide-react";
 import { LineChart, Line, ResponsiveContainer, Tooltip, XAxis, YAxis, CartesianGrid, AreaChart, Area, BarChart, Bar, Legend } from "recharts";
 import { Link } from "wouter";
@@ -22,11 +23,18 @@ export default function StockDetail() {
   // Get stock data directly from mock data
   const getAllStocks = () => getMockApiData('/api/stocks') as MockStock[];
   const allStocks = getAllStocks();
+  
+  console.log('StockDetail - URL symbol parameter:', symbol);
+  console.log('StockDetail - Available stocks:', allStocks.map(s => s.symbol));
+  
   const stock = symbol ? allStocks.find(s => s.symbol === symbol.toUpperCase()) : null;
-  const finalStock = stock || allStocks[0]; // Always fallback to first stock
+  console.log('StockDetail - Found stock:', stock?.symbol || 'NOT FOUND');
   
   const isLoading = false;
   const error = null;
+
+  // Always use the first stock as fallback for debugging
+  const finalStock = stock || allStocks[0];
 
   // Generate mock chart data based on timeframe
   const generateChartData = (timeframe: string, basePrice: number) => {
@@ -385,11 +393,11 @@ export default function StockDetail() {
                     </div>
                     <div className="flex justify-between">
                       <span className="text-sm">50D MA</span>
-                      <span className="text-sm font-medium">${(parseFloat(stock.price) * (0.95 + Math.random() * 0.1)).toFixed(2)}</span>
+                      <span className="text-sm font-medium">${(parseFloat(finalStock.price) * (0.95 + Math.random() * 0.1)).toFixed(2)}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-sm">200D MA</span>
-                      <span className="text-sm font-medium">${(parseFloat(stock.price) * (0.9 + Math.random() * 0.1)).toFixed(2)}</span>
+                      <span className="text-sm font-medium">${(parseFloat(finalStock.price) * (0.9 + Math.random() * 0.1)).toFixed(2)}</span>
                     </div>
                   </CardContent>
                 </Card>
@@ -399,6 +407,7 @@ export default function StockDetail() {
               <Tabs defaultValue="financials" className="w-full">
                 <TabsList className="mb-6">
                   <TabsTrigger value="financials">Financial Performance</TabsTrigger>
+                  <TabsTrigger value="earnings">Earnings Trends</TabsTrigger>
                   <TabsTrigger value="valuation">Valuation Analysis</TabsTrigger>
                   <TabsTrigger value="technical">Technical Analysis</TabsTrigger>
                 </TabsList>
@@ -549,6 +558,10 @@ export default function StockDetail() {
                       </CardContent>
                     </Card>
                   </div>
+                </TabsContent>
+                
+                <TabsContent value="earnings" className="space-y-6">
+                  <EarningsTrends stock={finalStock} />
                 </TabsContent>
                 
                 <TabsContent value="valuation" className="space-y-6">

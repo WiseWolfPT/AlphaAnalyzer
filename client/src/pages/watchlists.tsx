@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Plus, Edit, Trash2, TrendingUp, TrendingDown } from "lucide-react";
+import { Plus, Edit, Trash2, TrendingUp, TrendingDown, Heart } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import type { Watchlist, WatchlistStock, Stock } from "@shared/schema";
@@ -27,6 +27,7 @@ export default function Watchlists() {
     queryKey: [`/api/watchlists/${selectedWatchlistId}/stocks`],
     enabled: !!selectedWatchlistId,
   });
+
 
   const createWatchlistMutation = useMutation({
     mutationFn: async (name: string) => {
@@ -81,9 +82,15 @@ export default function Watchlists() {
       <div className="container mx-auto px-6 py-8 max-w-7xl">
           {/* Header */}
           <div className="flex items-center justify-between mb-6">
-            <h1 className="text-2xl font-bold">
-              Watchlist {selectedWatchlist ? `– ${selectedWatchlist.name}` : ''}
-            </h1>
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-primary/10 rounded-xl">
+                <Heart className="h-6 w-6 text-primary" />
+              </div>
+              <div>
+                <h1 className="text-3xl font-bold text-foreground">Watchlists</h1>
+                <p className="text-muted-foreground">Track and organize your favorite stocks</p>
+              </div>
+            </div>
             
             <div className="flex items-center space-x-2">
               <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
@@ -189,8 +196,8 @@ export default function Watchlists() {
             <div className="lg:col-span-3 space-y-6">
               {selectedWatchlist ? (
                 <>
-                  {/* Stocks List */}
-                  <Card>
+                      {/* Stocks List */}
+                      <Card>
                     <CardHeader className="flex flex-row items-center justify-between">
                       <CardTitle>Stocks in {selectedWatchlist.name}</CardTitle>
                       <Button size="sm" className="bg-chart-1 hover:bg-chart-1/80 text-black">

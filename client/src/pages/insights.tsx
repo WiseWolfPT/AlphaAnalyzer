@@ -5,6 +5,8 @@ import { StockSearch } from "@/components/stock/stock-search";
 import { SectorTabs } from "@/components/stock/sector-tabs";
 import { StockCard } from "@/components/stock/stock-card";
 import { PerformanceModal } from "@/components/stock/performance-modal";
+import { BetaBanner } from "@/components/beta/beta-banner";
+import { APIStats } from "@/components/debug/api-stats";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { TrendingUp, Activity, Target } from "lucide-react";
@@ -78,6 +80,10 @@ export default function Insights() {
   return (
     <MainLayout>
       <div className="container mx-auto px-6 py-8 max-w-7xl">
+        {/* BETA Banner */}
+        <div className="mb-6">
+          <BetaBanner />
+        </div>
         {/* Hero Section */}
         <div className="mb-12">
           <div className="flex items-center gap-3 mb-4">
@@ -180,6 +186,13 @@ export default function Insights() {
             <Button size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-3 rounded-xl font-medium">
               Load More Stocks
             </Button>
+          </div>
+        )}
+
+        {/* API Stats (for debugging in development) */}
+        {import.meta.env.VITE_DEBUG_MODE === 'true' && (
+          <div className="mt-12">
+            <APIStats />
           </div>
         )}
 

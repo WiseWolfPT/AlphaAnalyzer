@@ -2,16 +2,19 @@ import { useState } from "react";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { BarChart3, Target, TrendingUp, TrendingDown } from "lucide-react";
+import { BarChart3, Target, TrendingUp, TrendingDown, ChartLine } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { MiniChart } from "./mini-charts";
+import { FeatureLimiter } from "@/components/beta/feature-limiter";
 import type { MockStock } from "@/lib/mock-api";
 
 interface StockCardProps {
   stock: MockStock;
   onPerformanceClick: () => void;
+  showMiniChart?: boolean;
 }
 
-export function StockCard({ stock, onPerformanceClick }: StockCardProps) {
+export function StockCard({ stock, onPerformanceClick, showMiniChart = true }: StockCardProps) {
   const [imageError, setImageError] = useState(false);
   
   const changePercent = parseFloat(stock.changePercent);
@@ -26,19 +29,35 @@ export function StockCard({ stock, onPerformanceClick }: StockCardProps) {
   return (
     <Link href={`/stock/${stock.symbol}`}>
       <div className="group relative bg-card/50 backdrop-blur-sm border border-border/50 hover:border-primary/50 rounded-xl p-6 cursor-pointer transition-all duration-300 hover:shadow-lg hover:shadow-primary/5 hover:-translate-y-1">
-        {/* Performance Icon */}
-        <Button
-          size="sm"
-          variant="ghost"
-          className="absolute top-4 right-4 h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200 hover:bg-secondary/80"
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            onPerformanceClick();
-          }}
-        >
-          <BarChart3 className="h-4 w-4" />
-        </Button>
+        {/* Action Icons */}
+        <div className="absolute top-4 right-4 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+          {showMiniChart && (
+            <Button
+              size="sm"
+              variant="ghost"
+              className="h-8 w-8 p-0 hover:bg-secondary/80"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                // Toggle mini chart view
+              }}
+            >
+              <ChartLine className="h-4 w-4" />
+            </Button>
+          )}
+          <Button
+            size="sm"
+            variant="ghost"
+            className="h-8 w-8 p-0 hover:bg-secondary/80"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onPerformanceClick();
+            }}
+          >
+            <BarChart3 className="h-4 w-4" />
+          </Button>
+        </div>
 
         <div className="flex items-start gap-4 mb-4">
           {/* Company Logo */}
@@ -128,6 +147,22 @@ export function StockCard({ stock, onPerformanceClick }: StockCardProps) {
               {isPositive ? '+' : ''}${stock.change}
             </span>
           </div>
+          
+          {/* Mini Chart */}
+          {showMiniChart && (
+            <div className="mt-4 pt-4 border-t border-border/30">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs text-muted-foreground font-medium">Price (1M)</span>
+                <span className={cn(
+                  "text-xs font-medium",
+                  isPositive ? "text-emerald-500" : "text-red-500"
+                )}>
+                  {isPositive ? '↗' : '↘'} {Math.abs(changePercent).toFixed(1)}%
+                </span>
+              </div>
+              <MiniChart stock={stock} type="price" height={40} />
+            </div>
+          )}
         </div>
       </div>
     </Link>
