@@ -2,9 +2,8 @@ import { Switch, Route } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
-import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/hooks/use-theme";
-import { AuthProvider } from "@/contexts/auth-context";
+import { SimpleAuthProvider } from "@/contexts/simple-auth";
 import NotFound from "@/pages/not-found";
 import Dashboard from "@/pages/insights";
 import StockDetail from "@/pages/stock-detail";
@@ -33,14 +32,12 @@ function Router() {
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <ThemeProvider defaultTheme="dark" storageKey="alpha-analyzer-theme">
-          <TooltipProvider>
-            <Toaster />
-            <Router />
-          </TooltipProvider>
-        </ThemeProvider>
-      </AuthProvider>
+      <ThemeProvider defaultTheme="dark" storageKey="alpha-analyzer-theme">
+        <SimpleAuthProvider>
+          <Toaster />
+          <Router />
+        </SimpleAuthProvider>
+      </ThemeProvider>
     </QueryClientProvider>
   );
 }

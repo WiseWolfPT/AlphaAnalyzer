@@ -7,7 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Eye, EyeOff, Mail, Lock, User, AlertCircle } from 'lucide-react';
-import { useAuth } from '@/contexts/auth-context';
+import { useAuth } from '@/contexts/simple-auth';
 import { cn } from '@/lib/utils';
 
 interface AuthModalProps {
@@ -29,7 +29,12 @@ export function AuthModal({ isOpen, onClose, defaultTab = 'login' }: AuthModalPr
   const [confirmPassword, setConfirmPassword] = useState('');
   const [fullName, setFullName] = useState('');
 
-  const { signIn, signUp, signInWithGoogle, resetPassword } = useAuth();
+  const { user } = useAuth();
+  // Simplified auth methods - disabled for now
+  const signIn = () => Promise.resolve({ data: null, error: new Error('Auth disabled') });
+  const signUp = () => Promise.resolve({ data: null, error: new Error('Auth disabled') });
+  const signInWithGoogle = () => Promise.resolve({ data: null, error: new Error('Auth disabled') });
+  const resetPassword = () => Promise.resolve({ data: null, error: new Error('Auth disabled') });
 
   const resetForm = () => {
     setEmail('');

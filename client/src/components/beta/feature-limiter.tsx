@@ -3,7 +3,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Lock, Crown, Users, TrendingUp } from 'lucide-react';
-import { useAuth } from '@/contexts/auth-context';
+import { useAuth } from '@/contexts/simple-auth';
 
 interface FeatureLimiterProps {
   children: ReactNode;
@@ -45,7 +45,9 @@ export function FeatureLimiter({
   requiredTier, 
   className 
 }: FeatureLimiterProps) {
-  const { user, profile, isSubscribed } = useAuth();
+  const { user } = useAuth();
+  // Simplified for now - treat all users as free tier
+  const isSubscribed = () => false;
   const config = featureConfig[feature];
   const tier = requiredTier || config.tier;
   
