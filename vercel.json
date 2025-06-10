@@ -4,9 +4,17 @@
     {
       "src": "dist/public/**",
       "use": "@vercel/static"
+    },
+    {
+      "src": "test-simple.html",
+      "use": "@vercel/static"
     }
   ],
   "routes": [
+    {
+      "src": "/test-simple",
+      "dest": "/test-simple.html"
+    },
     {
       "src": "/assets/(.*)",
       "dest": "/dist/public/assets/$1"
