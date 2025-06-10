@@ -1,16 +1,5 @@
 {
-  "version": 2,
-  "cleanUrls": true,
-  "trailingSlash": false,
   "rewrites": [
-    {
-      "source": "/assets/(.*)",
-      "destination": "/dist/public/assets/$1"
-    },
-    {
-      "source": "/test-simple",
-      "destination": "/test-simple.html"
-    },
     {
       "source": "/(.*)",
       "destination": "/dist/public/index.html"
