@@ -1,23 +1,16 @@
 {
   "version": 2,
-  "builds": [
-    {
-      "src": "dist/public/**",
-      "use": "@vercel/static"
-    },
-    {
-      "src": "test-simple.html",
-      "use": "@vercel/static"
-    }
-  ],
+  "cleanUrls": true,
+  "trailingSlash": false,
+  "functions": {},
   "routes": [
-    {
-      "src": "/test-simple",
-      "dest": "/test-simple.html"
-    },
     {
       "src": "/assets/(.*)",
       "dest": "/dist/public/assets/$1"
+    },
+    {
+      "src": "/test-simple",
+      "dest": "/test-simple.html"
     },
     {
       "src": "/(.*)",
