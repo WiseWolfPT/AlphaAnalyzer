@@ -96,10 +96,9 @@ export function Pricing() {
 
                     <Button 
                       className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold py-3"
-                      onClick={() => window.open('https://whop.com/checkout/founder_monthly', '_blank')}
+                      onClick={() => window.location.href = '/trial'}
                     >
-                      <Star className="h-4 w-4 mr-2" />
-                      Garantir o meu lugar
+                      🚀 Começar Trial Grátis
                     </Button>
 
                     <p className="text-xs text-center text-muted-foreground">
@@ -167,27 +166,12 @@ export function Pricing() {
                     ))}
                   </ul>
 
-                  <Tabs defaultValue="monthly" className="w-full">
-                    <TabsContent value="monthly">
-                      <Button 
-                        className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3"
-                        onClick={() => window.open('https://checkout.stripe.com/pay/link_core_monthly', '_blank')}
-                      >
-                        <Zap className="h-4 w-4 mr-2" />
-                        7 dias grátis - Mensal
-                      </Button>
-                    </TabsContent>
-                    
-                    <TabsContent value="annual">
-                      <Button 
-                        className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3"
-                        onClick={() => window.open('https://checkout.stripe.com/pay/link_core_annual', '_blank')}
-                      >
-                        <Zap className="h-4 w-4 mr-2" />
-                        7 dias grátis - Anual
-                      </Button>
-                    </TabsContent>
-                  </Tabs>
+                  <Button 
+                    className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3"
+                    onClick={() => window.location.href = '/trial'}
+                  >
+                    🚀 Começar Trial de 7 Dias Grátis
+                  </Button>
 
                   <p className="text-xs text-center text-muted-foreground">
                     Cancela a qualquer momento. Sem compromissos.

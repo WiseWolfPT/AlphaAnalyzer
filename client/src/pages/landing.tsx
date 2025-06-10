@@ -47,18 +47,18 @@ export default function Landing() {
   const steps = [
     {
       number: "01",
-      title: "Conecta a tua conta",
-      description: "Liga a tua corretora de forma segura em menos de 2 minutos"
+      title: "Insere o ticker",
+      description: "Escreve o símbolo da ação (ex: EDP, GALP, AAPL)"
     },
     {
       number: "02", 
-      title: "Configura alertas",
-      description: "Define os teus critérios e deixa a IA trabalhar por ti 24/7"
+      title: "Vê o valor intrínseco",
+      description: "Obtém o valor justo calculado instantaneamente"
     },
     {
       number: "03",
-      title: "Investe com confiança",
-      description: "Recebe notificações precisas e toma decisões baseadas em dados"
+      title: "Compara e decide",
+      description: "Vê se está subvalorizada ou sobrevalorizada e investe com confiança"
     }
   ];
 
@@ -81,44 +81,58 @@ export default function Landing() {
               <div className="flex justify-center mb-8">
                 <Badge className="bg-emerald-500/10 text-emerald-600 border-emerald-500/20 px-4 py-2 text-sm">
                   <TrendingUp className="h-4 w-4 mr-2" />
-                  Plataforma #1 em Portugal
+                  Feito em Portugal
                 </Badge>
               </div>
 
               {/* Headline */}
               <h1 className="text-4xl sm:text-5xl lg:text-7xl font-bold text-foreground mb-8 leading-tight">
-                Descobre o verdadeiro
+                Descobre ações subvalorizadas
                 <span className="block bg-gradient-to-r from-orange-500 to-emerald-500 bg-clip-text text-transparent">
-                  valor das ações
+                  antes dos outros
                 </span>
               </h1>
 
               {/* Subtitle */}
-              <p className="text-xl lg:text-2xl text-muted-foreground mb-12 leading-relaxed max-w-3xl mx-auto">
-                Gráficos em tempo real e valor intrínseco em segundos. 
-                Investe com dados, não com emoções.
+              <p className="text-xl lg:text-2xl text-muted-foreground mb-8 leading-relaxed max-w-3xl mx-auto">
+                Usa as mesmas ferramentas que os fund managers portugueses usam. 
+                Valor intrínseco calculado em segundos.
               </p>
+
+              {/* Trial Benefits */}
+              <div className="flex flex-wrap justify-center items-center gap-6 mb-12 text-sm text-muted-foreground">
+                <div className="flex items-center gap-2">
+                  <CheckCircle className="h-4 w-4 text-emerald-500" />
+                  <span>Sem cartão de crédito</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <CheckCircle className="h-4 w-4 text-emerald-500" />
+                  <span>Acesso completo</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <CheckCircle className="h-4 w-4 text-emerald-500" />
+                  <span>Cancela quando quiseres</span>
+                </div>
+              </div>
 
               {/* CTAs */}
               <div className="flex flex-col sm:flex-row gap-6 justify-center mb-16">
                 <Button 
                   size="lg" 
-                  className="text-lg px-8 py-4 h-14 bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg hover:shadow-xl transition-all duration-200"
-                  onClick={() => window.location.href = '/checkout/core'}
+                  className="text-lg px-8 py-4 h-16 bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 font-semibold"
+                  onClick={() => window.location.href = '/trial'}
                 >
-                  <BarChart3 className="h-5 w-5 mr-2" />
-                  Começar agora
-                  <ArrowRight className="h-5 w-5 ml-2" />
+                  🚀 Trial de 7 Dias Grátis
                 </Button>
                 
                 <Button 
                   variant="outline" 
                   size="lg" 
-                  className="text-lg px-8 py-4 h-14 border-2 hover:bg-secondary/50"
+                  className="text-lg px-8 py-4 h-16 border-2 hover:bg-secondary/50"
                   onClick={() => setShowVideoModal(true)}
                 >
                   <Play className="h-5 w-5 mr-2" />
-                  Ver demo
+                  Ver demonstração
                 </Button>
               </div>
 
@@ -126,15 +140,15 @@ export default function Landing() {
               <div className="flex flex-col sm:flex-row items-center justify-center gap-8 text-sm text-muted-foreground">
                 <div className="flex items-center gap-2">
                   <Users className="h-4 w-4" />
-                  <span>10.000+ investidores</span>
+                  <span>500+ investidores ativos</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Award className="h-4 w-4" />
-                  <span>89% accuracy</span>
+                  <span>89% precisão nas análises fundamentais</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Shield className="h-4 w-4" />
-                  <span>Dados seguros</span>
+                  <span>Usado em 20+ corretoras</span>
                 </div>
               </div>
             </motion.div>
@@ -149,6 +163,67 @@ export default function Landing() {
               clipPath: 'polygon(74.1% 44.1%, 100% 61.6%, 97.5% 26.9%, 85.5% 0.1%, 80.7% 2%, 72.5% 32.5%, 60.2% 62.4%, 52.4% 68.1%, 47.5% 58.3%, 45.2% 34.5%, 27.5% 76.7%, 0.1% 64.9%, 17.9% 100%, 27.6% 76.8%, 76.1% 97.7%, 74.1% 44.1%)',
             }}
           />
+        </div>
+      </section>
+
+      {/* Education Section - What is Intrinsic Value */}
+      <section id="education" className="py-16 lg:py-24 bg-secondary/30">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            viewport={{ once: true }}
+            className="max-w-4xl mx-auto text-center"
+          >
+            <h2 className="text-3xl lg:text-4xl font-bold text-foreground mb-6">
+              O que é Valor Intrínseco?
+            </h2>
+            <p className="text-xl text-muted-foreground mb-8 leading-relaxed">
+              O valor intrínseco é o preço justo de uma ação baseado nos seus fundamentais financeiros. 
+              Warren Buffett usa esta estratégia há 50+ anos para encontrar ações subvalorizadas.
+            </p>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-12">
+              <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.5, delay: 0.2 }}
+                viewport={{ once: true }}
+                className="bg-red-500/10 border border-red-500/20 rounded-xl p-6"
+              >
+                <h3 className="text-xl font-semibold text-foreground mb-4 flex items-center gap-2">
+                  <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+                  Sem Valor Intrínseco
+                </h3>
+                <p className="text-muted-foreground text-left">
+                  • Investes baseado em emoções<br/>
+                  • Compras no pico, vendes no fundo<br/>
+                  • Segues dicas de "gurus" no YouTube<br/>
+                  • Perdas frequentes e frustração
+                </p>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, x: 20 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.5, delay: 0.4 }}
+                viewport={{ once: true }}
+                className="bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-6"
+              >
+                <h3 className="text-xl font-semibold text-foreground mb-4 flex items-center gap-2">
+                  <div className="w-3 h-3 bg-emerald-500 rounded-full"></div>
+                  Com Valor Intrínseco
+                </h3>
+                <p className="text-muted-foreground text-left">
+                  • Investes baseado em dados concretos<br/>
+                  • Compras quando está barato, vendes caro<br/>
+                  • Ignoras o ruído do mercado<br/>
+                  • Retornos consistentes a longo prazo
+                </p>
+              </motion.div>
+            </div>
+          </motion.div>
         </div>
       </section>
 
@@ -253,8 +328,237 @@ export default function Landing() {
         </div>
       </section>
 
+      {/* Testimonials Section */}
+      <section id="testimonials" className="py-16 lg:py-24 bg-secondary/20">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            viewport={{ once: true }}
+            className="text-center mb-16"
+          >
+            <h2 className="text-3xl lg:text-4xl font-bold text-foreground mb-4">
+              O que dizem os nossos utilizadores
+            </h2>
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+              Resultados reais de investidores portugueses
+            </p>
+          </motion.div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.1 }}
+              viewport={{ once: true }}
+            >
+              <Card className="border-border/50 hover:shadow-lg transition-all duration-300">
+                <CardContent className="p-6">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-white font-semibold">
+                      MS
+                    </div>
+                    <div>
+                      <div className="font-semibold text-foreground">Miguel S.</div>
+                      <div className="text-sm text-muted-foreground">Porto</div>
+                    </div>
+                  </div>
+                  <p className="text-muted-foreground leading-relaxed mb-4">
+                    "Evitei uma perda de 2.000€ na Galp graças ao Alpha Analyzer. 
+                    A análise mostrou que estava sobrevalorizada antes de cair 15%."
+                  </p>
+                  <div className="flex items-center gap-1">
+                    {[...Array(5)].map((_, i) => (
+                      <div key={i} className="w-4 h-4 bg-yellow-400 rounded-sm"></div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+              viewport={{ once: true }}
+            >
+              <Card className="border-border/50 hover:shadow-lg transition-all duration-300">
+                <CardContent className="p-6">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-full flex items-center justify-center text-white font-semibold">
+                      AR
+                    </div>
+                    <div>
+                      <div className="font-semibold text-foreground">Ana R.</div>
+                      <div className="text-sm text-muted-foreground">Lisboa</div>
+                    </div>
+                  </div>
+                  <p className="text-muted-foreground leading-relaxed mb-4">
+                    "Descobri que a EDP estava 15% subvalorizada e investi. 
+                    Em 3 meses já tenho +12% de retorno. Simples e eficaz!"
+                  </p>
+                  <div className="flex items-center gap-1">
+                    {[...Array(5)].map((_, i) => (
+                      <div key={i} className="w-4 h-4 bg-yellow-400 rounded-sm"></div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.3 }}
+              viewport={{ once: true }}
+            >
+              <Card className="border-border/50 hover:shadow-lg transition-all duration-300">
+                <CardContent className="p-6">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-orange-600 rounded-full flex items-center justify-center text-white font-semibold">
+                      CM
+                    </div>
+                    <div>
+                      <div className="font-semibold text-foreground">Carlos M.</div>
+                      <div className="text-sm text-muted-foreground">Braga</div>
+                    </div>
+                  </div>
+                  <p className="text-muted-foreground leading-relaxed mb-4">
+                    "Finalmente invisto com dados, não emoções. O Alpha Analyzer 
+                    deu-me a confiança que precisava para ser consistente."
+                  </p>
+                  <div className="flex items-center gap-1">
+                    {[...Array(5)].map((_, i) => (
+                      <div key={i} className="w-4 h-4 bg-yellow-400 rounded-sm"></div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
       {/* Pricing Section */}
       <Pricing />
+
+      {/* FAQ Section */}
+      <section id="faq" className="py-16 lg:py-24">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            viewport={{ once: true }}
+            className="text-center mb-16"
+          >
+            <h2 className="text-3xl lg:text-4xl font-bold text-foreground mb-4">
+              Perguntas Frequentes
+            </h2>
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+              Tudo o que precisas saber sobre o Alpha Analyzer
+            </p>
+          </motion.div>
+
+          <div className="max-w-3xl mx-auto space-y-6">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.1 }}
+              viewport={{ once: true }}
+            >
+              <Card className="border-border/50">
+                <CardContent className="p-6">
+                  <h3 className="text-lg font-semibold text-foreground mb-3">
+                    ❓ Como calculam o valor intrínseco?
+                  </h3>
+                  <p className="text-muted-foreground">
+                    Usamos múltiplos métodos incluindo DCF (Discounted Cash Flow), análise de múltiplos 
+                    e modelos proprietários que combinam dados fundamentais e técnicos para uma avaliação precisa.
+                  </p>
+                </CardContent>
+              </Card>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+              viewport={{ once: true }}
+            >
+              <Card className="border-border/50">
+                <CardContent className="p-6">
+                  <h3 className="text-lg font-semibold text-foreground mb-3">
+                    ❓ Que corretoras suportam?
+                  </h3>
+                  <p className="text-muted-foreground">
+                    Funcionamos com todas as principais corretoras portuguesas e internacionais: 
+                    Degiro, eToro, XTB, Interactive Brokers, Trading 212, e muitas outras.
+                  </p>
+                </CardContent>
+              </Card>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.3 }}
+              viewport={{ once: true }}
+            >
+              <Card className="border-border/50">
+                <CardContent className="p-6">
+                  <h3 className="text-lg font-semibold text-foreground mb-3">
+                    ❓ Posso cancelar o trial a qualquer momento?
+                  </h3>
+                  <p className="text-muted-foreground">
+                    Sim! O trial de 7 dias é completamente grátis e sem compromissos. 
+                    Podes cancelar a qualquer momento sem qualquer custo ou penalização.
+                  </p>
+                </CardContent>
+              </Card>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.4 }}
+              viewport={{ once: true }}
+            >
+              <Card className="border-border/50">
+                <CardContent className="p-6">
+                  <h3 className="text-lg font-semibold text-foreground mb-3">
+                    ❓ Os meus dados são seguros?
+                  </h3>
+                  <p className="text-muted-foreground">
+                    Absolutamente. Usamos encriptação SSL de nível bancário e nunca armazenamos 
+                    informações sensíveis como passwords ou dados de conta. GDPR compliant.
+                  </p>
+                </CardContent>
+              </Card>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.5 }}
+              viewport={{ once: true }}
+            >
+              <Card className="border-border/50">
+                <CardContent className="p-6">
+                  <h3 className="text-lg font-semibold text-foreground mb-3">
+                    ❓ Funciona com ações portuguesas?
+                  </h3>
+                  <p className="text-muted-foreground">
+                    Sim! Suportamos todas as ações do PSI-20 (EDP, Galp, BCP, etc.) 
+                    e mais de 10.000 ações internacionais (NASDAQ, NYSE, LSE, Euronext).
+                  </p>
+                </CardContent>
+              </Card>
+            </motion.div>
+          </div>
+        </div>
+      </section>
 
       {/* CTA Section */}
       <section className="py-16 lg:py-24">
@@ -270,25 +574,24 @@ export default function Landing() {
               Pronto para transformar os teus investimentos?
             </h2>
             <p className="text-xl text-muted-foreground mb-8">
-              Junta-te a milhares de investidores que já usam Alpha Analyzer para maximizar os seus retornos.
+              Junta-te a 500+ investidores portugueses que já usam Alpha Analyzer para maximizar os seus retornos.
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button 
                 size="lg" 
-                className="text-lg px-8 py-4 h-14 bg-primary hover:bg-primary/90"
-                onClick={() => window.location.href = '/checkout/core'}
+                className="text-lg px-8 py-4 h-14 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold"
+                onClick={() => window.location.href = '/trial'}
               >
-                <Zap className="h-5 w-5 mr-2" />
-                Começar agora - 7 dias grátis
+                🚀 Começar Trial Grátis
               </Button>
               <Button 
                 variant="outline" 
                 size="lg" 
                 className="text-lg px-8 py-4 h-14"
-                onClick={() => window.location.href = '/dashboard'}
+                onClick={() => setShowVideoModal(true)}
               >
-                Explorar plataforma
+                Ver demonstração
               </Button>
             </div>
           </motion.div>
