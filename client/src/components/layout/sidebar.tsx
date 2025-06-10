@@ -1,12 +1,8 @@
 import { useState } from "react";
 import { useLocation } from "wouter";
 import { cn } from "@/lib/utils";
-import { useQuery } from "@tanstack/react-query";
-import { recentSearchesApi } from "@/lib/api";
 import { useAuth } from "@/contexts/simple-auth";
-import { AuthModal } from "@/components/auth/auth-modal";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { 
   BarChart3, 
   Heart, 
@@ -23,7 +19,7 @@ import {
 } from "lucide-react";
 
 const navigation = [
-  { name: "🏠 Dashboard", href: "/", icon: ChartLine },
+  { name: "🏠 Dashboard", href: "/dashboard", icon: ChartLine },
   { name: "Watchlists", href: "/watchlists", icon: Heart },
   { name: "Earnings", href: "/earnings", icon: Calendar },
   { name: "Transcripts", href: "#", icon: FileText },
@@ -88,64 +84,14 @@ export function Sidebar() {
         {/* Auth Section */}
         <div className="mt-8 pt-6 border-t border-border">
           {!user && (
-            <Button
-              className="w-full"
-              onClick={() => setShowAuthModal(true)}
-            >
+            <Button className="w-full">
               <LogIn className="h-4 w-4 mr-2" />
               Sign In
             </Button>
           )}
         </div>
-
-        {/* Recent Searches */}
-        <RecentSearches />
-
-        {/* Auth Modal */}
-        <AuthModal
-          isOpen={showAuthModal}
-          onClose={() => setShowAuthModal(false)}
-        />
       </div>
     </div>
   );
 }
 
-function RecentSearches() {
-  const { data: recentSearches = [] } = useQuery({
-    queryKey: ["recent-searches"],
-    queryFn: () => recentSearchesApi.getAll("default", 5),
-  });
-
-  return (
-    <div className="mt-8">
-      <div className="flex items-center gap-2 mb-4">
-        <ChartLine className="h-4 w-4 text-muted-foreground" />
-        <h3 className="text-sm font-medium text-foreground">Recent Searches</h3>
-      </div>
-      <div className="space-y-1">
-        {recentSearches.length > 0 ? (
-          recentSearches.map((search) => (
-            <a key={search.id} href={`/stock/${search.symbol}`}>
-              <div className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-secondary/50 cursor-pointer transition-all duration-200 group">
-                <div className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center text-xs font-bold text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
-                  {search.symbol.charAt(0)}
-                </div>
-                <div className="flex flex-col min-w-0 flex-1">
-                  <span className="font-medium text-sm text-foreground">{search.symbol}</span>
-                  <span className="text-xs text-muted-foreground truncate">
-                    {search.name.length > 18 ? search.name.substring(0, 18) + "..." : search.name}
-                  </span>
-                </div>
-              </div>
-            </a>
-          ))
-        ) : (
-          <div className="px-3 py-4 text-center">
-            <p className="text-xs text-muted-foreground">No recent searches</p>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}

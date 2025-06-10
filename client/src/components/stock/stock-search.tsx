@@ -95,7 +95,7 @@ export function StockSearch({
     onStockSelect?.(stock);
   };
 
-  const displayResults = searchResults.slice(0, 10); // Max 10 results
+  const displayResults = searchResults?.slice(0, 10) || []; // Max 10 results
 
   return (
     <div ref={searchRef} className="relative w-full">

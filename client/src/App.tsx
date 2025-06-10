@@ -4,6 +4,7 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { ThemeProvider } from "@/hooks/use-theme";
 import { SimpleAuthProvider } from "@/contexts/simple-auth";
+import Landing from "@/pages/landing";
 import NotFound from "@/pages/not-found";
 import Dashboard from "@/pages/insights-safe";
 import StockDetail from "@/pages/stock-detail";
@@ -16,7 +17,7 @@ import IntrinsicValue from "@/pages/intrinsic-value";
 function Router() {
   return (
     <Switch>
-      <Route path="/" component={Dashboard} />
+      <Route path="/" component={Landing} />
       <Route path="/dashboard" component={Dashboard} />
       <Route path="/insights" component={Dashboard} />
       <Route path="/stock/:symbol" component={StockDetail} />

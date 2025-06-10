@@ -118,8 +118,8 @@ export default function InsightsSafe() {
 
         {/* Search */}
         <StockSearch 
-          value={searchQuery}
-          onChange={setSearchQuery}
+          onSearch={setSearchQuery}
+          searchResults={[]}
           placeholder="Search stocks, ETFs, or companies..."
         />
 
