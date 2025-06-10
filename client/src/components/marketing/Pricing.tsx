@@ -7,10 +7,10 @@ import { CheckCircle, Star, Crown, Zap, Timer } from "lucide-react";
 import { motion } from "framer-motion";
 
 export function Pricing() {
-  const founderLeft = 47; // Placeholder contador
+  const founderLeft = 100; // Placeholder contador
 
   const coreFeatures = [
-    "Análise completa de stocks",
+    "Análise completa de ações",
     "Dashboard profissional",
     "Watchlists ilimitadas",
     "Alertas em tempo real",
@@ -28,7 +28,7 @@ export function Pricing() {
   ];
 
   return (
-    <section id="pricing" className="py-16 lg:py-24 bg-secondary/20">
+    <section id="pricing" className="py-16 lg:py-24">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -55,10 +55,10 @@ export function Pricing() {
                 transition={{ duration: 0.5, delay: 0.1 }}
                 viewport={{ once: true }}
               >
-                <Card className="relative border-2 border-amber-500/50 shadow-xl">
+                <Card className="relative border-2 border-orange-500/50 shadow-xl bg-gradient-to-br from-orange-500/5 to-orange-600/5">
                   {/* Founder Badge */}
                   <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                    <Badge className="bg-gradient-to-r from-amber-500 to-orange-500 text-white px-4 py-2 text-sm font-semibold">
+                    <Badge className="bg-gradient-to-r from-orange-500 to-orange-600 text-white px-4 py-2 text-sm font-semibold">
                       <Crown className="h-4 w-4 mr-1" />
                       Founder 100
                     </Badge>
@@ -69,13 +69,13 @@ export function Pricing() {
                       Founding Member
                     </CardTitle>
                     <div className="mt-4">
-                      <span className="text-4xl font-bold text-foreground">€7,99</span>
+                      <span className="text-4xl font-bold text-foreground">7,99 €</span>
                       <span className="text-muted-foreground ml-2">/mês para sempre</span>
                     </div>
                     
                     {/* Contador */}
-                    <div className="mt-4 p-3 bg-amber-500/10 rounded-lg border border-amber-500/20">
-                      <div className="flex items-center justify-center gap-2 text-amber-600">
+                    <div className="mt-4 p-3 bg-orange-500/10 rounded-lg border border-orange-500/20">
+                      <div className="flex items-center justify-center gap-2 text-orange-600">
                         <Timer className="h-4 w-4" />
                         <span className="font-semibold">
                           Apenas {founderLeft} lugares restantes
@@ -95,7 +95,7 @@ export function Pricing() {
                     </ul>
 
                     <Button 
-                      className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-semibold py-3"
+                      className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold py-3"
                       onClick={() => window.open('https://whop.com/checkout/founder_monthly', '_blank')}
                     >
                       <Star className="h-4 w-4 mr-2" />
@@ -117,7 +117,7 @@ export function Pricing() {
               transition={{ duration: 0.5, delay: 0.2 }}
               viewport={{ once: true }}
             >
-              <Card className="border-border/50 shadow-lg">
+              <Card className="border-border/50 shadow-lg bg-gradient-to-br from-emerald-500/5 to-emerald-600/5">
                 <CardHeader className="text-center">
                   <CardTitle className="text-2xl font-bold text-foreground">
                     Core
@@ -138,18 +138,18 @@ export function Pricing() {
                       
                       <TabsContent value="monthly">
                         <div className="text-center">
-                          <span className="text-4xl font-bold text-foreground">€9,99</span>
+                          <span className="text-4xl font-bold text-foreground">9,99 €</span>
                           <span className="text-muted-foreground ml-2">/mês</span>
                         </div>
                       </TabsContent>
                       
                       <TabsContent value="annual">
                         <div className="text-center">
-                          <div className="line-through text-muted-foreground text-lg">€119,88</div>
-                          <span className="text-4xl font-bold text-foreground">€99</span>
+                          <div className="line-through text-muted-foreground text-lg">119,88 €</div>
+                          <span className="text-4xl font-bold text-foreground">99 €</span>
                           <span className="text-muted-foreground ml-2">/ano</span>
                           <div className="text-sm text-emerald-500 font-medium mt-1">
-                            Poupa €20,88 por ano
+                            Poupa 20,88 € por ano
                           </div>
                         </div>
                       </TabsContent>
@@ -170,7 +170,7 @@ export function Pricing() {
                   <Tabs defaultValue="monthly" className="w-full">
                     <TabsContent value="monthly">
                       <Button 
-                        className="w-full bg-primary hover:bg-primary/90 font-semibold py-3"
+                        className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3"
                         onClick={() => window.open('https://checkout.stripe.com/pay/link_core_monthly', '_blank')}
                       >
                         <Zap className="h-4 w-4 mr-2" />
@@ -180,7 +180,7 @@ export function Pricing() {
                     
                     <TabsContent value="annual">
                       <Button 
-                        className="w-full bg-primary hover:bg-primary/90 font-semibold py-3"
+                        className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3"
                         onClick={() => window.open('https://checkout.stripe.com/pay/link_core_annual', '_blank')}
                       >
                         <Zap className="h-4 w-4 mr-2" />

@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { Pricing } from "@/components/marketing/Pricing";
+import { ChartsShowcase } from "@/components/marketing/ChartsShowcase";
 import { 
   TrendingUp, 
   Shield, 
@@ -16,7 +17,9 @@ import {
   ArrowRight,
   Users,
   Award,
-  Brain
+  Brain,
+  Clock,
+  Bell
 } from "lucide-react";
 import { motion } from "framer-motion";
 
@@ -25,19 +28,19 @@ export default function Landing() {
 
   const benefits = [
     {
-      icon: Brain,
-      title: "IA Avançada",
-      description: "Algoritmos inteligentes analisam milhares de métricas para identificar oportunidades únicas no mercado."
-    },
-    {
-      icon: Shield,
-      title: "Análise de Risco",
-      description: "Avalia automaticamente o risco de cada investimento com base em dados históricos e tendências atuais."
+      icon: TrendingUp,
+      title: "Gráficos em tempo real",
+      description: "Visualiza a evolução dos preços e identifica tendências com gráficos profissionais atualizados ao segundo."
     },
     {
       icon: Target,
-      title: "Precisão Comprovada",
-      description: "Sistema com 89% de accuracy nas previsões, validado por milhares de operações bem-sucedidas."
+      title: "Valor Intrínseco Instantâneo",
+      description: "Calcula automaticamente o valor justo de qualquer ação em segundos, baseado em métricas fundamentais."
+    },
+    {
+      icon: Bell,
+      title: "Alertas Inteligentes",
+      description: "Recebe notificações quando as ações atingem o teu preço alvo ou quando há oportunidades de compra."
     }
   ];
 
@@ -64,8 +67,8 @@ export default function Landing() {
       <Header />
       
       {/* Hero Section */}
-      <section className="relative overflow-hidden min-h-screen flex items-center">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-background to-accent/5" />
+      <section id="hero" className="relative overflow-hidden min-h-screen flex items-center">
+        <div className="absolute inset-0 bg-gradient-to-br from-orange-500/5 via-background to-emerald-500/5" />
         
         <div className="relative container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-4xl mx-auto text-center">
@@ -84,23 +87,23 @@ export default function Landing() {
 
               {/* Headline */}
               <h1 className="text-4xl sm:text-5xl lg:text-7xl font-bold text-foreground mb-8 leading-tight">
-                Investe como os
-                <span className="block bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                  profissionais
+                Descobre o verdadeiro
+                <span className="block bg-gradient-to-r from-orange-500 to-emerald-500 bg-clip-text text-transparent">
+                  valor das ações
                 </span>
               </h1>
 
               {/* Subtitle */}
               <p className="text-xl lg:text-2xl text-muted-foreground mb-12 leading-relaxed max-w-3xl mx-auto">
-                Usa IA para identificar oportunidades de investimento antes dos outros. 
-                Mais de 10.000 investidores já confiam em nós.
+                Gráficos em tempo real e valor intrínseco em segundos. 
+                Investe com dados, não com emoções.
               </p>
 
               {/* CTAs */}
               <div className="flex flex-col sm:flex-row gap-6 justify-center mb-16">
                 <Button 
                   size="lg" 
-                  className="text-lg px-8 py-4 h-14 bg-primary hover:bg-primary/90 shadow-lg hover:shadow-xl transition-all duration-200"
+                  className="text-lg px-8 py-4 h-14 bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg hover:shadow-xl transition-all duration-200"
                   onClick={() => window.location.href = '/checkout/core'}
                 >
                   <BarChart3 className="h-5 w-5 mr-2" />
@@ -194,6 +197,9 @@ export default function Landing() {
           </div>
         </div>
       </section>
+
+      {/* Charts Showcase Section */}
+      <ChartsShowcase />
 
       {/* How it Works Section */}
       <section id="how-it-works" className="py-16 lg:py-24 bg-secondary/20">
