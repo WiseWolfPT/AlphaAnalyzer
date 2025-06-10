@@ -68,106 +68,201 @@ export default function Landing() {
       
       {/* Hero Section */}
       <section id="hero" className="relative overflow-hidden min-h-screen flex items-center">
-        <div className="absolute inset-0 bg-gradient-to-br from-orange-500/5 via-background to-emerald-500/5" />
+        {/* Background Gradient */}
+        <div className="absolute inset-0 bg-gradient-to-br from-purple-600 via-purple-700 to-purple-800" />
+        <div className="absolute inset-0 bg-gradient-to-r from-orange-500/10 to-emerald-500/10" />
         
         <div className="relative container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="max-w-4xl mx-auto text-center">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center min-h-screen py-20">
+            {/* Left Column - Content */}
             <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
+              initial={{ opacity: 0, x: -30 }}
+              animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.8 }}
+              className="text-left lg:text-left"
             >
-              {/* Badge */}
-              <div className="flex justify-center mb-8">
-                <Badge className="bg-emerald-500/10 text-emerald-600 border-emerald-500/20 px-4 py-2 text-sm">
-                  <TrendingUp className="h-4 w-4 mr-2" />
-                  Plataforma #1 em Portugal
-                </Badge>
-              </div>
+              {/* Trial Badge */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.2 }}
+                className="inline-flex items-center gap-2 bg-yellow-400 text-black px-4 py-2 rounded-full font-semibold text-sm mb-8 hover:bg-yellow-300 transition-colors cursor-pointer"
+                onClick={() => window.location.href = '/trial'}
+              >
+                <Clock className="h-4 w-4" />
+                Experimenta grátis por 7 dias!
+              </motion.div>
 
-              {/* Headline */}
-              <h1 className="text-4xl sm:text-5xl lg:text-7xl font-bold text-foreground mb-8 leading-tight">
-                Descobre ações subvalorizadas
-                <span className="block bg-gradient-to-r from-orange-500 to-emerald-500 bg-clip-text text-transparent">
-                  antes dos outros
-                </span>
-              </h1>
+              {/* Main Headline */}
+              <motion.h1
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.3 }}
+                className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-6 leading-tight"
+              >
+                <span className="text-yellow-400">Lucra</span> em
+                <br />
+                <span className="text-white">Qualquer Condição</span>
+                <br />
+                <span className="text-white">de Mercado</span>
+              </motion.h1>
 
               {/* Subtitle */}
-              <p className="text-xl lg:text-2xl text-muted-foreground mb-6 leading-relaxed max-w-3xl mx-auto">
-                Análise inteligente de ações no mercado global. 
-                Valor intrínseco calculado em segundos.
-              </p>
+              <motion.p
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.4 }}
+                className="text-xl text-purple-100 mb-6 leading-relaxed max-w-lg"
+              >
+                Os <span className="text-yellow-400 font-semibold">gestores de fundos</span> usam análise de valor intrínseco para gerar <span className="text-yellow-400 font-semibold">retornos consistentes</span>, independentemente das condições do mercado.
+              </motion.p>
 
-              {/* Micro-copy */}
-              <p className="text-lg text-muted-foreground/80 mb-8 leading-relaxed max-w-4xl mx-auto">
-                Visualizações de dados para compreender facilmente os fundamentos de cada empresa.
-              </p>
-
-              {/* Trial Benefits */}
-              <div className="flex flex-wrap justify-center items-center gap-6 mb-12 text-sm text-muted-foreground">
-                <div className="flex items-center gap-2">
-                  <CheckCircle className="h-4 w-4 text-emerald-500" />
-                  <span>Sem cartão de crédito</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <CheckCircle className="h-4 w-4 text-emerald-500" />
-                  <span>Acesso completo</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <CheckCircle className="h-4 w-4 text-emerald-500" />
-                  <span>Cancela quando quiseres</span>
-                </div>
-              </div>
+              {/* Value Proposition */}
+              <motion.p
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.5 }}
+                className="text-lg text-purple-200 mb-8 leading-relaxed max-w-lg"
+              >
+                Damos-te as <span className="text-white font-semibold">ferramentas, estratégias e insights</span> para investires como os profissionais.
+              </motion.p>
 
               {/* CTAs */}
-              <div className="flex flex-col sm:flex-row gap-6 justify-center mb-16">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.6 }}
+                className="flex flex-col sm:flex-row gap-4 mb-8"
+              >
                 <Button 
                   size="lg" 
-                  className="text-lg px-8 py-4 h-16 bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 font-semibold"
-                  onClick={() => window.location.href = '/trial'}
-                >
-                  🚀 Trial de 7 Dias Grátis
-                </Button>
-                
-                <Button 
-                  variant="outline" 
-                  size="lg" 
-                  className="text-lg px-8 py-4 h-16 border-2 hover:bg-secondary/50"
+                  className="text-lg px-8 py-4 h-14 bg-purple-600 hover:bg-purple-700 text-white border border-purple-500 shadow-lg hover:shadow-xl transition-all duration-200 font-semibold"
                   onClick={() => setShowVideoModal(true)}
                 >
                   <Play className="h-5 w-5 mr-2" />
-                  Ver demonstração
+                  Saber mais
                 </Button>
+                
+                <Button 
+                  size="lg" 
+                  className="text-lg px-8 py-4 h-14 bg-yellow-400 hover:bg-yellow-500 text-black shadow-lg hover:shadow-xl transition-all duration-200 font-bold"
+                  onClick={() => window.location.href = '/trial'}
+                >
+                  <Target className="h-5 w-5 mr-2" />
+                  Explorar Estratégias de Valor
+                </Button>
+              </motion.div>
+
+              {/* New Feature Badge */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.7 }}
+                className="inline-flex items-center gap-2 bg-emerald-500 text-white px-4 py-3 rounded-lg font-semibold text-sm hover:bg-emerald-600 transition-colors cursor-pointer"
+                onClick={() => window.location.href = '/trial'}
+              >
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
+                  <span>NOVO! IA para Análise de Valor</span>
+                </div>
+                <ArrowRight className="h-4 w-4" />
+              </motion.div>
+            </motion.div>
+
+            {/* Right Column - Visual */}
+            <motion.div
+              initial={{ opacity: 0, x: 30 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.8, delay: 0.4 }}
+              className="relative hidden lg:flex justify-center items-center"
+            >
+              {/* Phone Mockup with Chart */}
+              <div className="relative">
+                <div className="w-80 h-96 bg-white rounded-[2.5rem] p-6 shadow-2xl transform rotate-6 hover:rotate-3 transition-transform duration-300">
+                  <div className="w-full h-full bg-gradient-to-br from-purple-50 to-purple-100 rounded-2xl p-4 flex flex-col">
+                    {/* Header */}
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="w-8 h-8 bg-purple-600 rounded-lg"></div>
+                      <div className="flex gap-1">
+                        <div className="w-1 h-1 bg-gray-400 rounded-full"></div>
+                        <div className="w-1 h-1 bg-gray-400 rounded-full"></div>
+                        <div className="w-1 h-1 bg-gray-400 rounded-full"></div>
+                      </div>
+                    </div>
+                    
+                    {/* Chart Area */}
+                    <div className="flex-1 bg-white rounded-xl p-4 mb-4">
+                      <div className="flex items-end justify-center h-full gap-2">
+                        {Array.from({ length: 12 }, (_, i) => (
+                          <div
+                            key={i}
+                            className={`w-4 rounded-t-sm ${
+                              Math.random() > 0.5 ? 'bg-emerald-500' : 'bg-red-500'
+                            }`}
+                            style={{ height: `${20 + Math.random() * 60}%` }}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                    
+                    {/* Stats */}
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-xs">
+                        <span className="text-gray-600">Valor Atual</span>
+                        <span className="font-bold text-gray-800">€175.43</span>
+                      </div>
+                      <div className="flex justify-between text-xs">
+                        <span className="text-gray-600">Valor Intrínseco</span>
+                        <span className="font-bold text-orange-600">€165.00</span>
+                      </div>
+                      <div className="w-full bg-emerald-100 rounded-full h-2">
+                        <div className="bg-emerald-500 h-2 rounded-full w-3/4"></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Floating Elements */}
+                <motion.div
+                  animate={{ y: [-10, 10, -10] }}
+                  transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                  className="absolute -top-8 -left-8 w-16 h-16 bg-yellow-400 rounded-full flex items-center justify-center shadow-lg"
+                >
+                  <span className="text-black font-bold text-xl">€</span>
+                </motion.div>
+
+                <motion.div
+                  animate={{ y: [10, -10, 10] }}
+                  transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                  className="absolute -bottom-4 -right-4 w-12 h-12 bg-emerald-500 rounded-full flex items-center justify-center shadow-lg"
+                >
+                  <TrendingUp className="h-6 w-6 text-white" />
+                </motion.div>
+
+                <motion.div
+                  animate={{ y: [-5, 15, -5] }}
+                  transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
+                  className="absolute top-1/2 -right-12 w-20 h-8 bg-white rounded-lg shadow-lg flex items-center justify-center"
+                >
+                  <span className="text-emerald-600 font-bold text-sm">+15%</span>
+                </motion.div>
               </div>
 
-              {/* Social Proof */}
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-8 text-sm text-muted-foreground">
-                <div className="flex items-center gap-2">
-                  <Users className="h-4 w-4" />
-                  <span>500+ investidores ativos</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Award className="h-4 w-4" />
-                  <span>89% precisão nas análises fundamentais</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Shield className="h-4 w-4" />
-                  <span>Usado em 20+ corretoras</span>
-                </div>
-              </div>
+              {/* Arrow */}
+              <motion.div
+                animate={{ scale: [1, 1.1, 1] }}
+                transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                className="absolute -bottom-12 right-8 text-yellow-400"
+              >
+                <ArrowRight className="h-16 w-16 transform rotate-45" />
+              </motion.div>
             </motion.div>
           </div>
         </div>
 
         {/* Background decoration */}
-        <div className="absolute inset-x-0 top-[calc(100%-13rem)] -z-10 transform-gpu overflow-hidden blur-3xl">
-          <div
-            className="relative left-[calc(50%+3rem)] aspect-[1155/678] w-[36.125rem] -translate-x-1/2 bg-gradient-to-tr from-primary to-accent opacity-20 sm:left-[calc(50%+36rem)] sm:w-[72.1875rem]"
-            style={{
-              clipPath: 'polygon(74.1% 44.1%, 100% 61.6%, 97.5% 26.9%, 85.5% 0.1%, 80.7% 2%, 72.5% 32.5%, 60.2% 62.4%, 52.4% 68.1%, 47.5% 58.3%, 45.2% 34.5%, 27.5% 76.7%, 0.1% 64.9%, 17.9% 100%, 27.6% 76.8%, 76.1% 97.7%, 74.1% 44.1%)',
-            }}
-          />
+        <div className="absolute inset-x-0 bottom-0 -z-10 transform-gpu overflow-hidden">
+          <div className="relative left-[calc(50%-11rem)] aspect-[1155/678] w-[36.125rem] -translate-x-1/2 bg-gradient-to-tr from-yellow-400 to-orange-500 opacity-10 sm:left-[calc(50%-30rem)] sm:w-[72.1875rem]" />
         </div>
       </section>
 
