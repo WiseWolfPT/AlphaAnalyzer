@@ -1,1 +1,17 @@
 .vercel
+
+# ─── CLEANUP AUTO ───
+dist/
+node_modules/
+.claude/
+attached_assets/
+spa-test/
+debug-server.*
+test-server.js
+test-simple.html
+simple-server.mjs
+minimal-server.mjs
+serve-production.mjs
+client/src/App-step*.tsx
+client/src/App-final.tsx
+dev.db
