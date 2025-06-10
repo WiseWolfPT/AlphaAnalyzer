@@ -69,8 +69,8 @@ export default function Landing() {
       {/* Hero Section */}
       <section id="hero" className="relative overflow-hidden min-h-screen flex items-center">
         {/* Background Gradient */}
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-600 via-emerald-600 to-slate-800" />
-        <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 to-emerald-500/10" />
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-600 via-blue-700 to-blue-900" />
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-blue-600/10" />
         
         <div className="relative container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center min-h-screen py-20">
@@ -122,7 +122,7 @@ export default function Landing() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.5 }}
-                className="text-lg text-emerald-200 mb-8 leading-relaxed max-w-lg"
+                className="text-lg text-blue-200 mb-8 leading-relaxed max-w-lg"
               >
                 Damos-te as <span className="text-white font-semibold">ferramentas, estratégias e insights</span> para investires como os profissionais.
               </motion.p>
@@ -158,7 +158,7 @@ export default function Landing() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.7 }}
-                className="inline-flex items-center gap-2 bg-emerald-500 text-white px-4 py-3 rounded-lg font-semibold text-sm hover:bg-emerald-600 transition-colors cursor-pointer"
+                className="inline-flex items-center gap-2 bg-blue-500 text-white px-4 py-3 rounded-lg font-semibold text-sm hover:bg-blue-600 transition-colors cursor-pointer"
                 onClick={() => window.location.href = '/trial'}
               >
                 <div className="flex items-center gap-2">
@@ -179,7 +179,7 @@ export default function Landing() {
               {/* Phone Mockup with Chart */}
               <div className="relative">
                 <div className="w-80 h-96 bg-white rounded-[2.5rem] p-6 shadow-2xl transform rotate-6 hover:rotate-3 transition-transform duration-300">
-                  <div className="w-full h-full bg-gradient-to-br from-blue-50 to-emerald-100 rounded-2xl p-4 flex flex-col">
+                  <div className="w-full h-full bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl p-4 flex flex-col">
                     {/* Header */}
                     <div className="flex items-center justify-between mb-4">
                       <div className="w-8 h-8 bg-blue-600 rounded-lg"></div>
@@ -197,7 +197,7 @@ export default function Landing() {
                           <div
                             key={i}
                             className={`w-4 rounded-t-sm ${
-                              Math.random() > 0.5 ? 'bg-emerald-500' : 'bg-red-500'
+                              Math.random() > 0.5 ? 'bg-blue-500' : 'bg-red-500'
                             }`}
                             style={{ height: `${20 + Math.random() * 60}%` }}
                           />
@@ -215,8 +215,8 @@ export default function Landing() {
                         <span className="text-gray-600">Valor Intrínseco</span>
                         <span className="font-bold text-orange-600">€165.00</span>
                       </div>
-                      <div className="w-full bg-emerald-100 rounded-full h-2">
-                        <div className="bg-emerald-500 h-2 rounded-full w-3/4"></div>
+                      <div className="w-full bg-blue-100 rounded-full h-2">
+                        <div className="bg-blue-500 h-2 rounded-full w-3/4"></div>
                       </div>
                     </div>
                   </div>
@@ -234,7 +234,7 @@ export default function Landing() {
                 <motion.div
                   animate={{ y: [10, -10, 10] }}
                   transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-                  className="absolute -bottom-4 -right-4 w-12 h-12 bg-emerald-500 rounded-full flex items-center justify-center shadow-lg"
+                  className="absolute -bottom-4 -right-4 w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center shadow-lg"
                 >
                   <TrendingUp className="h-6 w-6 text-white" />
                 </motion.div>
@@ -244,7 +244,7 @@ export default function Landing() {
                   transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
                   className="absolute top-1/2 -right-12 w-20 h-8 bg-white rounded-lg shadow-lg flex items-center justify-center"
                 >
-                  <span className="text-emerald-600 font-bold text-sm">+15%</span>
+                  <span className="text-blue-600 font-bold text-sm">+15%</span>
                 </motion.div>
               </div>
 
@@ -262,7 +262,7 @@ export default function Landing() {
 
         {/* Background decoration */}
         <div className="absolute inset-x-0 bottom-0 -z-10 transform-gpu overflow-hidden">
-          <div className="relative left-[calc(50%-11rem)] aspect-[1155/678] w-[36.125rem] -translate-x-1/2 bg-gradient-to-tr from-blue-400 to-emerald-500 opacity-10 sm:left-[calc(50%-30rem)] sm:w-[72.1875rem]" />
+          <div className="relative left-[calc(50%-11rem)] aspect-[1155/678] w-[36.125rem] -translate-x-1/2 bg-gradient-to-tr from-blue-400 to-blue-600 opacity-10 sm:left-[calc(50%-30rem)] sm:w-[72.1875rem]" />
         </div>
       </section>
 
