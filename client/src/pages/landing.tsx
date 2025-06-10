@@ -28,9 +28,9 @@ export default function Landing() {
 
   const benefits = [
     {
-      icon: TrendingUp,
-      title: "Gráficos em tempo real",
-      description: "Visualiza a evolução dos preços e identifica tendências com gráficos profissionais atualizados ao segundo."
+      icon: BarChart3,
+      title: "Visualizações de dados",
+      description: "Gráficos e tabelas intuitivos que tornam a análise fundamental acessível a qualquer investidor."
     },
     {
       icon: Target,
@@ -47,18 +47,18 @@ export default function Landing() {
   const steps = [
     {
       number: "01",
-      title: "Insere o ticker",
-      description: "Escreve o símbolo da ação (ex: EDP, GALP, AAPL)"
+      title: "Explora gráficos e métricas fundamentais",
+      description: "Visualiza dados financeiros complexos de forma simples e intuitiva"
     },
     {
       number: "02", 
-      title: "Vê o valor intrínseco",
-      description: "Obtém o valor justo calculado instantaneamente"
+      title: "Descobre o valor intrínseco das ações",
+      description: "Obtém o valor justo calculado automaticamente em segundos"
     },
     {
       number: "03",
-      title: "Compara e decide",
-      description: "Vê se está subvalorizada ou sobrevalorizada e investe com confiança"
+      title: "Recebe alertas personalizados",
+      description: "Fica a saber quando há oportunidades de compra ou venda"
     }
   ];
 
@@ -81,7 +81,7 @@ export default function Landing() {
               <div className="flex justify-center mb-8">
                 <Badge className="bg-emerald-500/10 text-emerald-600 border-emerald-500/20 px-4 py-2 text-sm">
                   <TrendingUp className="h-4 w-4 mr-2" />
-                  Feito em Portugal
+                  Plataforma #1 em Portugal
                 </Badge>
               </div>
 
@@ -94,9 +94,14 @@ export default function Landing() {
               </h1>
 
               {/* Subtitle */}
-              <p className="text-xl lg:text-2xl text-muted-foreground mb-8 leading-relaxed max-w-3xl mx-auto">
-                Usa as mesmas ferramentas que os fund managers portugueses usam. 
+              <p className="text-xl lg:text-2xl text-muted-foreground mb-6 leading-relaxed max-w-3xl mx-auto">
+                Análise inteligente de ações no mercado global. 
                 Valor intrínseco calculado em segundos.
+              </p>
+
+              {/* Micro-copy */}
+              <p className="text-lg text-muted-foreground/80 mb-8 leading-relaxed max-w-4xl mx-auto">
+                Visualizações de dados para compreender facilmente os fundamentos de cada empresa.
               </p>
 
               {/* Trial Benefits */}

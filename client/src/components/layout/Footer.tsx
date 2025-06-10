@@ -41,37 +41,78 @@ export function Footer() {
             Análise profissional de ações para investidores inteligentes.
           </p>
 
-          {/* Social Links with Icons */}
-          <div className="flex flex-wrap justify-center items-center gap-6">
-            {socialLinks.map((link, index) => (
-              <a
-                key={link.name}
-                href={link.href}
-                className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors duration-200"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                {link.icon && <link.icon className="h-4 w-4" />}
-                <span className="text-sm">{link.name}</span>
-              </a>
-            ))}
-          </div>
+          {/* Desktop Links Layout for >= 1280px */}
+          <div className="w-full max-w-4xl">
+            <div className="hidden xl:flex items-center justify-center gap-8">
+              {/* Social Links on the left */}
+              <div className="flex items-center gap-6">
+                {socialLinks.map((link, index) => (
+                  <a
+                    key={link.name}
+                    href={link.href}
+                    className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors duration-200"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    {link.icon && <link.icon className="h-4 w-4" />}
+                    <span className="text-sm">{link.name}</span>
+                  </a>
+                ))}
+              </div>
 
-          {/* Legal Links */}
-          <div className="flex flex-wrap justify-center items-center gap-6 text-sm">
-            {legalLinks.map((link, index) => (
-              <span key={link.name} className="flex items-center">
-                <a
-                  href={link.href}
-                  className="text-muted-foreground hover:text-foreground transition-colors duration-200"
-                >
-                  {link.name}
-                </a>
-                {index < legalLinks.length - 1 && (
-                  <span className="mx-3 text-muted-foreground/50">·</span>
-                )}
-              </span>
-            ))}
+              {/* Legal Links on the right */}
+              <div className="flex items-center gap-6 text-sm">
+                {legalLinks.map((link, index) => (
+                  <span key={link.name} className="flex items-center">
+                    <a
+                      href={link.href}
+                      className="text-muted-foreground hover:text-foreground transition-colors duration-200"
+                    >
+                      {link.name}
+                    </a>
+                    {index < legalLinks.length - 1 && (
+                      <span className="mx-3 text-muted-foreground/50">·</span>
+                    )}
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            {/* Mobile/Tablet Layout for < 1280px */}
+            <div className="xl:hidden space-y-6">
+              {/* Social Links */}
+              <div className="flex flex-wrap justify-center items-center gap-6">
+                {socialLinks.map((link, index) => (
+                  <a
+                    key={link.name}
+                    href={link.href}
+                    className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors duration-200"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    {link.icon && <link.icon className="h-4 w-4" />}
+                    <span className="text-sm">{link.name}</span>
+                  </a>
+                ))}
+              </div>
+
+              {/* Legal Links */}
+              <div className="flex flex-wrap justify-center items-center gap-6 text-sm">
+                {legalLinks.map((link, index) => (
+                  <span key={link.name} className="flex items-center">
+                    <a
+                      href={link.href}
+                      className="text-muted-foreground hover:text-foreground transition-colors duration-200"
+                    >
+                      {link.name}
+                    </a>
+                    {index < legalLinks.length - 1 && (
+                      <span className="mx-3 text-muted-foreground/50">·</span>
+                    )}
+                  </span>
+                ))}
+              </div>
+            </div>
           </div>
 
           {/* Copyright */}
