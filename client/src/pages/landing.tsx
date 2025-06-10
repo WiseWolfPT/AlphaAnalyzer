@@ -69,7 +69,7 @@ export default function Landing() {
       {/* Hero Section */}
       <section id="hero" className="relative overflow-hidden min-h-screen flex items-center">
         {/* Background Gradient */}
-        <div className="absolute inset-0 bg-gradient-to-br from-purple-600 via-purple-700 to-purple-800" />
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-600 via-indigo-700 to-slate-800" />
         <div className="absolute inset-0 bg-gradient-to-r from-orange-500/10 to-emerald-500/10" />
         
         <div className="relative container mx-auto px-4 sm:px-6 lg:px-8">
@@ -79,7 +79,7 @@ export default function Landing() {
               initial={{ opacity: 0, x: -30 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.8 }}
-              className="text-left lg:text-left"
+              className="text-left lg:text-left lg:pl-12 xl:pl-16"
             >
               {/* Trial Badge */}
               <motion.div
@@ -112,7 +112,7 @@ export default function Landing() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.4 }}
-                className="text-xl text-purple-100 mb-6 leading-relaxed max-w-lg"
+                className="text-xl text-blue-100 mb-6 leading-relaxed max-w-lg"
               >
                 Os <span className="text-yellow-400 font-semibold">gestores de fundos</span> usam análise de valor intrínseco para gerar <span className="text-yellow-400 font-semibold">retornos consistentes</span>, independentemente das condições do mercado.
               </motion.p>
@@ -122,7 +122,7 @@ export default function Landing() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.5 }}
-                className="text-lg text-purple-200 mb-8 leading-relaxed max-w-lg"
+                className="text-lg text-blue-200 mb-8 leading-relaxed max-w-lg"
               >
                 Damos-te as <span className="text-white font-semibold">ferramentas, estratégias e insights</span> para investires como os profissionais.
               </motion.p>
@@ -136,7 +136,7 @@ export default function Landing() {
               >
                 <Button 
                   size="lg" 
-                  className="text-lg px-8 py-4 h-14 bg-purple-600 hover:bg-purple-700 text-white border border-purple-500 shadow-lg hover:shadow-xl transition-all duration-200 font-semibold"
+                  className="text-lg px-8 py-4 h-14 bg-indigo-600 hover:bg-indigo-700 text-white border border-indigo-500 shadow-lg hover:shadow-xl transition-all duration-200 font-semibold"
                   onClick={() => setShowVideoModal(true)}
                 >
                   <Play className="h-5 w-5 mr-2" />
@@ -179,10 +179,10 @@ export default function Landing() {
               {/* Phone Mockup with Chart */}
               <div className="relative">
                 <div className="w-80 h-96 bg-white rounded-[2.5rem] p-6 shadow-2xl transform rotate-6 hover:rotate-3 transition-transform duration-300">
-                  <div className="w-full h-full bg-gradient-to-br from-purple-50 to-purple-100 rounded-2xl p-4 flex flex-col">
+                  <div className="w-full h-full bg-gradient-to-br from-blue-50 to-indigo-100 rounded-2xl p-4 flex flex-col">
                     {/* Header */}
                     <div className="flex items-center justify-between mb-4">
-                      <div className="w-8 h-8 bg-purple-600 rounded-lg"></div>
+                      <div className="w-8 h-8 bg-indigo-600 rounded-lg"></div>
                       <div className="flex gap-1">
                         <div className="w-1 h-1 bg-gray-400 rounded-full"></div>
                         <div className="w-1 h-1 bg-gray-400 rounded-full"></div>
