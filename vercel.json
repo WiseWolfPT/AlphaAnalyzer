@@ -2,18 +2,18 @@
   "version": 2,
   "cleanUrls": true,
   "trailingSlash": false,
-  "routes": [
+  "rewrites": [
     {
-      "src": "/assets/(.*)",
-      "dest": "/dist/public/assets/$1"
+      "source": "/assets/(.*)",
+      "destination": "/dist/public/assets/$1"
     },
     {
-      "src": "/test-simple",
-      "dest": "/test-simple.html"
+      "source": "/test-simple",
+      "destination": "/test-simple.html"
     },
     {
-      "src": "/(.*)",
-      "dest": "/dist/public/index.html"
+      "source": "/(.*)",
+      "destination": "/dist/public/index.html"
     }
   ]
 }
