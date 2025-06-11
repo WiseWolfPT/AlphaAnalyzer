@@ -8,12 +8,26 @@ import { motion, AnimatePresence } from "framer-motion";
 export function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [activeSection, setActiveSection] = useState('hero');
   const { user } = useAuth();
   const { theme, setTheme } = useTheme();
 
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 50);
+      
+      // Determine active section
+      const sections = ['hero', 'education', 'pricing', 'benefits'];
+      for (const section of sections) {
+        const element = document.getElementById(section);
+        if (element) {
+          const rect = element.getBoundingClientRect();
+          if (rect.top <= 100 && rect.bottom >= 100) {
+            setActiveSection(section);
+            break;
+          }
+        }
+      }
     };
 
     window.addEventListener("scroll", handleScroll);
@@ -21,10 +35,10 @@ export function Header() {
   }, []);
 
   const navItems = [
-    { name: "Início", href: "#hero" },
-    { name: "Valor Intrínseco", href: "#education" },
-    { name: "Preço", href: "#pricing" },
-    { name: "Porquê", href: "#benefits" }
+    { name: "Início", href: "#hero", id: "hero" },
+    { name: "Valor Intrínseco", href: "#education", id: "education" },
+    { name: "Preço", href: "#pricing", id: "pricing" },
+    { name: "Porquê", href: "#benefits", id: "benefits" }
   ];
 
   const scrollToSection = (href: string) => {
@@ -42,8 +56,8 @@ export function Header() {
           ? "bg-background/95 backdrop-blur-xl border-b border-border/50 shadow-lg" 
           : "bg-transparent"
       }`}
-      initial={{ y: -100 }}
-      animate={{ y: 0 }}
+      initial={{ y: -100, opacity: 0 }}
+      animate={{ y: 0, opacity: isScrolled ? 0.98 : 1 }}
       transition={{ duration: 0.5 }}
     >
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -64,9 +78,14 @@ export function Header() {
               <button
                 key={item.name}
                 onClick={() => scrollToSection(item.href)}
-                className="text-muted-foreground hover:text-foreground transition-colors duration-200 font-medium"
+                className={`relative text-muted-foreground hover:text-foreground transition-all duration-200 font-medium group ${
+                  activeSection === item.id ? 'text-foreground' : ''
+                }`}
               >
                 {item.name}
+                <div className={`absolute bottom-0 left-0 w-full h-0.5 bg-tangerine transform origin-left transition-transform duration-200 ${
+                  activeSection === item.id ? 'scale-x-100' : 'scale-x-0 group-hover:scale-x-100'
+                }`} />
               </button>
             ))}
           </nav>
