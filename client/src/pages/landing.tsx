@@ -68,10 +68,8 @@ export default function Landing() {
       
       {/* Hero Section */}
       <section id="hero" className="relative overflow-hidden min-h-screen flex items-center">
-        {/* Background Gradient - Updated Design */}
-        <div className="absolute inset-0 bg-gradient-to-br from-black via-gray-800 to-gray-900" />
-        <div className="absolute inset-0 bg-gradient-to-r from-gray-700/20 to-black/10" />
-        <div className="absolute inset-0 bg-gradient-to-t from-transparent via-transparent to-black/5" />
+        {/* Background - Charcoal Grey */}
+        <div className="absolute inset-0 bg-gray-800" />
         
         <div className="relative container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center min-h-screen py-20">
@@ -101,11 +99,11 @@ export default function Landing() {
                 transition={{ duration: 0.6, delay: 0.3 }}
                 className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-6 leading-tight"
               >
-                <span className="bg-gradient-to-r from-yellow-400 to-orange-500 bg-clip-text text-transparent">Lucra</span> em
+                <span className="text-orange-500">Lucra</span> <span className="text-white">em</span>
                 <br />
-                <span className="bg-gradient-to-r from-yellow-400 to-orange-500 bg-clip-text text-transparent">Qualquer Condição</span>
+                <span className="text-white">Qualquer</span> <span className="text-orange-500">Condição</span>
                 <br />
-                <span className="bg-gradient-to-r from-yellow-400 to-orange-500 bg-clip-text text-transparent">de Mercado</span>
+                <span className="text-white">de</span> <span className="text-orange-500">Mercado</span>
               </motion.h1>
 
               {/* Subtitle */}
@@ -115,7 +113,7 @@ export default function Landing() {
                 transition={{ duration: 0.6, delay: 0.4 }}
                 className="text-xl text-gray-400 mb-6 leading-relaxed max-w-lg"
               >
-                Os <span className="bg-gradient-to-r from-yellow-400 to-orange-500 bg-clip-text text-transparent font-semibold">gestores de fundos</span> usam análise de valor intrínseco para gerar <span className="bg-gradient-to-r from-yellow-400 to-orange-500 bg-clip-text text-transparent font-semibold">retornos consistentes</span>, independentemente das condições do mercado.
+                Os <span className="text-orange-500 font-semibold">gestores de fundos</span> usam análise de valor intrínseco para gerar <span className="text-orange-500 font-semibold">retornos consistentes</span>, independentemente das condições do mercado.
               </motion.p>
 
               {/* Value Proposition */}
@@ -125,7 +123,7 @@ export default function Landing() {
                 transition={{ duration: 0.6, delay: 0.5 }}
                 className="text-lg text-gray-400 mb-8 leading-relaxed max-w-lg"
               >
-                Damos-te as <span className="bg-gradient-to-r from-yellow-400 to-orange-500 bg-clip-text text-transparent font-semibold">ferramentas, estratégias e insights</span> para investires como os profissionais.
+                Damos-te as <span className="text-orange-500 font-semibold">ferramentas, estratégias e insights</span> para investires como os profissionais.
               </motion.p>
 
               {/* CTAs */}
@@ -137,7 +135,7 @@ export default function Landing() {
               >
                 <Button 
                   size="lg" 
-                  className="text-lg px-8 py-4 h-14 bg-gray-800 hover:bg-gray-700 text-yellow-400 border border-gray-600 shadow-lg hover:shadow-xl transition-all duration-200 font-semibold"
+                  className="text-lg px-8 py-4 h-14 bg-gray-700 hover:bg-gray-600 text-white border border-gray-600 shadow-lg hover:shadow-xl transition-all duration-200 font-semibold"
                   onClick={() => setShowVideoModal(true)}
                 >
                   <Play className="h-5 w-5 mr-2" />
@@ -146,7 +144,7 @@ export default function Landing() {
                 
                 <Button 
                   size="lg" 
-                  className="text-lg px-8 py-4 h-14 bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-black shadow-lg hover:shadow-xl transition-all duration-200 font-bold"
+                  className="text-lg px-8 py-4 h-14 bg-orange-500 hover:bg-orange-600 text-white shadow-lg hover:shadow-xl transition-all duration-200 font-bold"
                   onClick={() => window.location.href = '/trial'}
                 >
                   <Target className="h-5 w-5 mr-2" />
@@ -159,11 +157,11 @@ export default function Landing() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.7 }}
-                className="inline-flex items-center gap-2 bg-gradient-to-r from-yellow-500 to-orange-500 text-black px-4 py-3 rounded-lg font-semibold text-sm hover:from-yellow-600 hover:to-orange-600 transition-all duration-200 cursor-pointer shadow-lg"
+                className="inline-flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white px-4 py-3 rounded-lg font-semibold text-sm transition-all duration-200 cursor-pointer shadow-lg"
                 onClick={() => window.location.href = '/trial'}
               >
                 <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 bg-black rounded-full animate-pulse"></div>
+                  <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
                   <span>NOVO! IA para Análise de Valor</span>
                 </div>
                 <ArrowRight className="h-4 w-4" />
@@ -265,7 +263,7 @@ export default function Landing() {
 
         {/* Background decoration */}
         <div className="absolute inset-x-0 bottom-0 -z-10 transform-gpu overflow-hidden">
-          <div className="relative left-[calc(50%-11rem)] aspect-[1155/678] w-[36.125rem] -translate-x-1/2 bg-gradient-to-tr from-gray-800 to-yellow-500 opacity-15 sm:left-[calc(50%-30rem)] sm:w-[72.1875rem]" />
+          <div className="relative left-[calc(50%-11rem)] aspect-[1155/678] w-[36.125rem] -translate-x-1/2 bg-gray-700 opacity-15 sm:left-[calc(50%-30rem)] sm:w-[72.1875rem]" />
         </div>
       </section>
 
