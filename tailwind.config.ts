@@ -24,7 +24,9 @@ export default {
     "bg-orange-300",
     "bg-orange-400",
     "hover:bg-orange-400",
-    "hover:bg-orange-500"
+    "hover:bg-orange-500",
+    "text-tangerine",
+    "bg-tangerine"
   ],
   theme: {
     extend: {
@@ -87,6 +89,7 @@ export default {
         positive: "#10b981",
         negative: "#ef4444", 
         neutral: "#f59e0b",
+        tangerine: "#f28500",
       },
       keyframes: {
         "accordion-down": {
