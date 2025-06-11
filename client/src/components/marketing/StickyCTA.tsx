@@ -8,24 +8,40 @@ export function StickyCTA() {
   const [isDismissed, setIsDismissed] = useState(false);
 
   useEffect(() => {
-    const handleScroll = () => {
-      if (isDismissed) return;
-      
-      // Show after pricing section
-      const pricingSection = document.getElementById('pricing');
+    // Check sessionStorage for dismissed state
+    const dismissed = sessionStorage.getItem('stickyCTADismissed');
+    if (dismissed === 'true') {
+      setIsDismissed(true);
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.target.id === 'pricing' && entry.isIntersecting) {
+            setIsVisible(true);
+          }
+        });
+      },
+      { threshold: 0.1 }
+    );
+
+    const pricingSection = document.getElementById('pricing');
+    if (pricingSection) {
+      observer.observe(pricingSection);
+    }
+
+    return () => {
       if (pricingSection) {
-        const rect = pricingSection.getBoundingClientRect();
-        setIsVisible(rect.top < window.innerHeight);
+        observer.unobserve(pricingSection);
       }
     };
-
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, [isDismissed]);
+  }, []);
 
   const handleDismiss = () => {
     setIsDismissed(true);
     setIsVisible(false);
+    sessionStorage.setItem('stickyCTADismissed', 'true');
   };
 
   return (

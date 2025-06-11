@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { Pricing } from "@/components/marketing/Pricing";
@@ -24,12 +25,14 @@ import {
   Brain,
   Clock,
   Bell,
-  Star
+  Star,
+  ChevronDown
 } from "lucide-react";
 import { motion } from "framer-motion";
 
 export default function Landing() {
   const [showVideoModal, setShowVideoModal] = useState(false);
+  const [openFAQ, setOpenFAQ] = useState<number | null>(null);
 
   const benefits = [
     {
@@ -64,6 +67,29 @@ export default function Landing() {
       number: "03",
       title: "Recebe alertas personalizados",
       description: "Fica a saber quando há oportunidades de compra ou venda"
+    }
+  ];
+
+  const faqs = [
+    {
+      question: "❓ Como calculam o valor intrínseco?",
+      answer: "Usamos múltiplos métodos incluindo DCF (Discounted Cash Flow), análise de múltiplos e modelos proprietários que combinam dados fundamentais e técnicos para uma avaliação precisa."
+    },
+    {
+      question: "❓ Que dados utilizam?",
+      answer: "Utilizamos dados de APIs financeiras internacionais de alta qualidade, incluindo Yahoo Finance, Alpha Vantage e fontes institucionais para garantir precisão e cobertura global."
+    },
+    {
+      question: "❓ Posso cancelar o trial a qualquer momento?",
+      answer: "Sim! O trial de 7 dias é completamente grátis e sem compromissos. Podes cancelar a qualquer momento sem qualquer custo ou penalização."
+    },
+    {
+      question: "❓ Os meus dados são seguros?",
+      answer: "Absolutamente. Usamos encriptação SSL de nível bancário e nunca armazenamos informações sensíveis como passwords ou dados de conta. GDPR compliant."
+    },
+    {
+      question: "❓ Funciona com ações portuguesas?",
+      answer: "Sim! Suportamos todas as ações do PSI-20 (EDP, Galp, BCP, etc.) e mais de 10.000 ações internacionais (NASDAQ, NYSE, LSE, Euronext)."
     }
   ];
 
@@ -129,10 +155,29 @@ export default function Landing() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.45 }}
-                className="text-lg text-tangerine font-semibold mb-8"
+                className="text-lg text-tangerine font-semibold mb-4"
               >
                 Cobertura de +6.000 ações globais
               </motion.p>
+              
+              {/* International Stock Logos */}
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.5 }}
+                className="mb-8"
+              >
+                <div className="flex items-center gap-3 mb-2">
+                  {['AAPL', 'MSFT', 'AMZN', 'TSLA', 'BABA'].map((ticker, index) => (
+                    <div
+                      key={ticker}
+                      className="w-8 h-8 bg-gray-600 rounded-lg flex items-center justify-center text-xs font-bold text-white opacity-60 hover:opacity-100 hover:bg-tangerine transition-all duration-200 cursor-pointer"
+                    >
+                      {ticker.slice(0, 2)}
+                    </div>
+                  ))}
+                </div>
+              </motion.div>
 
               {/* Value Proposition */}
               <motion.p
@@ -278,29 +323,6 @@ export default function Landing() {
                 <ArrowRight className="h-16 w-16 transform rotate-45" />
               </motion.div>
               
-              {/* International Stock Logos */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 1.2 }}
-                className="absolute -bottom-24 left-1/2 transform -translate-x-1/2 w-full max-w-sm"
-              >
-                <div className="bg-black/20 backdrop-blur-sm rounded-xl p-4 border border-gray-700/50">
-                  <div className="flex items-center justify-center gap-4 mb-2">
-                    {['AAPL', 'MSFT', 'AMZN', 'TSLA', 'BABA'].map((ticker, index) => (
-                      <div
-                        key={ticker}
-                        className="w-8 h-8 bg-gray-600 rounded-lg flex items-center justify-center text-xs font-bold text-white opacity-60 hover:opacity-100 hover:bg-tangerine transition-all duration-200 cursor-pointer"
-                      >
-                        {ticker.slice(0, 2)}
-                      </div>
-                    ))}
-                  </div>
-                  <p className="text-center text-xs text-gray-400">
-                    <span className="text-tangerine font-semibold">+6.000</span> ações globais
-                  </p>
-                </div>
-              </motion.div>
             </motion.div>
           </div>
         </div>
@@ -433,8 +455,8 @@ export default function Landing() {
               >
                 <Card className="border-border/50 hover:border-primary/50 transition-all duration-300 hover:shadow-lg group">
                   <CardContent className="p-8 text-center">
-                    <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:bg-primary/20 transition-colors">
-                      <benefit.icon className="h-8 w-8 text-primary" />
+                    <div className="w-16 h-16 bg-gray-600 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:bg-tangerine transition-colors">
+                      <benefit.icon className="h-8 w-8 text-white" />
                     </div>
                     <h3 className="text-xl font-semibold text-foreground mb-4">
                       {benefit.title}
@@ -644,101 +666,45 @@ export default function Landing() {
             </p>
           </motion.div>
 
-          <div className="max-w-3xl mx-auto space-y-6">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.1 }}
-              viewport={{ once: true }}
-            >
-              <Card className="border-border/50">
-                <CardContent className="p-6">
-                  <h3 className="text-lg font-semibold text-foreground mb-3">
-                    ❓ Como calculam o valor intrínseco?
-                  </h3>
-                  <p className="text-muted-foreground">
-                    Usamos múltiplos métodos incluindo DCF (Discounted Cash Flow), análise de múltiplos 
-                    e modelos proprietários que combinam dados fundamentais e técnicos para uma avaliação precisa.
-                  </p>
-                </CardContent>
-              </Card>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.2 }}
-              viewport={{ once: true }}
-            >
-              <Card className="border-border/50">
-                <CardContent className="p-6">
-                  <h3 className="text-lg font-semibold text-foreground mb-3">
-                    ❓ Que dados utilizam?
-                  </h3>
-                  <p className="text-muted-foreground">
-                    Utilizamos dados de APIs financeiras internacionais de alta qualidade, incluindo 
-                    Yahoo Finance, Alpha Vantage e fontes institucionais para garantir precisão e cobertura global.
-                  </p>
-                </CardContent>
-              </Card>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.3 }}
-              viewport={{ once: true }}
-            >
-              <Card className="border-border/50">
-                <CardContent className="p-6">
-                  <h3 className="text-lg font-semibold text-foreground mb-3">
-                    ❓ Posso cancelar o trial a qualquer momento?
-                  </h3>
-                  <p className="text-muted-foreground">
-                    Sim! O trial de 7 dias é completamente grátis e sem compromissos. 
-                    Podes cancelar a qualquer momento sem qualquer custo ou penalização.
-                  </p>
-                </CardContent>
-              </Card>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.4 }}
-              viewport={{ once: true }}
-            >
-              <Card className="border-border/50">
-                <CardContent className="p-6">
-                  <h3 className="text-lg font-semibold text-foreground mb-3">
-                    ❓ Os meus dados são seguros?
-                  </h3>
-                  <p className="text-muted-foreground">
-                    Absolutamente. Usamos encriptação SSL de nível bancário e nunca armazenamos 
-                    informações sensíveis como passwords ou dados de conta. GDPR compliant.
-                  </p>
-                </CardContent>
-              </Card>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.5 }}
-              viewport={{ once: true }}
-            >
-              <Card className="border-border/50">
-                <CardContent className="p-6">
-                  <h3 className="text-lg font-semibold text-foreground mb-3">
-                    ❓ Funciona com ações portuguesas?
-                  </h3>
-                  <p className="text-muted-foreground">
-                    Sim! Suportamos todas as ações do PSI-20 (EDP, Galp, BCP, etc.) 
-                    e mais de 10.000 ações internacionais (NASDAQ, NYSE, LSE, Euronext).
-                  </p>
-                </CardContent>
-              </Card>
-            </motion.div>
+          <div className="max-w-3xl mx-auto space-y-4">
+            {faqs.map((faq, index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: index * 0.1 }}
+                viewport={{ once: true }}
+              >
+                <Collapsible 
+                  open={openFAQ === index}
+                  onOpenChange={(isOpen) => setOpenFAQ(isOpen ? index : null)}
+                >
+                  <Card className="border-border/50 hover:border-tangerine/50 transition-colors">
+                    <CollapsibleTrigger className="w-full">
+                      <CardContent className="p-6">
+                        <div className="flex items-center justify-between">
+                          <h3 className="text-lg font-semibold text-foreground text-left">
+                            {faq.question}
+                          </h3>
+                          <ChevronDown 
+                            className={`h-5 w-5 text-muted-foreground transition-transform ${
+                              openFAQ === index ? 'rotate-180' : ''
+                            }`} 
+                          />
+                        </div>
+                      </CardContent>
+                    </CollapsibleTrigger>
+                    <CollapsibleContent>
+                      <CardContent className="px-6 pb-6 pt-0">
+                        <p className="text-muted-foreground">
+                          {faq.answer}
+                        </p>
+                      </CardContent>
+                    </CollapsibleContent>
+                  </Card>
+                </Collapsible>
+              </motion.div>
+            ))}
           </div>
         </div>
       </section>

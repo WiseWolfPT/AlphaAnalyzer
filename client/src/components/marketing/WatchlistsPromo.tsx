@@ -26,10 +26,10 @@ export function WatchlistsPromo() {
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
             viewport={{ once: true }}
-            className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center"
+            className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:items-center"
           >
             {/* Left Column - Content */}
-            <div>
+            <div className="flex flex-col justify-center">
               <div className="flex items-center gap-3 mb-6">
                 <div className="w-12 h-12 bg-tangerine/20 rounded-xl flex items-center justify-center">
                   <Star className="h-6 w-6 text-tangerine" />
@@ -64,7 +64,7 @@ export function WatchlistsPromo() {
               whileInView={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.5, delay: 0.2 }}
               viewport={{ once: true }}
-              className="flex justify-center lg:justify-end"
+              className="flex justify-center lg:justify-end lg:items-center"
             >
               <div className="w-full max-w-sm">
                 <div className="bg-white rounded-2xl p-6 shadow-xl border border-gray-200">

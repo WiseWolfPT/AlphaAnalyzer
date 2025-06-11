@@ -74,7 +74,7 @@ export function FundamentalsGrid() {
                 viewport={{ once: true }}
               >
                 <Card 
-                  className="border-border/50 hover:border-tangerine/50 hover:shadow-xl transition-all duration-300 cursor-pointer group"
+                  className="border-border/50 hover:border-tangerine/50 hover:shadow-xl hover:scale-105 transition-all duration-300 cursor-pointer group"
                   onClick={() => setSelectedCard(card.id)}
                 >
                   <CardContent className="p-6">
@@ -84,6 +84,9 @@ export function FundamentalsGrid() {
                         alt={`${card.title} chart`}
                         className="w-full h-full object-contain"
                         loading="lazy"
+                        fetchPriority="low"
+                        width="150"
+                        height="90"
                       />
                     </div>
                     <h3 className="text-lg font-semibold text-foreground mb-2 group-hover:text-tangerine transition-colors">

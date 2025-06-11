@@ -78,7 +78,7 @@ export function Header() {
               <button
                 key={item.name}
                 onClick={() => scrollToSection(item.href)}
-                className={`relative text-muted-foreground hover:text-foreground transition-all duration-200 font-medium group ${
+                className={`relative text-muted-foreground hover:text-tangerine transition-all duration-200 font-medium group ${
                   activeSection === item.id ? 'text-foreground' : ''
                 }`}
               >
