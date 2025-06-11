@@ -6,6 +6,9 @@ import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { Pricing } from "@/components/marketing/Pricing";
 import { ChartsShowcase } from "@/components/marketing/ChartsShowcase";
+import { FundamentalsGrid } from "@/components/marketing/FundamentalsGrid";
+import { WatchlistsPromo } from "@/components/marketing/WatchlistsPromo";
+import { Roadmap } from "@/components/marketing/Roadmap";
 import { 
   TrendingUp, 
   Shield, 
@@ -52,7 +55,7 @@ export default function Landing() {
     },
     {
       number: "02", 
-      title: "Descobre o valor intrínseco das ações",
+      title: "Descobre o valor intrínseco de ações globais",
       description: "Obtém o valor justo calculado automaticamente em segundos"
     },
     {
@@ -262,6 +265,30 @@ export default function Landing() {
               >
                 <ArrowRight className="h-16 w-16 transform rotate-45" />
               </motion.div>
+              
+              {/* International Stock Logos */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 1.2 }}
+                className="absolute -bottom-24 left-1/2 transform -translate-x-1/2 w-full max-w-sm"
+              >
+                <div className="bg-black/20 backdrop-blur-sm rounded-xl p-4 border border-gray-700/50">
+                  <div className="flex items-center justify-center gap-4 mb-2">
+                    {['AAPL', 'MSFT', 'AMZN', 'TSLA', 'BABA'].map((ticker, index) => (
+                      <div
+                        key={ticker}
+                        className="w-8 h-8 bg-gray-600 rounded-lg flex items-center justify-center text-xs font-bold text-white opacity-60 hover:opacity-100 hover:bg-tangerine transition-all duration-200 cursor-pointer"
+                      >
+                        {ticker.slice(0, 2)}
+                      </div>
+                    ))}
+                  </div>
+                  <p className="text-center text-xs text-gray-400">
+                    <span className="text-tangerine font-semibold">+6.000</span> ações globais
+                  </p>
+                </div>
+              </motion.div>
             </motion.div>
           </div>
         </div>
@@ -314,9 +341,12 @@ export default function Landing() {
             <h2 className="text-3xl lg:text-4xl font-bold text-foreground mb-6">
               O que é Valor Intrínseco?
             </h2>
-            <p className="text-xl text-muted-foreground mb-8 leading-relaxed">
+            <p className="text-xl text-muted-foreground mb-4 leading-relaxed">
               O valor intrínseco é o preço justo de uma ação baseado nos seus fundamentais financeiros. 
               Warren Buffett usa esta estratégia há 50+ anos para encontrar ações subvalorizadas.
+            </p>
+            <p className="text-lg text-tangerine font-semibold mb-8">
+              Disponível para todas as ações S&P 500, Nasdaq 100 e principais europeias.
             </p>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-12">
@@ -408,6 +438,9 @@ export default function Landing() {
         </div>
       </section>
 
+      {/* Fundamentals Grid Section */}
+      <FundamentalsGrid />
+      
       {/* Charts Showcase Section */}
       <ChartsShowcase />
 
@@ -575,6 +608,9 @@ export default function Landing() {
         </div>
       </section>
 
+      {/* Watchlists & Portfolios Section */}
+      <WatchlistsPromo />
+      
       {/* Pricing Section */}
       <Pricing />
 
@@ -733,6 +769,9 @@ export default function Landing() {
         </div>
       </section>
 
+      {/* Roadmap Section */}
+      <Roadmap />
+      
       <Footer />
 
       {/* Video Modal Placeholder */}
