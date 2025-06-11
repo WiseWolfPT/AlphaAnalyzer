@@ -105,22 +105,21 @@ export default function Landing() {
         }} />
         
         <div className="relative container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center min-h-screen py-20">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center min-h-screen py-16 sm:py-20">
             {/* Left Column - Content */}
             <motion.div
               initial={{ opacity: 0, x: -30 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.8 }}
-              className="text-left lg:text-left lg:pl-8 xl:pl-12 lg:pr-4"
+              className="text-left lg:text-left lg:pl-4 xl:pl-8 lg:pr-6"
             >
               {/* Trial Badge */}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.2 }}
-                className="inline-flex items-center gap-2 bg-yellow-400 text-black px-4 py-2 rounded-full font-semibold text-sm mb-8 hover:bg-yellow-300 transition-colors cursor-pointer animate-pulse"
+                className="inline-flex items-center gap-2 bg-emerald-500 text-white px-4 py-2 rounded-full font-semibold text-sm mb-6 hover:bg-emerald-400 transition-colors cursor-pointer shadow-lg"
                 onClick={() => window.location.href = '/trial'}
-                style={{ animationDuration: '2.2s' }}
               >
                 <Clock className="h-4 w-4" />
                 Experimenta grátis por 7 dias!
@@ -131,7 +130,7 @@ export default function Landing() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.3 }}
-                className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-6 leading-tight"
+                className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-bold mb-6 leading-[1.1] tracking-tight"
               >
                 <span className="text-tangerine">Lucra</span>
                 <br />
@@ -145,7 +144,7 @@ export default function Landing() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.4 }}
-                className="text-xl text-gray-400 mb-6 leading-relaxed max-w-lg"
+                className="text-lg sm:text-xl text-gray-200 mb-8 leading-relaxed max-w-xl"
               >
                 <span className="text-tangerine font-semibold">Gestores de fundos</span> recorrem ao valor intrínseco para gerar <span className="text-tangerine font-semibold">retornos consistentes</span> — agora é a tua vez.
               </motion.p>
@@ -184,7 +183,7 @@ export default function Landing() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.5 }}
-                className="text-lg text-gray-400 mb-8 leading-relaxed max-w-lg"
+                className="text-lg text-gray-200 mb-8 leading-relaxed max-w-lg"
               >
                 Damos-te as <span className="text-tangerine font-semibold">ferramentas, estratégias e insights</span> para investires como os profissionais.
               </motion.p>
@@ -198,22 +197,23 @@ export default function Landing() {
               >
                 <Button 
                   size="lg" 
-                  className="text-lg px-8 py-4 h-14 bg-gray-700 hover:bg-gray-800 hover:text-tangerine text-white border border-gray-600 shadow-lg hover:shadow-xl transition-all duration-200 font-semibold"
-                  onClick={() => setShowVideoModal(true)}
-                  aria-label="Saber mais sobre o Alpha Analyzer"
+                  className="text-lg px-8 py-4 h-16 bg-tangerine hover:bg-orange-400 hover:shadow-2xl hover:shadow-orange-500/25 text-white shadow-xl transition-all duration-200 font-bold border-2 border-tangerine hover:border-orange-400"
+                  onClick={() => window.location.href = '/trial'}
+                  aria-label="Começar trial gratuito de 7 dias"
                 >
-                  <Play className="h-5 w-5 mr-2" />
-                  Saber mais
+                  <Target className="h-5 w-5 mr-3" />
+                  Começar Trial Grátis
                 </Button>
                 
                 <Button 
+                  variant="outline"
                   size="lg" 
-                  className="text-lg px-8 py-4 h-14 bg-tangerine hover:bg-orange-400 hover:shadow-2xl hover:shadow-orange-500/25 text-white shadow-lg transition-all duration-200 font-bold"
-                  onClick={() => window.location.href = '/trial'}
-                  aria-label="Explorar Estratégias de Valor – 7 dias grátis"
+                  className="text-lg px-8 py-4 h-16 bg-transparent hover:bg-white/10 text-white border-2 border-gray-400 hover:border-white shadow-lg hover:shadow-xl transition-all duration-200 font-semibold"
+                  onClick={() => setShowVideoModal(true)}
+                  aria-label="Ver demonstração do produto"
                 >
-                  <Target className="h-5 w-5 mr-2" />
-                  Explorar Estratégias de Valor
+                  <Play className="h-5 w-5 mr-3" />
+                  Ver Demo
                 </Button>
               </motion.div>
 
@@ -231,6 +231,19 @@ export default function Landing() {
                 </div>
                 <ArrowRight className="h-4 w-4" />
               </motion.div>
+              
+              {/* Urgency Badge */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.8 }}
+                className="mt-4"
+              >
+                <div className="inline-flex items-center gap-2 bg-red-500/20 border border-red-500/40 text-red-300 px-3 py-2 rounded-lg text-xs font-semibold">
+                  <Clock className="h-3 w-3" />
+                  <span>Últimas 48h para aproveitares o trial grátis</span>
+                </div>
+              </motion.div>
             </motion.div>
 
             {/* Right Column - Visual */}
@@ -238,11 +251,11 @@ export default function Landing() {
               initial={{ opacity: 0, x: 30 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.8, delay: 0.4 }}
-              className="relative hidden lg:flex justify-center items-center"
+              className="relative flex justify-center items-center mt-8 lg:mt-0"
             >
               {/* Phone Mockup with Chart */}
               <div className="relative">
-                <div className="w-80 h-96 bg-white rounded-[2.5rem] p-6 shadow-2xl transform rotate-2 hover:rotate-1 transition-transform duration-300" style={{ boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255,255,255,0.1)' }}>
+                <div className="w-72 sm:w-80 h-80 sm:h-96 bg-white rounded-[2.5rem] p-4 sm:p-6 shadow-2xl transform rotate-2 hover:rotate-1 transition-transform duration-300" style={{ boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255,255,255,0.1)' }}>
                   <div className="w-full h-full bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl p-4 flex flex-col">
                     {/* Header */}
                     <div className="flex items-center justify-between mb-4">
@@ -289,39 +302,23 @@ export default function Landing() {
                 </div>
 
                 {/* Floating Elements */}
-                <motion.div
-                  animate={{ y: [-8, 8, -8] }}
-                  transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-                  className="absolute -top-8 -left-8 w-16 h-16 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-full flex items-center justify-center shadow-lg"
-                >
+                <div className="absolute -top-8 -left-8 w-16 h-16 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-full flex items-center justify-center shadow-lg">
                   <span className="text-black font-bold text-xl">€</span>
-                </motion.div>
+                </div>
 
-                <motion.div
-                  animate={{ y: [8, -8, 8] }}
-                  transition={{ duration: 3, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-                  className="absolute -bottom-4 -right-4 w-12 h-12 bg-gradient-to-r from-yellow-600 to-orange-600 rounded-full flex items-center justify-center shadow-lg"
-                >
+                <div className="absolute -bottom-4 -right-4 w-12 h-12 bg-gradient-to-r from-yellow-600 to-orange-600 rounded-full flex items-center justify-center shadow-lg">
                   <TrendingUp className="h-6 w-6 text-black" />
-                </motion.div>
+                </div>
 
-                <motion.div
-                  animate={{ y: [-6, 12, -6] }}
-                  transition={{ duration: 3, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
-                  className="absolute top-1/2 -right-12 w-20 h-8 bg-white rounded-lg shadow-lg flex items-center justify-center"
-                >
+                <div className="absolute top-1/2 -right-12 w-20 h-8 bg-white rounded-lg shadow-lg flex items-center justify-center">
                   <span className="text-green-600 font-bold text-sm">+15%</span>
-                </motion.div>
+                </div>
               </div>
 
               {/* Arrow */}
-              <motion.div
-                animate={{ scale: [1, 1.1, 1] }}
-                transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-                className="absolute -bottom-12 right-8 text-yellow-500"
-              >
+              <div className="absolute -bottom-12 right-8 text-yellow-500">
                 <ArrowRight className="h-16 w-16 transform rotate-45" />
-              </motion.div>
+              </div>
               
             </motion.div>
           </div>
@@ -337,15 +334,29 @@ export default function Landing() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 1 }}
-          className="absolute bottom-20 left-1/2 transform -translate-x-1/2 bg-black/20 backdrop-blur-sm rounded-full px-6 py-3 border border-gray-700/50"
+          className="absolute bottom-16 sm:bottom-20 left-1/2 transform -translate-x-1/2 w-full max-w-md px-4"
         >
-          <div className="flex items-center gap-3 text-sm text-gray-300">
-            <div className="flex -space-x-1">
-              <div className="w-6 h-6 rounded-full bg-gradient-to-r from-blue-500 to-blue-600 border-2 border-white flex items-center justify-center text-xs font-bold text-white">A</div>
-              <div className="w-6 h-6 rounded-full bg-gradient-to-r from-green-500 to-green-600 border-2 border-white flex items-center justify-center text-xs font-bold text-white">M</div>
-              <div className="w-6 h-6 rounded-full bg-gradient-to-r from-purple-500 to-purple-600 border-2 border-white flex items-center justify-center text-xs font-bold text-white">C</div>
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl px-6 py-4 border border-white/20 shadow-2xl">
+            <div className="flex items-center justify-between text-sm">
+              <div className="flex items-center gap-3">
+                <div className="flex -space-x-2">
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-500 to-blue-600 border-2 border-white flex items-center justify-center text-xs font-bold text-white">A</div>
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-r from-green-500 to-green-600 border-2 border-white flex items-center justify-center text-xs font-bold text-white">M</div>
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-r from-purple-500 to-purple-600 border-2 border-white flex items-center justify-center text-xs font-bold text-white">C</div>
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-r from-orange-500 to-orange-600 border-2 border-white flex items-center justify-center text-xs font-bold text-white">+</div>
+                </div>
+                <div className="text-white">
+                  <div className="font-semibold"><span className="text-tangerine">+1.200</span> investidores</div>
+                  <div className="text-xs text-gray-300">confiam no Alpha Analyzer</div>
+                </div>
+              </div>
+              <div className="flex items-center gap-1">
+                {[...Array(5)].map((_, i) => (
+                  <div key={i} className="w-3 h-3 bg-yellow-400 rounded-sm"></div>
+                ))}
+                <span className="text-yellow-400 text-xs font-semibold ml-1">4.9</span>
+              </div>
             </div>
-            <span className="text-tangerine font-semibold">+500</span> utilizadores ativos
           </div>
         </motion.div>
         
@@ -362,6 +373,29 @@ export default function Landing() {
         </motion.div>
       </section>
 
+      {/* Trust Badges Section */}
+      <section className="py-12 lg:py-16 bg-white/5">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            viewport={{ once: true }}
+            className="text-center"
+          >
+            <p className="text-sm text-gray-400 mb-8 uppercase tracking-wider font-semibold">
+              Dados de fontes profissionais
+            </p>
+            <div className="flex flex-wrap items-center justify-center gap-8 lg:gap-12 opacity-60">
+              <div className="text-gray-300 font-bold text-lg">Yahoo Finance</div>
+              <div className="text-gray-300 font-bold text-lg">Alpha Vantage</div>
+              <div className="text-gray-300 font-bold text-lg">Financial Modeling Prep</div>
+              <div className="text-gray-300 font-bold text-lg">Polygon.io</div>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
       {/* Education Section - What is Intrinsic Value */}
       <section id="education" className="py-16 lg:py-24 bg-secondary/30">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -375,7 +409,7 @@ export default function Landing() {
             <h2 className="text-3xl lg:text-4xl font-bold text-foreground mb-6">
               O que é Valor Intrínseco?
             </h2>
-            <p className="text-xl text-muted-foreground mb-4 leading-relaxed">
+            <p className="text-lg sm:text-xl text-muted-foreground mb-4 leading-relaxed">
               O valor intrínseco é o preço justo de uma ação baseado nos seus fundamentais financeiros. 
               Warren Buffett usa esta estratégia há 50+ anos para encontrar ações subvalorizadas.
             </p>
@@ -383,13 +417,13 @@ export default function Landing() {
               Disponível para todas as ações S&P 500, Nasdaq 100 e principais europeias.
             </p>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-12">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8 mt-12">
               <motion.div
                 initial={{ opacity: 0, x: -20 }}
                 whileInView={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.5, delay: 0.2 }}
                 viewport={{ once: true }}
-                className="bg-red-500/10 border border-red-500/20 rounded-xl p-6"
+                className="bg-red-500/10 border border-red-500/20 rounded-xl p-4 sm:p-6"
               >
                 <h3 className="text-xl font-semibold text-foreground mb-4 flex items-center gap-2">
                   <div className="w-3 h-3 bg-red-500 rounded-full"></div>
@@ -408,7 +442,7 @@ export default function Landing() {
                 whileInView={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.5, delay: 0.4 }}
                 viewport={{ once: true }}
-                className="bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-6"
+                className="bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-4 sm:p-6"
               >
                 <h3 className="text-xl font-semibold text-foreground mb-4 flex items-center gap-2">
                   <div className="w-3 h-3 bg-emerald-500 rounded-full"></div>
