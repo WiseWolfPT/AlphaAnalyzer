@@ -69,8 +69,8 @@ export default function Landing() {
       {/* Hero Section */}
       <section id="hero" className="relative overflow-hidden min-h-screen flex items-center">
         {/* Background Gradient */}
-        <div className="absolute inset-0 bg-gradient-to-br from-violet-600 via-purple-700 to-indigo-900" />
-        <div className="absolute inset-0 bg-gradient-to-r from-pink-500/20 to-violet-500/10" />
+        <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-slate-800 to-black" />
+        <div className="absolute inset-0 bg-gradient-to-r from-orange-500/20 to-gray-800/10" />
         
         <div className="relative container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center min-h-screen py-20">
@@ -112,7 +112,7 @@ export default function Landing() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.4 }}
-                className="text-xl text-violet-100 mb-6 leading-relaxed max-w-lg"
+                className="text-xl text-gray-300 mb-6 leading-relaxed max-w-lg"
               >
                 Os <span className="text-yellow-400 font-semibold">gestores de fundos</span> usam análise de valor intrínseco para gerar <span className="text-yellow-400 font-semibold">retornos consistentes</span>, independentemente das condições do mercado.
               </motion.p>
@@ -122,7 +122,7 @@ export default function Landing() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.5 }}
-                className="text-lg text-purple-200 mb-8 leading-relaxed max-w-lg"
+                className="text-lg text-orange-200 mb-8 leading-relaxed max-w-lg"
               >
                 Damos-te as <span className="text-white font-semibold">ferramentas, estratégias e insights</span> para investires como os profissionais.
               </motion.p>
@@ -136,7 +136,7 @@ export default function Landing() {
               >
                 <Button 
                   size="lg" 
-                  className="text-lg px-8 py-4 h-14 bg-violet-600 hover:bg-violet-700 text-white border border-violet-500 shadow-lg hover:shadow-xl transition-all duration-200 font-semibold"
+                  className="text-lg px-8 py-4 h-14 bg-gray-700 hover:bg-gray-600 text-white border border-gray-600 shadow-lg hover:shadow-xl transition-all duration-200 font-semibold"
                   onClick={() => setShowVideoModal(true)}
                 >
                   <Play className="h-5 w-5 mr-2" />
@@ -145,7 +145,7 @@ export default function Landing() {
                 
                 <Button 
                   size="lg" 
-                  className="text-lg px-8 py-4 h-14 bg-yellow-400 hover:bg-yellow-500 text-black shadow-lg hover:shadow-xl transition-all duration-200 font-bold"
+                  className="text-lg px-8 py-4 h-14 bg-orange-500 hover:bg-orange-600 text-white shadow-lg hover:shadow-xl transition-all duration-200 font-bold"
                   onClick={() => window.location.href = '/trial'}
                 >
                   <Target className="h-5 w-5 mr-2" />
@@ -158,7 +158,7 @@ export default function Landing() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.7 }}
-                className="inline-flex items-center gap-2 bg-gradient-to-r from-pink-500 to-violet-500 text-white px-4 py-3 rounded-lg font-semibold text-sm hover:from-pink-600 hover:to-violet-600 transition-all duration-200 cursor-pointer shadow-lg"
+                className="inline-flex items-center gap-2 bg-gradient-to-r from-orange-500 to-orange-600 text-white px-4 py-3 rounded-lg font-semibold text-sm hover:from-orange-600 hover:to-orange-700 transition-all duration-200 cursor-pointer shadow-lg"
                 onClick={() => window.location.href = '/trial'}
               >
                 <div className="flex items-center gap-2">
@@ -179,10 +179,10 @@ export default function Landing() {
               {/* Phone Mockup with Chart */}
               <div className="relative">
                 <div className="w-80 h-96 bg-white rounded-[2.5rem] p-6 shadow-2xl transform rotate-6 hover:rotate-3 transition-transform duration-300">
-                  <div className="w-full h-full bg-gradient-to-br from-violet-50 to-purple-100 rounded-2xl p-4 flex flex-col">
+                  <div className="w-full h-full bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl p-4 flex flex-col">
                     {/* Header */}
                     <div className="flex items-center justify-between mb-4">
-                      <div className="w-8 h-8 bg-gradient-to-r from-violet-500 to-purple-600 rounded-lg"></div>
+                      <div className="w-8 h-8 bg-gradient-to-r from-orange-500 to-orange-600 rounded-lg"></div>
                       <div className="flex gap-1">
                         <div className="w-1 h-1 bg-gray-400 rounded-full"></div>
                         <div className="w-1 h-1 bg-gray-400 rounded-full"></div>
@@ -197,7 +197,7 @@ export default function Landing() {
                           <div
                             key={i}
                             className={`w-4 rounded-t-sm ${
-                              Math.random() > 0.5 ? 'bg-gradient-to-t from-violet-500 to-purple-500' : 'bg-red-500'
+                              Math.random() > 0.5 ? 'bg-green-500' : 'bg-red-500'
                             }`}
                             style={{ height: `${20 + Math.random() * 60}%` }}
                           />
@@ -215,8 +215,8 @@ export default function Landing() {
                         <span className="text-gray-600">Valor Intrínseco</span>
                         <span className="font-bold text-orange-600">€165.00</span>
                       </div>
-                      <div className="w-full bg-violet-100 rounded-full h-2">
-                        <div className="bg-gradient-to-r from-violet-500 to-purple-500 h-2 rounded-full w-3/4"></div>
+                      <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div className="bg-orange-500 h-2 rounded-full w-3/4"></div>
                       </div>
                     </div>
                   </div>
@@ -226,15 +226,15 @@ export default function Landing() {
                 <motion.div
                   animate={{ y: [-10, 10, -10] }}
                   transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-                  className="absolute -top-8 -left-8 w-16 h-16 bg-yellow-400 rounded-full flex items-center justify-center shadow-lg"
+                  className="absolute -top-8 -left-8 w-16 h-16 bg-orange-500 rounded-full flex items-center justify-center shadow-lg"
                 >
-                  <span className="text-black font-bold text-xl">€</span>
+                  <span className="text-white font-bold text-xl">€</span>
                 </motion.div>
 
                 <motion.div
                   animate={{ y: [10, -10, 10] }}
                   transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-                  className="absolute -bottom-4 -right-4 w-12 h-12 bg-gradient-to-r from-violet-500 to-purple-500 rounded-full flex items-center justify-center shadow-lg"
+                  className="absolute -bottom-4 -right-4 w-12 h-12 bg-gray-700 rounded-full flex items-center justify-center shadow-lg"
                 >
                   <TrendingUp className="h-6 w-6 text-white" />
                 </motion.div>
@@ -244,7 +244,7 @@ export default function Landing() {
                   transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
                   className="absolute top-1/2 -right-12 w-20 h-8 bg-white rounded-lg shadow-lg flex items-center justify-center"
                 >
-                  <span className="text-violet-600 font-bold text-sm">+15%</span>
+                  <span className="text-green-600 font-bold text-sm">+15%</span>
                 </motion.div>
               </div>
 
@@ -252,7 +252,7 @@ export default function Landing() {
               <motion.div
                 animate={{ scale: [1, 1.1, 1] }}
                 transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-                className="absolute -bottom-12 right-8 text-yellow-400"
+                className="absolute -bottom-12 right-8 text-orange-500"
               >
                 <ArrowRight className="h-16 w-16 transform rotate-45" />
               </motion.div>
@@ -262,7 +262,7 @@ export default function Landing() {
 
         {/* Background decoration */}
         <div className="absolute inset-x-0 bottom-0 -z-10 transform-gpu overflow-hidden">
-          <div className="relative left-[calc(50%-11rem)] aspect-[1155/678] w-[36.125rem] -translate-x-1/2 bg-gradient-to-tr from-violet-400 to-purple-600 opacity-15 sm:left-[calc(50%-30rem)] sm:w-[72.1875rem]" />
+          <div className="relative left-[calc(50%-11rem)] aspect-[1155/678] w-[36.125rem] -translate-x-1/2 bg-gradient-to-tr from-gray-600 to-orange-500 opacity-15 sm:left-[calc(50%-30rem)] sm:w-[72.1875rem]" />
         </div>
       </section>
 
