@@ -18,7 +18,10 @@ export default {
     "from-gray-700/20",
     "to-black/10",
     "bg-green-500",
-    "bg-red-500"
+    "bg-red-500",
+    "text-orange-400",
+    "bg-orange-400",
+    "hover:bg-orange-500"
   ],
   theme: {
     extend: {
