@@ -11,37 +11,37 @@ export function FundamentalsGrid() {
       id: 1,
       title: "Revenue",
       description: "Evolução das receitas trimestrais e anuais",
-      thumbnail: "/fundamental-thumb-1.png"
+      thumbnail: "/thumbs/revenue.svg"
     },
     {
       id: 2,
       title: "Net Income", 
       description: "Lucro líquido e margem operacional",
-      thumbnail: "/fundamental-thumb-2.png"
+      thumbnail: "/thumbs/net-income.svg"
     },
     {
       id: 3,
       title: "Free Cash Flow",
       description: "Fluxo de caixa livre e sustentabilidade",
-      thumbnail: "/fundamental-thumb-3.png"
+      thumbnail: "/thumbs/free-cash-flow.svg"
     },
     {
       id: 4,
       title: "Cash vs Debt",
       description: "Posição financeira e alavancagem",
-      thumbnail: "/fundamental-thumb-4.png"
+      thumbnail: "/thumbs/cash-debt.svg"
     },
     {
       id: 5,
       title: "Ratios",
       description: "P/E, P/B, ROE e outros múltiplos",
-      thumbnail: "/fundamental-thumb-5.png"
+      thumbnail: "/thumbs/ratios.svg"
     },
     {
       id: 6,
       title: "Dividends",
       description: "Histórico e yield de dividendos",
-      thumbnail: "/fundamental-thumb-6.png"
+      thumbnail: "/thumbs/dividends.svg"
     }
   ];
 
@@ -78,10 +78,13 @@ export function FundamentalsGrid() {
                   onClick={() => setSelectedCard(card.id)}
                 >
                   <CardContent className="p-6">
-                    <div className="aspect-video bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg mb-4 flex items-center justify-center group-hover:from-gray-50 group-hover:to-gray-100 transition-colors">
-                      <div className="w-16 h-16 bg-tangerine/20 rounded-lg flex items-center justify-center">
-                        <span className="text-tangerine font-bold text-lg">{card.title.slice(0, 2)}</span>
-                      </div>
+                    <div className="aspect-video bg-white rounded-lg mb-4 p-2 group-hover:shadow-md transition-all">
+                      <img 
+                        src={card.thumbnail} 
+                        alt={`${card.title} chart`}
+                        className="w-full h-full object-contain"
+                        loading="lazy"
+                      />
                     </div>
                     <h3 className="text-lg font-semibold text-foreground mb-2 group-hover:text-tangerine transition-colors">
                       {card.title}

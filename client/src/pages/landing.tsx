@@ -9,6 +9,7 @@ import { ChartsShowcase } from "@/components/marketing/ChartsShowcase";
 import { FundamentalsGrid } from "@/components/marketing/FundamentalsGrid";
 import { WatchlistsPromo } from "@/components/marketing/WatchlistsPromo";
 import { Roadmap } from "@/components/marketing/Roadmap";
+import { StickyCTA } from "@/components/marketing/StickyCTA";
 import { 
   TrendingUp, 
   Shield, 
@@ -22,7 +23,8 @@ import {
   Award,
   Brain,
   Clock,
-  Bell
+  Bell,
+  Star
 } from "lucide-react";
 import { motion } from "framer-motion";
 
@@ -41,9 +43,9 @@ export default function Landing() {
       description: "Calcula automaticamente o valor justo de qualquer ação em segundos, baseado em métricas fundamentais."
     },
     {
-      icon: Bell,
-      title: "Alertas Inteligentes",
-      description: "Recebe notificações quando as ações atingem o teu preço alvo ou quando há oportunidades de compra."
+      icon: Star,
+      title: "Watchlists & Portfólios",
+      description: "Cria watchlists ilimitadas, segue vários portfólios e importa listas em CSV para organizar os teus investimentos."
     }
   ];
 
@@ -120,6 +122,16 @@ export default function Landing() {
                 className="text-xl text-gray-400 mb-6 leading-relaxed max-w-lg"
               >
                 <span className="text-tangerine font-semibold">Gestores de fundos</span> recorrem ao valor intrínseco para gerar <span className="text-tangerine font-semibold">retornos consistentes</span> — agora é a tua vez.
+              </motion.p>
+              
+              {/* Global Coverage */}
+              <motion.p
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.45 }}
+                className="text-lg text-tangerine font-semibold mb-8"
+              >
+                Cobertura de +6.000 ações globais
               </motion.p>
 
               {/* Value Proposition */}
@@ -555,16 +567,16 @@ export default function Landing() {
                 <CardContent className="p-6">
                   <div className="flex items-center gap-3 mb-4">
                     <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-full flex items-center justify-center text-white font-semibold">
-                      AR
+                      JM
                     </div>
                     <div>
-                      <div className="font-semibold text-foreground">Ana R.</div>
-                      <div className="text-sm text-muted-foreground">Lisboa</div>
+                      <div className="font-semibold text-foreground">James M.</div>
+                      <div className="text-sm text-muted-foreground">London, UK</div>
                     </div>
                   </div>
                   <p className="text-muted-foreground leading-relaxed mb-4">
-                    "Descobri que a EDP estava 15% subvalorizada e investi. 
-                    Em 3 meses já tenho +12% de retorno. Simples e eficaz!"
+                    "I finally invest with data, not hype. 
+                    Alpha Analyzer gives me the confidence I need to be consistent."
                   </p>
                   <div className="flex items-center gap-1">
                     {[...Array(5)].map((_, i) => (
@@ -612,7 +624,7 @@ export default function Landing() {
       <WatchlistsPromo />
       
       {/* Pricing Section */}
-      <Pricing />
+      <Pricing id="pricing" />
 
       {/* FAQ Section */}
       <section id="faq" className="py-16 lg:py-24">
@@ -661,11 +673,11 @@ export default function Landing() {
               <Card className="border-border/50">
                 <CardContent className="p-6">
                   <h3 className="text-lg font-semibold text-foreground mb-3">
-                    ❓ Que corretoras suportam?
+                    ❓ Que dados utilizam?
                   </h3>
                   <p className="text-muted-foreground">
-                    Funcionamos com todas as principais corretoras portuguesas e internacionais: 
-                    Degiro, eToro, XTB, Interactive Brokers, Trading 212, e muitas outras.
+                    Utilizamos dados de APIs financeiras internacionais de alta qualidade, incluindo 
+                    Yahoo Finance, Alpha Vantage e fontes institucionais para garantir precisão e cobertura global.
                   </p>
                 </CardContent>
               </Card>
@@ -771,6 +783,9 @@ export default function Landing() {
 
       {/* Roadmap Section */}
       <Roadmap />
+      
+      {/* Sticky CTA */}
+      <StickyCTA />
       
       <Footer />
 

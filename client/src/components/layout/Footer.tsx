@@ -50,7 +50,7 @@ export function Footer() {
                   <a
                     key={link.name}
                     href={link.href}
-                    className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors duration-200"
+                    className="flex items-center gap-2 text-muted-foreground/80 hover:text-foreground transition-colors duration-200"
                     target="_blank"
                     rel="noopener noreferrer"
                   >
@@ -86,7 +86,7 @@ export function Footer() {
                   <a
                     key={link.name}
                     href={link.href}
-                    className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors duration-200"
+                    className="flex items-center gap-2 text-muted-foreground/80 hover:text-foreground transition-colors duration-200"
                     target="_blank"
                     rel="noopener noreferrer"
                   >

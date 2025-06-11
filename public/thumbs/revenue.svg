@@ -1,0 +1,19 @@
+<svg width="150" height="90" viewBox="0 0 150 90" xmlns="http://www.w3.org/2000/svg">
+  <rect width="150" height="90" fill="#f8fafc"/>
+  <g transform="translate(15,15)">
+    <!-- Revenue bars trending upward -->
+    <rect x="0" y="45" width="12" height="15" fill="#f28500" opacity="0.8"/>
+    <rect x="18" y="40" width="12" height="20" fill="#f28500" opacity="0.8"/>
+    <rect x="36" y="35" width="12" height="25" fill="#f28500" opacity="0.8"/>
+    <rect x="54" y="30" width="12" height="30" fill="#f28500" opacity="0.8"/>
+    <rect x="72" y="25" width="12" height="35" fill="#f28500" opacity="0.8"/>
+    <rect x="90" y="20" width="12" height="40" fill="#f28500" opacity="0.8"/>
+    <rect x="108" y="15" width="12" height="45" fill="#f28500"/>
+    <!-- Grid lines -->
+    <line x1="0" y1="15" x2="120" y2="15" stroke="#e2e8f0" stroke-width="0.5"/>
+    <line x1="0" y1="30" x2="120" y2="30" stroke="#e2e8f0" stroke-width="0.5"/>
+    <line x1="0" y1="45" x2="120" y2="45" stroke="#e2e8f0" stroke-width="0.5"/>
+    <line x1="0" y1="60" x2="120" y2="60" stroke="#e2e8f0" stroke-width="0.5"/>
+  </g>
+  <text x="75" y="82" text-anchor="middle" font-family="Inter, sans-serif" font-size="10" fill="#64748b">Revenue Growth</text>
+</svg>

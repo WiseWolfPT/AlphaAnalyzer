@@ -1,0 +1,21 @@
+<svg width="150" height="90" viewBox="0 0 150 90" xmlns="http://www.w3.org/2000/svg">
+  <rect width="150" height="90" fill="#f8fafc"/>
+  <g transform="translate(15,15)">
+    <!-- Cash vs Debt comparison bars -->
+    <rect x="10" y="20" width="15" height="40" fill="#22c55e" opacity="0.8"/>
+    <rect x="30" y="35" width="15" height="25" fill="#ef4444" opacity="0.8"/>
+    
+    <rect x="55" y="15" width="15" height="45" fill="#22c55e" opacity="0.8"/>
+    <rect x="75" y="40" width="15" height="20" fill="#ef4444" opacity="0.8"/>
+    
+    <rect x="100" y="10" width="15" height="50" fill="#22c55e"/>
+    <rect x="120" y="45" width="15" height="15" fill="#ef4444"/>
+    
+    <!-- Grid lines -->
+    <line x1="0" y1="15" x2="140" y2="15" stroke="#e2e8f0" stroke-width="0.5"/>
+    <line x1="0" y1="30" x2="140" y2="30" stroke="#e2e8f0" stroke-width="0.5"/>
+    <line x1="0" y1="45" x2="140" y2="45" stroke="#e2e8f0" stroke-width="0.5"/>
+    <line x1="0" y1="60" x2="140" y2="60" stroke="#e2e8f0" stroke-width="0.5"/>
+  </g>
+  <text x="75" y="82" text-anchor="middle" font-family="Inter, sans-serif" font-size="10" fill="#64748b">Cash vs Debt</text>
+</svg>
