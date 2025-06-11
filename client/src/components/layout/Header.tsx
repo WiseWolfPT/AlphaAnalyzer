@@ -22,7 +22,9 @@ export function Header() {
 
   const navItems = [
     { name: "Início", href: "#hero" },
-    { name: "Valor Intrínseco", href: "#intrinsic" }
+    { name: "Valor Intrínseco", href: "#education" },
+    { name: "Preço", href: "#pricing" },
+    { name: "Porquê", href: "#benefits" }
   ];
 
   const scrollToSection = (href: string) => {
@@ -88,7 +90,7 @@ export function Header() {
             {user ? (
               <Button 
                 onClick={() => window.location.href = '/dashboard'}
-                className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                className="bg-tangerine hover:bg-orange-400 text-white"
               >
                 Dashboard
               </Button>
@@ -160,7 +162,7 @@ export function Header() {
                   {user ? (
                     <Button 
                       onClick={() => window.location.href = '/dashboard'}
-                      className="bg-emerald-600 hover:bg-emerald-700 text-white justify-start"
+                      className="bg-tangerine hover:bg-orange-400 text-white justify-start"
                     >
                       Dashboard
                     </Button>
