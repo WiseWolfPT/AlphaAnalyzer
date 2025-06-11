@@ -68,9 +68,10 @@ export default function Landing() {
       
       {/* Hero Section */}
       <section id="hero" className="relative overflow-hidden min-h-screen flex items-center">
-        {/* Background Gradient */}
+        {/* Background Gradient - Updated Design */}
         <div className="absolute inset-0 bg-gradient-to-br from-black via-gray-800 to-gray-900" />
         <div className="absolute inset-0 bg-gradient-to-r from-gray-700/20 to-black/10" />
+        <div className="absolute inset-0 bg-gradient-to-t from-transparent via-transparent to-black/5" />
         
         <div className="relative container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center min-h-screen py-20">
