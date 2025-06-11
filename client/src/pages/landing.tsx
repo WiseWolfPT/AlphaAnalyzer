@@ -69,8 +69,8 @@ export default function Landing() {
       {/* Hero Section */}
       <section id="hero" className="relative overflow-hidden min-h-screen flex items-center">
         {/* Background Gradient */}
-        <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-slate-800 to-black" />
-        <div className="absolute inset-0 bg-gradient-to-r from-orange-500/20 to-gray-800/10" />
+        <div className="absolute inset-0 bg-gradient-to-br from-black via-gray-800 to-gray-900" />
+        <div className="absolute inset-0 bg-gradient-to-r from-gray-700/20 to-black/10" />
         
         <div className="relative container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center min-h-screen py-20">
@@ -98,13 +98,13 @@ export default function Landing() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.3 }}
-                className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-6 leading-tight"
+                className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-6 leading-tight"
               >
-                <span className="text-yellow-400">Lucra</span> em
+                <span className="bg-gradient-to-r from-yellow-400 to-orange-500 bg-clip-text text-transparent">Lucra</span> em
                 <br />
-                <span className="text-white">Qualquer Condição</span>
+                <span className="bg-gradient-to-r from-yellow-400 to-orange-500 bg-clip-text text-transparent">Qualquer Condição</span>
                 <br />
-                <span className="text-white">de Mercado</span>
+                <span className="bg-gradient-to-r from-yellow-400 to-orange-500 bg-clip-text text-transparent">de Mercado</span>
               </motion.h1>
 
               {/* Subtitle */}
@@ -112,9 +112,9 @@ export default function Landing() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.4 }}
-                className="text-xl text-gray-300 mb-6 leading-relaxed max-w-lg"
+                className="text-xl text-gray-400 mb-6 leading-relaxed max-w-lg"
               >
-                Os <span className="text-yellow-400 font-semibold">gestores de fundos</span> usam análise de valor intrínseco para gerar <span className="text-yellow-400 font-semibold">retornos consistentes</span>, independentemente das condições do mercado.
+                Os <span className="bg-gradient-to-r from-yellow-400 to-orange-500 bg-clip-text text-transparent font-semibold">gestores de fundos</span> usam análise de valor intrínseco para gerar <span className="bg-gradient-to-r from-yellow-400 to-orange-500 bg-clip-text text-transparent font-semibold">retornos consistentes</span>, independentemente das condições do mercado.
               </motion.p>
 
               {/* Value Proposition */}
@@ -122,9 +122,9 @@ export default function Landing() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.5 }}
-                className="text-lg text-orange-200 mb-8 leading-relaxed max-w-lg"
+                className="text-lg text-gray-400 mb-8 leading-relaxed max-w-lg"
               >
-                Damos-te as <span className="text-white font-semibold">ferramentas, estratégias e insights</span> para investires como os profissionais.
+                Damos-te as <span className="bg-gradient-to-r from-yellow-400 to-orange-500 bg-clip-text text-transparent font-semibold">ferramentas, estratégias e insights</span> para investires como os profissionais.
               </motion.p>
 
               {/* CTAs */}
@@ -136,7 +136,7 @@ export default function Landing() {
               >
                 <Button 
                   size="lg" 
-                  className="text-lg px-8 py-4 h-14 bg-gray-700 hover:bg-gray-600 text-white border border-gray-600 shadow-lg hover:shadow-xl transition-all duration-200 font-semibold"
+                  className="text-lg px-8 py-4 h-14 bg-gray-800 hover:bg-gray-700 text-yellow-400 border border-gray-600 shadow-lg hover:shadow-xl transition-all duration-200 font-semibold"
                   onClick={() => setShowVideoModal(true)}
                 >
                   <Play className="h-5 w-5 mr-2" />
@@ -145,7 +145,7 @@ export default function Landing() {
                 
                 <Button 
                   size="lg" 
-                  className="text-lg px-8 py-4 h-14 bg-orange-500 hover:bg-orange-600 text-white shadow-lg hover:shadow-xl transition-all duration-200 font-bold"
+                  className="text-lg px-8 py-4 h-14 bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-black shadow-lg hover:shadow-xl transition-all duration-200 font-bold"
                   onClick={() => window.location.href = '/trial'}
                 >
                   <Target className="h-5 w-5 mr-2" />
@@ -158,11 +158,11 @@ export default function Landing() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.7 }}
-                className="inline-flex items-center gap-2 bg-gradient-to-r from-orange-500 to-orange-600 text-white px-4 py-3 rounded-lg font-semibold text-sm hover:from-orange-600 hover:to-orange-700 transition-all duration-200 cursor-pointer shadow-lg"
+                className="inline-flex items-center gap-2 bg-gradient-to-r from-yellow-500 to-orange-500 text-black px-4 py-3 rounded-lg font-semibold text-sm hover:from-yellow-600 hover:to-orange-600 transition-all duration-200 cursor-pointer shadow-lg"
                 onClick={() => window.location.href = '/trial'}
               >
                 <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
+                  <div className="w-2 h-2 bg-black rounded-full animate-pulse"></div>
                   <span>NOVO! IA para Análise de Valor</span>
                 </div>
                 <ArrowRight className="h-4 w-4" />
@@ -182,7 +182,7 @@ export default function Landing() {
                   <div className="w-full h-full bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl p-4 flex flex-col">
                     {/* Header */}
                     <div className="flex items-center justify-between mb-4">
-                      <div className="w-8 h-8 bg-gradient-to-r from-orange-500 to-orange-600 rounded-lg"></div>
+                      <div className="w-8 h-8 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-lg"></div>
                       <div className="flex gap-1">
                         <div className="w-1 h-1 bg-gray-400 rounded-full"></div>
                         <div className="w-1 h-1 bg-gray-400 rounded-full"></div>
@@ -193,15 +193,17 @@ export default function Landing() {
                     {/* Chart Area */}
                     <div className="flex-1 bg-white rounded-xl p-4 mb-4">
                       <div className="flex items-end justify-center h-full gap-2">
-                        {Array.from({ length: 12 }, (_, i) => (
-                          <div
-                            key={i}
-                            className={`w-4 rounded-t-sm ${
-                              Math.random() > 0.5 ? 'bg-green-500' : 'bg-red-500'
-                            }`}
-                            style={{ height: `${20 + Math.random() * 60}%` }}
-                          />
-                        ))}
+                        {Array.from({ length: 12 }, (_, i) => {
+                          const heights = [30, 45, 60, 35, 75, 50, 40, 85, 55, 70, 45, 65];
+                          const colors = ['bg-green-500', 'bg-red-500', 'bg-green-500', 'bg-red-500', 'bg-green-500', 'bg-green-500', 'bg-red-500', 'bg-green-500', 'bg-red-500', 'bg-green-500', 'bg-red-500', 'bg-green-500'];
+                          return (
+                            <div
+                              key={i}
+                              className={`w-4 rounded-t-sm ${colors[i]}`}
+                              style={{ height: `${heights[i]}%` }}
+                            />
+                          );
+                        })}
                       </div>
                     </div>
                     
@@ -213,10 +215,10 @@ export default function Landing() {
                       </div>
                       <div className="flex justify-between text-xs">
                         <span className="text-gray-600">Valor Intrínseco</span>
-                        <span className="font-bold text-orange-600">€165.00</span>
+                        <span className="font-bold text-yellow-600">€165.00</span>
                       </div>
                       <div className="w-full bg-gray-200 rounded-full h-2">
-                        <div className="bg-orange-500 h-2 rounded-full w-3/4"></div>
+                        <div className="bg-gradient-to-r from-yellow-500 to-orange-500 h-2 rounded-full w-3/4"></div>
                       </div>
                     </div>
                   </div>
@@ -226,17 +228,17 @@ export default function Landing() {
                 <motion.div
                   animate={{ y: [-10, 10, -10] }}
                   transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-                  className="absolute -top-8 -left-8 w-16 h-16 bg-orange-500 rounded-full flex items-center justify-center shadow-lg"
+                  className="absolute -top-8 -left-8 w-16 h-16 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-full flex items-center justify-center shadow-lg"
                 >
-                  <span className="text-white font-bold text-xl">€</span>
+                  <span className="text-black font-bold text-xl">€</span>
                 </motion.div>
 
                 <motion.div
                   animate={{ y: [10, -10, 10] }}
                   transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-                  className="absolute -bottom-4 -right-4 w-12 h-12 bg-gray-700 rounded-full flex items-center justify-center shadow-lg"
+                  className="absolute -bottom-4 -right-4 w-12 h-12 bg-gradient-to-r from-yellow-600 to-orange-600 rounded-full flex items-center justify-center shadow-lg"
                 >
-                  <TrendingUp className="h-6 w-6 text-white" />
+                  <TrendingUp className="h-6 w-6 text-black" />
                 </motion.div>
 
                 <motion.div
@@ -252,7 +254,7 @@ export default function Landing() {
               <motion.div
                 animate={{ scale: [1, 1.1, 1] }}
                 transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-                className="absolute -bottom-12 right-8 text-orange-500"
+                className="absolute -bottom-12 right-8 text-yellow-500"
               >
                 <ArrowRight className="h-16 w-16 transform rotate-45" />
               </motion.div>
@@ -262,7 +264,7 @@ export default function Landing() {
 
         {/* Background decoration */}
         <div className="absolute inset-x-0 bottom-0 -z-10 transform-gpu overflow-hidden">
-          <div className="relative left-[calc(50%-11rem)] aspect-[1155/678] w-[36.125rem] -translate-x-1/2 bg-gradient-to-tr from-gray-600 to-orange-500 opacity-15 sm:left-[calc(50%-30rem)] sm:w-[72.1875rem]" />
+          <div className="relative left-[calc(50%-11rem)] aspect-[1155/678] w-[36.125rem] -translate-x-1/2 bg-gradient-to-tr from-gray-800 to-yellow-500 opacity-15 sm:left-[calc(50%-30rem)] sm:w-[72.1875rem]" />
         </div>
       </section>
 
