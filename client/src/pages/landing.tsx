@@ -403,36 +403,6 @@ export default function Landing() {
           <div className="relative left-[calc(50%-11rem)] aspect-[1155/678] w-[36.125rem] -translate-x-1/2 bg-gray-700 opacity-15 sm:left-[calc(50%-30rem)] sm:w-[72.1875rem]" />
         </div>
         
-        {/* Simple Social Proof */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 3.5 }}
-          className="absolute bottom-20 left-1/2 transform -translate-x-1/2 w-full max-w-lg px-4"
-        >
-          <div className="bg-gray-900/95 backdrop-blur-sm rounded-2xl px-8 py-6 border border-gray-700/50 shadow-xl">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <div className="flex -space-x-3">
-                  <div className="w-10 h-10 rounded-full bg-gray-600 border-2 border-gray-800" />
-                  <div className="w-10 h-10 rounded-full bg-gray-600 border-2 border-gray-800" />
-                  <div className="w-10 h-10 rounded-full bg-gray-600 border-2 border-gray-800" />
-                  <div className="w-10 h-10 rounded-full bg-gray-700 border-2 border-gray-800 flex items-center justify-center text-white text-sm font-medium">+</div>
-                </div>
-                <div>
-                  <div className="text-sm font-semibold text-pure-white">1.200+ investidores</div>
-                  <div className="text-xs text-gray-400">confiam na plataforma</div>
-                </div>
-              </div>
-              <div className="flex items-center gap-1">
-                {[...Array(5)].map((_, i) => (
-                  <Star key={i} className="w-4 h-4 fill-xanthous text-xanthous" />
-                ))}
-                <span className="text-pure-white text-sm font-semibold ml-2">4.9</span>
-              </div>
-            </div>
-          </div>
-        </motion.div>
         
         {/* Dark Scroll Indicator */}
         <motion.div
@@ -452,28 +422,6 @@ export default function Landing() {
         </motion.div>
       </section>
 
-      {/* Dark Trust Badges */}
-      <section className="py-16 lg:py-20 bg-gray-900/50">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3 }}
-            viewport={{ once: true }}
-            className="text-center max-w-4xl mx-auto"
-          >
-            <p className="text-sm text-gray-400 mb-8 font-medium">
-              Dados de qualidade institucional
-            </p>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-8 items-center">
-              <div className="text-gray-500 font-medium text-base hover:text-gray-300 transition-colors">Yahoo Finance</div>
-              <div className="text-gray-500 font-medium text-base hover:text-gray-300 transition-colors">Alpha Vantage</div>
-              <div className="text-gray-500 font-medium text-base hover:text-gray-300 transition-colors">Financial Modeling</div>
-              <div className="text-gray-500 font-medium text-base hover:text-gray-300 transition-colors">Polygon.io</div>
-            </div>
-          </motion.div>
-        </div>
-      </section>
 
       {/* Dark Education Section */}
       <section id="education" className="py-20 lg:py-32 bg-gray-900">

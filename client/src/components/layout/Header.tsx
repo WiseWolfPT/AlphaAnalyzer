@@ -37,8 +37,8 @@ export function Header() {
   const navItems = [
     { name: "Início", href: "#hero", id: "hero" },
     { name: "Valor Intrínseco", href: "#education", id: "education" },
-    { name: "Preço", href: "#pricing", id: "pricing" },
-    { name: "Porquê", href: "#benefits", id: "benefits" }
+    { name: "Porquê", href: "#benefits", id: "benefits" },
+    { name: "Preço", href: "#pricing", id: "pricing" }
   ];
 
   const scrollToSection = (href: string) => {
