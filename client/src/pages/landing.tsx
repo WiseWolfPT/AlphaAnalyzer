@@ -114,19 +114,8 @@ export default function Landing() {
       
       {/* Hero Section */}
       <section id="hero" className="relative overflow-hidden min-h-screen flex items-center">
-        {/* Dark Theme Background */}
+        {/* Pure Rich Black Background */}
         <div className="absolute inset-0 bg-rich-black" />
-        
-        {/* Simple Dark Overlays */}
-        <div className="absolute inset-0 opacity-5">
-          <div className="absolute top-20 right-20 w-96 h-96 bg-pear rounded-full blur-3xl" />
-          <div className="absolute bottom-20 left-20 w-80 h-80 bg-pear rounded-full blur-3xl" />
-        </div>
-        
-        {/* Subtle Grid Pattern */}
-        <div className="absolute inset-0 opacity-5" style={{
-          backgroundImage: `radial-gradient(circle at 1px 1px, #D2EB40 1px, transparent 0)`
-        }} />
         
         <div className="relative container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 items-center min-h-screen py-20">
