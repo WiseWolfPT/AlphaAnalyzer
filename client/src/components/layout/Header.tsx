@@ -109,7 +109,7 @@ export function Header() {
             {user ? (
               <Button 
                 onClick={() => window.location.href = '/dashboard'}
-                className="bg-tangerine hover:bg-orange-400 text-white"
+                className="bg-xanthous hover:bg-xanthous/90 text-rich-black"
               >
                 Dashboard
               </Button>
@@ -181,7 +181,7 @@ export function Header() {
                   {user ? (
                     <Button 
                       onClick={() => window.location.href = '/dashboard'}
-                      className="bg-tangerine hover:bg-orange-400 text-white justify-start"
+                      className="bg-xanthous hover:bg-xanthous/90 text-rich-black justify-start"
                     >
                       Dashboard
                     </Button>
