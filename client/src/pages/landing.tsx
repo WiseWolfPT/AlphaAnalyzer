@@ -224,7 +224,7 @@ export default function Landing() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.7 }}
-                className="inline-flex items-center gap-2 bg-xanthous hover:bg-xanthous/90 text-deep-black px-4 py-3 rounded-lg font-semibold text-sm transition-all duration-200 cursor-pointer shadow-lg"
+                className="inline-flex items-center gap-2 bg-chartreuse-dark dark:bg-chartreuse hover:bg-chartreuse-dark/90 dark:hover:bg-chartreuse/90 text-deep-black px-4 py-3 rounded-lg font-semibold text-sm transition-all duration-200 cursor-pointer shadow-lg"
                 onClick={() => window.location.href = '/trial'}
               >
                 <div className="flex items-center gap-2">
@@ -248,162 +248,163 @@ export default function Landing() {
               </motion.div>
             </motion.div>
 
-            {/* Right Column - Modern Visual */}
+            {/* Right Column - Animated Character & Charts */}
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ ...ANIMATION_CONFIG.SLOW, delay: 1.0 }}
               className="lg:col-span-5 relative flex justify-center items-center"
             >
-              {/* Dark Dashboard Preview */}
-              <div className="relative">
-                <motion.div 
-                  whileHover={{ y: -8, rotateY: 5 }}
-                  className="w-80 sm:w-96 h-80 sm:h-96 rounded-3xl p-6 shadow-2xl border bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800"
-                  style={{ 
-                    boxShadow: '0 25px 80px -12px rgba(216, 242, 45, 0.15)',
-                    background: 'var(--dashboard-bg)'
-                  }}
+              {/* Animated Investment Scene */}
+              <div className="relative w-96 h-96">
+                {/* Main Animated Character */}
+                <motion.div
+                  initial={{ opacity: 0, y: 50 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 1, delay: 1.5 }}
+                  className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-10"
                 >
-                  <div className="w-full h-full flex flex-col">
-                    {/* Simple Header */}
-                    <div className="flex items-center justify-between mb-6">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-chartreuse rounded-xl flex items-center justify-center">
-                          <BarChart3 className="h-5 w-5 text-rich-black" />
-                        </div>
-                        <div>
-                          <h4 className="font-semibold text-deep-black dark:text-pure-white text-sm">AAPL</h4>
-                          <p className="text-xs text-gray-600 dark:text-gray-400">Apple Inc.</p>
-                        </div>
+                  {/* Character Body */}
+                  <div className="relative">
+                    <motion.div
+                      animate={{ y: [-2, 2, -2] }}
+                      transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                      className="w-20 h-24 bg-gradient-to-b from-purple-500 to-purple-600 rounded-2xl relative"
+                    >
+                      {/* Character Head */}
+                      <div className="absolute -top-6 left-1/2 transform -translate-x-1/2 w-12 h-12 bg-gradient-to-b from-yellow-200 to-yellow-300 rounded-full border-2 border-white">
+                        {/* Eyes */}
+                        <div className="absolute top-3 left-2 w-1.5 h-1.5 bg-black rounded-full"></div>
+                        <div className="absolute top-3 right-2 w-1.5 h-1.5 bg-black rounded-full"></div>
+                        {/* Smile */}
+                        <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 w-4 h-2 border-b-2 border-black rounded-full"></div>
                       </div>
-                      <div className="text-right">
-                        <div className="text-lg font-bold text-deep-black dark:text-pure-white">$175.43</div>
-                        <div className="text-xs text-chartreuse">+2.34%</div>
-                      </div>
-                    </div>
-                    
-                    {/* Simple Chart */}
-                    <div className="flex-1 bg-gray-100 dark:bg-gray-800/50 rounded-2xl p-6 mb-6">
-                      <div className="flex items-end justify-center h-full gap-3">
-                        {Array.from({ length: 8 }, (_, i) => {
-                          const heights = [40, 65, 35, 80, 55, 90, 60, 75];
-                          const isActive = i === 5; // Highlight one bar
-                          return (
-                            <motion.div
-                              key={i}
-                              initial={{ height: 0 }}
-                              animate={{ height: `${heights[i]}%` }}
-                              transition={{ duration: 0.8, delay: 1.5 + i * 0.1 }}
-                              className={`w-6 rounded-lg ${
-                                isActive 
-                                  ? 'bg-chartreuse' 
-                                  : 'bg-gray-300 dark:bg-gray-700'
-                              }`}
-                            />
-                          );
-                        })}
-                      </div>
-                    </div>
-                    
-                    {/* Simple Value Display */}
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between py-2 border-b border-gray-200 dark:border-gray-700">
-                        <span className="text-sm text-gray-600 dark:text-gray-400">Valor Intrínseco</span>
-                        <span className="font-semibold text-chartreuse">$165.00</span>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm text-gray-600 dark:text-gray-400">Margem</span>
-                        <span className="text-sm font-medium text-chartreuse">+6.3%</span>
-                      </div>
-                      <div className="w-full bg-gray-200 dark:bg-gray-800 rounded-full h-1.5">
-                        <motion.div 
-                          initial={{ width: 0 }}
-                          animate={{ width: '70%' }}
-                          transition={{ duration: 1, delay: 2.5 }}
-                          className="bg-chartreuse h-1.5 rounded-full"
-                        />
-                      </div>
+                      
+                      {/* Character Arms */}
+                      <motion.div
+                        animate={{ rotate: [0, 10, 0, -10, 0] }}
+                        transition={{ duration: 4, repeat: Infinity }}
+                        className="absolute top-2 -left-3 w-6 h-2 bg-yellow-200 rounded-full"
+                      ></motion.div>
+                      <motion.div
+                        animate={{ rotate: [0, -10, 0, 10, 0] }}
+                        transition={{ duration: 4, repeat: Infinity, delay: 0.5 }}
+                        className="absolute top-2 -right-3 w-6 h-2 bg-yellow-200 rounded-full"
+                      ></motion.div>
+                    </motion.div>
+                  </div>
+                </motion.div>
+
+                {/* Animated Dollar Signs */}
+                <motion.div
+                  initial={{ opacity: 0, scale: 0 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.8, delay: 2 }}
+                  className="absolute top-10 right-10"
+                >
+                  <motion.div
+                    animate={{ 
+                      y: [-10, -20, -10],
+                      rotate: [0, 5, 0, -5, 0]
+                    }}
+                    transition={{ duration: 2, repeat: Infinity }}
+                    className="w-8 h-8 bg-xanthous rounded-full flex items-center justify-center text-white font-bold text-lg shadow-lg"
+                  >
+                    $
+                  </motion.div>
+                </motion.div>
+
+                <motion.div
+                  initial={{ opacity: 0, scale: 0 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.8, delay: 2.3 }}
+                  className="absolute top-16 left-8"
+                >
+                  <motion.div
+                    animate={{ 
+                      y: [-15, -25, -15],
+                      rotate: [0, -5, 0, 5, 0]
+                    }}
+                    transition={{ duration: 2.5, repeat: Infinity }}
+                    className="w-6 h-6 bg-chartreuse-dark rounded-full flex items-center justify-center text-white font-bold text-sm shadow-lg"
+                  >
+                    $
+                  </motion.div>
+                </motion.div>
+
+                {/* Animated Arrow */}
+                <motion.div
+                  initial={{ opacity: 0, x: -50 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 1, delay: 2.5 }}
+                  className="absolute top-1/2 right-0 transform translate-x-1/2"
+                >
+                  <motion.div
+                    animate={{ 
+                      x: [0, 10, 0],
+                      scale: [1, 1.1, 1]
+                    }}
+                    transition={{ duration: 2, repeat: Infinity }}
+                    className="w-0 h-0 border-l-[20px] border-l-transparent border-b-[35px] border-b-xanthous border-r-[20px] border-r-transparent transform rotate-90"
+                  ></motion.div>
+                </motion.div>
+
+                {/* Animated Chart Bars Behind Character */}
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 1, delay: 1 }}
+                  className="absolute bottom-0 left-0 right-0 flex items-end justify-center gap-1 h-32 px-4"
+                >
+                  {Array.from({ length: 6 }, (_, i) => {
+                    const heights = [60, 80, 45, 90, 70, 85];
+                    const profits = [2.3, 5.1, -1.2, 8.4, 3.7, 6.2];
+                    const isProfit = profits[i] > 0;
+                    return (
+                      <motion.div
+                        key={i}
+                        initial={{ height: 0 }}
+                        animate={{ 
+                          height: `${heights[i]}%`,
+                          y: [0, -2, 0, -1, 0]
+                        }}
+                        transition={{ 
+                          height: { duration: 1, delay: 1.5 + i * 0.1 },
+                          y: { duration: 3, repeat: Infinity, delay: i * 0.2 }
+                        }}
+                        className={`w-8 rounded-t-lg ${
+                          isProfit ? 'bg-green-400' : 'bg-red-400'
+                        } opacity-60`}
+                      />
+                    );
+                  })}
+                </motion.div>
+
+                {/* Phone/Device Mockup */}
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.8, rotate: -10 }}
+                  animate={{ opacity: 1, scale: 1, rotate: 0 }}
+                  transition={{ duration: 1, delay: 2.8 }}
+                  className="absolute top-8 left-4 w-20 h-32 bg-white dark:bg-gray-800 rounded-xl border-2 border-gray-300 dark:border-gray-600 shadow-lg"
+                >
+                  <div className="w-full h-full p-2 flex flex-col">
+                    <div className="w-full h-4 bg-gradient-to-r from-chartreuse-dark to-green-400 rounded mb-1"></div>
+                    <div className="flex-1 flex flex-col gap-1">
+                      <div className="w-full h-2 bg-gray-200 dark:bg-gray-600 rounded"></div>
+                      <div className="w-3/4 h-2 bg-gray-200 dark:bg-gray-600 rounded"></div>
+                      <div className="w-1/2 h-2 bg-gray-200 dark:bg-gray-600 rounded"></div>
                     </div>
                   </div>
                 </motion.div>
 
-                {/* Enhanced Floating Metrics with More Animations */}
-                <motion.div 
-                  initial={{ opacity: 0, scale: 0, rotate: -180 }}
-                  animate={{ opacity: 1, scale: 1, rotate: 0 }}
-                  transition={{ duration: 0.6, delay: 2.8, type: "spring", stiffness: 100 }}
-                  whileHover={{ scale: 1.1, rotate: 5 }}
-                  className="absolute -top-6 -left-6 w-14 h-14 bg-white dark:bg-gray-800 rounded-2xl flex items-center justify-center shadow-lg border border-gray-200 dark:border-gray-700"
-                >
-                  <motion.div
-                    animate={{ rotate: 360 }}
-                    transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
-                  >
-                    <Target className="h-6 w-6 text-chartreuse" />
-                  </motion.div>
-                </motion.div>
-
-                <motion.div 
-                  initial={{ opacity: 0, x: 40, scale: 0.5 }}
-                  animate={{ opacity: 1, x: 0, scale: 1 }}
-                  transition={{ duration: 0.6, delay: 3.0, type: "spring", bounce: 0.4 }}
-                  whileHover={{ scale: 1.05, x: -2 }}
-                  className="absolute top-1/3 -right-8 bg-white dark:bg-gray-800 rounded-xl px-3 py-2 shadow-lg border border-gray-200 dark:border-gray-700"
-                >
-                  <motion.div
-                    animate={{ opacity: [1, 0.7, 1] }}
-                    transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-                    className="text-xs font-medium text-chartreuse"
-                  >
-                    Subvalorizada
-                  </motion.div>
-                </motion.div>
-
-                <motion.div 
-                  initial={{ opacity: 0, y: 30, rotate: 90 }}
-                  animate={{ opacity: 1, y: 0, rotate: 0 }}
-                  transition={{ duration: 0.8, delay: 3.2, type: "spring", stiffness: 80 }}
-                  whileHover={{ y: -5, scale: 1.1 }}
-                  className="absolute -bottom-4 right-8 w-12 h-12 bg-chartreuse rounded-xl flex items-center justify-center shadow-lg"
-                >
-                  <motion.div
-                    animate={{ y: [-2, 2, -2] }}
-                    transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
-                  >
-                    <TrendingUp className="h-5 w-5 text-rich-black" />
-                  </motion.div>
-                </motion.div>
-
-                {/* Additional Floating Elements */}
-                <motion.div 
+                {/* Background Growth Element */}
+                <motion.div
                   initial={{ opacity: 0, scale: 0 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.5, delay: 3.5 }}
-                  className="absolute top-1/2 -left-12 w-8 h-8 bg-pear/20 rounded-full"
-                >
-                  <motion.div
-                    animate={{ scale: [1, 1.5, 1] }}
-                    transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-                    className="w-full h-full bg-chartreuse rounded-full opacity-60"
-                  />
-                </motion.div>
-
-                <motion.div 
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.6, delay: 3.8 }}
-                  className="absolute bottom-1/3 -right-6 w-6 h-6 bg-chartreuse/30 rounded-full"
-                >
-                  <motion.div
-                    animate={{ rotate: [0, 180, 360] }}
-                    transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
-                    className="w-full h-full bg-chartreuse rounded-full opacity-80"
-                  />
-                </motion.div>
+                  transition={{ duration: 2, delay: 1 }}
+                  className="absolute inset-0 bg-gradient-to-tr from-chartreuse-dark/10 to-green-400/10 rounded-full opacity-20"
+                ></motion.div>
               </div>
-
-              
             </motion.div>
           </div>
         </div>
