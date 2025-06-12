@@ -91,11 +91,14 @@ export default {
         neutral: "#f59e0b",
         tangerine: "#f28500",
         // New Color Palette
-        "rich-black": "#000C11",
+        "rich-black": "#000000",
+        "deep-black": "#000000",
         "non-photo-blue": "#B1EBFF",
         "xanthous": "#F4B514",
         "chartreuse": "#D8F22D",
+        "chartreuse-dark": "#B8D625",
         "pure-white": "#FFFFFF",
+        "gray-mouse": "#F5F5F5",
       },
       keyframes: {
         "accordion-down": {

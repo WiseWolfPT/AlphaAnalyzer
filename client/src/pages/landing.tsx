@@ -155,9 +155,9 @@ export default function Landing() {
                 transition={{ ...ANIMATION_CONFIG.SLOW, delay: 0.6 }}
                 className="text-5xl sm:text-6xl lg:text-7xl xl:text-8xl font-light mb-8 leading-[0.9] tracking-tight"
               >
-                <span className="text-gray-900 dark:text-pure-white">Investe com</span>
+                <span className="text-deep-black dark:text-pure-white">Investe com</span>
                 <br />
-                <span className="font-bold text-chartreuse">Precisão</span>
+                <span className="font-bold text-chartreuse-dark dark:text-chartreuse">Precisão</span>
               </motion.h1>
 
               {/* Dark Theme Subtitle */}
@@ -201,7 +201,7 @@ export default function Landing() {
               >
                 <Button 
                   size="lg" 
-                  className="text-lg px-10 py-4 h-14 bg-chartreuse hover:bg-chartreuse/90 text-gray-900 dark:text-rich-black rounded-full font-semibold shadow-lg hover:shadow-xl transition-all duration-300 border-0"
+                  className="text-lg px-10 py-4 h-14 bg-chartreuse-dark dark:bg-chartreuse hover:bg-chartreuse-dark/90 dark:hover:bg-chartreuse/90 text-deep-black dark:text-rich-black rounded-full font-semibold shadow-lg hover:shadow-xl transition-all duration-300 border-0"
                   onClick={() => window.location.href = '/trial'}
                 >
                   Começar agora
@@ -224,7 +224,7 @@ export default function Landing() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.7 }}
-                className="inline-flex items-center gap-2 bg-tangerine hover:bg-orange-400 text-white px-4 py-3 rounded-lg font-semibold text-sm transition-all duration-200 cursor-pointer shadow-lg"
+                className="inline-flex items-center gap-2 bg-xanthous hover:bg-xanthous/90 text-deep-black px-4 py-3 rounded-lg font-semibold text-sm transition-all duration-200 cursor-pointer shadow-lg"
                 onClick={() => window.location.href = '/trial'}
               >
                 <div className="flex items-center gap-2">
@@ -273,12 +273,12 @@ export default function Landing() {
                           <BarChart3 className="h-5 w-5 text-rich-black" />
                         </div>
                         <div>
-                          <h4 className="font-semibold text-gray-900 dark:text-pure-white text-sm">AAPL</h4>
+                          <h4 className="font-semibold text-deep-black dark:text-pure-white text-sm">AAPL</h4>
                           <p className="text-xs text-gray-600 dark:text-gray-400">Apple Inc.</p>
                         </div>
                       </div>
                       <div className="text-right">
-                        <div className="text-lg font-bold text-gray-900 dark:text-pure-white">$175.43</div>
+                        <div className="text-lg font-bold text-deep-black dark:text-pure-white">$175.43</div>
                         <div className="text-xs text-chartreuse">+2.34%</div>
                       </div>
                     </div>
@@ -443,7 +443,7 @@ export default function Landing() {
             viewport={{ once: true }}
             className="max-w-5xl mx-auto text-center"
           >
-            <h2 className="text-4xl lg:text-6xl font-light text-gray-900 dark:text-pure-white mb-8">
+            <h2 className="text-4xl lg:text-6xl font-light text-deep-black dark:text-pure-white mb-8">
               O que é <span className="font-semibold text-chartreuse">Valor Intrínseco</span>?
             </h2>
             <p className="text-xl text-gray-700 dark:text-gray-300 mb-6 leading-relaxed font-light max-w-3xl mx-auto">
@@ -526,7 +526,7 @@ export default function Landing() {
               >
                 <Card className="border-border/50 hover:border-primary/50 transition-all duration-300 hover:shadow-lg group">
                   <CardContent className="p-8 text-center">
-                    <div className="w-16 h-16 bg-gray-600 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:bg-tangerine transition-colors">
+                    <div className="w-16 h-16 bg-gray-600 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:bg-chartreuse transition-colors">
                       <benefit.icon className="h-8 w-8 text-white" />
                     </div>
                     <h3 className="text-xl font-semibold text-foreground mb-4">
@@ -629,7 +629,7 @@ export default function Landing() {
               <Card className="border-border/50 hover:shadow-lg transition-all duration-300">
                 <CardContent className="p-6">
                   <div className="flex items-center gap-3 mb-4">
-                    <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-white font-semibold">
+                    <div className="w-12 h-12 bg-gradient-to-br from-gray-800 to-black rounded-full flex items-center justify-center text-white font-semibold">
                       MS
                     </div>
                     <div>
@@ -689,7 +689,7 @@ export default function Landing() {
               <Card className="border-border/50 hover:shadow-lg transition-all duration-300">
                 <CardContent className="p-6">
                   <div className="flex items-center gap-3 mb-4">
-                    <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-orange-600 rounded-full flex items-center justify-center text-white font-semibold">
+                    <div className="w-12 h-12 bg-gradient-to-br from-gray-700 to-gray-900 rounded-full flex items-center justify-center text-white font-semibold">
                       CM
                     </div>
                     <div>
@@ -750,7 +750,7 @@ export default function Landing() {
                   open={openFAQ === index}
                   onOpenChange={(isOpen) => setOpenFAQ(isOpen ? index : null)}
                 >
-                  <Card className="border-border/50 hover:border-tangerine/50 transition-colors">
+                  <Card className="border-border/50 hover:border-chartreuse/50 transition-colors">
                     <CollapsibleTrigger className="w-full">
                       <CardContent className="p-6">
                         <div className="flex items-center justify-between">

@@ -17,8 +17,8 @@ export function TrialCTA({
   const baseClasses = "font-semibold transition-all duration-200";
   
   const variants = {
-    primary: "bg-tangerine hover:bg-orange-400 text-white hover:shadow-xl",
-    secondary: "bg-emerald-600 hover:bg-emerald-700 text-white"
+    primary: "bg-chartreuse-dark dark:bg-chartreuse hover:bg-chartreuse-dark/90 dark:hover:bg-chartreuse/90 text-deep-black dark:text-rich-black hover:shadow-xl",
+    secondary: "bg-gray-800 hover:bg-gray-900 text-white"
   };
 
   const sizes = {

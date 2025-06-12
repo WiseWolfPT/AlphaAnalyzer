@@ -64,7 +64,7 @@ export function Header() {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl flex items-center justify-center shadow-lg">
+            <div className="w-10 h-10 bg-gradient-to-br from-chartreuse-dark to-chartreuse rounded-xl flex items-center justify-center shadow-lg">
               <BarChart3 className="h-5 w-5 text-white" />
             </div>
             <div className="font-bold text-xl text-foreground">
@@ -109,7 +109,7 @@ export function Header() {
             {user ? (
               <Button 
                 onClick={() => window.location.href = '/dashboard'}
-                className="bg-chartreuse hover:bg-chartreuse/90 text-gray-900 dark:text-rich-black"
+                className="bg-chartreuse-dark dark:bg-chartreuse hover:bg-chartreuse-dark/90 dark:hover:bg-chartreuse/90 text-deep-black dark:text-rich-black"
               >
                 Dashboard
               </Button>
@@ -181,7 +181,7 @@ export function Header() {
                   {user ? (
                     <Button 
                       onClick={() => window.location.href = '/dashboard'}
-                      className="bg-chartreuse hover:bg-chartreuse/90 text-gray-900 dark:text-rich-black justify-start"
+                      className="bg-chartreuse-dark dark:bg-chartreuse hover:bg-chartreuse-dark/90 dark:hover:bg-chartreuse/90 text-deep-black dark:text-rich-black justify-start"
                     >
                       Dashboard
                     </Button>
