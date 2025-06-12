@@ -68,7 +68,7 @@ export function StickyCTA() {
               <div className="flex items-center gap-2">
                 <Button
                   size="sm"
-                  className="bg-tangerine hover:bg-orange-400 text-white font-semibold text-sm px-4 py-2 h-9"
+                  className="bg-chartreuse hover:bg-chartreuse/90 text-rich-black font-semibold text-sm px-4 py-2 h-9"
                   onClick={() => window.location.href = '/trial'}
                   aria-label="Começar trial grátis"
                 >

@@ -94,6 +94,7 @@ export default {
         "rich-black": "#000C11",
         "non-photo-blue": "#B1EBFF",
         "xanthous": "#F4B514",
+        "chartreuse": "#D8F22D",
         "pure-white": "#FFFFFF",
       },
       keyframes: {
