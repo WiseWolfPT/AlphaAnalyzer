@@ -433,8 +433,8 @@ export default function Landing() {
       </section>
 
 
-      {/* Dark Education Section */}
-      <section id="education" className="py-20 lg:py-32 bg-gray-900">
+      {/* Education Section */}
+      <section id="education" className="py-20 lg:py-32 bg-gray-100 dark:bg-gray-900">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -443,10 +443,10 @@ export default function Landing() {
             viewport={{ once: true }}
             className="max-w-5xl mx-auto text-center"
           >
-            <h2 className="text-4xl lg:text-6xl font-light text-pure-white mb-8">
+            <h2 className="text-4xl lg:text-6xl font-light text-gray-900 dark:text-pure-white mb-8">
               O que é <span className="font-semibold text-chartreuse">Valor Intrínseco</span>?
             </h2>
-            <p className="text-xl text-gray-300 mb-6 leading-relaxed font-light max-w-3xl mx-auto">
+            <p className="text-xl text-gray-700 dark:text-gray-300 mb-6 leading-relaxed font-light max-w-3xl mx-auto">
               O preço justo de uma ação baseado em fundamentos financeiros. 
               A estratégia que Warren Buffett usa há décadas.
             </p>
