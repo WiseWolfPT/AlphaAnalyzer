@@ -114,8 +114,8 @@ export default function Landing() {
       
       {/* Hero Section */}
       <section id="hero" className="relative overflow-hidden min-h-screen flex items-center">
-        {/* Pure Rich Black Background */}
-        <div className="absolute inset-0 bg-rich-black" />
+        {/* Gradient Background */}
+        <div className="absolute inset-0 bg-gradient-to-br from-rich-black to-non-photo-blue" />
         
         <div className="relative container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 items-center min-h-screen py-20">
@@ -126,15 +126,15 @@ export default function Landing() {
               transition={{ ...ANIMATION_CONFIG.SLOW, delay: 0.2 }}
               className="lg:col-span-7 text-left"
             >
-              {/* Dark Theme Badge */}
+              {/* Orange Badge */}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ ...ANIMATION_CONFIG.MEDIUM, delay: 0.4 }}
-                className="inline-flex items-center gap-2 bg-pear/10 text-pear border border-pear/20 px-4 py-2 rounded-full font-medium text-sm mb-8 hover:bg-pear/20 transition-all cursor-pointer"
+                className="inline-flex items-center gap-2 bg-xanthous/10 text-xanthous border border-xanthous/20 px-4 py-2 rounded-full font-medium text-sm mb-8 hover:bg-xanthous/20 transition-all cursor-pointer"
                 onClick={() => window.location.href = '/trial'}
               >
-                <div className="w-2 h-2 bg-pear rounded-full animate-pulse" />
+                <div className="w-2 h-2 bg-xanthous rounded-full animate-pulse" />
                 Teste gratuito • 7 dias
               </motion.div>
 
@@ -147,7 +147,7 @@ export default function Landing() {
               >
                 <span className="text-pure-white">Investe com</span>
                 <br />
-                <span className="font-bold text-pear">Precisão</span>
+                <span className="font-bold text-xanthous">Precisão</span>
               </motion.h1>
 
               {/* Dark Theme Subtitle */}
@@ -169,15 +169,15 @@ export default function Landing() {
                 className="flex items-center gap-8 mb-12 text-sm text-gray-400"
               >
                 <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 bg-pear rounded-full" />
+                  <div className="w-2 h-2 bg-xanthous rounded-full" />
                   <span>+6.000 ações</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 bg-pear rounded-full" />
+                  <div className="w-2 h-2 bg-xanthous rounded-full" />
                   <span>Tempo real</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 bg-pear rounded-full" />
+                  <div className="w-2 h-2 bg-xanthous rounded-full" />
                   <span>Precisão 94%+</span>
                 </div>
               </motion.div>
@@ -191,7 +191,7 @@ export default function Landing() {
               >
                 <Button 
                   size="lg" 
-                  className="text-lg px-10 py-4 h-14 bg-pear hover:bg-pear/90 text-rich-black rounded-full font-semibold shadow-lg hover:shadow-xl transition-all duration-300 border-0"
+                  className="text-lg px-10 py-4 h-14 bg-xanthous hover:bg-xanthous/90 text-rich-black rounded-full font-semibold shadow-lg hover:shadow-xl transition-all duration-300 border-0"
                   onClick={() => window.location.href = '/trial'}
                 >
                   Começar agora
@@ -201,7 +201,7 @@ export default function Landing() {
                 <Button 
                   variant="ghost"
                   size="lg" 
-                  className="text-lg px-8 py-4 h-14 text-gray-300 hover:text-pure-white border border-gray-700 hover:border-pear font-medium transition-all duration-200 rounded-full"
+                  className="text-lg px-8 py-4 h-14 text-gray-300 hover:text-pure-white border border-gray-700 hover:border-xanthous font-medium transition-all duration-200 rounded-full"
                   onClick={() => setShowVideoModal(true)}
                 >
                   Ver demonstração
@@ -259,7 +259,7 @@ export default function Landing() {
                     {/* Simple Header */}
                     <div className="flex items-center justify-between mb-6">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-pear rounded-xl flex items-center justify-center">
+                        <div className="w-10 h-10 bg-xanthous rounded-xl flex items-center justify-center">
                           <BarChart3 className="h-5 w-5 text-rich-black" />
                         </div>
                         <div>
@@ -269,7 +269,7 @@ export default function Landing() {
                       </div>
                       <div className="text-right">
                         <div className="text-lg font-bold text-pure-white">$175.43</div>
-                        <div className="text-xs text-pear">+2.34%</div>
+                        <div className="text-xs text-xanthous">+2.34%</div>
                       </div>
                     </div>
                     
@@ -287,7 +287,7 @@ export default function Landing() {
                               transition={{ duration: 0.8, delay: 1.5 + i * 0.1 }}
                               className={`w-6 rounded-lg ${
                                 isActive 
-                                  ? 'bg-pear' 
+                                  ? 'bg-xanthous' 
                                   : 'bg-gray-700'
                               }`}
                             />
@@ -300,18 +300,18 @@ export default function Landing() {
                     <div className="space-y-3">
                       <div className="flex items-center justify-between py-2 border-b border-gray-700">
                         <span className="text-sm text-gray-400">Valor Intrínseco</span>
-                        <span className="font-semibold text-pear">$165.00</span>
+                        <span className="font-semibold text-xanthous">$165.00</span>
                       </div>
                       <div className="flex items-center justify-between">
                         <span className="text-sm text-gray-400">Margem</span>
-                        <span className="text-sm font-medium text-pear">+6.3%</span>
+                        <span className="text-sm font-medium text-xanthous">+6.3%</span>
                       </div>
                       <div className="w-full bg-gray-800 rounded-full h-1.5">
                         <motion.div 
                           initial={{ width: 0 }}
                           animate={{ width: '70%' }}
                           transition={{ duration: 1, delay: 2.5 }}
-                          className="bg-pear h-1.5 rounded-full"
+                          className="bg-xanthous h-1.5 rounded-full"
                         />
                       </div>
                     </div>
@@ -330,7 +330,7 @@ export default function Landing() {
                     animate={{ rotate: 360 }}
                     transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
                   >
-                    <Target className="h-6 w-6 text-pear" />
+                    <Target className="h-6 w-6 text-xanthous" />
                   </motion.div>
                 </motion.div>
 
@@ -344,7 +344,7 @@ export default function Landing() {
                   <motion.div
                     animate={{ opacity: [1, 0.7, 1] }}
                     transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-                    className="text-xs font-medium text-pear"
+                    className="text-xs font-medium text-xanthous"
                   >
                     Subvalorizada
                   </motion.div>
@@ -355,7 +355,7 @@ export default function Landing() {
                   animate={{ opacity: 1, y: 0, rotate: 0 }}
                   transition={{ duration: 0.8, delay: 3.2, type: "spring", stiffness: 80 }}
                   whileHover={{ y: -5, scale: 1.1 }}
-                  className="absolute -bottom-4 right-8 w-12 h-12 bg-pear rounded-xl flex items-center justify-center shadow-lg"
+                  className="absolute -bottom-4 right-8 w-12 h-12 bg-xanthous rounded-xl flex items-center justify-center shadow-lg"
                 >
                   <motion.div
                     animate={{ y: [-2, 2, -2] }}
@@ -375,7 +375,7 @@ export default function Landing() {
                   <motion.div
                     animate={{ scale: [1, 1.5, 1] }}
                     transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-                    className="w-full h-full bg-pear rounded-full opacity-60"
+                    className="w-full h-full bg-xanthous rounded-full opacity-60"
                   />
                 </motion.div>
 
@@ -383,12 +383,12 @@ export default function Landing() {
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ duration: 0.6, delay: 3.8 }}
-                  className="absolute bottom-1/3 -right-6 w-6 h-6 bg-pear/30 rounded-full"
+                  className="absolute bottom-1/3 -right-6 w-6 h-6 bg-xanthous/30 rounded-full"
                 >
                   <motion.div
                     animate={{ rotate: [0, 180, 360] }}
                     transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
-                    className="w-full h-full bg-pear rounded-full opacity-80"
+                    className="w-full h-full bg-xanthous rounded-full opacity-80"
                   />
                 </motion.div>
               </div>
@@ -426,7 +426,7 @@ export default function Landing() {
               </div>
               <div className="flex items-center gap-1">
                 {[...Array(5)].map((_, i) => (
-                  <Star key={i} className="w-4 h-4 fill-pear text-pear" />
+                  <Star key={i} className="w-4 h-4 fill-xanthous text-xanthous" />
                 ))}
                 <span className="text-pure-white text-sm font-semibold ml-2">4.9</span>
               </div>
@@ -445,9 +445,9 @@ export default function Landing() {
           <motion.div
             animate={{ y: [0, 8, 0] }}
             transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-            className="w-6 h-10 border border-gray-600 rounded-full flex justify-center group-hover:border-pear transition-colors"
+            className="w-6 h-10 border border-gray-600 rounded-full flex justify-center group-hover:border-xanthous transition-colors"
           >
-            <div className="w-1 h-3 bg-gray-500 rounded-full mt-2 group-hover:bg-pear transition-colors" />
+            <div className="w-1 h-3 bg-gray-500 rounded-full mt-2 group-hover:bg-xanthous transition-colors" />
           </motion.div>
         </motion.div>
       </section>
@@ -486,13 +486,13 @@ export default function Landing() {
             className="max-w-5xl mx-auto text-center"
           >
             <h2 className="text-4xl lg:text-6xl font-light text-pure-white mb-8">
-              O que é <span className="font-semibold text-pear">Valor Intrínseco</span>?
+              O que é <span className="font-semibold text-xanthous">Valor Intrínseco</span>?
             </h2>
             <p className="text-xl text-gray-300 mb-6 leading-relaxed font-light max-w-3xl mx-auto">
               O preço justo de uma ação baseado em fundamentos financeiros. 
               A estratégia que Warren Buffett usa há décadas.
             </p>
-            <p className="text-base text-pear font-medium mb-16">
+            <p className="text-base text-xanthous font-medium mb-16">
               6.000+ ações globais • S&P 500 • Nasdaq • Europa
             </p>
             
