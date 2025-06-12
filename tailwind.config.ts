@@ -90,6 +90,11 @@ export default {
         negative: "#ef4444", 
         neutral: "#f59e0b",
         tangerine: "#f28500",
+        // New Dark Theme Palette
+        "rich-black": "#000C11",
+        "pear": "#D2EB40", 
+        "xanthous": "#F4B514",
+        "pure-white": "#FFFFFF",
       },
       keyframes: {
         "accordion-down": {

@@ -114,14 +114,19 @@ export default function Landing() {
       
       {/* Hero Section */}
       <section id="hero" className="relative overflow-hidden min-h-screen flex items-center">
-        {/* Modern Minimalist Background */}
-        <div className="absolute inset-0 bg-gradient-to-br from-white via-gray-50 to-gray-100" />
+        {/* Dark Theme Background */}
+        <div className="absolute inset-0 bg-rich-black" />
         
-        {/* Subtle Geometric Elements */}
-        <div className="absolute inset-0 opacity-5">
-          <div className="absolute top-20 right-20 w-96 h-96 bg-tangerine rounded-full blur-3xl" />
-          <div className="absolute bottom-20 left-20 w-80 h-80 bg-blue-500 rounded-full blur-3xl" />
+        {/* Sophisticated Dark Overlays */}
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute top-20 right-20 w-96 h-96 bg-pear rounded-full blur-3xl" />
+          <div className="absolute bottom-20 left-20 w-80 h-80 bg-xanthous rounded-full blur-3xl" />
         </div>
+        
+        {/* Subtle Grid Pattern */}
+        <div className="absolute inset-0 opacity-5" style={{
+          backgroundImage: `radial-gradient(circle at 1px 1px, #D2EB40 1px, transparent 0)`
+        }} />
         
         <div className="relative container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 items-center min-h-screen py-20">
@@ -132,63 +137,63 @@ export default function Landing() {
               transition={{ ...ANIMATION_CONFIG.SLOW, delay: 0.2 }}
               className="lg:col-span-7 text-left"
             >
-              {/* Minimalist Badge */}
+              {/* Dark Theme Badge */}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ ...ANIMATION_CONFIG.MEDIUM, delay: 0.4 }}
-                className="inline-flex items-center gap-2 bg-tangerine/10 text-tangerine border border-tangerine/20 px-4 py-2 rounded-full font-medium text-sm mb-8 hover:bg-tangerine/20 transition-all cursor-pointer"
+                className="inline-flex items-center gap-2 bg-pear/10 text-pear border border-pear/20 px-4 py-2 rounded-full font-medium text-sm mb-8 hover:bg-pear/20 transition-all cursor-pointer"
                 onClick={() => window.location.href = '/trial'}
               >
-                <div className="w-2 h-2 bg-tangerine rounded-full animate-pulse" />
+                <div className="w-2 h-2 bg-pear rounded-full animate-pulse" />
                 Teste gratuito • 7 dias
               </motion.div>
 
-              {/* Modern Headline */}
+              {/* Dark Theme Headline */}
               <motion.h1
                 initial={{ opacity: 0, y: 40 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ ...ANIMATION_CONFIG.SLOW, delay: 0.6 }}
                 className="text-5xl sm:text-6xl lg:text-7xl xl:text-8xl font-light mb-8 leading-[0.9] tracking-tight"
               >
-                <span className="text-gray-900">Investe com</span>
+                <span className="text-pure-white">Investe com</span>
                 <br />
-                <span className="font-bold bg-gradient-to-r from-tangerine to-orange-600 bg-clip-text text-transparent">Precisão</span>
+                <span className="font-bold bg-gradient-to-r from-pear to-xanthous bg-clip-text text-transparent">Precisão</span>
               </motion.h1>
 
-              {/* Clean Subtitle */}
+              {/* Dark Theme Subtitle */}
               <motion.p
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ ...ANIMATION_CONFIG.MEDIUM, delay: 0.8 }}
-                className="text-xl text-gray-600 mb-12 leading-relaxed max-w-2xl font-light"
+                className="text-xl text-gray-300 mb-12 leading-relaxed max-w-2xl font-light"
               >
                 Análise fundamental simplificada. Valor intrínseco em segundos. 
                 <br />Decisões baseadas em dados, não emoções.
               </motion.p>
               
-              {/* Stats */}
+              {/* Dark Theme Stats */}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ ...ANIMATION_CONFIG.MEDIUM, delay: 1.0 }}
-                className="flex items-center gap-8 mb-12 text-sm text-gray-500"
+                className="flex items-center gap-8 mb-12 text-sm text-gray-400"
               >
                 <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 bg-emerald-500 rounded-full" />
+                  <div className="w-2 h-2 bg-pear rounded-full" />
                   <span>+6.000 ações</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 bg-blue-500 rounded-full" />
+                  <div className="w-2 h-2 bg-xanthous rounded-full" />
                   <span>Tempo real</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 bg-tangerine rounded-full" />
+                  <div className="w-2 h-2 bg-emerald-400 rounded-full" />
                   <span>Precisão 94%+</span>
                 </div>
               </motion.div>
 
-              {/* Minimalist CTAs */}
+              {/* Dark Theme CTAs */}
               <motion.div
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -197,7 +202,7 @@ export default function Landing() {
               >
                 <Button 
                   size="lg" 
-                  className="text-lg px-10 py-4 h-14 bg-gray-900 hover:bg-gray-800 text-white rounded-full font-medium shadow-lg hover:shadow-xl transition-all duration-300 border-0"
+                  className="text-lg px-10 py-4 h-14 bg-gradient-to-r from-pear to-xanthous hover:from-pear/90 hover:to-xanthous/90 text-rich-black rounded-full font-semibold shadow-lg hover:shadow-xl transition-all duration-300 border-0"
                   onClick={() => window.location.href = '/trial'}
                 >
                   Começar agora
@@ -207,7 +212,7 @@ export default function Landing() {
                 <Button 
                   variant="ghost"
                   size="lg" 
-                  className="text-lg px-8 py-4 h-14 text-gray-600 hover:text-gray-900 font-medium transition-all duration-200"
+                  className="text-lg px-8 py-4 h-14 text-gray-300 hover:text-pure-white border border-gray-700 hover:border-gray-600 font-medium transition-all duration-200 rounded-full"
                   onClick={() => setShowVideoModal(true)}
                 >
                   Ver demonstração
@@ -251,36 +256,36 @@ export default function Landing() {
               transition={{ ...ANIMATION_CONFIG.SLOW, delay: 1.0 }}
               className="lg:col-span-5 relative flex justify-center items-center"
             >
-              {/* Modern Dashboard Preview */}
+              {/* Dark Dashboard Preview */}
               <div className="relative">
                 <motion.div 
                   whileHover={{ y: -8, rotateY: 5 }}
-                  className="w-80 sm:w-96 h-80 sm:h-96 bg-white rounded-3xl p-6 shadow-2xl border border-gray-100"
+                  className="w-80 sm:w-96 h-80 sm:h-96 bg-gray-900 rounded-3xl p-6 shadow-2xl border border-gray-800"
                   style={{ 
-                    boxShadow: '0 25px 80px -12px rgba(0, 0, 0, 0.25)',
-                    background: 'linear-gradient(145deg, #ffffff 0%, #f8fafc 100%)'
+                    boxShadow: '0 25px 80px -12px rgba(210, 235, 64, 0.15)',
+                    background: 'linear-gradient(145deg, #111827 0%, #0f172a 100%)'
                   }}
                 >
                   <div className="w-full h-full flex flex-col">
-                    {/* Clean Header */}
+                    {/* Dark Header */}
                     <div className="flex items-center justify-between mb-6">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-gradient-to-br from-tangerine to-orange-600 rounded-xl flex items-center justify-center">
-                          <BarChart3 className="h-5 w-5 text-white" />
+                        <div className="w-10 h-10 bg-gradient-to-br from-pear to-xanthous rounded-xl flex items-center justify-center">
+                          <BarChart3 className="h-5 w-5 text-rich-black" />
                         </div>
                         <div>
-                          <h4 className="font-semibold text-gray-900 text-sm">AAPL</h4>
-                          <p className="text-xs text-gray-500">Apple Inc.</p>
+                          <h4 className="font-semibold text-pure-white text-sm">AAPL</h4>
+                          <p className="text-xs text-gray-400">Apple Inc.</p>
                         </div>
                       </div>
                       <div className="text-right">
-                        <div className="text-lg font-bold text-gray-900">$175.43</div>
-                        <div className="text-xs text-emerald-600">+2.34%</div>
+                        <div className="text-lg font-bold text-pure-white">$175.43</div>
+                        <div className="text-xs text-pear">+2.34%</div>
                       </div>
                     </div>
                     
-                    {/* Minimalist Chart */}
-                    <div className="flex-1 bg-gray-50/50 rounded-2xl p-6 mb-6">
+                    {/* Dark Chart */}
+                    <div className="flex-1 bg-gray-800/50 rounded-2xl p-6 mb-6">
                       <div className="flex items-end justify-center h-full gap-3">
                         {Array.from({ length: 8 }, (_, i) => {
                           const heights = [40, 65, 35, 80, 55, 90, 60, 75];
@@ -293,8 +298,8 @@ export default function Landing() {
                               transition={{ duration: 0.8, delay: 1.5 + i * 0.1 }}
                               className={`w-6 rounded-lg ${
                                 isActive 
-                                  ? 'bg-gradient-to-t from-tangerine to-orange-400' 
-                                  : 'bg-gray-200'
+                                  ? 'bg-gradient-to-t from-pear to-xanthous' 
+                                  : 'bg-gray-700'
                               }`}
                             />
                           );
@@ -302,54 +307,54 @@ export default function Landing() {
                       </div>
                     </div>
                     
-                    {/* Clean Value Display */}
+                    {/* Dark Value Display */}
                     <div className="space-y-3">
-                      <div className="flex items-center justify-between py-2 border-b border-gray-100">
-                        <span className="text-sm text-gray-600">Valor Intrínseco</span>
-                        <span className="font-semibold text-tangerine">$165.00</span>
+                      <div className="flex items-center justify-between py-2 border-b border-gray-700">
+                        <span className="text-sm text-gray-400">Valor Intrínseco</span>
+                        <span className="font-semibold text-xanthous">$165.00</span>
                       </div>
                       <div className="flex items-center justify-between">
-                        <span className="text-sm text-gray-600">Margem</span>
-                        <span className="text-sm font-medium text-emerald-600">+6.3%</span>
+                        <span className="text-sm text-gray-400">Margem</span>
+                        <span className="text-sm font-medium text-pear">+6.3%</span>
                       </div>
-                      <div className="w-full bg-gray-100 rounded-full h-1.5">
+                      <div className="w-full bg-gray-800 rounded-full h-1.5">
                         <motion.div 
                           initial={{ width: 0 }}
                           animate={{ width: '70%' }}
                           transition={{ duration: 1, delay: 2.5 }}
-                          className="bg-gradient-to-r from-tangerine to-orange-500 h-1.5 rounded-full"
+                          className="bg-gradient-to-r from-pear to-xanthous h-1.5 rounded-full"
                         />
                       </div>
                     </div>
                   </div>
                 </motion.div>
 
-                {/* Floating Metrics */}
+                {/* Dark Floating Metrics */}
                 <motion.div 
                   initial={{ opacity: 0, scale: 0 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ duration: 0.4, delay: 2.8 }}
-                  className="absolute -top-6 -left-6 w-14 h-14 bg-white rounded-2xl flex items-center justify-center shadow-lg border border-gray-100"
+                  className="absolute -top-6 -left-6 w-14 h-14 bg-gray-800 rounded-2xl flex items-center justify-center shadow-lg border border-gray-700"
                 >
-                  <Target className="h-6 w-6 text-tangerine" />
+                  <Target className="h-6 w-6 text-pear" />
                 </motion.div>
 
                 <motion.div 
                   initial={{ opacity: 0, x: 20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ duration: 0.4, delay: 3.0 }}
-                  className="absolute top-1/3 -right-8 bg-white rounded-xl px-3 py-2 shadow-lg border border-gray-100"
+                  className="absolute top-1/3 -right-8 bg-gray-800 rounded-xl px-3 py-2 shadow-lg border border-gray-700"
                 >
-                  <div className="text-xs font-medium text-emerald-600">Subvalorizada</div>
+                  <div className="text-xs font-medium text-pear">Subvalorizada</div>
                 </motion.div>
 
                 <motion.div 
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.4, delay: 3.2 }}
-                  className="absolute -bottom-4 right-8 w-12 h-12 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-xl flex items-center justify-center shadow-lg"
+                  className="absolute -bottom-4 right-8 w-12 h-12 bg-gradient-to-br from-pear to-xanthous rounded-xl flex items-center justify-center shadow-lg"
                 >
-                  <TrendingUp className="h-5 w-5 text-white" />
+                  <TrendingUp className="h-5 w-5 text-rich-black" />
                 </motion.div>
               </div>
 
@@ -363,38 +368,38 @@ export default function Landing() {
           <div className="relative left-[calc(50%-11rem)] aspect-[1155/678] w-[36.125rem] -translate-x-1/2 bg-gray-700 opacity-15 sm:left-[calc(50%-30rem)] sm:w-[72.1875rem]" />
         </div>
         
-        {/* Clean Social Proof */}
+        {/* Dark Social Proof */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 3.5 }}
           className="absolute bottom-20 left-1/2 transform -translate-x-1/2 w-full max-w-lg px-4"
         >
-          <div className="bg-white/95 backdrop-blur-sm rounded-2xl px-8 py-6 border border-gray-200/50 shadow-xl">
+          <div className="bg-gray-900/95 backdrop-blur-sm rounded-2xl px-8 py-6 border border-gray-700/50 shadow-xl">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
                 <div className="flex -space-x-3">
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 border-2 border-white" />
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-500 to-emerald-600 border-2 border-white" />
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-purple-600 border-2 border-white" />
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-gray-400 to-gray-500 border-2 border-white flex items-center justify-center text-white text-sm font-medium">+</div>
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 border-2 border-gray-800" />
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-500 to-emerald-600 border-2 border-gray-800" />
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-purple-600 border-2 border-gray-800" />
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-gray-600 to-gray-700 border-2 border-gray-800 flex items-center justify-center text-white text-sm font-medium">+</div>
                 </div>
                 <div>
-                  <div className="text-sm font-semibold text-gray-900">1.200+ investidores</div>
-                  <div className="text-xs text-gray-600">confiam na plataforma</div>
+                  <div className="text-sm font-semibold text-pure-white">1.200+ investidores</div>
+                  <div className="text-xs text-gray-400">confiam na plataforma</div>
                 </div>
               </div>
               <div className="flex items-center gap-1">
                 {[...Array(5)].map((_, i) => (
-                  <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                  <Star key={i} className="w-4 h-4 fill-xanthous text-xanthous" />
                 ))}
-                <span className="text-gray-900 text-sm font-semibold ml-2">4.9</span>
+                <span className="text-pure-white text-sm font-semibold ml-2">4.9</span>
               </div>
             </div>
           </div>
         </motion.div>
         
-        {/* Minimal Scroll Indicator */}
+        {/* Dark Scroll Indicator */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -405,15 +410,15 @@ export default function Landing() {
           <motion.div
             animate={{ y: [0, 8, 0] }}
             transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-            className="w-6 h-10 border border-gray-300 rounded-full flex justify-center group-hover:border-tangerine transition-colors"
+            className="w-6 h-10 border border-gray-600 rounded-full flex justify-center group-hover:border-pear transition-colors"
           >
-            <div className="w-1 h-3 bg-gray-400 rounded-full mt-2 group-hover:bg-tangerine transition-colors" />
+            <div className="w-1 h-3 bg-gray-500 rounded-full mt-2 group-hover:bg-pear transition-colors" />
           </motion.div>
         </motion.div>
       </section>
 
-      {/* Clean Trust Badges */}
-      <section className="py-16 lg:py-20 bg-gray-50/50">
+      {/* Dark Trust Badges */}
+      <section className="py-16 lg:py-20 bg-gray-900/50">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -422,21 +427,21 @@ export default function Landing() {
             viewport={{ once: true }}
             className="text-center max-w-4xl mx-auto"
           >
-            <p className="text-sm text-gray-500 mb-8 font-medium">
+            <p className="text-sm text-gray-400 mb-8 font-medium">
               Dados de qualidade institucional
             </p>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-8 items-center">
-              <div className="text-gray-400 font-medium text-base hover:text-gray-600 transition-colors">Yahoo Finance</div>
-              <div className="text-gray-400 font-medium text-base hover:text-gray-600 transition-colors">Alpha Vantage</div>
-              <div className="text-gray-400 font-medium text-base hover:text-gray-600 transition-colors">Financial Modeling</div>
-              <div className="text-gray-400 font-medium text-base hover:text-gray-600 transition-colors">Polygon.io</div>
+              <div className="text-gray-500 font-medium text-base hover:text-gray-300 transition-colors">Yahoo Finance</div>
+              <div className="text-gray-500 font-medium text-base hover:text-gray-300 transition-colors">Alpha Vantage</div>
+              <div className="text-gray-500 font-medium text-base hover:text-gray-300 transition-colors">Financial Modeling</div>
+              <div className="text-gray-500 font-medium text-base hover:text-gray-300 transition-colors">Polygon.io</div>
             </div>
           </motion.div>
         </div>
       </section>
 
-      {/* Clean Education Section */}
-      <section id="education" className="py-20 lg:py-32 bg-white">
+      {/* Dark Education Section */}
+      <section id="education" className="py-20 lg:py-32 bg-gray-900">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -445,14 +450,14 @@ export default function Landing() {
             viewport={{ once: true }}
             className="max-w-5xl mx-auto text-center"
           >
-            <h2 className="text-4xl lg:text-6xl font-light text-gray-900 mb-8">
-              O que é <span className="font-semibold text-tangerine">Valor Intrínseco</span>?
+            <h2 className="text-4xl lg:text-6xl font-light text-pure-white mb-8">
+              O que é <span className="font-semibold bg-gradient-to-r from-pear to-xanthous bg-clip-text text-transparent">Valor Intrínseco</span>?
             </h2>
-            <p className="text-xl text-gray-600 mb-6 leading-relaxed font-light max-w-3xl mx-auto">
+            <p className="text-xl text-gray-300 mb-6 leading-relaxed font-light max-w-3xl mx-auto">
               O preço justo de uma ação baseado em fundamentos financeiros. 
               A estratégia que Warren Buffett usa há décadas.
             </p>
-            <p className="text-base text-tangerine font-medium mb-16">
+            <p className="text-base text-pear font-medium mb-16">
               6.000+ ações globais • S&P 500 • Nasdaq • Europa
             </p>
             
