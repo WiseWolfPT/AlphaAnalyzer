@@ -255,98 +255,118 @@ export default function Landing() {
               transition={{ ...ANIMATION_CONFIG.SLOW, delay: 1.0 }}
               className="lg:col-span-5 relative flex justify-center items-center"
             >
-              {/* Animated Investment Scene */}
+              {/* Professional Investment Scene */}
               <div className="relative w-96 h-96">
-                {/* Main Animated Character */}
+                {/* Modern Professional Character */}
                 <motion.div
-                  initial={{ opacity: 0, y: 50 }}
+                  initial={{ opacity: 0, y: 30 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 1, delay: 1.5 }}
-                  className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-10"
+                  className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-10"
                 >
-                  {/* Character Body */}
+                  {/* Professional Figure */}
                   <div className="relative">
+                    {/* Body - Business Suit */}
                     <motion.div
-                      animate={{ y: [-2, 2, -2] }}
-                      transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-                      className="w-20 h-24 bg-gradient-to-b from-purple-500 to-purple-600 rounded-2xl relative"
+                      animate={{ y: [-1, 1, -1] }}
+                      transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                      className="w-16 h-20 bg-gradient-to-b from-gray-800 to-gray-900 rounded-t-lg relative overflow-hidden"
                     >
-                      {/* Character Head */}
-                      <div className="absolute -top-6 left-1/2 transform -translate-x-1/2 w-12 h-12 bg-gradient-to-b from-yellow-200 to-yellow-300 rounded-full border-2 border-white">
-                        {/* Eyes */}
-                        <div className="absolute top-3 left-2 w-1.5 h-1.5 bg-black rounded-full"></div>
-                        <div className="absolute top-3 right-2 w-1.5 h-1.5 bg-black rounded-full"></div>
-                        {/* Smile */}
-                        <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 w-4 h-2 border-b-2 border-black rounded-full"></div>
-                      </div>
+                      {/* Suit Details */}
+                      <div className="absolute top-2 left-1/2 transform -translate-x-1/2 w-1 h-6 bg-gray-700"></div>
+                      <div className="absolute top-4 left-3 w-2 h-2 bg-gray-700 rounded-full"></div>
+                      <div className="absolute top-6 left-3 w-2 h-2 bg-gray-700 rounded-full"></div>
                       
-                      {/* Character Arms */}
-                      <motion.div
-                        animate={{ rotate: [0, 10, 0, -10, 0] }}
-                        transition={{ duration: 4, repeat: Infinity }}
-                        className="absolute top-2 -left-3 w-6 h-2 bg-yellow-200 rounded-full"
-                      ></motion.div>
-                      <motion.div
-                        animate={{ rotate: [0, -10, 0, 10, 0] }}
-                        transition={{ duration: 4, repeat: Infinity, delay: 0.5 }}
-                        className="absolute top-2 -right-3 w-6 h-2 bg-yellow-200 rounded-full"
-                      ></motion.div>
+                      {/* Tie */}
+                      <div className="absolute top-1 left-1/2 transform -translate-x-1/2 w-2 h-8 bg-chartreuse-dark clip-triangle"></div>
                     </motion.div>
+                    
+                    {/* Head - Professional */}
+                    <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 w-8 h-8 bg-gradient-to-b from-yellow-100 to-yellow-200 rounded-full">
+                      {/* Hair */}
+                      <div className="absolute -top-1 left-0 right-0 h-2 bg-gray-700 rounded-t-full"></div>
+                      {/* Professional expression */}
+                      <div className="absolute top-2 left-1.5 w-1 h-1 bg-gray-800 rounded-full"></div>
+                      <div className="absolute top-2 right-1.5 w-1 h-1 bg-gray-800 rounded-full"></div>
+                    </div>
+                    
+                    {/* Arms - More subtle */}
+                    <motion.div
+                      animate={{ rotate: [0, 5, 0, -5, 0] }}
+                      transition={{ duration: 6, repeat: Infinity }}
+                      className="absolute top-3 -left-2 w-4 h-1.5 bg-gray-800 rounded-full"
+                    ></motion.div>
+                    <motion.div
+                      animate={{ rotate: [0, -5, 0, 5, 0] }}
+                      transition={{ duration: 6, repeat: Infinity, delay: 1 }}
+                      className="absolute top-3 -right-2 w-4 h-1.5 bg-gray-800 rounded-full"
+                    ></motion.div>
+                    
+                    {/* Legs */}
+                    <div className="absolute -bottom-3 left-1/2 transform -translate-x-1/2 flex gap-1">
+                      <div className="w-2 h-6 bg-gray-800 rounded-b-lg"></div>
+                      <div className="w-2 h-6 bg-gray-800 rounded-b-lg"></div>
+                    </div>
                   </div>
                 </motion.div>
 
-                {/* Animated Dollar Signs */}
+                {/* Floating Profit Indicators */}
                 <motion.div
                   initial={{ opacity: 0, scale: 0 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ duration: 0.8, delay: 2 }}
-                  className="absolute top-10 right-10"
+                  className="absolute top-12 right-12"
                 >
                   <motion.div
                     animate={{ 
-                      y: [-10, -20, -10],
-                      rotate: [0, 5, 0, -5, 0]
+                      y: [-8, -16, -8],
+                      scale: [1, 1.1, 1]
                     }}
-                    transition={{ duration: 2, repeat: Infinity }}
-                    className="w-8 h-8 bg-xanthous rounded-full flex items-center justify-center text-white font-bold text-lg shadow-lg"
+                    transition={{ duration: 3, repeat: Infinity }}
+                    className="w-12 h-12 bg-gradient-to-br from-chartreuse-dark to-green-500 rounded-xl flex items-center justify-center text-white font-bold text-lg shadow-xl"
                   >
-                    $
+                    +12%
                   </motion.div>
                 </motion.div>
 
                 <motion.div
                   initial={{ opacity: 0, scale: 0 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.8, delay: 2.3 }}
-                  className="absolute top-16 left-8"
+                  transition={{ duration: 0.8, delay: 2.5 }}
+                  className="absolute top-20 left-12"
                 >
                   <motion.div
                     animate={{ 
-                      y: [-15, -25, -15],
-                      rotate: [0, -5, 0, 5, 0]
+                      y: [-12, -20, -12],
+                      rotate: [0, 3, 0, -3, 0]
                     }}
-                    transition={{ duration: 2.5, repeat: Infinity }}
-                    className="w-6 h-6 bg-chartreuse-dark rounded-full flex items-center justify-center text-white font-bold text-sm shadow-lg"
+                    transition={{ duration: 3.5, repeat: Infinity }}
+                    className="w-10 h-10 bg-gradient-to-br from-xanthous to-orange-500 rounded-lg flex items-center justify-center text-white font-bold text-sm shadow-lg"
                   >
-                    $
+                    $165
                   </motion.div>
                 </motion.div>
 
-                {/* Animated Arrow */}
+                {/* Growth Arrow */}
                 <motion.div
-                  initial={{ opacity: 0, x: -50 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 1, delay: 2.5 }}
-                  className="absolute top-1/2 right-0 transform translate-x-1/2"
+                  initial={{ opacity: 0, scale: 0 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 1, delay: 2.8 }}
+                  className="absolute top-1/3 right-8"
                 >
                   <motion.div
                     animate={{ 
-                      x: [0, 10, 0],
-                      scale: [1, 1.1, 1]
+                      y: [-3, 3, -3],
+                      rotate: [0, 2, 0, -2, 0]
                     }}
                     transition={{ duration: 2, repeat: Infinity }}
-                    className="w-0 h-0 border-l-[20px] border-l-transparent border-b-[35px] border-b-xanthous border-r-[20px] border-r-transparent transform rotate-90"
-                  ></motion.div>
+                    className="relative"
+                  >
+                    {/* Arrow shaft */}
+                    <div className="w-16 h-2 bg-gradient-to-r from-chartreuse-dark to-green-500 rounded-full transform rotate-45"></div>
+                    {/* Arrow head */}
+                    <div className="absolute -right-1 -top-1 w-0 h-0 border-l-[8px] border-l-green-500 border-t-[4px] border-t-transparent border-b-[4px] border-b-transparent"></div>
+                  </motion.div>
                 </motion.div>
 
                 {/* Animated Chart Bars Behind Character */}
@@ -380,21 +400,27 @@ export default function Landing() {
                   })}
                 </motion.div>
 
-                {/* Phone/Device Mockup */}
+                {/* Modern Laptop/Dashboard */}
                 <motion.div
-                  initial={{ opacity: 0, scale: 0.8, rotate: -10 }}
-                  animate={{ opacity: 1, scale: 1, rotate: 0 }}
-                  transition={{ duration: 1, delay: 2.8 }}
-                  className="absolute top-8 left-4 w-20 h-32 bg-white dark:bg-gray-800 rounded-xl border-2 border-gray-300 dark:border-gray-600 shadow-lg"
+                  initial={{ opacity: 0, scale: 0.8, rotateY: -20 }}
+                  animate={{ opacity: 1, scale: 1, rotateY: 0 }}
+                  transition={{ duration: 1, delay: 3 }}
+                  className="absolute top-6 left-6 w-24 h-16 bg-gradient-to-b from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900 rounded-lg shadow-xl border border-gray-300 dark:border-gray-700"
                 >
-                  <div className="w-full h-full p-2 flex flex-col">
-                    <div className="w-full h-4 bg-gradient-to-r from-chartreuse-dark to-green-400 rounded mb-1"></div>
-                    <div className="flex-1 flex flex-col gap-1">
-                      <div className="w-full h-2 bg-gray-200 dark:bg-gray-600 rounded"></div>
-                      <div className="w-3/4 h-2 bg-gray-200 dark:bg-gray-600 rounded"></div>
-                      <div className="w-1/2 h-2 bg-gray-200 dark:bg-gray-600 rounded"></div>
+                  {/* Screen */}
+                  <div className="w-full h-3/4 bg-gradient-to-br from-gray-900 to-black rounded-t-lg p-1">
+                    {/* Dashboard content */}
+                    <div className="w-full h-full bg-gray-800 rounded-sm p-1 flex flex-col gap-0.5">
+                      <div className="w-full h-1 bg-gradient-to-r from-chartreuse-dark to-green-400 rounded-full"></div>
+                      <div className="flex gap-0.5 flex-1">
+                        <div className="w-1/3 bg-green-500 rounded-sm"></div>
+                        <div className="w-1/3 bg-red-400 rounded-sm"></div>
+                        <div className="w-1/3 bg-chartreuse-dark rounded-sm"></div>
+                      </div>
                     </div>
                   </div>
+                  {/* Laptop base */}
+                  <div className="w-full h-1/4 bg-gradient-to-b from-gray-200 to-gray-300 dark:from-gray-700 dark:to-gray-800 rounded-b-lg"></div>
                 </motion.div>
 
                 {/* Background Growth Element */}
