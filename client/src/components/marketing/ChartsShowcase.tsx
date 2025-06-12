@@ -8,7 +8,7 @@ export function ChartsShowcase() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
+          transition={{ duration: 0.3 }}
           viewport={{ once: true }}
           className="text-center mb-16"
         >
@@ -24,7 +24,7 @@ export function ChartsShowcase() {
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             whileInView={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.6 }}
+            transition={{ duration: 0.4 }}
             viewport={{ once: true }}
             className="bg-card/50 backdrop-blur-sm border border-border/50 rounded-2xl p-8 shadow-xl"
           >
@@ -61,7 +61,7 @@ export function ChartsShowcase() {
                       key={i}
                       initial={{ height: 0 }}
                       whileInView={{ height }}
-                      transition={{ duration: 0.5, delay: i * 0.05 }}
+                      transition={{ duration: 0.3, delay: i * 0.02 }}
                       viewport={{ once: true }}
                       className={`w-3 rounded-sm ${
                         isGreen ? 'bg-emerald-500' : 'bg-red-500'
@@ -87,7 +87,7 @@ export function ChartsShowcase() {
               <motion.div
                 initial={{ opacity: 0, x: -20 }}
                 whileInView={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.5, delay: 0.2 }}
+                transition={{ duration: 0.3, delay: 0.1 }}
                 viewport={{ once: true }}
                 className="bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-6"
               >
@@ -114,7 +114,7 @@ export function ChartsShowcase() {
               <motion.div
                 initial={{ opacity: 0, x: 20 }}
                 whileInView={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.5, delay: 0.3 }}
+                transition={{ duration: 0.3, delay: 0.15 }}
                 viewport={{ once: true }}
                 className="bg-orange-500/10 border border-orange-500/20 rounded-xl p-6"
               >

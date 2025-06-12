@@ -51,7 +51,7 @@ export function FundamentalsGrid() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
+          transition={{ duration: 0.3 }}
           viewport={{ once: true }}
           className="text-center mb-16"
         >
@@ -70,7 +70,7 @@ export function FundamentalsGrid() {
                 key={card.id}
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
+                transition={{ duration: 0.3, delay: index * 0.05 }}
                 viewport={{ once: true }}
               >
                 <Card 
@@ -84,7 +84,7 @@ export function FundamentalsGrid() {
                         alt={`${card.title} chart`}
                         className="w-full h-full object-contain"
                         loading="lazy"
-                        fetchPriority="low"
+                        decoding="async"
                         width="150"
                         height="90"
                       />

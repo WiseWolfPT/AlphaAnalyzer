@@ -4,6 +4,7 @@ import type { Stock } from "@shared/schema";
 export interface MockStock extends Omit<Stock, 'id' | 'lastUpdated'> {
   intrinsicValue?: string;
   valuation?: string;
+  industry: string | null;
 }
 
 // Mock API data for demo purposes
@@ -15,6 +16,7 @@ export const mockStocks: MockStock[] = [
     change: '2.34',
     changePercent: '1.35',
     sector: 'Technology',
+    industry: 'Consumer Electronics',
     marketCap: '$2.8T',
     eps: '6.13',
     peRatio: '28.6',
@@ -29,6 +31,7 @@ export const mockStocks: MockStock[] = [
     change: '-1.23',
     changePercent: '-0.32',
     sector: 'Technology',
+    industry: 'Software',
     marketCap: '$2.8T',
     eps: '9.65',
     peRatio: '39.2',
@@ -43,6 +46,7 @@ export const mockStocks: MockStock[] = [
     change: '4.12',
     changePercent: '2.98',
     sector: 'Technology',
+    industry: 'Internet Services',
     marketCap: '$1.8T',
     eps: '5.80',
     peRatio: '24.6',
@@ -57,6 +61,7 @@ export const mockStocks: MockStock[] = [
     change: '-0.88',
     changePercent: '-0.58',
     sector: 'Consumer Discretionary',
+    industry: 'E-commerce',
     marketCap: '$1.5T',
     eps: '2.90',
     peRatio: '52.4',
@@ -71,6 +76,7 @@ export const mockStocks: MockStock[] = [
     change: '12.67',
     changePercent: '5.37',
     sector: 'Automotive',
+    industry: 'Electric Vehicles',
     marketCap: '$789B',
     eps: '3.62',
     peRatio: '68.6',
@@ -85,6 +91,7 @@ export const mockStocks: MockStock[] = [
     change: '8.93',
     changePercent: '1.88',
     sector: 'Technology',
+    industry: 'Social Media',
     marketCap: '$1.2T',
     eps: '14.87',
     peRatio: '32.6',
@@ -99,6 +106,7 @@ export const mockStocks: MockStock[] = [
     change: '45.20',
     changePercent: '5.44',
     sector: 'Technology',
+    industry: 'Semiconductors',
     marketCap: '$2.1T',
     eps: '22.45',
     peRatio: '39.0',
@@ -113,6 +121,7 @@ export const mockStocks: MockStock[] = [
     change: '-8.45',
     changePercent: '-1.30',
     sector: 'Communication Services',
+    industry: 'Streaming',
     marketCap: '$285B',
     eps: '12.55',
     peRatio: '51.1',

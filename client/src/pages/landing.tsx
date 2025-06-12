@@ -11,6 +11,7 @@ import { FundamentalsGrid } from "@/components/marketing/FundamentalsGrid";
 import { WatchlistsPromo } from "@/components/marketing/WatchlistsPromo";
 import { Roadmap } from "@/components/marketing/Roadmap";
 import { StickyCTA } from "@/components/marketing/StickyCTA";
+import { TrialCTA } from "@/components/shared/TrialCTA";
 import { 
   TrendingUp, 
   Shield, 
@@ -29,6 +30,20 @@ import {
   ChevronDown
 } from "lucide-react";
 import { motion } from "framer-motion";
+
+// Optimized animation configurations
+const ANIMATION_CONFIG = {
+  FAST: { duration: 0.3, ease: "easeOut" },
+  MEDIUM: { duration: 0.5, ease: "easeOut" },
+  SLOW: { duration: 0.8, ease: "easeOut" }
+} as const;
+
+const DELAYS = {
+  NONE: 0,
+  FAST: 0.1,
+  MEDIUM: 0.2,
+  SLOW: 0.3
+} as const;
 
 export default function Landing() {
   const [showVideoModal, setShowVideoModal] = useState(false);
@@ -110,14 +125,14 @@ export default function Landing() {
             <motion.div
               initial={{ opacity: 0, x: -30 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.8 }}
+              transition={ANIMATION_CONFIG.SLOW}
               className="text-left lg:text-left lg:pl-4 xl:pl-8 lg:pr-6"
             >
               {/* Trial Badge */}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.2 }}
+                transition={{ ...ANIMATION_CONFIG.MEDIUM, delay: DELAYS.MEDIUM }}
                 className="inline-flex items-center gap-2 bg-emerald-500 text-white px-4 py-2 rounded-full font-semibold text-sm mb-6 hover:bg-emerald-400 transition-colors cursor-pointer shadow-lg"
                 onClick={() => window.location.href = '/trial'}
               >
@@ -129,7 +144,7 @@ export default function Landing() {
               <motion.h1
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.3 }}
+                transition={{ ...ANIMATION_CONFIG.MEDIUM, delay: DELAYS.SLOW }}
                 className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-bold mb-6 leading-[1.1] tracking-tight"
               >
                 <span className="text-tangerine">Lucra</span>
@@ -143,7 +158,7 @@ export default function Landing() {
               <motion.p
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.4 }}
+                transition={{ ...ANIMATION_CONFIG.MEDIUM, delay: 0.4 }}
                 className="text-lg sm:text-xl text-gray-200 mb-8 leading-relaxed max-w-xl"
               >
                 <span className="text-tangerine font-semibold">Gestores de fundos</span> recorrem ao valor intrínseco para gerar <span className="text-tangerine font-semibold">retornos consistentes</span> — agora é a tua vez.
@@ -153,7 +168,7 @@ export default function Landing() {
               <motion.p
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.45 }}
+                transition={{ ...ANIMATION_CONFIG.MEDIUM, delay: 0.45 }}
                 className="text-lg text-tangerine font-semibold mb-4"
               >
                 Cobertura de +6.000 ações globais
@@ -163,7 +178,7 @@ export default function Landing() {
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.5 }}
+                transition={{ ...ANIMATION_CONFIG.MEDIUM, delay: 0.5 }}
                 className="mb-8"
               >
                 <div className="flex items-center gap-3 mb-2">
@@ -182,7 +197,7 @@ export default function Landing() {
               <motion.p
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.5 }}
+                transition={{ ...ANIMATION_CONFIG.MEDIUM, delay: 0.5 }}
                 className="text-lg text-gray-200 mb-8 leading-relaxed max-w-lg"
               >
                 Damos-te as <span className="text-tangerine font-semibold">ferramentas, estratégias e insights</span> para investires como os profissionais.
@@ -192,18 +207,10 @@ export default function Landing() {
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.6 }}
+                transition={{ ...ANIMATION_CONFIG.MEDIUM, delay: 0.6 }}
                 className="flex flex-col sm:flex-row gap-4 mb-8"
               >
-                <Button 
-                  size="lg" 
-                  className="text-lg px-8 py-4 h-16 bg-tangerine hover:bg-orange-400 hover:shadow-2xl hover:shadow-orange-500/25 text-white shadow-xl transition-all duration-200 font-bold border-2 border-tangerine hover:border-orange-400"
-                  onClick={() => window.location.href = '/trial'}
-                  aria-label="Começar trial gratuito de 7 dias"
-                >
-                  <Target className="h-5 w-5 mr-3" />
-                  Começar Trial Grátis
-                </Button>
+                <TrialCTA variant="primary" size="lg" className="shadow-xl border-2 border-tangerine hover:border-orange-400" />
                 
                 <Button 
                   variant="outline"
