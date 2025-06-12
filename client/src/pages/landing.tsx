@@ -114,8 +114,18 @@ export default function Landing() {
       
       {/* Hero Section */}
       <section id="hero" className="relative overflow-hidden min-h-screen flex items-center">
-        {/* GitHub Style Background */}
-        <div className="absolute inset-0 bg-gray-900" style={{ background: 'linear-gradient(145deg, rgb(13, 17, 23) 0%, rgb(22, 27, 34) 100%)' }} />
+        {/* Theme-aware Background */}
+        <div className="absolute inset-0 bg-gradient-to-br from-slate-50 to-white dark:bg-gray-900 dark:from-[#0d1117] dark:to-[#161b22]" />
+        
+        {/* CSS Variables for themes */}
+        <style jsx>{`
+          :global(.light) {
+            --dashboard-bg: linear-gradient(145deg, rgb(255, 255, 255) 0%, rgb(248, 250, 252) 100%);
+          }
+          :global(.dark) {
+            --dashboard-bg: linear-gradient(145deg, #111827 0%, #0f172a 100%);
+          }
+        `}</style>
         
         <div className="relative container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 items-center min-h-screen py-20">
@@ -145,7 +155,7 @@ export default function Landing() {
                 transition={{ ...ANIMATION_CONFIG.SLOW, delay: 0.6 }}
                 className="text-5xl sm:text-6xl lg:text-7xl xl:text-8xl font-light mb-8 leading-[0.9] tracking-tight"
               >
-                <span className="text-pure-white">Investe com</span>
+                <span className="text-gray-900 dark:text-pure-white">Investe com</span>
                 <br />
                 <span className="font-bold text-chartreuse">Precisão</span>
               </motion.h1>
@@ -155,7 +165,7 @@ export default function Landing() {
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ ...ANIMATION_CONFIG.MEDIUM, delay: 0.8 }}
-                className="text-xl text-gray-300 mb-12 leading-relaxed max-w-2xl font-light"
+                className="text-xl text-gray-700 dark:text-gray-300 mb-12 leading-relaxed max-w-2xl font-light"
               >
                 Análise fundamental simplificada. Valor intrínseco em segundos. 
                 <br />Decisões baseadas em dados, não emoções.
@@ -166,7 +176,7 @@ export default function Landing() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ ...ANIMATION_CONFIG.MEDIUM, delay: 1.0 }}
-                className="flex items-center gap-8 mb-12 text-sm text-gray-400"
+                className="flex items-center gap-8 mb-12 text-sm text-gray-600 dark:text-gray-400"
               >
                 <div className="flex items-center gap-2">
                   <div className="w-2 h-2 bg-chartreuse rounded-full" />
@@ -191,7 +201,7 @@ export default function Landing() {
               >
                 <Button 
                   size="lg" 
-                  className="text-lg px-10 py-4 h-14 bg-chartreuse hover:bg-chartreuse/90 text-rich-black rounded-full font-semibold shadow-lg hover:shadow-xl transition-all duration-300 border-0"
+                  className="text-lg px-10 py-4 h-14 bg-chartreuse hover:bg-chartreuse/90 text-gray-900 dark:text-rich-black rounded-full font-semibold shadow-lg hover:shadow-xl transition-all duration-300 border-0"
                   onClick={() => window.location.href = '/trial'}
                 >
                   Começar agora
@@ -201,7 +211,7 @@ export default function Landing() {
                 <Button 
                   variant="ghost"
                   size="lg" 
-                  className="text-lg px-8 py-4 h-14 text-gray-300 hover:text-pure-white border border-gray-700 hover:border-chartreuse font-medium transition-all duration-200 rounded-full"
+                  className="text-lg px-8 py-4 h-14 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-pure-white border border-gray-300 dark:border-gray-700 hover:border-chartreuse font-medium transition-all duration-200 rounded-full"
                   onClick={() => setShowVideoModal(true)}
                 >
                   Ver demonstração
@@ -249,10 +259,10 @@ export default function Landing() {
               <div className="relative">
                 <motion.div 
                   whileHover={{ y: -8, rotateY: 5 }}
-                  className="w-80 sm:w-96 h-80 sm:h-96 bg-gray-900 rounded-3xl p-6 shadow-2xl border border-gray-800"
+                  className="w-80 sm:w-96 h-80 sm:h-96 rounded-3xl p-6 shadow-2xl border bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800"
                   style={{ 
-                    boxShadow: '0 25px 80px -12px rgba(210, 235, 64, 0.15)',
-                    background: 'linear-gradient(145deg, #111827 0%, #0f172a 100%)'
+                    boxShadow: '0 25px 80px -12px rgba(216, 242, 45, 0.15)',
+                    background: 'var(--dashboard-bg)'
                   }}
                 >
                   <div className="w-full h-full flex flex-col">
@@ -263,18 +273,18 @@ export default function Landing() {
                           <BarChart3 className="h-5 w-5 text-rich-black" />
                         </div>
                         <div>
-                          <h4 className="font-semibold text-pure-white text-sm">AAPL</h4>
-                          <p className="text-xs text-gray-400">Apple Inc.</p>
+                          <h4 className="font-semibold text-gray-900 dark:text-pure-white text-sm">AAPL</h4>
+                          <p className="text-xs text-gray-600 dark:text-gray-400">Apple Inc.</p>
                         </div>
                       </div>
                       <div className="text-right">
-                        <div className="text-lg font-bold text-pure-white">$175.43</div>
+                        <div className="text-lg font-bold text-gray-900 dark:text-pure-white">$175.43</div>
                         <div className="text-xs text-chartreuse">+2.34%</div>
                       </div>
                     </div>
                     
                     {/* Simple Chart */}
-                    <div className="flex-1 bg-gray-800/50 rounded-2xl p-6 mb-6">
+                    <div className="flex-1 bg-gray-100 dark:bg-gray-800/50 rounded-2xl p-6 mb-6">
                       <div className="flex items-end justify-center h-full gap-3">
                         {Array.from({ length: 8 }, (_, i) => {
                           const heights = [40, 65, 35, 80, 55, 90, 60, 75];
@@ -288,7 +298,7 @@ export default function Landing() {
                               className={`w-6 rounded-lg ${
                                 isActive 
                                   ? 'bg-chartreuse' 
-                                  : 'bg-gray-700'
+                                  : 'bg-gray-300 dark:bg-gray-700'
                               }`}
                             />
                           );
@@ -298,15 +308,15 @@ export default function Landing() {
                     
                     {/* Simple Value Display */}
                     <div className="space-y-3">
-                      <div className="flex items-center justify-between py-2 border-b border-gray-700">
-                        <span className="text-sm text-gray-400">Valor Intrínseco</span>
+                      <div className="flex items-center justify-between py-2 border-b border-gray-200 dark:border-gray-700">
+                        <span className="text-sm text-gray-600 dark:text-gray-400">Valor Intrínseco</span>
                         <span className="font-semibold text-chartreuse">$165.00</span>
                       </div>
                       <div className="flex items-center justify-between">
-                        <span className="text-sm text-gray-400">Margem</span>
+                        <span className="text-sm text-gray-600 dark:text-gray-400">Margem</span>
                         <span className="text-sm font-medium text-chartreuse">+6.3%</span>
                       </div>
-                      <div className="w-full bg-gray-800 rounded-full h-1.5">
+                      <div className="w-full bg-gray-200 dark:bg-gray-800 rounded-full h-1.5">
                         <motion.div 
                           initial={{ width: 0 }}
                           animate={{ width: '70%' }}
@@ -324,7 +334,7 @@ export default function Landing() {
                   animate={{ opacity: 1, scale: 1, rotate: 0 }}
                   transition={{ duration: 0.6, delay: 2.8, type: "spring", stiffness: 100 }}
                   whileHover={{ scale: 1.1, rotate: 5 }}
-                  className="absolute -top-6 -left-6 w-14 h-14 bg-gray-800 rounded-2xl flex items-center justify-center shadow-lg border border-gray-700"
+                  className="absolute -top-6 -left-6 w-14 h-14 bg-white dark:bg-gray-800 rounded-2xl flex items-center justify-center shadow-lg border border-gray-200 dark:border-gray-700"
                 >
                   <motion.div
                     animate={{ rotate: 360 }}
@@ -339,7 +349,7 @@ export default function Landing() {
                   animate={{ opacity: 1, x: 0, scale: 1 }}
                   transition={{ duration: 0.6, delay: 3.0, type: "spring", bounce: 0.4 }}
                   whileHover={{ scale: 1.05, x: -2 }}
-                  className="absolute top-1/3 -right-8 bg-gray-800 rounded-xl px-3 py-2 shadow-lg border border-gray-700"
+                  className="absolute top-1/3 -right-8 bg-white dark:bg-gray-800 rounded-xl px-3 py-2 shadow-lg border border-gray-200 dark:border-gray-700"
                 >
                   <motion.div
                     animate={{ opacity: [1, 0.7, 1] }}
