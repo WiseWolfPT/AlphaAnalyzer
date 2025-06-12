@@ -52,9 +52,9 @@ export function StickyCTA() {
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: 100, opacity: 0 }}
           transition={{ duration: 0.3, ease: "easeOut" }}
-          className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-40 max-w-md"
+          className="fixed bottom-6 left-0 right-0 z-40 flex justify-center px-4"
         >
-          <div className="bg-white/95 backdrop-blur-sm border border-gray-200 rounded-2xl shadow-2xl p-4 mx-4">
+          <div className="bg-white/95 backdrop-blur-sm border border-gray-200 rounded-2xl shadow-2xl p-4 max-w-md w-full">
             <div className="flex items-center justify-between gap-4">
               <div className="flex-1">
                 <p className="text-sm font-semibold text-gray-800 mb-1">
