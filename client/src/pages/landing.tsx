@@ -30,6 +30,7 @@ import {
   ChevronDown
 } from "lucide-react";
 import { motion } from "framer-motion";
+import { Player } from '@lottiefiles/react-lottie-player';
 
 // Optimized animation configurations
 const ANIMATION_CONFIG = {
@@ -255,181 +256,42 @@ export default function Landing() {
               transition={{ ...ANIMATION_CONFIG.SLOW, delay: 1.0 }}
               className="lg:col-span-5 relative flex justify-center items-center"
             >
-              {/* Professional Investment Scene */}
-              <div className="relative w-96 h-96">
-                {/* Modern Professional Character */}
+              {/* FinTech Investment Scene */}
+              <div className="relative w-[360px]">
+                {/* Phone Dashboard */}
+                <Player
+                  src="/lottie/financial-website-11218398.json"
+                  loop
+                  autoplay
+                  style={{ width: 220 }}
+                />
+
+                {/* Trader Character (bounce suave) */}
                 <motion.div
-                  initial={{ opacity: 0, y: 30 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 1, delay: 1.5 }}
-                  className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-10"
+                  className="absolute -right-20 bottom-0"
+                  animate={{ y: [-6, 6, -6] }}
+                  transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
                 >
-                  {/* Professional Figure */}
-                  <div className="relative">
-                    {/* Body - Business Suit */}
-                    <motion.div
-                      animate={{ y: [-1, 1, -1] }}
-                      transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-                      className="w-16 h-20 bg-gradient-to-b from-gray-800 to-gray-900 rounded-t-lg relative overflow-hidden"
-                    >
-                      {/* Suit Details */}
-                      <div className="absolute top-2 left-1/2 transform -translate-x-1/2 w-1 h-6 bg-gray-700"></div>
-                      <div className="absolute top-4 left-3 w-2 h-2 bg-gray-700 rounded-full"></div>
-                      <div className="absolute top-6 left-3 w-2 h-2 bg-gray-700 rounded-full"></div>
-                      
-                      {/* Tie */}
-                      <div className="absolute top-1 left-1/2 transform -translate-x-1/2 w-2 h-8 bg-chartreuse-dark clip-triangle"></div>
-                    </motion.div>
-                    
-                    {/* Head - Professional */}
-                    <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 w-8 h-8 bg-gradient-to-b from-yellow-100 to-yellow-200 rounded-full">
-                      {/* Hair */}
-                      <div className="absolute -top-1 left-0 right-0 h-2 bg-gray-700 rounded-t-full"></div>
-                      {/* Professional expression */}
-                      <div className="absolute top-2 left-1.5 w-1 h-1 bg-gray-800 rounded-full"></div>
-                      <div className="absolute top-2 right-1.5 w-1 h-1 bg-gray-800 rounded-full"></div>
-                    </div>
-                    
-                    {/* Arms - More subtle */}
-                    <motion.div
-                      animate={{ rotate: [0, 5, 0, -5, 0] }}
-                      transition={{ duration: 6, repeat: Infinity }}
-                      className="absolute top-3 -left-2 w-4 h-1.5 bg-gray-800 rounded-full"
-                    ></motion.div>
-                    <motion.div
-                      animate={{ rotate: [0, -5, 0, 5, 0] }}
-                      transition={{ duration: 6, repeat: Infinity, delay: 1 }}
-                      className="absolute top-3 -right-2 w-4 h-1.5 bg-gray-800 rounded-full"
-                    ></motion.div>
-                    
-                    {/* Legs */}
-                    <div className="absolute -bottom-3 left-1/2 transform -translate-x-1/2 flex gap-1">
-                      <div className="w-2 h-6 bg-gray-800 rounded-b-lg"></div>
-                      <div className="w-2 h-6 bg-gray-800 rounded-b-lg"></div>
-                    </div>
-                  </div>
+                  <Player
+                    src="/lottie/trader-character-89012.json"
+                    loop
+                    autoplay
+                    style={{ width: 160 }}
+                  />
                 </motion.div>
 
-                {/* Floating Profit Indicators */}
-                <motion.div
-                  initial={{ opacity: 0, scale: 0 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.8, delay: 2 }}
-                  className="absolute top-12 right-12"
-                >
+                {/* Floating Coins */}
+                {['104720','101702','104722'].map((id,i)=>(
                   <motion.div
-                    animate={{ 
-                      y: [-8, -16, -8],
-                      scale: [1, 1.1, 1]
-                    }}
-                    transition={{ duration: 3, repeat: Infinity }}
-                    className="w-12 h-12 bg-gradient-to-br from-chartreuse-dark to-green-500 rounded-xl flex items-center justify-center text-white font-bold text-lg shadow-xl"
+                    key={id}
+                    className="absolute"
+                    style={{ top:[-30,80,40][i], left:[180,260,120][i] }}
+                    animate={{ y: [10,-10,10] }}
+                    transition={{ duration: 3+i, repeat: Infinity, ease: 'easeInOut' }}
                   >
-                    +12%
+                    <Player src={`/lottie/${id}.json`} loop autoplay style={{ width: 48 }} />
                   </motion.div>
-                </motion.div>
-
-                <motion.div
-                  initial={{ opacity: 0, scale: 0 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.8, delay: 2.5 }}
-                  className="absolute top-20 left-12"
-                >
-                  <motion.div
-                    animate={{ 
-                      y: [-12, -20, -12],
-                      rotate: [0, 3, 0, -3, 0]
-                    }}
-                    transition={{ duration: 3.5, repeat: Infinity }}
-                    className="w-10 h-10 bg-gradient-to-br from-xanthous to-orange-500 rounded-lg flex items-center justify-center text-white font-bold text-sm shadow-lg"
-                  >
-                    $165
-                  </motion.div>
-                </motion.div>
-
-                {/* Growth Arrow */}
-                <motion.div
-                  initial={{ opacity: 0, scale: 0 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 1, delay: 2.8 }}
-                  className="absolute top-1/3 right-8"
-                >
-                  <motion.div
-                    animate={{ 
-                      y: [-3, 3, -3],
-                      rotate: [0, 2, 0, -2, 0]
-                    }}
-                    transition={{ duration: 2, repeat: Infinity }}
-                    className="relative"
-                  >
-                    {/* Arrow shaft */}
-                    <div className="w-16 h-2 bg-gradient-to-r from-chartreuse-dark to-green-500 rounded-full transform rotate-45"></div>
-                    {/* Arrow head */}
-                    <div className="absolute -right-1 -top-1 w-0 h-0 border-l-[8px] border-l-green-500 border-t-[4px] border-t-transparent border-b-[4px] border-b-transparent"></div>
-                  </motion.div>
-                </motion.div>
-
-                {/* Animated Chart Bars Behind Character */}
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ duration: 1, delay: 1 }}
-                  className="absolute bottom-0 left-0 right-0 flex items-end justify-center gap-1 h-32 px-4"
-                >
-                  {Array.from({ length: 6 }, (_, i) => {
-                    const heights = [60, 80, 45, 90, 70, 85];
-                    const profits = [2.3, 5.1, -1.2, 8.4, 3.7, 6.2];
-                    const isProfit = profits[i] > 0;
-                    return (
-                      <motion.div
-                        key={i}
-                        initial={{ height: 0 }}
-                        animate={{ 
-                          height: `${heights[i]}%`,
-                          y: [0, -2, 0, -1, 0]
-                        }}
-                        transition={{ 
-                          height: { duration: 1, delay: 1.5 + i * 0.1 },
-                          y: { duration: 3, repeat: Infinity, delay: i * 0.2 }
-                        }}
-                        className={`w-8 rounded-t-lg ${
-                          isProfit ? 'bg-green-400' : 'bg-red-400'
-                        } opacity-60`}
-                      />
-                    );
-                  })}
-                </motion.div>
-
-                {/* Modern Laptop/Dashboard */}
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.8, rotateY: -20 }}
-                  animate={{ opacity: 1, scale: 1, rotateY: 0 }}
-                  transition={{ duration: 1, delay: 3 }}
-                  className="absolute top-6 left-6 w-24 h-16 bg-gradient-to-b from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900 rounded-lg shadow-xl border border-gray-300 dark:border-gray-700"
-                >
-                  {/* Screen */}
-                  <div className="w-full h-3/4 bg-gradient-to-br from-gray-900 to-black rounded-t-lg p-1">
-                    {/* Dashboard content */}
-                    <div className="w-full h-full bg-gray-800 rounded-sm p-1 flex flex-col gap-0.5">
-                      <div className="w-full h-1 bg-gradient-to-r from-chartreuse-dark to-green-400 rounded-full"></div>
-                      <div className="flex gap-0.5 flex-1">
-                        <div className="w-1/3 bg-green-500 rounded-sm"></div>
-                        <div className="w-1/3 bg-red-400 rounded-sm"></div>
-                        <div className="w-1/3 bg-chartreuse-dark rounded-sm"></div>
-                      </div>
-                    </div>
-                  </div>
-                  {/* Laptop base */}
-                  <div className="w-full h-1/4 bg-gradient-to-b from-gray-200 to-gray-300 dark:from-gray-700 dark:to-gray-800 rounded-b-lg"></div>
-                </motion.div>
-
-                {/* Background Growth Element */}
-                <motion.div
-                  initial={{ opacity: 0, scale: 0 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 2, delay: 1 }}
-                  className="absolute inset-0 bg-gradient-to-tr from-chartreuse-dark/10 to-green-400/10 rounded-full opacity-20"
-                ></motion.div>
+                ))}
               </div>
             </motion.div>
           </div>
