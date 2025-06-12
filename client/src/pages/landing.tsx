@@ -114,8 +114,8 @@ export default function Landing() {
       
       {/* Hero Section */}
       <section id="hero" className="relative overflow-hidden min-h-screen flex items-center">
-        {/* Gradient Background */}
-        <div className="absolute inset-0 bg-gradient-to-br from-rich-black to-non-photo-blue" />
+        {/* Dark Background matching dashboard card */}
+        <div className="absolute inset-0 bg-gray-900" style={{ background: 'linear-gradient(145deg, #111827 0%, #0f172a 100%)' }} />
         
         <div className="relative container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 items-center min-h-screen py-20">
