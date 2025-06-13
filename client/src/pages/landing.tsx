@@ -11,6 +11,7 @@ import { FundamentalsGrid } from "@/components/marketing/FundamentalsGrid";
 import { WatchlistsPromo } from "@/components/marketing/WatchlistsPromo";
 import { Roadmap } from "@/components/marketing/Roadmap";
 import { StickyCTA } from "@/components/marketing/StickyCTA";
+import { StockLogos } from "@/components/marketing/StockLogos";
 import { TrialCTA } from "@/components/shared/TrialCTA";
 import { 
   TrendingUp, 
@@ -257,12 +258,12 @@ export default function Landing() {
               transition={{ ...ANIMATION_CONFIG.SLOW, delay: 1.0 }}
               className="lg:col-span-5 relative flex justify-center items-center"
             >
-              {/* Original Lottie Animation */}
+              {/* Lottie Animation with Stock Logos Overlay */}
               <motion.div
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.8, delay: 1.2 }}
-                className="flex justify-center items-center"
+                className="flex justify-center items-center relative"
               >
                 <Player
                   autoplay
@@ -273,6 +274,8 @@ export default function Landing() {
                   direction={1}
                   mode="normal"
                 />
+                {/* Stock Logos Overlay */}
+                <StockLogos />
               </motion.div>
             </motion.div>
           </div>
