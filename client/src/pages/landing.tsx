@@ -31,6 +31,7 @@ import {
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { Player } from '@lottiefiles/react-lottie-player';
+import heroAnimation from '../assets/hero-animation.json';
 
 // Optimized animation configurations
 const ANIMATION_CONFIG = {
@@ -266,7 +267,7 @@ export default function Landing() {
                 <Player
                   autoplay
                   loop
-                  src="/lottie/hero-animation.json"
+                  src={heroAnimation}
                   style={{ height: '450px', width: '450px' }}
                   speed={1}
                   direction={1}
