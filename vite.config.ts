@@ -16,6 +16,7 @@ export default defineConfig({
         ]
       : []),
   ],
+  assetsInclude: ["**/*.lottie"],
   resolve: {
     alias: {
       "@": path.resolve(import.meta.dirname, "client", "src"),
