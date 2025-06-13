@@ -30,7 +30,6 @@ import {
   ChevronDown
 } from "lucide-react";
 import { motion } from "framer-motion";
-import { Player } from '@lottiefiles/react-lottie-player';
 
 // Optimized animation configurations
 const ANIMATION_CONFIG = {
@@ -256,20 +255,182 @@ export default function Landing() {
               transition={{ ...ANIMATION_CONFIG.SLOW, delay: 1.0 }}
               className="lg:col-span-5 relative flex justify-center items-center"
             >
-              {/* Professional FinTech Animation */}
-              <motion.div
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.8, delay: 1.2 }}
-                className="flex justify-center items-center"
-              >
-                <Player
-                  src="/lottie/hero-animation.json"
-                  loop
-                  autoplay
-                  style={{ width: 450, height: 450 }}
+              {/* Professional FinTech Scene */}
+              <div className="relative w-[450px] h-[450px] flex items-center justify-center">
+                {/* Background Circle */}
+                <motion.div
+                  initial={{ opacity: 0, scale: 0 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 1, delay: 1.2 }}
+                  className="absolute inset-0 bg-gradient-to-br from-chartreuse/5 to-green-400/5 rounded-full"
                 />
-              </motion.div>
+                
+                {/* Large Dashboard Screen */}
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.8, delay: 1.5 }}
+                  className="absolute left-8 top-16 w-72 h-64 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900 rounded-2xl shadow-2xl border-4 border-gray-300 dark:border-gray-700 p-4"
+                >
+                  {/* Screen Header */}
+                  <div className="h-8 bg-chartreuse/20 rounded-lg mb-3 flex items-center justify-center">
+                    <span className="text-lg font-bold text-chartreuse-dark dark:text-chartreuse">Top Stocks 📈</span>
+                  </div>
+                  
+                  {/* Stock List */}
+                  <div className="space-y-2">
+                    {['AAPL +2.1%', 'TSLA -1.3%', 'MSFT +0.8%', 'GOOGL +1.5%'].map((stock, i) => (
+                      <motion.div
+                        key={i}
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ duration: 0.5, delay: 1.8 + i * 0.1 }}
+                        className={`flex justify-between items-center p-2 rounded ${
+                          stock.includes('+') ? 'bg-green-100 dark:bg-green-900/20' : 'bg-red-100 dark:bg-red-900/20'
+                        }`}
+                      >
+                        <span className="font-medium text-gray-800 dark:text-gray-200">{stock.split(' ')[0]}</span>
+                        <span className={`font-bold ${
+                          stock.includes('+') ? 'text-green-600' : 'text-red-600'
+                        }`}>{stock.split(' ')[1]}</span>
+                      </motion.div>
+                    ))}
+                  </div>
+                  
+                  {/* Mini Chart */}
+                  <div className="mt-3 h-16 bg-gray-50 dark:bg-gray-800 rounded flex items-end justify-center gap-1 p-2">
+                    {Array.from({ length: 12 }, (_, i) => {
+                      const heights = [30, 50, 25, 70, 45, 85, 35, 65, 40, 75, 55, 80];
+                      const isPositive = Math.random() > 0.4;
+                      return (
+                        <motion.div
+                          key={i}
+                          initial={{ height: 0 }}
+                          animate={{ height: `${heights[i]}%` }}
+                          transition={{ duration: 0.5, delay: 2 + i * 0.05 }}
+                          className={`w-2 rounded-t ${
+                            isPositive ? 'bg-green-400' : 'bg-red-400'
+                          }`}
+                        />
+                      );
+                    })}
+                  </div>
+                </motion.div>
+
+                {/* Celebrating Woman */}
+                <motion.div
+                  initial={{ opacity: 0, x: -30, y: 20 }}
+                  animate={{ opacity: 1, x: 0, y: 0 }}
+                  transition={{ duration: 0.8, delay: 2 }}
+                  className="absolute bottom-16 left-16"
+                >
+                  <motion.div
+                    animate={{ y: [-2, 2, -2] }}
+                    transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
+                    className="relative"
+                  >
+                    {/* Woman Body */}
+                    <div className="w-16 h-20 bg-gradient-to-b from-chartreuse-dark to-green-500 rounded-t-xl relative">
+                      {/* Arms up celebrating */}
+                      <motion.div
+                        animate={{ rotate: [0, 10, 0, -10, 0] }}
+                        transition={{ duration: 2, repeat: Infinity }}
+                        className="absolute -top-2 -left-6 w-8 h-3 bg-yellow-200 rounded-full rotate-45"
+                      />
+                      <motion.div
+                        animate={{ rotate: [0, -10, 0, 10, 0] }}
+                        transition={{ duration: 2, repeat: Infinity, delay: 0.5 }}
+                        className="absolute -top-2 -right-6 w-8 h-3 bg-yellow-200 rounded-full -rotate-45"
+                      />
+                    </div>
+                    
+                    {/* Head */}
+                    <div className="absolute -top-6 left-1/2 transform -translate-x-1/2 w-10 h-10 bg-gradient-to-b from-yellow-100 to-yellow-200 rounded-full">
+                      {/* Hair */}
+                      <div className="absolute -top-2 left-0 right-0 h-4 bg-amber-800 rounded-t-full"></div>
+                      {/* Happy eyes */}
+                      <div className="absolute top-3 left-2 w-1.5 h-1.5 bg-gray-800 rounded-full"></div>
+                      <div className="absolute top-3 right-2 w-1.5 h-1.5 bg-gray-800 rounded-full"></div>
+                      {/* Smile */}
+                      <div className="absolute top-5 left-1/2 transform -translate-x-1/2 w-4 h-2 border-b-2 border-gray-700 rounded-full"></div>
+                    </div>
+                  </motion.div>
+                </motion.div>
+
+                {/* Celebrating Man */}
+                <motion.div
+                  initial={{ opacity: 0, x: 30, y: 20 }}
+                  animate={{ opacity: 1, x: 0, y: 0 }}
+                  transition={{ duration: 0.8, delay: 2.2 }}
+                  className="absolute bottom-16 right-16"
+                >
+                  <motion.div
+                    animate={{ y: [-3, 3, -3] }}
+                    transition={{ duration: 3.5, repeat: Infinity, ease: 'easeInOut' }}
+                    className="relative"
+                  >
+                    {/* Man Body */}
+                    <div className="w-16 h-20 bg-gradient-to-b from-gray-700 to-gray-900 rounded-t-xl relative">
+                      {/* Arms up celebrating */}
+                      <motion.div
+                        animate={{ rotate: [0, -15, 0, 15, 0] }}
+                        transition={{ duration: 2.5, repeat: Infinity }}
+                        className="absolute -top-2 -left-6 w-8 h-3 bg-yellow-200 rounded-full rotate-45"
+                      />
+                      <motion.div
+                        animate={{ rotate: [0, 15, 0, -15, 0] }}
+                        transition={{ duration: 2.5, repeat: Infinity, delay: 0.3 }}
+                        className="absolute -top-2 -right-6 w-8 h-3 bg-yellow-200 rounded-full -rotate-45"
+                      />
+                      
+                      {/* Tie */}
+                      <div className="absolute top-2 left-1/2 transform -translate-x-1/2 w-3 h-8 bg-red-600 rounded-b-full"></div>
+                    </div>
+                    
+                    {/* Head */}
+                    <div className="absolute -top-6 left-1/2 transform -translate-x-1/2 w-10 h-10 bg-gradient-to-b from-yellow-100 to-yellow-200 rounded-full">
+                      {/* Hair */}
+                      <div className="absolute -top-2 left-0 right-0 h-4 bg-gray-800 rounded-t-full"></div>
+                      {/* Happy eyes */}
+                      <div className="absolute top-3 left-2 w-1.5 h-1.5 bg-gray-800 rounded-full"></div>
+                      <div className="absolute top-3 right-2 w-1.5 h-1.5 bg-gray-800 rounded-full"></div>
+                      {/* Smile */}
+                      <div className="absolute top-5 left-1/2 transform -translate-x-1/2 w-4 h-2 border-b-2 border-gray-700 rounded-full"></div>
+                    </div>
+                  </motion.div>
+                </motion.div>
+
+                {/* Floating Success Elements */}
+                {[
+                  { icon: '🎉', top: 20, left: 100, delay: 2.5 },
+                  { icon: '📈', top: 80, right: 80, delay: 2.8 },
+                  { icon: '💰', top: 140, left: 60, delay: 3.1 },
+                  { icon: '🚀', top: 60, right: 120, delay: 3.4 }
+                ].map((item, i) => (
+                  <motion.div
+                    key={i}
+                    initial={{ opacity: 0, scale: 0 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.5, delay: item.delay }}
+                    className="absolute text-2xl"
+                    style={{ top: item.top, left: item.left, right: item.right }}
+                  >
+                    <motion.span
+                      animate={{ 
+                        y: [0, -10, 0],
+                        rotate: [0, 10, 0, -10, 0]
+                      }}
+                      transition={{ 
+                        duration: 2 + i * 0.5,
+                        repeat: Infinity,
+                        ease: 'easeInOut'
+                      }}
+                    >
+                      {item.icon}
+                    </motion.span>
+                  </motion.div>
+                ))}
+              </div>
             </motion.div>
           </div>
         </div>
