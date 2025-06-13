@@ -30,6 +30,7 @@ import {
   ChevronDown
 } from "lucide-react";
 import { motion } from "framer-motion";
+import { Player } from '@lottiefiles/react-lottie-player';
 
 // Optimized animation configurations
 const ANIMATION_CONFIG = {
@@ -255,185 +256,20 @@ export default function Landing() {
               transition={{ ...ANIMATION_CONFIG.SLOW, delay: 1.0 }}
               className="lg:col-span-5 relative flex justify-center items-center"
             >
-              {/* FinTech Investment Scene */}
-              <div className="relative w-[360px] h-96">
-                {/* Phone Dashboard */}
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.8, delay: 1.2 }}
-                  className="absolute left-8 top-8 w-48 h-80 bg-gradient-to-b from-gray-900 to-black rounded-[2rem] shadow-2xl border-4 border-gray-700"
-                >
-                  {/* Phone Screen */}
-                  <div className="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900 rounded-[1.5rem] p-4 m-2">
-                    {/* Dashboard Header */}
-                    <div className="h-4 bg-chartreuse/20 rounded mb-2 flex items-center justify-center">
-                      <div className="text-xs font-bold text-chartreuse-dark dark:text-chartreuse">Alpha Analyzer</div>
-                    </div>
-                    
-                    {/* Live Price Ticker */}
-                    <motion.div
-                      animate={{ x: [100, -100] }}
-                      transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
-                      className="h-6 bg-gray-200 dark:bg-gray-700 rounded mb-3 flex items-center overflow-hidden"
-                    >
-                      <div className="flex gap-4 text-xs font-semibold whitespace-nowrap">
-                        <span className="text-green-500">AAPL $178.34 +2.1%</span>
-                        <span className="text-red-500">TSLA $245.67 -1.3%</span>
-                        <span className="text-green-500">MSFT $389.12 +0.8%</span>
-                      </div>
-                    </motion.div>
-                    
-                    {/* Mini Chart */}
-                    <div className="h-24 bg-gray-100 dark:bg-gray-800 rounded mb-2 flex items-end justify-center gap-1 p-2">
-                      {Array.from({ length: 8 }, (_, i) => {
-                        const heights = [40, 60, 35, 80, 55, 90, 45, 70];
-                        const profits = [2.1, -1.3, 4.2, -0.8, 3.1, 1.9, -2.4, 5.3];
-                        const isProfit = profits[i] > 0;
-                        return (
-                          <motion.div
-                            key={i}
-                            initial={{ height: 0 }}
-                            animate={{ height: `${heights[i]}%` }}
-                            transition={{ duration: 0.5, delay: 1.5 + i * 0.1 }}
-                            className={`w-2 rounded-t ${
-                              isProfit ? 'bg-green-400' : 'bg-red-400'
-                            }`}
-                          />
-                        );
-                      })}
-                    </div>
-                    
-                    {/* Value Display */}
-                    <div className="text-center bg-chartreuse/10 rounded p-2">
-                      <div className="text-xs text-gray-600 dark:text-gray-400">Valor Intrínseco</div>
-                      <motion.div
-                        animate={{ scale: [1, 1.05, 1] }}
-                        transition={{ duration: 2, repeat: Infinity }}
-                        className="text-lg font-bold text-chartreuse-dark dark:text-chartreuse"
-                      >
-                        $165.23
-                      </motion.div>
-                    </div>
-                  </div>
-                </motion.div>
-
-                {/* Professional Trader Character */}
-                <motion.div
-                  initial={{ opacity: 0, x: 50 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.8, delay: 1.8 }}
-                  className="absolute right-4 bottom-8"
-                >
-                  <motion.div
-                    animate={{ y: [-3, 3, -3] }}
-                    transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
-                    className="relative"
-                  >
-                    {/* Professional Figure */}
-                    <div className="w-20 h-24 bg-gradient-to-b from-gray-800 to-gray-900 rounded-t-xl relative">
-                      {/* Suit Details */}
-                      <div className="absolute top-3 left-1/2 transform -translate-x-1/2 w-1.5 h-8 bg-gray-700"></div>
-                      <div className="absolute top-6 left-4 w-2 h-2 bg-gray-700 rounded-full"></div>
-                      <div className="absolute top-8 left-4 w-2 h-2 bg-gray-700 rounded-full"></div>
-                      
-                      {/* Green Tie */}
-                      <div className="absolute top-2 left-1/2 transform -translate-x-1/2 w-3 h-10 bg-chartreuse-dark dark:bg-chartreuse rounded-b-full"></div>
-                    </div>
-                    
-                    {/* Head */}
-                    <div className="absolute -top-5 left-1/2 transform -translate-x-1/2 w-10 h-10 bg-gradient-to-b from-yellow-100 to-yellow-200 rounded-full border-2 border-gray-600">
-                      {/* Professional hair */}
-                      <div className="absolute -top-1 left-0 right-0 h-3 bg-gray-700 rounded-t-full"></div>
-                      {/* Eyes */}
-                      <div className="absolute top-3 left-2 w-1.5 h-1.5 bg-gray-800 rounded-full"></div>
-                      <div className="absolute top-3 right-2 w-1.5 h-1.5 bg-gray-800 rounded-full"></div>
-                      {/* Confident smile */}
-                      <div className="absolute top-5 left-1/2 transform -translate-x-1/2 w-3 h-1 bg-gray-700 rounded-full"></div>
-                    </div>
-                    
-                    {/* Arms with subtle movement */}
-                    <motion.div
-                      animate={{ rotate: [0, 8, 0] }}
-                      transition={{ duration: 5, repeat: Infinity }}
-                      className="absolute top-4 -left-3 w-6 h-2 bg-gray-800 rounded-full"
-                    ></motion.div>
-                    <motion.div
-                      animate={{ rotate: [0, -8, 0] }}
-                      transition={{ duration: 5, repeat: Infinity, delay: 1 }}
-                      className="absolute top-4 -right-3 w-6 h-2 bg-gray-800 rounded-full"
-                    ></motion.div>
-                  </motion.div>
-                </motion.div>
-
-                {/* Floating Coins */}
-                {[
-                  { top: -20, left: 180, delay: 0 },
-                  { top: 120, left: 280, delay: 1 },
-                  { top: 60, left: 140, delay: 2 }
-                ].map((coin, i) => (
-                  <motion.div
-                    key={i}
-                    initial={{ opacity: 0, scale: 0 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ duration: 0.5, delay: 2 + coin.delay * 0.3 }}
-                    className="absolute"
-                    style={{ top: coin.top, left: coin.left }}
-                  >
-                    <motion.div
-                      animate={{ 
-                        y: [0, -15, 0],
-                        rotate: [0, 180, 360]
-                      }}
-                      transition={{ 
-                        duration: 3 + i,
-                        repeat: Infinity,
-                        ease: 'easeInOut'
-                      }}
-                      className="w-12 h-12 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-full shadow-lg flex items-center justify-center text-white font-bold text-xs border-2 border-yellow-300"
-                    >
-                      €
-                    </motion.div>
-                  </motion.div>
-                ))}
-
-                {/* Floating Success Indicators */}
-                <motion.div
-                  initial={{ opacity: 0, scale: 0 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.8, delay: 2.5 }}
-                  className="absolute top-16 right-16"
-                >
-                  <motion.div
-                    animate={{ 
-                      y: [-5, -10, -5],
-                      scale: [1, 1.1, 1]
-                    }}
-                    transition={{ duration: 3, repeat: Infinity }}
-                    className="w-14 h-14 bg-gradient-to-br from-chartreuse-dark to-green-500 rounded-xl flex items-center justify-center text-white font-bold text-sm shadow-xl"
-                  >
-                    +12%
-                  </motion.div>
-                </motion.div>
-
-                <motion.div
-                  initial={{ opacity: 0, scale: 0 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.8, delay: 3 }}
-                  className="absolute top-32 left-16"
-                >
-                  <motion.div
-                    animate={{ 
-                      y: [-8, -15, -8],
-                      rotate: [0, 3, 0]
-                    }}
-                    transition={{ duration: 3.5, repeat: Infinity }}
-                    className="w-12 h-12 bg-gradient-to-br from-xanthous to-orange-500 rounded-lg flex items-center justify-center text-white font-bold text-xs shadow-lg"
-                  >
-                    $165
-                  </motion.div>
-                </motion.div>
-              </div>
+              {/* Professional FinTech Animation */}
+              <motion.div
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.8, delay: 1.2 }}
+                className="flex justify-center items-center"
+              >
+                <Player
+                  src="/lottie/hero-animation.json"
+                  loop
+                  autoplay
+                  style={{ width: 450, height: 450 }}
+                />
+              </motion.div>
             </motion.div>
           </div>
         </div>
