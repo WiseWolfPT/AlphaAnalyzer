@@ -268,7 +268,7 @@ export default function Landing() {
                   src={heroAnimationLottie}
                   loop
                   autoplay
-                  style={{ height: '450px', width: '450px' }}
+                  style={{ height: '520px', width: '520px' }}
                 />
               </motion.div>
             </motion.div>
