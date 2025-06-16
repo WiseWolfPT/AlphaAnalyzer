@@ -2,8 +2,11 @@ import { useState, useEffect } from "react";
 import { useParams, useLocation } from "wouter";
 import { MainLayout } from "@/components/layout/main-layout";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, TrendingUp, TrendingDown, ExternalLink } from "lucide-react";
+import { Breadcrumb, BreadcrumbList, BreadcrumbItem, BreadcrumbLink, BreadcrumbSeparator, BreadcrumbPage } from "@/components/ui/breadcrumb";
+import { ArrowLeft, TrendingUp, TrendingDown, ExternalLink, Home, Calendar, DollarSign, Activity, Target, Clock, Info } from "lucide-react";
+import { Link } from "wouter";
 import { cn } from "@/lib/utils";
+import { MetricTooltip } from "@/components/ui/metric-tooltip";
 import { dataAggregatorService, type AggregatedStockData } from "@/services/data-aggregator";
 
 // Chart Components
@@ -29,17 +32,65 @@ export default function AdvancedCharts() {
   const [stockData, setStockData] = useState<AggregatedStockData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [chartPeriod, setChartPeriod] = useState<'quarterly' | 'annual'>('quarterly');
 
   useEffect(() => {
     if (symbol && typeof symbol === 'string') {
       fetchStockData(symbol);
     }
-  }, [symbol]);
+  }, [symbol, chartPeriod]);
+
+  // Generate quarterly data (16 quarters rolling)
+  const generateQuarterlyData = () => {
+    const currentQuarter = Math.floor((new Date().getMonth()) / 3) + 1;
+    const currentYear = new Date().getFullYear();
+    const quarters = [];
+    
+    // Generate 16 quarters back from current
+    for (let i = 15; i >= 0; i--) {
+      let year = currentYear;
+      let quarter = currentQuarter - i;
+      
+      while (quarter <= 0) {
+        quarter += 4;
+        year -= 1;
+      }
+      while (quarter > 4) {
+        quarter -= 4;
+        year += 1;
+      }
+      
+      quarters.push(`Q${quarter} ${year}`);
+    }
+    
+    return quarters.map(quarter => ({
+      quarter,
+      value: Math.floor(Math.random() * 30000) + 80000
+    }));
+  };
+
+  // Generate annual data (last 10 years)
+  const generateAnnualData = () => {
+    const currentYear = new Date().getFullYear();
+    const years = [];
+    
+    for (let i = 9; i >= 0; i--) {
+      years.push((currentYear - i).toString());
+    }
+    
+    return years.map(year => ({
+      quarter: year, // Keep same property name for consistency
+      value: Math.floor(Math.random() * 120000) + 300000
+    }));
+  };
 
   const fetchStockData = async (stockSymbol: string) => {
     try {
       setLoading(true);
       setError(null);
+      
+      // Generate dynamic data based on current period
+      const revenueData = chartPeriod === 'quarterly' ? generateQuarterlyData() : generateAnnualData();
       
       // Mock data for demo - replace with real API calls when keys are configured
       const mockData: AggregatedStockData = {
@@ -69,10 +120,7 @@ export default function AdvancedCharts() {
             date: new Date(Date.now() - (29 - i) * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
             price: 180 + Math.random() * 40
           })),
-          revenue: Array.from({ length: 8 }, (_, i) => ({
-            quarter: `Q${(i % 4) + 1} ${2023 + Math.floor(i / 4)}`,
-            value: 90000 + Math.random() * 30000
-          })),
+          revenue: revenueData,
           revenueBySegment: Array.from({ length: 8 }, (_, i) => ({
             quarter: `Q${(i % 4) + 1} ${2023 + Math.floor(i / 4)}`,
             segments: {
@@ -83,20 +131,20 @@ export default function AdvancedCharts() {
               'Wearables': 8000 + Math.random() * 4000
             }
           })),
-          ebitda: Array.from({ length: 8 }, (_, i) => ({
-            quarter: `Q${(i % 4) + 1} ${2023 + Math.floor(i / 4)}`,
-            value: 32000 + Math.random() * 8000
+          ebitda: revenueData.map(item => ({
+            quarter: item.quarter,
+            value: Math.floor(item.value * 0.35) + Math.random() * 5000
           })),
-          freeCashFlow: Array.from({ length: 8 }, (_, i) => ({
-            quarter: `Q${(i % 4) + 1} ${2023 + Math.floor(i / 4)}`,
-            value: 25000 + Math.random() * 10000
+          freeCashFlow: revenueData.map(item => ({
+            quarter: item.quarter,
+            value: Math.floor(item.value * 0.28) + Math.random() * 8000
           })),
-          netIncome: Array.from({ length: 8 }, (_, i) => ({
-            quarter: `Q${(i % 4) + 1} ${2023 + Math.floor(i / 4)}`,
-            value: 22000 + Math.random() * 8000
+          netIncome: revenueData.map(item => ({
+            quarter: item.quarter,
+            value: Math.floor(item.value * 0.25) + Math.random() * 6000
           })),
-          eps: Array.from({ length: 8 }, (_, i) => ({
-            quarter: `Q${(i % 4) + 1} ${2023 + Math.floor(i / 4)}`,
+          eps: revenueData.map(item => ({
+            quarter: item.quarter,
             value: 1.2 + Math.random() * 0.8
           })),
           cashAndDebt: Array.from({ length: 8 }, (_, i) => ({
@@ -168,7 +216,7 @@ export default function AdvancedCharts() {
         <div className="flex items-center justify-center min-h-screen">
           <div className="text-center">
             <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary mx-auto mb-4"></div>
-            <p className="text-muted-foreground">Loading advanced charts...</p>
+            <p className="text-muted-foreground">Loading stock data...</p>
           </div>
         </div>
       </MainLayout>
@@ -181,9 +229,9 @@ export default function AdvancedCharts() {
         <div className="flex items-center justify-center min-h-screen">
           <div className="text-center">
             <div className="text-red-500 mb-4">⚠️ Error</div>
-            <h3 className="text-xl font-semibold mb-2">Failed to load advanced charts</h3>
+            <h3 className="text-xl font-semibold mb-2">Failed to load stock data</h3>
             <p className="text-muted-foreground mb-4">{error}</p>
-            <Button onClick={() => setLocation(`/stock/${symbol}`)}>Back to Stock Overview</Button>
+            <Button onClick={() => setLocation('/dashboard')}>Go Back</Button>
           </div>
         </div>
       </MainLayout>
@@ -195,178 +243,306 @@ export default function AdvancedCharts() {
 
   return (
     <MainLayout>
-      <div className="p-8 space-y-8">
-        {/* Header */}
+      <div className="p-8 space-y-6">
+        {/* Breadcrumb Navigation */}
         <div className="flex items-center justify-between">
-          <Button
-            variant="ghost"
-            onClick={() => setLocation(`/stock/${symbol}`)}
-            className="flex items-center gap-2"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Back to Stock Overview
-          </Button>
+          <Breadcrumb>
+            <BreadcrumbList>
+              <BreadcrumbItem>
+                <BreadcrumbLink asChild>
+                  <Link href="/">
+                    <Home className="h-4 w-4" />
+                  </Link>
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbLink asChild>
+                  <Link href="/">Dashboard</Link>
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbPage>{stockData.name} ({stockData.symbol})</BreadcrumbPage>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbPage>Advanced Charts</BreadcrumbPage>
+              </BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
           
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-muted-foreground">Advanced Analysis</span>
-            <Button variant="outline" className="flex items-center gap-2">
-              <ExternalLink className="h-4 w-4" />
-              Company Website
-            </Button>
-          </div>
+          <Button variant="outline" className="flex items-center gap-2">
+            <ExternalLink className="h-4 w-4" />
+            Company Website
+          </Button>
         </div>
 
-        {/* Company Header */}
-        <div className="bg-card/50 backdrop-blur-sm border border-border/50 rounded-xl p-6">
-          <div className="flex items-start justify-between">
-            <div className="flex items-center gap-4">
-              {stockData.logo && (
-                <div className="w-16 h-16 rounded-lg overflow-hidden bg-muted flex-shrink-0">
-                  <img
-                    src={stockData.logo}
-                    alt={`${stockData.name} logo`}
-                    className="w-full h-full object-cover"
-                    onError={(e) => {
-                      e.currentTarget.style.display = 'none';
-                    }}
-                  />
-                </div>
-              )}
-              <div>
-                <h1 className="text-3xl font-bold text-foreground">{stockData.name}</h1>
-                <p className="text-lg text-muted-foreground">{stockData.symbol} • {profile.sector}</p>
-                <p className="text-sm text-muted-foreground">{profile.country} • {profile.currency}</p>
-              </div>
-            </div>
-
-            <div className="text-right">
-              <div className="text-3xl font-bold text-foreground">
-                ${currentPrice.price.toFixed(2)}
-              </div>
-              <div className={cn(
-                "flex items-center gap-1 text-lg font-medium",
-                isPositive ? "text-emerald-500" : "text-red-500"
-              )}>
-                {isPositive ? (
-                  <TrendingUp className="h-4 w-4" />
-                ) : (
-                  <TrendingDown className="h-4 w-4" />
+        {/* Main Content Layout */}
+        <div className="grid grid-cols-1 xl:grid-cols-[320px_1fr] gap-6">
+          {/* Sidebar - Company Info & Key Metrics */}
+          <div className="space-y-4">
+            {/* Company Header Card */}
+            <div className="bg-card/50 backdrop-blur-sm border border-border/50 rounded-xl p-6 sticky top-6">
+              <div className="flex items-center gap-4 mb-4">
+                {stockData.logo && (
+                  <div className="w-12 h-12 rounded-lg overflow-hidden bg-muted flex-shrink-0">
+                    <img
+                      src={stockData.logo}
+                      alt={`${stockData.name} logo`}
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        e.currentTarget.style.display = 'none';
+                      }}
+                    />
+                  </div>
                 )}
-                {isPositive ? '+' : ''}${currentPrice.change.toFixed(2)} ({isPositive ? '+' : ''}{currentPrice.changePercent.toFixed(2)}%)
+                <div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <h1 className="text-xl font-bold text-foreground">{stockData.symbol}</h1>
+                    <div className="flex items-center gap-1 px-2 py-1 bg-blue-500/10 text-blue-600 rounded-md text-xs font-medium">
+                      <Calendar className="h-3 w-3" />
+                      <span>Earnings: Jul 30</span>
+                    </div>
+                  </div>
+                  <p className="text-sm text-muted-foreground">{stockData.name}</p>
+                  <p className="text-xs text-muted-foreground">{profile.sector}</p>
+                </div>
               </div>
-              <div className="text-sm text-muted-foreground">
-                Advanced Charts Analysis
+
+              <div className="space-y-3">
+                <div className="text-center p-4 bg-secondary/20 rounded-lg">
+                  <div className="text-2xl font-bold text-foreground">
+                    ${currentPrice.price.toFixed(2)}
+                  </div>
+                  <div className={cn(
+                    "flex items-center justify-center gap-1 text-sm font-medium",
+                    isPositive ? "text-emerald-500" : "text-red-500"
+                  )}>
+                    {isPositive ? (
+                      <TrendingUp className="h-3 w-3" />
+                    ) : (
+                      <TrendingDown className="h-3 w-3" />
+                    )}
+                    {isPositive ? '+' : ''}${currentPrice.change.toFixed(2)} ({isPositive ? '+' : ''}{currentPrice.changePercent.toFixed(2)}%)
+                  </div>
+                  
+                  {/* After Hours Price */}
+                  <div className="mt-2 pt-2 border-t border-border/30">
+                    <div className="text-xs text-muted-foreground">After Hours</div>
+                    <div className="flex items-center justify-center gap-1 text-sm">
+                      <span className="font-medium">${(currentPrice.price + 0.57).toFixed(2)}</span>
+                      <span className="text-emerald-500">+$0.57 (+0.28%)</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 5 Metrics Groups */}
+                <div className="space-y-3">
+                  {/* VALUATION */}
+                  <div className="bg-secondary/10 rounded-lg p-3">
+                    <div className="flex items-center gap-2 mb-2">
+                      <DollarSign className="h-4 w-4 text-primary" />
+                      <h3 className="text-sm font-semibold text-foreground">VALUATION</h3>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2 text-xs">
+                      <div className="flex justify-between">
+                        <div className="flex items-center">
+                          <span className="text-muted-foreground">P/E Ratio</span>
+                          <MetricTooltip content="Price-to-Earnings ratio. Compares stock price to earnings per share. 15-25 = reasonable, >30 = expensive, <15 = cheap or troubled" />
+                        </div>
+                        <span className="font-medium">{keyMetrics.pe.toFixed(1)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Market Cap</span>
+                        <span className="font-medium">${(profile.marketCap / 1000000000).toFixed(1)}T</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Price/Sales</span>
+                        <span className="font-medium">7.8</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <div className="flex items-center">
+                          <span className="text-muted-foreground">Enterprise Value</span>
+                          <MetricTooltip content="Market cap + debt - cash. True cost to buy entire company. More accurate than market cap for comparisons" />
+                        </div>
+                        <span className="font-medium">$2.98T</span>
+                      </div>
+                      <div className="flex justify-between col-span-2">
+                        <span className="text-muted-foreground">EV/Revenue</span>
+                        <span className="font-medium">7.6</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* PERFORMANCE */}
+                  <div className="bg-secondary/10 rounded-lg p-3">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Activity className="h-4 w-4 text-emerald-500" />
+                      <h3 className="text-sm font-semibold text-foreground">PERFORMANCE</h3>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2 text-xs">
+                      <div className="flex justify-between">
+                        <div className="flex items-center">
+                          <span className="text-muted-foreground">ROE</span>
+                          <MetricTooltip content="Return on Equity. How efficiently company uses shareholders' money to generate profit. >15% = excellent, 10-15% = good, <10% = poor" />
+                        </div>
+                        <span className="font-medium">{(keyMetrics.roe * 100).toFixed(1)}%</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Net Margin</span>
+                        <span className="font-medium">{(keyMetrics.netMargin * 100).toFixed(1)}%</span>
+                      </div>
+                      <div className="flex justify-between col-span-2">
+                        <span className="text-muted-foreground">Operating Margin</span>
+                        <span className="font-medium">29.7%</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* FINANCIALS */}
+                  <div className="bg-secondary/10 rounded-lg p-3">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Target className="h-4 w-4 text-blue-500" />
+                      <h3 className="text-sm font-semibold text-foreground">FINANCIALS</h3>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2 text-xs">
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Free Cash Flow</span>
+                        <span className="font-medium">${(keyMetrics.freeCashFlow / 1000000000).toFixed(1)}B</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Total Cash</span>
+                        <span className="font-medium">${(keyMetrics.totalCash / 1000000000).toFixed(1)}B</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Debt/Equity</span>
+                        <span className="font-medium">1.75</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Total Debt</span>
+                        <span className="font-medium">$86.5B</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* GROWTH */}
+                  <div className="bg-secondary/10 rounded-lg p-3">
+                    <div className="flex items-center gap-2 mb-2">
+                      <TrendingUp className="h-4 w-4 text-green-500" />
+                      <h3 className="text-sm font-semibold text-foreground">GROWTH</h3>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2 text-xs">
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Revenue Growth</span>
+                        <span className="font-medium">8.2%</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">EPS Growth</span>
+                        <span className="font-medium">11.1%</span>
+                      </div>
+                      <div className="flex justify-between col-span-2">
+                        <span className="text-muted-foreground">Dividend Yield</span>
+                        <span className="font-medium">{(keyMetrics.dividendYield * 100).toFixed(1)}%</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* TIMING */}
+                  <div className="bg-secondary/10 rounded-lg p-3">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Clock className="h-4 w-4 text-amber-500" />
+                      <h3 className="text-sm font-semibold text-foreground">TIMING</h3>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2 text-xs">
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Next Earnings</span>
+                        <span className="font-medium">Jul 30</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <div className="flex items-center">
+                          <span className="text-muted-foreground">Days to Earnings</span>
+                          <MetricTooltip content="Days until next earnings announcement. Stock often becomes more volatile as this date approaches" />
+                        </div>
+                        <span className="font-medium">23 days</span>
+                      </div>
+                      <div className="flex justify-between col-span-2">
+                        <span className="text-muted-foreground">Dividend Date</span>
+                        <span className="font-medium">Jul 12</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Actions */}
+                <div className="space-y-2 pt-4 border-t border-border/50">
+                  <Button className="w-full" size="sm">
+                    Add to Watchlist
+                  </Button>
+                  <div className="grid grid-cols-2 gap-2">
+                    <Button variant="outline" size="sm">
+                      Export Report
+                    </Button>
+                    <Button variant="outline" size="sm">
+                      Set Alert
+                    </Button>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
-        </div>
 
-        {/* Key Metrics Bar */}
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-          <div className="bg-card/30 p-4 rounded-lg text-center">
-            <div className="text-xs text-muted-foreground uppercase tracking-wide mb-1">P/E Ratio</div>
-            <div className="text-lg font-bold">{keyMetrics.pe.toFixed(1)}</div>
-          </div>
-          <div className="bg-card/30 p-4 rounded-lg text-center">
-            <div className="text-xs text-muted-foreground uppercase tracking-wide mb-1">EPS</div>
-            <div className="text-lg font-bold">${keyMetrics.eps.toFixed(2)}</div>
-          </div>
-          <div className="bg-card/30 p-4 rounded-lg text-center">
-            <div className="text-xs text-muted-foreground uppercase tracking-wide mb-1">ROE</div>
-            <div className="text-lg font-bold">{(keyMetrics.roe * 100).toFixed(1)}%</div>
-          </div>
-          <div className="bg-card/30 p-4 rounded-lg text-center">
-            <div className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Dividend Yield</div>
-            <div className="text-lg font-bold">{(keyMetrics.dividendYield * 100).toFixed(1)}%</div>
-          </div>
-          <div className="bg-card/30 p-4 rounded-lg text-center">
-            <div className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Free Cash Flow</div>
-            <div className="text-lg font-bold">${(keyMetrics.freeCashFlow / 1000000000).toFixed(1)}B</div>
-          </div>
-          <div className="bg-card/30 p-4 rounded-lg text-center">
-            <div className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Net Margin</div>
-            <div className="text-lg font-bold">{(keyMetrics.netMargin * 100).toFixed(1)}%</div>
-          </div>
-        </div>
+          {/* Main Charts Area */}
+          <div className="space-y-6">
+            {/* Period Toggle */}
+            <div className="flex items-center justify-center">
+              <div className="flex items-center bg-secondary/20 rounded-lg p-1">
+                <Button
+                  variant={chartPeriod === 'quarterly' ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setChartPeriod('quarterly')}
+                  className="px-4 py-2 text-sm"
+                >
+                  Quarterly
+                </Button>
+                <Button
+                  variant={chartPeriod === 'annual' ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setChartPeriod('annual')}
+                  className="px-4 py-2 text-sm"
+                >
+                  Annual
+                </Button>
+              </div>
+            </div>
 
-        {/* 14 Charts Grid - 4x4 Layout like Qualtrim */}
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
-          {/* Row 1 */}
-          <div id="price-chart"><PriceChart data={stockData.charts.price} /></div>
-          <div id="revenue-chart"><RevenueChart data={stockData.charts.revenue} /></div>
-          <div id="revenue-segment-chart"><RevenueSegmentChart data={stockData.charts.revenueBySegment} /></div>
-          <div id="ebitda-chart"><EbitdaChart data={stockData.charts.ebitda} /></div>
-          
-          {/* Row 2 */}
-          <div id="fcf-chart"><FreeCashFlowChart data={stockData.charts.freeCashFlow} /></div>
-          <div id="net-income-chart"><NetIncomeChart data={stockData.charts.netIncome} /></div>
-          <div id="eps-chart"><EpsChart data={stockData.charts.eps} /></div>
-          <div id="cash-debt-chart"><CashDebtChart data={stockData.charts.cashAndDebt} /></div>
-          
-          {/* Row 3 */}
-          <div id="dividends-chart"><DividendsChart data={stockData.charts.dividends} /></div>
-          <div id="return-capital-chart"><ReturnCapitalChart data={stockData.charts.returnOfCapital} /></div>
-          <div id="shares-chart"><SharesChart data={stockData.charts.sharesOutstanding} /></div>
-          <div id="ratios-chart"><RatiosChart data={stockData.charts.ratios} /></div>
-          
-          {/* Row 4 */}
-          <div id="valuation-chart"><ValuationChart data={stockData.charts.valuation} /></div>
-          <div id="expenses-chart"><ExpensesChart data={stockData.charts.expenses} /></div>
-          
-          {/* Empty spaces for 4x4 grid */}
-          <div className="hidden xl:block"></div>
-          <div className="hidden xl:block"></div>
-        </div>
-
-        {/* Additional Info Section */}
-        <div className="bg-card/30 rounded-xl p-6">
-          <h3 className="text-lg font-semibold mb-4">Company Information</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
-            <div>
-              <span className="text-muted-foreground">Industry:</span>
-              <span className="ml-2 font-medium">{profile.industry || 'N/A'}</span>
-            </div>
-            <div>
-              <span className="text-muted-foreground">Shares Outstanding:</span>
-              <span className="ml-2 font-medium">{(profile.sharesOutstanding / 1000000).toFixed(0)}M</span>
-            </div>
-            <div>
-              <span className="text-muted-foreground">Total Cash:</span>
-              <span className="ml-2 font-medium">${(keyMetrics.totalCash / 1000000000).toFixed(1)}B</span>
-            </div>
-            <div>
-              <span className="text-muted-foreground">Total Debt:</span>
-              <span className="ml-2 font-medium">${(keyMetrics.totalDebt / 1000000000).toFixed(1)}B</span>
-            </div>
-            <div>
-              <span className="text-muted-foreground">Operating Margin:</span>
-              <span className="ml-2 font-medium">{(keyMetrics.operatingMargin * 100).toFixed(1)}%</span>
-            </div>
-            <div>
-              <span className="text-muted-foreground">Gross Margin:</span>
-              <span className="ml-2 font-medium">{(keyMetrics.grossMargin * 100).toFixed(1)}%</span>
+            {/* 14 Charts Grid - Responsive Layout */}
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4">
+              {/* Row 1 */}
+              <div id="price-chart"><PriceChart data={stockData.charts.price} /></div>
+              <div id="revenue-chart"><RevenueChart data={stockData.charts.revenue} /></div>
+              <div id="revenue-segment-chart"><RevenueSegmentChart data={stockData.charts.revenueBySegment} /></div>
+              <div id="ebitda-chart"><EbitdaChart data={stockData.charts.ebitda} /></div>
+              
+              {/* Row 2 */}
+              <div id="fcf-chart"><FreeCashFlowChart data={stockData.charts.freeCashFlow} /></div>
+              <div id="net-income-chart"><NetIncomeChart data={stockData.charts.netIncome} /></div>
+              <div id="eps-chart"><EpsChart data={stockData.charts.eps} /></div>
+              <div id="cash-debt-chart"><CashDebtChart data={stockData.charts.cashAndDebt} /></div>
+              
+              {/* Row 3 */}
+              <div id="dividends-chart"><DividendsChart data={stockData.charts.dividends} /></div>
+              <div id="return-capital-chart"><ReturnCapitalChart data={stockData.charts.returnOfCapital} /></div>
+              <div id="shares-chart"><SharesChart data={stockData.charts.sharesOutstanding} /></div>
+              <div id="ratios-chart"><RatiosChart data={stockData.charts.ratios} /></div>
+              
+              {/* Row 4 */}
+              <div id="valuation-chart"><ValuationChart data={stockData.charts.valuation} /></div>
+              <div id="expenses-chart"><ExpensesChart data={stockData.charts.expenses} /></div>
             </div>
           </div>
         </div>
 
-        {/* Actions */}
-        <div className="flex gap-4">
-          <Button 
-            onClick={() => setLocation(`/stock/${symbol}`)}
-            variant="outline"
-          >
-            ← Back to Overview
-          </Button>
-          <Button className="bg-primary hover:bg-primary/90">
-            Add to Watchlist
-          </Button>
-          <Button variant="outline">
-            Export Report
-          </Button>
-          <Button variant="outline">
-            Set Price Alert
-          </Button>
-        </div>
       </div>
     </MainLayout>
   );
