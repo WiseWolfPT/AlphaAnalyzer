@@ -4,6 +4,7 @@ import { StockSearch } from "@/components/stock/stock-search";
 import { SectorTabs } from "@/components/stock/sector-tabs";
 import { StockCard } from "@/components/stock/stock-card";
 import { PerformanceModal } from "@/components/stock/performance-modal";
+import { QuickInfoModal } from "@/components/stock/quick-info-modal";
 import { BetaBanner } from "@/components/beta/beta-banner";
 import { Button } from "@/components/ui/button";
 import { TrendingUp, Activity, Target } from "lucide-react";
@@ -61,11 +62,17 @@ export default function InsightsSafe() {
   const [selectedSector, setSelectedSector] = useState<string>("S&P 500");
   const [selectedStock, setSelectedStock] = useState<any>(null);
   const [showPerformanceModal, setShowPerformanceModal] = useState(false);
+  const [showQuickInfoModal, setShowQuickInfoModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
   const handlePerformanceClick = (stock: any) => {
     setSelectedStock(stock);
     setShowPerformanceModal(true);
+  };
+
+  const handleQuickInfoClick = (stock: any) => {
+    setSelectedStock(stock);
+    setShowQuickInfoModal(true);
   };
 
   const filteredStocks = mockStocks.filter(stock => 
@@ -138,6 +145,7 @@ export default function InsightsSafe() {
               key={stock.symbol}
               stock={stock}
               onPerformanceClick={() => handlePerformanceClick(stock)}
+              onQuickInfoClick={() => handleQuickInfoClick(stock)}
             />
           ))}
         </div>
@@ -171,6 +179,13 @@ export default function InsightsSafe() {
       <PerformanceModal
         isOpen={showPerformanceModal}
         onClose={() => setShowPerformanceModal(false)}
+        stock={selectedStock}
+      />
+
+      {/* Quick Info Modal */}
+      <QuickInfoModal
+        isOpen={showQuickInfoModal}
+        onClose={() => setShowQuickInfoModal(false)}
         stock={selectedStock}
       />
     </MainLayout>

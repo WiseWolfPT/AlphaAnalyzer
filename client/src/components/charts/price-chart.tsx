@@ -17,11 +17,11 @@ export function PriceChart({ data }: PriceChartProps) {
     );
   }
 
+  const firstPrice = data[0]?.price || 0;
   const currentPrice = data[data.length - 1]?.price || 0;
-  const previousPrice = data[data.length - 2]?.price || currentPrice;
-  const change = currentPrice - previousPrice;
-  const changePercent = previousPrice ? (change / previousPrice) * 100 : 0;
-  const trend = change >= 0 ? 'up' : 'down';
+  const totalChange = currentPrice - firstPrice;
+  const totalChangePercent = firstPrice ? (totalChange / firstPrice) * 100 : 0;
+  const trend = totalChange >= 0 ? 'up' : 'down';
 
   // Custom tooltip
   const CustomTooltip = ({ active, payload, label }: any) => {
@@ -41,9 +41,9 @@ export function PriceChart({ data }: PriceChartProps) {
   return (
     <ChartContainer 
       title="Price" 
-      subtitle="↓ 16.37%"
+      subtitle={`${trend === 'up' ? '↗' : '↘'} ${totalChangePercent.toFixed(2)}%`}
       value={`$${currentPrice.toFixed(2)}`}
-      change={`${change >= 0 ? '+' : ''}${changePercent.toFixed(2)}%`}
+      change={`${totalChange >= 0 ? '+' : ''}${totalChangePercent.toFixed(2)}%`}
       trend={trend}
     >
       <ResponsiveContainer width="100%" height="100%">

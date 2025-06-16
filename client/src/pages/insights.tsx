@@ -5,6 +5,7 @@ import { StockSearch } from "@/components/stock/stock-search";
 import { SectorTabs } from "@/components/stock/sector-tabs";
 import { StockCard } from "@/components/stock/stock-card";
 import { PerformanceModal } from "@/components/stock/performance-modal";
+import { QuickInfoModal } from "@/components/stock/quick-info-modal";
 import { BetaBanner } from "@/components/beta/beta-banner";
 import { APIStats } from "@/components/debug/api-stats";
 import { Button } from "@/components/ui/button";
@@ -17,6 +18,7 @@ export default function Insights() {
   const [selectedSector, setSelectedSector] = useState<string>("S&P 500");
   const [selectedStock, setSelectedStock] = useState<MockStock | null>(null);
   const [showPerformanceModal, setShowPerformanceModal] = useState(false);
+  const [showQuickInfoModal, setShowQuickInfoModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
   const { data: stocks, isLoading, error } = useQuery<MockStock[]>({
@@ -40,6 +42,7 @@ export default function Insights() {
       }
       if (e.key === "Escape") {
         setShowPerformanceModal(false);
+        setShowQuickInfoModal(false);
       }
     };
 
@@ -50,6 +53,11 @@ export default function Insights() {
   const handlePerformanceClick = (stock: MockStock) => {
     setSelectedStock(stock);
     setShowPerformanceModal(true);
+  };
+
+  const handleQuickInfoClick = (stock: MockStock) => {
+    setSelectedStock(stock);
+    setShowQuickInfoModal(true);
   };
 
   const filteredStocks = stocks?.filter(stock => {
@@ -102,8 +110,8 @@ export default function Insights() {
               onSearch={setSearchQuery}
               searchResults={searchResults || []}
               onStockSelect={(stock) => {
-                // Navigate to stock detail
-                window.location.href = `/stock/${stock.symbol}`;
+                // Navigate directly to advanced charts
+                window.location.href = `/stock/${stock.symbol}/charts`;
               }}
             />
           </div>
@@ -175,6 +183,7 @@ export default function Insights() {
                 key={stock.symbol}
                 stock={stock}
                 onPerformanceClick={() => handlePerformanceClick(stock)}
+                onQuickInfoClick={() => handleQuickInfoClick(stock)}
               />
             ))
           )}
@@ -218,6 +227,13 @@ export default function Insights() {
       <PerformanceModal
         isOpen={showPerformanceModal}
         onClose={() => setShowPerformanceModal(false)}
+        stock={selectedStock}
+      />
+
+      {/* Quick Info Modal */}
+      <QuickInfoModal
+        isOpen={showQuickInfoModal}
+        onClose={() => setShowQuickInfoModal(false)}
         stock={selectedStock}
       />
     </MainLayout>

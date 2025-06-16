@@ -1,20 +1,20 @@
 {
   "version": 2,
-  "framework": null,
-  "buildCommand": "npm run build",
-  "outputDirectory": "dist/public",
-  "installCommand": "npm install",
-  "env": {
-    "NODE_ENV": "production"
-  },
-  "rewrites": [
+  "public": true,
+  "builds": [
     {
-      "source": "/assets/(.*)",
-      "destination": "/assets/$1"
+      "src": "dist/public/**",
+      "use": "@vercel/static"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/assets/(.*)",
+      "dest": "/dist/public/assets/$1"
     },
     {
-      "source": "/(.*)",
-      "destination": "/index.html"
+      "src": "/(.*)",
+      "dest": "/dist/public/index.html"
     }
   ]
 }

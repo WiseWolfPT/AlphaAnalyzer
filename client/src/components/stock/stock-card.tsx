@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { BarChart3, Target, TrendingUp, TrendingDown, ChartLine, LineChart } from "lucide-react";
+import { BarChart3, Target, TrendingUp, TrendingDown, ChartLine, LineChart, Info } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { MiniChart } from "./mini-charts";
 import { FeatureLimiter } from "@/components/beta/feature-limiter";
@@ -11,10 +11,11 @@ import type { MockStock } from "@/lib/mock-api";
 interface StockCardProps {
   stock: MockStock;
   onPerformanceClick: () => void;
+  onQuickInfoClick: () => void;
   showMiniChart?: boolean;
 }
 
-export function StockCard({ stock, onPerformanceClick, showMiniChart = true }: StockCardProps) {
+export function StockCard({ stock, onPerformanceClick, onQuickInfoClick, showMiniChart = true }: StockCardProps) {
   const [imageError, setImageError] = useState(false);
   
   const changePercent = parseFloat(stock.changePercent);
@@ -27,10 +28,23 @@ export function StockCard({ stock, onPerformanceClick, showMiniChart = true }: S
   const isUndervalued = valuationDiff ? valuationDiff < 0 : false;
 
   return (
-    <Link href={`/stock/${stock.symbol}`}>
+    <Link href={`/stock/${stock.symbol}/charts`}>
       <div className="group relative bg-card/50 backdrop-blur-sm border border-border/50 hover:border-primary/50 rounded-xl p-6 cursor-pointer transition-all duration-300 hover:shadow-lg hover:shadow-primary/5 hover:-translate-y-1">
         {/* Action Icons */}
         <div className="absolute top-4 right-4 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+          <Button
+            size="sm"
+            variant="ghost"
+            className="h-8 w-8 p-0 hover:bg-blue-500/10 hover:text-blue-500"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onQuickInfoClick();
+            }}
+            title="Quick Company Overview"
+          >
+            <Info className="h-4 w-4" />
+          </Button>
           <Button
             size="sm"
             variant="ghost"
@@ -38,23 +52,9 @@ export function StockCard({ stock, onPerformanceClick, showMiniChart = true }: S
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
-              // Navigate to charts page (handled by parent Link)
-              window.location.href = `/stock/${stock.symbol}`;
-            }}
-            title="View Financial Charts"
-          >
-            <LineChart className="h-4 w-4" />
-          </Button>
-          <Button
-            size="sm"
-            variant="ghost"
-            className="h-8 w-8 p-0 hover:bg-secondary/80"
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
               onPerformanceClick();
             }}
-            title="View Performance"
+            title="View Performance Analytics"
           >
             <BarChart3 className="h-4 w-4" />
           </Button>
