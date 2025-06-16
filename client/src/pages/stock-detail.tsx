@@ -177,6 +177,12 @@ export default function StockDetail() {
                 </div>
                 
                 <div className="flex space-x-3">
+                  <Link href={`/stock/${symbol}/charts`}>
+                    <Button variant="default" className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
+                      <BarChart3 className="h-4 w-4 mr-2" />
+                      View Advanced Charts
+                    </Button>
+                  </Link>
                   <Button className="bg-primary hover:bg-primary/90">
                     <Plus className="h-4 w-4 mr-2" />
                     Add to Watchlist

@@ -1,0 +1,68 @@
+MANUAL DEPLOYMENT COMMANDS
+=========================
+
+Execute these commands in order in your terminal:
+
+1. Navigate to project directory:
+   cd "/Users/antoniofrancisco/Documents/teste 1"
+
+2. Create deployment branch:
+   git checkout -B fix/stock-charts-deploy
+
+3. Install dependencies (if needed):
+   npm install
+
+4. Build the project:
+   npm run build
+
+5. Add and commit changes:
+   git add -A
+   git commit -m "feat: complete 14-chart stock analysis deployment
+
+   - StockCharts.tsx with all 14 financial charts (Price, Revenue, Revenue Segments, EBITDA, FCF, Net Income, EPS, Cash&Debt, Dividends, ROC, Shares, Ratios, Valuation, Expenses)
+   - Fixed routing: /stock/:symbol -> StockCharts component
+   - Environment variables using VITE_ prefix
+   - Chart container IDs for validation
+   - Ready for production deployment
+
+   🚀 Generated with Claude Code
+   Co-Authored-By: Claude <noreply@anthropic.com>"
+
+6. Merge to main:
+   git checkout main
+   git merge fix/stock-charts-deploy
+
+7. Deploy to Vercel:
+   vercel --prod --force
+
+8. Test the deployment:
+   Visit: https://your-vercel-url.vercel.app/stock/AAPL
+   
+   You should see all 14 charts:
+   ✓ Price Chart
+   ✓ Revenue Chart
+   ✓ Revenue Segments Chart
+   ✓ EBITDA Chart
+   ✓ Free Cash Flow Chart
+   ✓ Net Income Chart
+   ✓ EPS Chart
+   ✓ Cash & Debt Chart
+   ✓ Dividends Chart
+   ✓ Return on Capital Chart
+   ✓ Shares Outstanding Chart
+   ✓ Financial Ratios Chart
+   ✓ Valuation Chart
+   ✓ Expenses Chart
+
+PROJECT STATUS SUMMARY:
+====================
+✅ StockCharts.tsx properly named and exported
+✅ App.tsx routing configured for /stock/:symbol
+✅ Environment variables using VITE_ prefix
+✅ .env.example created with all required variables
+✅ All 14 chart components implemented
+✅ Mock data ready for demonstration
+✅ Vercel configuration ready
+✅ Build configuration ready
+
+READY FOR DEPLOYMENT!

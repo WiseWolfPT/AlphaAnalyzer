@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { BarChart3, Menu, X, Moon, Sun } from "lucide-react";
+import { BarChart3, Menu, X, Moon, Sun, User, LogOut } from "lucide-react";
 import { useAuth } from "@/contexts/simple-auth";
 import { useTheme } from "@/hooks/use-theme";
 import { motion, AnimatePresence } from "framer-motion";
@@ -9,7 +9,7 @@ export function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [activeSection, setActiveSection] = useState('hero');
-  const { user } = useAuth();
+  const { user, signOut, toggleAuthState } = useAuth();
   const { theme, setTheme } = useTheme();
 
   useEffect(() => {
@@ -107,22 +107,55 @@ export function Header() {
             </Button>
 
             {user ? (
-              <Button 
-                onClick={() => window.location.href = '/dashboard'}
-                className="bg-chartreuse-dark dark:bg-chartreuse hover:bg-chartreuse-dark/90 dark:hover:bg-chartreuse/90 text-deep-black dark:text-rich-black"
-              >
-                Dashboard
-              </Button>
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <div className="w-8 h-8 bg-chartreuse-dark dark:bg-chartreuse rounded-full flex items-center justify-center text-deep-black font-semibold text-xs">
+                    {user.avatar || user.name?.charAt(0) || 'U'}
+                  </div>
+                  <span className="hidden lg:inline">{user.name}</span>
+                </div>
+                <Button 
+                  onClick={() => window.location.href = '/dashboard'}
+                  className="bg-chartreuse-dark dark:bg-chartreuse hover:bg-chartreuse-dark/90 dark:hover:bg-chartreuse/90 text-deep-black dark:text-rich-black"
+                >
+                  Dashboard
+                </Button>
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  onClick={signOut}
+                  className="h-9 w-9 p-0"
+                >
+                  <LogOut className="h-4 w-4" />
+                </Button>
+              </div>
             ) : (
-              <>
-                <Button variant="ghost" className="text-foreground">
+              <div className="flex items-center gap-3">
+                <Button 
+                  variant="ghost" 
+                  className="text-foreground hover:text-chartreuse border border-transparent hover:border-chartreuse/30"
+                  onClick={() => window.location.href = '/login'}
+                >
                   Login
                 </Button>
-                <Button className="bg-emerald-600 hover:bg-emerald-700 text-white">
+                <Button 
+                  className="bg-chartreuse-dark dark:bg-chartreuse hover:bg-chartreuse-dark/90 dark:hover:bg-chartreuse/90 text-deep-black dark:text-rich-black font-semibold"
+                  onClick={() => window.location.href = '/register'}
+                >
                   Registar
                 </Button>
-              </>
+              </div>
             )}
+            
+            {/* Demo Toggle Button - only for demonstration */}
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={toggleAuthState}
+              className="text-xs border-orange-500/50 text-orange-500 hover:bg-orange-500/10"
+            >
+              Demo: {user ? 'Logout' : 'Login'}
+            </Button>
           </div>
 
           {/* Mobile Menu Button */}
@@ -179,22 +212,55 @@ export function Header() {
                   </Button>
 
                   {user ? (
-                    <Button 
-                      onClick={() => window.location.href = '/dashboard'}
-                      className="bg-chartreuse-dark dark:bg-chartreuse hover:bg-chartreuse-dark/90 dark:hover:bg-chartreuse/90 text-deep-black dark:text-rich-black justify-start"
-                    >
-                      Dashboard
-                    </Button>
+                    <>
+                      <div className="flex items-center gap-2 px-4 py-2 text-sm text-muted-foreground">
+                        <div className="w-8 h-8 bg-chartreuse-dark dark:bg-chartreuse rounded-full flex items-center justify-center text-deep-black font-semibold text-xs">
+                          {user.avatar || user.name?.charAt(0) || 'U'}
+                        </div>
+                        <span>{user.name}</span>
+                      </div>
+                      <Button 
+                        onClick={() => window.location.href = '/dashboard'}
+                        className="bg-chartreuse-dark dark:bg-chartreuse hover:bg-chartreuse-dark/90 dark:hover:bg-chartreuse/90 text-deep-black dark:text-rich-black justify-start"
+                      >
+                        <User className="h-4 w-4 mr-2" />
+                        Dashboard
+                      </Button>
+                      <Button 
+                        variant="ghost" 
+                        onClick={signOut}
+                        className="text-foreground justify-start"
+                      >
+                        <LogOut className="h-4 w-4 mr-2" />
+                        Logout
+                      </Button>
+                    </>
                   ) : (
                     <>
-                      <Button variant="ghost" className="text-foreground justify-start">
+                      <Button 
+                        variant="ghost" 
+                        className="text-foreground justify-start border border-transparent hover:border-chartreuse/30"
+                        onClick={() => window.location.href = '/login'}
+                      >
                         Login
                       </Button>
-                      <Button className="bg-emerald-600 hover:bg-emerald-700 text-white justify-start">
+                      <Button 
+                        className="bg-chartreuse-dark dark:bg-chartreuse hover:bg-chartreuse-dark/90 dark:hover:bg-chartreuse/90 text-deep-black dark:text-rich-black justify-start"
+                        onClick={() => window.location.href = '/register'}
+                      >
                         Registar
                       </Button>
                     </>
                   )}
+                  
+                  {/* Demo Toggle Button Mobile */}
+                  <Button 
+                    variant="outline" 
+                    onClick={toggleAuthState}
+                    className="text-xs border-orange-500/50 text-orange-500 hover:bg-orange-500/10 justify-start mt-2"
+                  >
+                    Demo: {user ? 'Logout' : 'Login'}
+                  </Button>
                 </div>
               </nav>
             </motion.div>

@@ -168,7 +168,7 @@ export default function AdvancedCharts() {
         <div className="flex items-center justify-center min-h-screen">
           <div className="text-center">
             <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary mx-auto mb-4"></div>
-            <p className="text-muted-foreground">Loading stock data...</p>
+            <p className="text-muted-foreground">Loading advanced charts...</p>
           </div>
         </div>
       </MainLayout>
@@ -181,9 +181,9 @@ export default function AdvancedCharts() {
         <div className="flex items-center justify-center min-h-screen">
           <div className="text-center">
             <div className="text-red-500 mb-4">⚠️ Error</div>
-            <h3 className="text-xl font-semibold mb-2">Failed to load stock data</h3>
+            <h3 className="text-xl font-semibold mb-2">Failed to load advanced charts</h3>
             <p className="text-muted-foreground mb-4">{error}</p>
-            <Button onClick={() => setLocation('/dashboard')}>Go Back</Button>
+            <Button onClick={() => setLocation(`/stock/${symbol}`)}>Back to Stock Overview</Button>
           </div>
         </div>
       </MainLayout>
@@ -200,17 +200,20 @@ export default function AdvancedCharts() {
         <div className="flex items-center justify-between">
           <Button
             variant="ghost"
-            onClick={() => setLocation('/dashboard')}
+            onClick={() => setLocation(`/stock/${symbol}`)}
             className="flex items-center gap-2"
           >
             <ArrowLeft className="h-4 w-4" />
-            Back to Dashboard
+            Back to Stock Overview
           </Button>
           
-          <Button variant="outline" className="flex items-center gap-2">
-            <ExternalLink className="h-4 w-4" />
-            Company Website
-          </Button>
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-muted-foreground">Advanced Analysis</span>
+            <Button variant="outline" className="flex items-center gap-2">
+              <ExternalLink className="h-4 w-4" />
+              Company Website
+            </Button>
+          </div>
         </div>
 
         {/* Company Header */}
@@ -252,7 +255,7 @@ export default function AdvancedCharts() {
                 {isPositive ? '+' : ''}${currentPrice.change.toFixed(2)} ({isPositive ? '+' : ''}{currentPrice.changePercent.toFixed(2)}%)
               </div>
               <div className="text-sm text-muted-foreground">
-                Market Cap: ${(profile.marketCap / 1000000000).toFixed(1)}B
+                Advanced Charts Analysis
               </div>
             </div>
           </div>
@@ -348,6 +351,12 @@ export default function AdvancedCharts() {
 
         {/* Actions */}
         <div className="flex gap-4">
+          <Button 
+            onClick={() => setLocation(`/stock/${symbol}`)}
+            variant="outline"
+          >
+            ← Back to Overview
+          </Button>
           <Button className="bg-primary hover:bg-primary/90">
             Add to Watchlist
           </Button>

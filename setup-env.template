@@ -1,0 +1,21 @@
+#!/bin/bash
+
+# Environment Setup Template
+# Copy this file to setup-env.sh and fill in your actual values
+# Then run: source ./setup-env.sh
+
+# GitHub repository URL (HTTPS format)
+export GIT_REPO="https://github.com/YOUR_USERNAME/YOUR_REPO.git"
+
+# Vercel API token (get from https://vercel.com/account/tokens)
+export VERCEL_TOKEN="your_vercel_token_here"
+
+# Vercel project ID (found in project settings)
+export VERCEL_PROJECT_ID="your_project_id_here"
+
+# Vercel organization ID (found in team settings)
+export VERCEL_ORG_ID="your_org_id_here"
+
+echo "Environment variables set!"
+echo "Test with: node test-deploy-setup.js"
+echo "Deploy with: node run-deploy.js"

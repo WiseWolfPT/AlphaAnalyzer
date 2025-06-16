@@ -1,0 +1,1 @@
+// This file is empty - functionality moved to StockCharts.tsx

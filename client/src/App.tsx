@@ -9,7 +9,8 @@ import Login from "@/pages/Login";
 import Register from "@/pages/Register";
 import NotFound from "@/pages/not-found";
 import Dashboard from "@/pages/insights-safe";
-import StockCharts from "@/pages/StockCharts";
+import StockDetail from "@/pages/stock-detail";
+import AdvancedCharts from "@/pages/AdvancedCharts";
 import Portfolios from "@/pages/portfolios";
 import Watchlists from "@/pages/watchlists";
 import Earnings from "@/pages/earnings";
@@ -24,7 +25,8 @@ function Router() {
       <Route path="/register" component={Register} />
       <Route path="/dashboard" component={Dashboard} />
       <Route path="/insights" component={Dashboard} />
-      <Route path="/stock/:symbol" component={StockCharts} />
+      <Route path="/stock/:symbol" component={StockDetail} />
+      <Route path="/stock/:symbol/charts" component={AdvancedCharts} />
       <Route path="/portfolios" component={Portfolios} />
       <Route path="/watchlists" component={Watchlists} />
       <Route path="/earnings" component={Earnings} />

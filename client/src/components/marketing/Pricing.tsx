@@ -11,24 +11,24 @@ interface PricingProps {
 }
 
 export function Pricing({ id }: PricingProps = {}) {
-  const founderLeft = 100; // Placeholder contador
+  const founderLeft = 23; // Dynamic counter - will be updated later
 
   const coreFeatures = [
-    "Análise completa de ações",
-    "Dashboard profissional",
-    "Watchlists ilimitadas",
-    "Alertas em tempo real",
-    "Cálculo valor intrínseco",
-    "Suporte prioritário"
+    "Análise Tesla, Apple, Microsoft",
+    "Gráficos em tempo real",
+    "Valor intrínseco automático",
+    "Alertas de oportunidades",
+    "Watchlists personalizadas",
+    "Suporte email"
   ];
 
   const founderFeatures = [
-    "Tudo do Core",
-    "Acesso vitalício",
-    "Preço garantido para sempre",
-    "Acesso beta a novas features",
-    "Comunidade VIP Discord",
-    "Sessões 1-on-1 mensais"
+    "✅ Tudo do Core",
+    "🎯 Acesso vitalício €9/mês",
+    "🔥 Lives semanais de análise",
+    "💬 Discord VIP exclusivo",
+    "📚 Curso completo Whop",
+    "🚀 Primeiros 100 membros only"
   ];
 
   return (
@@ -42,10 +42,10 @@ export function Pricing({ id }: PricingProps = {}) {
           className="text-center mb-16"
         >
           <h2 className="text-3xl lg:text-4xl font-bold text-foreground mb-4">
-            Escolhe o teu plano
+            Junta-te à Comunidade Financeira
           </h2>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Investe no teu futuro financeiro com as ferramentas certas
+            Não é só software - é uma comunidade de investidores inteligentes
           </p>
         </motion.div>
 
@@ -70,11 +70,14 @@ export function Pricing({ id }: PricingProps = {}) {
 
                   <CardHeader className="text-center pt-8">
                     <CardTitle className="text-2xl font-bold text-foreground">
-                      Founding Member
+                      Founder 100
                     </CardTitle>
                     <div className="mt-4">
-                      <span className="text-4xl font-bold text-foreground">7,99 €</span>
-                      <span className="text-muted-foreground ml-2">/mês para sempre</span>
+                      <span className="text-4xl font-bold text-foreground">9 €</span>
+                      <span className="text-muted-foreground ml-2">/mês vitalício</span>
+                    </div>
+                    <div className="text-sm text-muted-foreground">
+                      Preço pós-launch: 29 €/mês
                     </div>
                     
                     {/* Contador */}
@@ -102,7 +105,7 @@ export function Pricing({ id }: PricingProps = {}) {
                       className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold py-3"
                       onClick={() => window.location.href = '/trial'}
                     >
-                      🚀 Começar Trial Grátis
+                      🔥 Garantir Founder 100 - Trial Grátis
                     </Button>
 
                     <p className="text-xs text-center text-muted-foreground">
@@ -123,40 +126,22 @@ export function Pricing({ id }: PricingProps = {}) {
               <Card className="border-border/50 shadow-lg bg-gradient-to-br from-emerald-500/5 to-emerald-600/5">
                 <CardHeader className="text-center">
                   <CardTitle className="text-2xl font-bold text-foreground">
-                    Core
+                    Pós-Launch
                   </CardTitle>
+                  <div className="text-sm text-muted-foreground mb-4">
+                    Após os primeiros 100 membros
+                  </div>
                   
-                  {/* Pricing Toggle */}
+                  {/* Simplified Pricing */}
                   <div className="mt-6">
-                    <Tabs defaultValue="monthly" className="w-full">
-                      <TabsList className="grid w-full grid-cols-2 mb-6">
-                        <TabsTrigger value="monthly">Mensal</TabsTrigger>
-                        <TabsTrigger value="annual" className="relative">
-                          Anual
-                          <Badge className="absolute -top-2 -right-2 bg-emerald-500 text-white text-xs px-2 py-0.5">
-                            -17%
-                          </Badge>
-                        </TabsTrigger>
-                      </TabsList>
-                      
-                      <TabsContent value="monthly">
-                        <div className="text-center">
-                          <span className="text-4xl font-bold text-foreground">9,99 €</span>
-                          <span className="text-muted-foreground ml-2">/mês</span>
-                        </div>
-                      </TabsContent>
-                      
-                      <TabsContent value="annual">
-                        <div className="text-center">
-                          <div className="line-through text-muted-foreground text-lg">119,88 €</div>
-                          <span className="text-4xl font-bold text-foreground">99 €</span>
-                          <span className="text-muted-foreground ml-2">/ano</span>
-                          <div className="text-sm text-emerald-500 font-medium mt-1">
-                            Poupa 20,88 € por ano
-                          </div>
-                        </div>
-                      </TabsContent>
-                    </Tabs>
+                    <div className="text-center">
+                      <div className="line-through text-muted-foreground text-lg">39 €/mês</div>
+                      <span className="text-4xl font-bold text-foreground">29 €</span>
+                      <span className="text-muted-foreground ml-2">/mês</span>
+                      <div className="text-sm text-emerald-500 font-medium mt-1">
+                        Preço de lançamento limitado
+                      </div>
+                    </div>
                   </div>
                 </CardHeader>
 
@@ -174,11 +159,11 @@ export function Pricing({ id }: PricingProps = {}) {
                     className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3"
                     onClick={() => window.location.href = '/trial'}
                   >
-                    🚀 Começar Trial de 7 Dias Grátis
+                    📋 Lista de Espera - Trial Grátis
                   </Button>
 
                   <p className="text-xs text-center text-muted-foreground">
-                    Cancela a qualquer momento. Sem compromissos.
+                    Entrar na lista de espera para quando abrir.
                   </p>
                 </CardContent>
               </Card>

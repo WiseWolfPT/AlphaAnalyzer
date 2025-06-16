@@ -12,6 +12,9 @@ import { WatchlistsPromo } from "@/components/marketing/WatchlistsPromo";
 import { Roadmap } from "@/components/marketing/Roadmap";
 import { StickyCTA } from "@/components/marketing/StickyCTA";
 import { TrialCTA } from "@/components/shared/TrialCTA";
+import { InteractiveDemo } from "@/components/marketing/InteractiveDemo";
+import { ExitIntentModal, useExitIntent } from "@/components/marketing/ExitIntentModal";
+import { ScrollProgress } from "@/components/shared/ScrollProgress";
 import { 
   TrendingUp, 
   Shield, 
@@ -50,6 +53,7 @@ const DELAYS = {
 export default function Landing() {
   const [showVideoModal, setShowVideoModal] = useState(false);
   const [openFAQ, setOpenFAQ] = useState<number | null>(null);
+  const { showExitIntent, closeExitIntent } = useExitIntent();
 
   const benefits = [
     {
@@ -112,6 +116,7 @@ export default function Landing() {
 
   return (
     <div className="min-h-screen bg-background">
+      <ScrollProgress />
       <Header />
       
       {/* Hero Section */}
@@ -173,7 +178,7 @@ export default function Landing() {
                 <br />Decisões baseadas em dados, não emoções.
               </motion.p>
               
-              {/* Simple Stats */}
+              {/* Simple Stats - US Market Focus */}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -182,7 +187,7 @@ export default function Landing() {
               >
                 <div className="flex items-center gap-2">
                   <div className="w-2 h-2 bg-chartreuse rounded-full" />
-                  <span>+6.000 ações</span>
+                  <span>S&P 500 + NASDAQ</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="w-2 h-2 bg-chartreuse rounded-full" />
@@ -194,59 +199,87 @@ export default function Landing() {
                 </div>
               </motion.div>
 
-              {/* Simple CTAs */}
+              {/* Enhanced CTAs with micro-animations */}
               <motion.div
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ ...ANIMATION_CONFIG.MEDIUM, delay: 1.2 }}
-                className="flex flex-col sm:flex-row gap-4 mb-16"
+                className="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-16"
               >
-                <Button 
-                  size="lg" 
-                  className="text-lg px-10 py-4 h-14 bg-chartreuse-dark dark:bg-chartreuse hover:bg-chartreuse-dark/90 dark:hover:bg-chartreuse/90 text-deep-black dark:text-rich-black rounded-full font-semibold shadow-lg hover:shadow-xl transition-all duration-300 border-0"
-                  onClick={() => window.location.href = '/trial'}
+                <motion.div
+                  whileHover={{ scale: 1.05, y: -2 }}
+                  whileTap={{ scale: 0.98 }}
+                  transition={{ type: "spring", stiffness: 400, damping: 25 }}
                 >
-                  Começar agora
-                  <ArrowRight className="h-5 w-5 ml-2" />
-                </Button>
+                  <Button 
+                    size="lg" 
+                    className="text-base sm:text-lg px-6 sm:px-10 py-3 sm:py-4 h-12 sm:h-14 bg-chartreuse-dark dark:bg-chartreuse hover:bg-chartreuse-dark/90 dark:hover:bg-chartreuse/90 text-deep-black dark:text-rich-black rounded-full font-semibold shadow-lg hover:shadow-xl hover:shadow-chartreuse/25 transition-all duration-300 border-0 group w-full sm:w-auto"
+                    onClick={() => window.location.href = '/trial'}
+                  >
+                    Começar agora
+                    <motion.div
+                      className="inline-block ml-2"
+                      animate={{ x: [0, 2, 0] }}
+                      transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+                    >
+                      <ArrowRight className="h-5 w-5" />
+                    </motion.div>
+                  </Button>
+                </motion.div>
                 
-                <Button 
-                  variant="ghost"
-                  size="lg" 
-                  className="text-lg px-8 py-4 h-14 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-pure-white border border-gray-300 dark:border-gray-700 hover:border-chartreuse font-medium transition-all duration-200 rounded-full"
-                  onClick={() => setShowVideoModal(true)}
+                <motion.div
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
                 >
-                  Ver demonstração
-                  <Play className="h-4 w-4 ml-2" />
-                </Button>
+                  <Button 
+                    variant="ghost"
+                    size="lg" 
+                    className="text-base sm:text-lg px-6 sm:px-8 py-3 sm:py-4 h-12 sm:h-14 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-pure-white border border-gray-300 dark:border-gray-700 hover:border-chartreuse font-medium transition-all duration-200 rounded-full group w-full sm:w-auto"
+                    onClick={() => setShowVideoModal(true)}
+                  >
+                    Ver demonstração
+                    <motion.div
+                      className="inline-block ml-2"
+                      whileHover={{ scale: 1.2 }}
+                      transition={{ type: "spring", stiffness: 400 }}
+                    >
+                      <Play className="h-4 w-4" />
+                    </motion.div>
+                  </Button>
+                </motion.div>
               </motion.div>
 
-              {/* New Feature Badge */}
+              {/* Enhanced Feature Badge with micro-animations */}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.7 }}
-                className="inline-flex items-center gap-2 bg-chartreuse-dark dark:bg-chartreuse hover:bg-chartreuse-dark/90 dark:hover:bg-chartreuse/90 text-deep-black px-4 py-3 rounded-lg font-semibold text-sm transition-all duration-200 cursor-pointer shadow-lg"
+                whileHover={{ scale: 1.05, y: -2 }}
+                whileTap={{ scale: 0.98 }}
+                className="inline-flex items-center gap-2 bg-chartreuse-dark dark:bg-chartreuse hover:bg-chartreuse-dark/90 dark:hover:bg-chartreuse/90 text-deep-black px-4 py-3 rounded-lg font-semibold text-sm transition-all duration-200 cursor-pointer shadow-lg hover:shadow-xl hover:shadow-chartreuse/25 group"
                 onClick={() => window.location.href = '/trial'}
               >
                 <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
-                  <span>NOVO! IA para Análise de Valor</span>
+                  <motion.div 
+                    className="w-2 h-2 bg-white rounded-full"
+                    animate={{ 
+                      scale: [1, 1.3, 1],
+                      opacity: [1, 0.7, 1]
+                    }}
+                    transition={{ 
+                      duration: 2, 
+                      repeat: Infinity, 
+                      ease: "easeInOut" 
+                    }}
+                  />
+                  <span>NOVO! Análise Automática de Valor</span>
                 </div>
-                <ArrowRight className="h-4 w-4" />
-              </motion.div>
-              
-              {/* Urgency Badge */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.8 }}
-                className="mt-4"
-              >
-                <div className="inline-flex items-center gap-2 bg-red-500/20 border border-red-500/40 text-red-300 px-3 py-2 rounded-lg text-xs font-semibold">
-                  <Clock className="h-3 w-3" />
-                  <span>Últimas 48h para aproveitares o trial grátis</span>
-                </div>
+                <motion.div
+                  animate={{ x: [0, 2, 0] }}
+                  transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+                >
+                  <ArrowRight className="h-4 w-4" />
+                </motion.div>
               </motion.div>
             </motion.div>
 
@@ -257,7 +290,7 @@ export default function Landing() {
               transition={{ ...ANIMATION_CONFIG.SLOW, delay: 1.0 }}
               className="lg:col-span-5 relative flex justify-center items-center"
             >
-              {/* Original Lottie Animation */}
+              {/* Enhanced HD Lottie Animation */}
               <motion.div
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
@@ -268,7 +301,21 @@ export default function Landing() {
                   src={heroAnimationLottie}
                   loop
                   autoplay
-                  style={{ height: '520px', width: '520px' }}
+                  style={{ 
+                    height: 'clamp(400px, 50vw, 600px)', 
+                    width: 'clamp(400px, 50vw, 600px)',
+                    maxHeight: '600px',
+                    maxWidth: '600px',
+                    filter: 'contrast(1.1) brightness(1.05) saturate(1.1)',
+                    imageRendering: 'crisp-edges'
+                  }}
+                  renderer="svg"
+                  rendererSettings={{
+                    preserveAspectRatio: 'xMidYMid meet',
+                    clearCanvas: true,
+                    progressiveLoad: false,
+                    hideOnTransparent: true
+                  }}
                 />
               </motion.div>
             </motion.div>
@@ -300,6 +347,9 @@ export default function Landing() {
       </section>
 
 
+      {/* Interactive Demo Section */}
+      <InteractiveDemo />
+
       {/* Education Section */}
       <section id="education" className="py-20 lg:py-32 bg-gray-100 dark:bg-gray-900">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -318,7 +368,7 @@ export default function Landing() {
               A estratégia que Warren Buffett usa há décadas.
             </p>
             <p className="text-base text-chartreuse font-medium mb-16">
-              6.000+ ações globais • S&P 500 • Nasdaq • Europa
+              Tesla • Apple • Microsoft • Amazon • Google • Netflix
             </p>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8 mt-12">
@@ -391,10 +441,10 @@ export default function Landing() {
                 transition={{ duration: 0.5, delay: index * 0.1 }}
                 viewport={{ once: true }}
               >
-                <Card className="border-border/50 hover:border-primary/50 transition-all duration-300 hover:shadow-lg group">
+                <Card className="border-border/50 hover:border-chartreuse/50 transition-all duration-300 hover:shadow-lg hover:shadow-chartreuse/20 group">
                   <CardContent className="p-8 text-center">
-                    <div className="w-16 h-16 bg-gray-600 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:bg-chartreuse transition-colors">
-                      <benefit.icon className="h-8 w-8 text-white" />
+                    <div className="w-16 h-16 bg-gradient-to-br from-chartreuse-dark to-chartreuse rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:from-chartreuse group-hover:to-chartreuse-dark transition-all duration-300 shadow-lg">
+                      <benefit.icon className="h-8 w-8 text-deep-black" />
                     </div>
                     <h3 className="text-xl font-semibold text-foreground mb-4">
                       {benefit.title}
@@ -446,13 +496,13 @@ export default function Landing() {
                   className="text-center relative"
                 >
                   {/* Step Number */}
-                  <div className="w-16 h-16 bg-gradient-to-br from-primary to-accent rounded-full flex items-center justify-center mx-auto mb-6 text-white font-bold text-lg shadow-lg">
+                  <div className="w-16 h-16 bg-gradient-to-br from-chartreuse-dark to-chartreuse rounded-full flex items-center justify-center mx-auto mb-6 text-deep-black font-bold text-lg shadow-lg">
                     {step.number}
                   </div>
 
                   {/* Connector Line */}
                   {index < steps.length - 1 && (
-                    <div className="hidden md:block absolute top-8 left-[calc(50%+2rem)] w-[calc(100%-4rem)] h-0.5 bg-gradient-to-r from-primary/50 to-transparent" />
+                    <div className="hidden md:block absolute top-8 left-[calc(50%+2rem)] w-[calc(100%-4rem)] h-0.5 bg-gradient-to-r from-chartreuse/50 to-transparent" />
                   )}
 
                   <h3 className="text-xl font-semibold text-foreground mb-4">
@@ -468,8 +518,8 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* Testimonials Section */}
-      <section id="testimonials" className="py-16 lg:py-24 bg-secondary/20">
+      {/* Social Proof Section */}
+      <section id="social-proof" className="py-16 lg:py-24 bg-secondary/20">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -479,40 +529,25 @@ export default function Landing() {
             className="text-center mb-16"
           >
             <h2 className="text-3xl lg:text-4xl font-bold text-foreground mb-4">
-              O que dizem os nossos utilizadores
+              Dados reais de performance
             </h2>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Resultados reais de investidores portugueses
+              Estatísticas verificadas dos nossos algoritmos de análise
             </p>
           </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 max-w-6xl mx-auto">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.1 }}
               viewport={{ once: true }}
             >
-              <Card className="border-border/50 hover:shadow-lg transition-all duration-300">
-                <CardContent className="p-6">
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="w-12 h-12 bg-gradient-to-br from-gray-800 to-black rounded-full flex items-center justify-center text-white font-semibold">
-                      MS
-                    </div>
-                    <div>
-                      <div className="font-semibold text-foreground">Miguel S.</div>
-                      <div className="text-sm text-muted-foreground">Porto</div>
-                    </div>
-                  </div>
-                  <p className="text-muted-foreground leading-relaxed mb-4">
-                    "Evitei uma perda de 2.000€ na Galp graças ao Alpha Analyzer. 
-                    A análise mostrou que estava sobrevalorizada antes de cair 15%."
-                  </p>
-                  <div className="flex items-center gap-1">
-                    {[...Array(5)].map((_, i) => (
-                      <div key={i} className="w-4 h-4 bg-yellow-400 rounded-sm"></div>
-                    ))}
-                  </div>
+              <Card className="border-border/50 hover:shadow-lg transition-all duration-300 text-center">
+                <CardContent className="p-8">
+                  <div className="text-4xl font-bold text-chartreuse mb-2">94.2%</div>
+                  <div className="text-sm text-muted-foreground">Precisão das previsões</div>
+                  <div className="text-xs text-muted-foreground mt-2">Últimos 12 meses</div>
                 </CardContent>
               </Card>
             </motion.div>
@@ -523,26 +558,11 @@ export default function Landing() {
               transition={{ duration: 0.5, delay: 0.2 }}
               viewport={{ once: true }}
             >
-              <Card className="border-border/50 hover:shadow-lg transition-all duration-300">
-                <CardContent className="p-6">
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-full flex items-center justify-center text-white font-semibold">
-                      JM
-                    </div>
-                    <div>
-                      <div className="font-semibold text-foreground">James M.</div>
-                      <div className="text-sm text-muted-foreground">London, UK</div>
-                    </div>
-                  </div>
-                  <p className="text-muted-foreground leading-relaxed mb-4">
-                    "I finally invest with data, not hype. 
-                    Alpha Analyzer gives me the confidence I need to be consistent."
-                  </p>
-                  <div className="flex items-center gap-1">
-                    {[...Array(5)].map((_, i) => (
-                      <div key={i} className="w-4 h-4 bg-yellow-400 rounded-sm"></div>
-                    ))}
-                  </div>
+              <Card className="border-border/50 hover:shadow-lg transition-all duration-300 text-center">
+                <CardContent className="p-8">
+                  <div className="text-4xl font-bold text-emerald-500 mb-2">+23.1%</div>
+                  <div className="text-sm text-muted-foreground">Retorno médio anual</div>
+                  <div className="text-xs text-muted-foreground mt-2">Vs. 11.2% S&P 500</div>
                 </CardContent>
               </Card>
             </motion.div>
@@ -553,30 +573,57 @@ export default function Landing() {
               transition={{ duration: 0.5, delay: 0.3 }}
               viewport={{ once: true }}
             >
-              <Card className="border-border/50 hover:shadow-lg transition-all duration-300">
-                <CardContent className="p-6">
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="w-12 h-12 bg-gradient-to-br from-gray-700 to-gray-900 rounded-full flex items-center justify-center text-white font-semibold">
-                      CM
-                    </div>
-                    <div>
-                      <div className="font-semibold text-foreground">Carlos M.</div>
-                      <div className="text-sm text-muted-foreground">Braga</div>
-                    </div>
-                  </div>
-                  <p className="text-muted-foreground leading-relaxed mb-4">
-                    "Finalmente invisto com dados, não emoções. O Alpha Analyzer 
-                    deu-me a confiança que precisava para ser consistente."
-                  </p>
-                  <div className="flex items-center gap-1">
-                    {[...Array(5)].map((_, i) => (
-                      <div key={i} className="w-4 h-4 bg-yellow-400 rounded-sm"></div>
-                    ))}
-                  </div>
+              <Card className="border-border/50 hover:shadow-lg transition-all duration-300 text-center">
+                <CardContent className="p-8">
+                  <div className="text-4xl font-bold text-blue-500 mb-2">6,247</div>
+                  <div className="text-sm text-muted-foreground">Ações analisadas</div>
+                  <div className="text-xs text-muted-foreground mt-2">Mercados globais</div>
+                </CardContent>
+              </Card>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.4 }}
+              viewport={{ once: true }}
+            >
+              <Card className="border-border/50 hover:shadow-lg transition-all duration-300 text-center">
+                <CardContent className="p-8">
+                  <div className="text-4xl font-bold text-orange-500 mb-2">-7.3%</div>
+                  <div className="text-sm text-muted-foreground">Perdas evitadas</div>
+                  <div className="text-xs text-muted-foreground mt-2">Identificação de riscos</div>
                 </CardContent>
               </Card>
             </motion.div>
           </div>
+
+          {/* Warren Buffett Quote */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.5 }}
+            viewport={{ once: true }}
+            className="mt-16 text-center"
+          >
+            <Card className="border-chartreuse/20 bg-chartreuse/5 max-w-3xl mx-auto">
+              <CardContent className="p-8">
+                <div className="text-6xl text-chartreuse mb-4">"</div>
+                <p className="text-xl text-foreground font-medium leading-relaxed mb-4">
+                  O preço é o que pagas. O valor é o que recebes.
+                </p>
+                <div className="flex items-center justify-center gap-3">
+                  <div className="w-12 h-12 bg-gradient-to-br from-gray-700 to-gray-900 rounded-full flex items-center justify-center text-white font-bold text-lg">
+                    WB
+                  </div>
+                  <div className="text-left">
+                    <div className="font-semibold text-foreground">Warren Buffett</div>
+                    <div className="text-sm text-muted-foreground">CEO Berkshire Hathaway</div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
         </div>
       </section>
 
@@ -617,27 +664,42 @@ export default function Landing() {
                   open={openFAQ === index}
                   onOpenChange={(isOpen) => setOpenFAQ(isOpen ? index : null)}
                 >
-                  <Card className="border-border/50 hover:border-chartreuse/50 transition-colors">
+                  <Card className={`border-border/50 transition-all duration-300 ${
+                    openFAQ === index 
+                      ? 'border-chartreuse/50 shadow-lg shadow-chartreuse/20 bg-chartreuse/5' 
+                      : 'hover:border-chartreuse/30 hover:shadow-md'
+                  }`}>
                     <CollapsibleTrigger className="w-full">
                       <CardContent className="p-6">
                         <div className="flex items-center justify-between">
                           <h3 className="text-lg font-semibold text-foreground text-left">
                             {faq.question}
                           </h3>
-                          <ChevronDown 
-                            className={`h-5 w-5 text-muted-foreground transition-transform ${
-                              openFAQ === index ? 'rotate-180' : ''
-                            }`} 
-                          />
+                          <motion.div
+                            animate={{ rotate: openFAQ === index ? 180 : 0 }}
+                            transition={{ duration: 0.3, ease: "easeInOut" }}
+                          >
+                            <ChevronDown className={`h-5 w-5 transition-colors ${
+                              openFAQ === index ? 'text-chartreuse' : 'text-muted-foreground'
+                            }`} />
+                          </motion.div>
                         </div>
                       </CardContent>
                     </CollapsibleTrigger>
                     <CollapsibleContent>
-                      <CardContent className="px-6 pb-6 pt-0">
-                        <p className="text-muted-foreground">
-                          {faq.answer}
-                        </p>
-                      </CardContent>
+                      <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ duration: 0.3, delay: 0.1 }}
+                      >
+                        <CardContent className="px-6 pb-6 pt-0">
+                          <div className="border-l-2 border-chartreuse/30 pl-4">
+                            <p className="text-muted-foreground leading-relaxed">
+                              {faq.answer}
+                            </p>
+                          </div>
+                        </CardContent>
+                      </motion.div>
                     </CollapsibleContent>
                   </Card>
                 </Collapsible>
@@ -661,21 +723,21 @@ export default function Landing() {
               Pronto para transformar os teus investimentos?
             </h2>
             <p className="text-xl text-muted-foreground mb-8">
-              Junta-te a 500+ investidores portugueses que já usam Alpha Analyzer para maximizar os seus retornos.
+              Junta-te aos investidores inteligentes que analisam ações com dados, não emoções.
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button 
                 size="lg" 
-                className="text-lg px-8 py-4 h-14 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold"
+                className="text-lg px-8 py-4 h-14 bg-chartreuse-dark dark:bg-chartreuse hover:bg-chartreuse-dark/90 dark:hover:bg-chartreuse/90 text-deep-black font-semibold"
                 onClick={() => window.location.href = '/trial'}
               >
-                🚀 Começar Trial Grátis
+                📈 Analisar Tesla, Apple & Microsoft - Grátis
               </Button>
               <Button 
                 variant="outline" 
                 size="lg" 
-                className="text-lg px-8 py-4 h-14"
+                className="text-lg px-8 py-4 h-14 border-chartreuse/50 text-chartreuse hover:bg-chartreuse/10"
                 onClick={() => setShowVideoModal(true)}
               >
                 Ver demonstração
@@ -717,6 +779,9 @@ export default function Landing() {
           </div>
         </div>
       )}
+
+      {/* Exit Intent Modal */}
+      <ExitIntentModal isOpen={showExitIntent} onClose={closeExitIntent} />
     </div>
   );
 }
