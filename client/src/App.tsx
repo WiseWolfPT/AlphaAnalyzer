@@ -5,9 +5,11 @@ import { Toaster } from "@/components/ui/toaster";
 import { ThemeProvider } from "@/hooks/use-theme";
 import { SimpleAuthProvider } from "@/contexts/simple-auth";
 import Landing from "@/pages/Landing";
+import Login from "@/pages/Login";
+import Register from "@/pages/Register";
 import NotFound from "@/pages/not-found";
 import Dashboard from "@/pages/insights-safe";
-import StockDetail from "@/pages/stock-detail";
+import StockCharts from "@/pages/StockCharts";
 import Portfolios from "@/pages/portfolios";
 import Watchlists from "@/pages/watchlists";
 import Earnings from "@/pages/earnings";
@@ -18,9 +20,11 @@ function Router() {
   return (
     <Switch>
       <Route path="/" component={Landing} />
+      <Route path="/login" component={Login} />
+      <Route path="/register" component={Register} />
       <Route path="/dashboard" component={Dashboard} />
       <Route path="/insights" component={Dashboard} />
-      <Route path="/stock/:symbol" component={StockDetail} />
+      <Route path="/stock/:symbol" component={StockCharts} />
       <Route path="/portfolios" component={Portfolios} />
       <Route path="/watchlists" component={Watchlists} />
       <Route path="/earnings" component={Earnings} />
