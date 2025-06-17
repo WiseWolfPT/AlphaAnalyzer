@@ -1,5 +1,5 @@
 import { ReactNode } from "react";
-import { Sidebar } from "./sidebar";
+import { CollapsibleSidebar } from "./collapsible-sidebar";
 import { TopBar } from "./top-bar";
 
 interface MainLayoutProps {
@@ -9,7 +9,7 @@ interface MainLayoutProps {
 export function MainLayout({ children }: MainLayoutProps) {
   return (
     <div className="min-h-screen bg-background flex">
-      <Sidebar />
+      <CollapsibleSidebar />
       <div className="flex-1 flex flex-col">
         <TopBar />
         <main className="flex-1 overflow-auto">
