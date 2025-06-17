@@ -355,60 +355,71 @@ export default function AdvancedCharts() {
         {/* Company Header - Horizontal Layout */}
         <div className="bg-card/50 backdrop-blur-sm border border-border/50 rounded-xl p-6">
           <div className="flex items-center justify-between mb-6">
-            {/* Company Info */}
-            <div className="flex items-center gap-4">
-              {stockData.logo && (
-                <div className="w-12 h-12 rounded-lg overflow-hidden bg-muted flex-shrink-0">
-                  <img
-                    src={stockData.logo}
-                    alt={`${stockData.name} logo`}
-                    className="w-full h-full object-cover"
-                    onError={(e) => {
-                      e.currentTarget.style.display = 'none';
-                    }}
-                  />
+            {/* Company Info + Price */}
+            <div className="flex items-center gap-6">
+              <div className="flex items-center gap-4">
+                {stockData.logo && (
+                  <div className="w-12 h-12 rounded-lg overflow-hidden bg-muted flex-shrink-0">
+                    <img
+                      src={stockData.logo}
+                      alt={`${stockData.name} logo`}
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        e.currentTarget.style.display = 'none';
+                      }}
+                    />
+                  </div>
+                )}
+                <div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <h1 className="text-2xl font-bold text-foreground">{stockData.symbol}</h1>
+                    <div className="flex items-center gap-1 px-2 py-1 bg-blue-500/10 text-blue-600 rounded-md text-xs font-medium">
+                      <Calendar className="h-3 w-3" />
+                      <span>Earnings: Jul 30</span>
+                    </div>
+                  </div>
+                  <p className="text-sm text-muted-foreground">{stockData.name}</p>
+                  <p className="text-xs text-muted-foreground">{profile.sector}</p>
                 </div>
-              )}
-              <div>
-                <div className="flex items-center gap-2 mb-1">
-                  <h1 className="text-2xl font-bold text-foreground">{stockData.symbol}</h1>
-                  <div className="flex items-center gap-1 px-2 py-1 bg-blue-500/10 text-blue-600 rounded-md text-xs font-medium">
-                    <Calendar className="h-3 w-3" />
-                    <span>Earnings: Jul 30</span>
+              </div>
+
+              {/* Current Price - Next to Company Info */}
+              <div className="text-left">
+                <div className="text-3xl font-bold text-foreground">
+                  ${currentPrice.price.toFixed(2)}
+                </div>
+                <div className={cn(
+                  "flex items-center gap-1 text-sm font-medium",
+                  isPositive ? "text-emerald-500" : "text-red-500"
+                )}>
+                  {isPositive ? (
+                    <TrendingUp className="h-3 w-3" />
+                  ) : (
+                    <TrendingDown className="h-3 w-3" />
+                  )}
+                  {isPositive ? '+' : ''}${currentPrice.change.toFixed(2)} ({isPositive ? '+' : ''}{currentPrice.changePercent.toFixed(2)}%)
+                </div>
+                
+                {/* After Hours Price */}
+                <div className="mt-2 pt-2 border-t border-border/30">
+                  <div className="text-xs text-muted-foreground">After Hours</div>
+                  <div className="flex items-center gap-1 text-sm">
+                    <span className="font-medium">${(currentPrice.price + 0.57).toFixed(2)}</span>
+                    <span className="text-emerald-500">+$0.57 (+0.28%)</span>
                   </div>
                 </div>
-                <p className="text-sm text-muted-foreground">{stockData.name}</p>
-                <p className="text-xs text-muted-foreground">{profile.sector}</p>
               </div>
             </div>
 
-            {/* Current Price */}
-            <div className="text-right">
-              <div className="text-3xl font-bold text-foreground">
-                ${currentPrice.price.toFixed(2)}
-              </div>
-              <div className={cn(
-                "flex items-center justify-end gap-1 text-sm font-medium",
-                isPositive ? "text-emerald-500" : "text-red-500"
-              )}>
-                {isPositive ? (
-                  <TrendingUp className="h-3 w-3" />
-                ) : (
-                  <TrendingDown className="h-3 w-3" />
-                )}
-                {isPositive ? '+' : ''}${currentPrice.change.toFixed(2)} ({isPositive ? '+' : ''}{currentPrice.changePercent.toFixed(2)}%)
-              </div>
-              
-              {/* After Hours Price */}
-              <div className="mt-2 pt-2 border-t border-border/30">
-                <div className="text-xs text-muted-foreground">After Hours</div>
-                <div className="flex items-center justify-end gap-1 text-sm">
-                  <span className="font-medium">${(currentPrice.price + 0.57).toFixed(2)}</span>
-                  <span className="text-emerald-500">+$0.57 (+0.28%)</span>
-                </div>
-              </div>
+            {/* Action Buttons */}
+            <div className="flex items-center gap-3">
+              <Button size="sm">
+                Add to Watchlist
+              </Button>
+              <Button variant="outline" size="sm">
+                Set Alert
+              </Button>
             </div>
-
           </div>
 
           {/* 5 Metrics Groups - Horizontal Layout */}
@@ -548,15 +559,6 @@ export default function AdvancedCharts() {
             </div>
           </div>
 
-          {/* Actions */}
-          <div className="flex items-center justify-center gap-4 mt-6 pt-6 border-t border-border/50">
-            <Button size="sm">
-              Add to Watchlist
-            </Button>
-            <Button variant="outline" size="sm">
-              Set Alert
-            </Button>
-          </div>
         </div>
 
         {/* Chart Controls */}
