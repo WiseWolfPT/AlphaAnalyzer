@@ -43,13 +43,13 @@ export function CollapsibleSidebar() {
 
   return (
     <div className={cn(
-      "bg-dark-slate-navy border-r border-slate-700/50 flex-shrink-0 sticky top-0 h-screen overflow-y-auto transition-all duration-300 ease-in-out",
+      "bg-gray-mouse dark:bg-dark-slate-navy border-r border-gray-300 dark:border-slate-700/50 flex-shrink-0 sticky top-0 h-screen overflow-y-auto transition-all duration-300 ease-in-out",
       isCollapsed ? "w-16" : "w-72"
     )}>
       <div className="flex flex-col h-full">
         {/* Header with Logo and Collapse Button */}
         <div className={cn(
-          "border-b border-slate-700/50 transition-all duration-300",
+          "border-b border-gray-300 dark:border-slate-700/50 transition-all duration-300",
           isCollapsed ? "p-2" : "p-4"
         )}>
           <div className={cn(
@@ -63,8 +63,8 @@ export function CollapsibleSidebar() {
                     <BarChart3 className="h-4 w-4 text-rich-black" />
                   </div>
                   <div>
-                    <h1 className="font-bold text-lg text-white">Alpha Analyzer</h1>
-                    <p className="text-xs text-slate-400">Professional Analytics</p>
+                    <h1 className="font-bold text-lg text-gray-900 dark:text-white">Alpha Analyzer</h1>
+                    <p className="text-xs text-gray-600 dark:text-slate-400">Professional Analytics</p>
                   </div>
                 </div>
                 <Button
@@ -124,7 +124,7 @@ export function CollapsibleSidebar() {
                     "transition-all drop-shadow-sm",
                     isActive 
                       ? "text-chartreuse drop-shadow-[0_0_8px_rgba(216,242,45,0.3)]" 
-                      : "text-slate-400 group-hover:text-chartreuse group-hover:drop-shadow-[0_0_6px_rgba(216,242,45,0.4)]",
+                      : "text-gray-600 dark:text-slate-400 group-hover:text-chartreuse group-hover:drop-shadow-[0_0_6px_rgba(216,242,45,0.4)]",
                     isCollapsed ? "h-5 w-5" : "h-5 w-5"
                   )} />
                   {!isCollapsed && <span>{item.name}</span>}
@@ -136,12 +136,12 @@ export function CollapsibleSidebar() {
 
         {/* User Profile Section at Bottom */}
         <div className={cn(
-          "border-t border-slate-700/50 mt-auto transition-all duration-300",
+          "border-t border-gray-300 dark:border-slate-700/50 mt-auto transition-all duration-300",
           isCollapsed ? "p-2" : "p-4"
         )}>
           {user ? (
             <div className={cn(
-              "rounded-lg bg-slate-800/50 border border-slate-700/50 transition-all duration-300",
+              "rounded-lg bg-gray-100 dark:bg-slate-800/50 border border-gray-300 dark:border-slate-700/50 transition-all duration-300",
               isCollapsed 
                 ? "flex flex-col items-center gap-2 p-2"
                 : "flex items-center gap-3 p-3"
@@ -151,17 +151,17 @@ export function CollapsibleSidebar() {
               </div>
               {!isCollapsed && (
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-white truncate">
+                  <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
                     {user.email || "User"}
                   </p>
-                  <p className="text-xs text-slate-400">Free Plan</p>
+                  <p className="text-xs text-gray-600 dark:text-slate-400">Free Plan</p>
                 </div>
               )}
               {!isCollapsed && (
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="text-slate-400 hover:text-white p-1"
+                  className="text-gray-600 dark:text-slate-400 hover:text-gray-900 dark:hover:text-white p-1"
                 >
                   <LogOut className="h-4 w-4" />
                 </Button>
