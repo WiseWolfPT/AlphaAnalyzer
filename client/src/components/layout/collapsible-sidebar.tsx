@@ -43,7 +43,7 @@ export function CollapsibleSidebar() {
 
   return (
     <div className={cn(
-      "bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 border-r border-slate-700/50 flex-shrink-0 sticky top-0 h-screen overflow-y-auto transition-all duration-300 ease-in-out",
+      "bg-dark-slate-navy border-r border-slate-700/50 flex-shrink-0 sticky top-0 h-screen overflow-y-auto transition-all duration-300 ease-in-out",
       isCollapsed ? "w-16" : "w-72"
     )}>
       <div className="flex flex-col h-full">

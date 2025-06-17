@@ -11,7 +11,7 @@ export default function SimpleDashboard() {
             <SimpleLink href="/" className="block p-2 hover:bg-gray-700 rounded">
               Home
             </SimpleLink>
-            <SimpleLink href="/dashboard" className="block p-2 hover:bg-gray-700 rounded bg-blue-600">
+            <SimpleLink href="/dashboard" className="block p-2 hover:bg-gray-700 rounded bg-chartreuse-dark">
               Dashboard
             </SimpleLink>
           </div>

@@ -178,20 +178,20 @@ export default function StockDetail() {
                 
                 <div className="flex space-x-3">
                   <Link href={`/stock/${symbol}/charts`}>
-                    <Button variant="default" className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
+                    <Button variant="default" className="bg-gradient-to-r from-chartreuse via-chartreuse-dark to-chartreuse hover:from-chartreuse-dark hover:via-chartreuse hover:to-chartreuse-dark text-rich-black font-semibold shadow-lg shadow-chartreuse/30 hover:shadow-chartreuse/50 hover:scale-105 transition-all duration-300 border-0">
                       <BarChart3 className="h-4 w-4 mr-2" />
                       View Advanced Charts
                     </Button>
                   </Link>
-                  <Button className="bg-primary hover:bg-primary/90">
+                  <Button className="bg-gradient-to-r from-chartreuse via-chartreuse-dark to-chartreuse hover:from-chartreuse-dark hover:via-chartreuse hover:to-chartreuse-dark text-rich-black font-semibold shadow-lg shadow-chartreuse/30 hover:shadow-chartreuse/50 hover:scale-105 transition-all duration-300 border-0">
                     <Plus className="h-4 w-4 mr-2" />
                     Add to Watchlist
                   </Button>
-                  <Button variant="outline">
+                  <Button variant="outline" className="border-chartreuse/30 hover:border-chartreuse hover:bg-chartreuse/10 transition-all duration-300">
                     <Target className="h-4 w-4 mr-2" />
                     Analyze
                   </Button>
-                  <Button variant="outline">
+                  <Button variant="outline" className="border-chartreuse/30 hover:border-chartreuse hover:bg-chartreuse/10 transition-all duration-300">
                     <Bell className="h-4 w-4 mr-2" />
                     Alert
                   </Button>
@@ -443,7 +443,7 @@ export default function StockDetail() {
                                 }}
                               />
                               <Legend />
-                              <Bar dataKey="revenue" fill="#3b82f6" name="Revenue (M)" />
+                              <Bar dataKey="revenue" fill="#D8F22D" name="Revenue (M)" />
                               <Bar dataKey="earnings" fill="#10b981" name="Earnings (M)" />
                             </BarChart>
                           </ResponsiveContainer>

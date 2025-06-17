@@ -122,7 +122,7 @@ export default function Portfolios() {
               <Card className="bg-card/50 backdrop-blur-sm border border-border/50">
                 <CardContent className="p-4">
                   <div className="flex items-center gap-2 mb-2">
-                    <TrendingUp className="h-4 w-4 text-blue-500" />
+                    <TrendingUp className="h-4 w-4 text-chartreuse-dark" />
                     <span className="text-sm text-muted-foreground">Total Gain/Loss</span>
                   </div>
                   <div className="text-2xl font-bold text-green-600">+${portfolioData.totalGainLoss.toFixed(2)}</div>

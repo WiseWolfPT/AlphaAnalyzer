@@ -38,7 +38,7 @@ export function RatiosChart({ data }: RatiosChartProps) {
         <div className="bg-background border border-border rounded-lg p-3 shadow-lg">
           <p className="text-sm font-medium mb-2">{label}</p>
           <div className="space-y-1 text-xs">
-            <p className="text-blue-500">
+            <p className="text-chartreuse-dark">
               Return on Capital Employed: <span className="font-semibold">{data.roe.toFixed(1)}%</span>
             </p>
             <p className="text-muted-foreground">
@@ -85,7 +85,7 @@ export function RatiosChart({ data }: RatiosChartProps) {
           <Tooltip content={<CustomTooltip />} />
           <Bar 
             dataKey="roe" 
-            fill="#3b82f6" 
+            fill="#D8F22D" 
             radius={[2, 2, 0, 0]}
           />
         </BarChart>

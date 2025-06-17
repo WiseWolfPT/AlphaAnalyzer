@@ -83,7 +83,7 @@ export function EarningsTrends({ stock }: EarningsTrendsProps) {
         <Card className="bg-card/50 backdrop-blur-sm border border-border/50">
           <CardContent className="p-4">
             <div className="flex items-center gap-2 mb-2">
-              <TrendingUp className="h-4 w-4 text-blue-500" />
+              <TrendingUp className="h-4 w-4 text-chartreuse-dark" />
               <span className="text-sm text-muted-foreground">EPS Growth</span>
             </div>
             <div className="text-2xl font-bold">{epsGrowth.toFixed(1)}%</div>
@@ -190,7 +190,7 @@ export function EarningsTrends({ stock }: EarningsTrendsProps) {
                 <AreaChart data={earningsData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
                   <defs>
                     <linearGradient id="revenueGradient" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3}/>
+                      <stop offset="5%" stopColor="#D8F22D" stopOpacity={0.3}/>
                       <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
                     </linearGradient>
                   </defs>
@@ -214,14 +214,14 @@ export function EarningsTrends({ stock }: EarningsTrendsProps) {
                   <Area 
                     type="monotone" 
                     dataKey="revenue" 
-                    stroke="#3b82f6" 
+                    stroke="#D8F22D" 
                     strokeWidth={3}
                     fill="url(#revenueGradient)"
                   />
                 </AreaChart>
               </ResponsiveContainer>
             </div>
-            <div className="mt-4 p-3 bg-blue-500/10 rounded-lg">
+            <div className="mt-4 p-3 bg-chartreuse/10 rounded-lg">
               <div className="flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">8-Quarter Growth</span>
                 <span className={cn(

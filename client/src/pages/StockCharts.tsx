@@ -403,7 +403,7 @@ export default function AdvancedCharts() {
                   {/* FINANCIALS */}
                   <div className="bg-secondary/10 rounded-lg p-3">
                     <div className="flex items-center gap-2 mb-2">
-                      <Target className="h-4 w-4 text-blue-500" />
+                      <Target className="h-4 w-4 text-chartreuse-dark" />
                       <h3 className="text-sm font-semibold text-foreground">FINANCIALS</h3>
                     </div>
                     <div className="grid grid-cols-2 gap-2 text-xs">
