@@ -192,7 +192,7 @@ export default function Insights() {
         {/* Load More Button */}
         {!isLoading && filteredStocks && filteredStocks.length >= 20 && (
           <div className="flex justify-center mt-12">
-            <Button size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-3 rounded-xl font-medium">
+            <Button size="lg" className="bg-gradient-to-r from-chartreuse via-chartreuse-dark to-chartreuse hover:from-chartreuse-dark hover:via-chartreuse hover:to-chartreuse-dark text-rich-black font-semibold shadow-lg shadow-chartreuse/30 hover:shadow-chartreuse/50 hover:scale-105 transition-all duration-300 border-0 px-8 py-3 rounded-xl">
               Load More Stocks
             </Button>
           </div>

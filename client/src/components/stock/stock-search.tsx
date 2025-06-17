@@ -108,7 +108,7 @@ export function StockSearch({
           value={query}
           onChange={(e) => handleInputChange(e.target.value)}
           onFocus={() => query.length > 0 && setIsOpen(true)}
-          className="pl-14 pr-16 py-6 text-lg bg-card/50 backdrop-blur-sm border border-border/50 rounded-2xl focus:ring-2 focus:ring-primary/50 focus:border-primary/50 transition-all duration-200 placeholder:text-muted-foreground/60"
+          className="pl-14 pr-16 py-6 text-lg bg-chartreuse/5 dark:bg-card/50 backdrop-blur-sm border border-chartreuse/20 dark:border-border/50 rounded-2xl focus:ring-2 focus:ring-chartreuse/30 focus:border-chartreuse/50 transition-all duration-200 placeholder:text-muted-foreground/60"
         />
         <div className="absolute right-5 top-1/2 transform -translate-y-1/2">
           <kbd className="px-3 py-1.5 text-xs bg-secondary/80 rounded-lg border border-border/50 text-muted-foreground font-mono backdrop-blur-sm">

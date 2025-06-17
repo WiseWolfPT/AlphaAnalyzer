@@ -113,8 +113,8 @@ export function CollapsibleSidebar() {
                   className={cn(
                     "flex items-center text-sm font-medium transition-all duration-200 group cursor-pointer rounded-lg",
                     isActive
-                      ? "bg-gradient-to-r from-chartreuse/20 via-chartreuse-dark/15 to-chartreuse/10 text-white border border-chartreuse/40 shadow-lg shadow-chartreuse/10"
-                      : "text-slate-300 hover:text-chartreuse hover:bg-gradient-to-r hover:from-slate-700/50 hover:to-slate-600/50",
+                      ? "bg-gradient-to-r from-chartreuse/20 via-chartreuse-dark/15 to-chartreuse/10 text-gray-900 dark:text-white border border-chartreuse/40 shadow-lg shadow-chartreuse/10"
+                      : "text-gray-700 dark:text-slate-300 hover:text-chartreuse hover:bg-gradient-to-r hover:from-slate-700/50 hover:to-slate-600/50",
                     isCollapsed 
                       ? "justify-center p-2 mx-1"
                       : "gap-3 px-3 py-3"

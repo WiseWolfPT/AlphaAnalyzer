@@ -107,7 +107,7 @@ export function FeatureLimiter({
                 <Button
                   size="sm"
                   onClick={() => {/* Will trigger auth modal */}}
-                  className="flex-1"
+                  className="flex-1 bg-gradient-to-r from-chartreuse via-chartreuse-dark to-chartreuse hover:from-chartreuse-dark hover:via-chartreuse hover:to-chartreuse-dark text-rich-black font-semibold shadow-lg shadow-chartreuse/30 hover:shadow-chartreuse/50 hover:scale-105 transition-all duration-300 border-0"
                 >
                   Sign Up
                 </Button>

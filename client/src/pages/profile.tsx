@@ -104,13 +104,13 @@ export default function Profile() {
                     <X className="h-4 w-4 mr-2" />
                     Cancel
                   </Button>
-                  <Button size="sm" onClick={handleSave}>
+                  <Button size="sm" onClick={handleSave} className="bg-gradient-to-r from-chartreuse via-chartreuse-dark to-chartreuse hover:from-chartreuse-dark hover:via-chartreuse hover:to-chartreuse-dark text-rich-black font-semibold shadow-lg shadow-chartreuse/30 hover:shadow-chartreuse/50 hover:scale-105 transition-all duration-300 border-0">
                     <Save className="h-4 w-4 mr-2" />
                     Save Changes
                   </Button>
                 </>
               ) : (
-                <Button size="sm" onClick={() => setIsEditing(true)}>
+                <Button size="sm" onClick={() => setIsEditing(true)} className="bg-gradient-to-r from-chartreuse via-chartreuse-dark to-chartreuse hover:from-chartreuse-dark hover:via-chartreuse hover:to-chartreuse-dark text-rich-black font-semibold shadow-lg shadow-chartreuse/30 hover:shadow-chartreuse/50 hover:scale-105 transition-all duration-300 border-0">
                   <Edit className="h-4 w-4 mr-2" />
                   Edit Profile
                 </Button>

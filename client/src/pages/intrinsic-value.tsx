@@ -458,7 +458,7 @@ export default function IntrinsicValue() {
                     </div>
                     <Button 
                       onClick={() => selectedStock && calculateIntrinsicValue(selectedStock)}
-                      className="w-full"
+                      className="w-full bg-gradient-to-r from-chartreuse via-chartreuse-dark to-chartreuse hover:from-chartreuse-dark hover:via-chartreuse hover:to-chartreuse-dark text-rich-black font-semibold shadow-lg shadow-chartreuse/30 hover:shadow-chartreuse/50 hover:scale-105 transition-all duration-300 border-0"
                     >
                       Recalculate
                     </Button>

@@ -81,7 +81,7 @@ export function LandingHeader() {
                   </div>
                   
                   <Link href="/dashboard">
-                    <Button size="sm">
+                    <Button size="sm" className="bg-gradient-to-r from-chartreuse via-chartreuse-dark to-chartreuse hover:from-chartreuse-dark hover:via-chartreuse hover:to-chartreuse-dark text-rich-black font-semibold shadow-lg shadow-chartreuse/30 hover:shadow-chartreuse/50 hover:scale-105 transition-all duration-300 border-0">
                       Dashboard
                     </Button>
                   </Link>
@@ -104,6 +104,7 @@ export function LandingHeader() {
                   <Button 
                     size="sm"
                     onClick={() => setShowAuthModal(true)}
+                    className="bg-gradient-to-r from-chartreuse via-chartreuse-dark to-chartreuse hover:from-chartreuse-dark hover:via-chartreuse hover:to-chartreuse-dark text-rich-black font-semibold shadow-lg shadow-chartreuse/30 hover:shadow-chartreuse/50 hover:scale-105 transition-all duration-300 border-0"
                   >
                     Start Free
                   </Button>
@@ -161,7 +162,7 @@ export function LandingHeader() {
                         </div>
                       </div>
                       <Link href="/dashboard">
-                        <Button className="w-full mx-3" onClick={() => setMobileMenuOpen(false)}>
+                        <Button className="w-full mx-3 bg-gradient-to-r from-chartreuse via-chartreuse-dark to-chartreuse hover:from-chartreuse-dark hover:via-chartreuse hover:to-chartreuse-dark text-rich-black font-semibold shadow-lg shadow-chartreuse/30 hover:shadow-chartreuse/50 hover:scale-105 transition-all duration-300 border-0" onClick={() => setMobileMenuOpen(false)}>
                           Go to Dashboard
                         </Button>
                       </Link>
@@ -189,7 +190,7 @@ export function LandingHeader() {
                         Sign In
                       </Button>
                       <Button 
-                        className="w-full mx-3"
+                        className="w-full mx-3 bg-gradient-to-r from-chartreuse via-chartreuse-dark to-chartreuse hover:from-chartreuse-dark hover:via-chartreuse hover:to-chartreuse-dark text-rich-black font-semibold shadow-lg shadow-chartreuse/30 hover:shadow-chartreuse/50 hover:scale-105 transition-all duration-300 border-0"
                         onClick={() => {
                           setShowAuthModal(true);
                           setMobileMenuOpen(false);

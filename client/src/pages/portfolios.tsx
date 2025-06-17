@@ -87,7 +87,7 @@ export default function Portfolios() {
               <p className="text-muted-foreground">Comprehensive analysis of your investment portfolio</p>
             </div>
           </div>
-          <Button className="bg-primary hover:bg-primary/90">
+          <Button className="bg-gradient-to-r from-chartreuse via-chartreuse-dark to-chartreuse hover:from-chartreuse-dark hover:via-chartreuse hover:to-chartreuse-dark text-rich-black font-semibold shadow-lg shadow-chartreuse/30 hover:shadow-chartreuse/50 hover:scale-105 transition-all duration-300 border-0">
             <Plus className="h-4 w-4 mr-2" />
             Add Holding
           </Button>

@@ -172,7 +172,7 @@ export function SubscriptionStatus({
         {/* Action Buttons */}
         <div className="flex gap-2 pt-2">
           {(subscription.status === 'trial' || subscription.status === 'expired') && (
-            <Button onClick={onUpgrade} className="flex-1">
+            <Button onClick={onUpgrade} className="flex-1 bg-gradient-to-r from-chartreuse via-chartreuse-dark to-chartreuse hover:from-chartreuse-dark hover:via-chartreuse hover:to-chartreuse-dark text-rich-black font-semibold shadow-lg shadow-chartreuse/30 hover:shadow-chartreuse/50 hover:scale-105 transition-all duration-300 border-0">
               Upgrade Now
             </Button>
           )}

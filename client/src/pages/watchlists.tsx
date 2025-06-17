@@ -95,7 +95,7 @@ export default function Watchlists() {
             <div className="flex items-center space-x-2">
               <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
                 <DialogTrigger asChild>
-                  <Button size="sm">
+                  <Button size="sm" className="bg-gradient-to-r from-chartreuse via-chartreuse-dark to-chartreuse hover:from-chartreuse-dark hover:via-chartreuse hover:to-chartreuse-dark text-rich-black font-semibold shadow-lg shadow-chartreuse/30 hover:shadow-chartreuse/50 hover:scale-105 transition-all duration-300 border-0">
                     <Plus className="h-4 w-4 mr-2" />
                     Create
                   </Button>
@@ -121,6 +121,7 @@ export default function Watchlists() {
                       <Button 
                         onClick={() => createWatchlistMutation.mutate(newWatchlistName)}
                         disabled={!newWatchlistName.trim() || createWatchlistMutation.isPending}
+                        className="bg-gradient-to-r from-chartreuse via-chartreuse-dark to-chartreuse hover:from-chartreuse-dark hover:via-chartreuse hover:to-chartreuse-dark text-rich-black font-semibold shadow-lg shadow-chartreuse/30 hover:shadow-chartreuse/50 hover:scale-105 transition-all duration-300 border-0"
                       >
                         Create
                       </Button>
@@ -229,7 +230,7 @@ export default function Watchlists() {
                       ) : (
                         <div className="text-center py-8">
                           <p className="text-muted-foreground">No stocks in this watchlist</p>
-                          <Button size="sm" className="mt-2">Add your first stock</Button>
+                          <Button size="sm" className="mt-2 bg-gradient-to-r from-chartreuse via-chartreuse-dark to-chartreuse hover:from-chartreuse-dark hover:via-chartreuse hover:to-chartreuse-dark text-rich-black font-semibold shadow-lg shadow-chartreuse/30 hover:shadow-chartreuse/50 hover:scale-105 transition-all duration-300 border-0">Add your first stock</Button>
                         </div>
                       )}
                     </CardContent>
@@ -325,7 +326,7 @@ export default function Watchlists() {
                       Choose a watchlist from the sidebar to view its contents
                     </p>
                     {!watchlists?.length && (
-                      <Button onClick={() => setIsCreateDialogOpen(true)}>
+                      <Button onClick={() => setIsCreateDialogOpen(true)} className="bg-gradient-to-r from-chartreuse via-chartreuse-dark to-chartreuse hover:from-chartreuse-dark hover:via-chartreuse hover:to-chartreuse-dark text-rich-black font-semibold shadow-lg shadow-chartreuse/30 hover:shadow-chartreuse/50 hover:scale-105 transition-all duration-300 border-0">
                         Create Your First Watchlist
                       </Button>
                     )}
