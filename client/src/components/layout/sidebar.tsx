@@ -66,13 +66,13 @@ export function Sidebar() {
                   className={cn(
                     "flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 group cursor-pointer",
                     isActive
-                      ? "bg-primary/10 text-primary border border-primary/20"
+                      ? "bg-chartreuse/10 text-chartreuse border border-chartreuse/20"
                       : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
                   )}
                 >
                   <item.icon className={cn(
                     "h-5 w-5 transition-transform group-hover:scale-110",
-                    isActive ? "text-primary" : "text-muted-foreground"
+                    isActive ? "text-chartreuse" : "text-muted-foreground"
                   )} />
                   <span>{item.name}</span>
                 </div>
@@ -84,7 +84,7 @@ export function Sidebar() {
         {/* Auth Section */}
         <div className="mt-8 pt-6 border-t border-border">
           {!user && (
-            <Button className="w-full">
+            <Button className="w-full bg-gradient-to-r from-chartreuse via-chartreuse-dark to-chartreuse hover:from-chartreuse-dark hover:via-chartreuse hover:to-chartreuse-dark text-rich-black font-semibold shadow-lg shadow-chartreuse/30 hover:shadow-chartreuse/50 hover:scale-105 transition-all duration-300 border-0">
               <LogIn className="h-4 w-4 mr-2" />
               Sign In
             </Button>

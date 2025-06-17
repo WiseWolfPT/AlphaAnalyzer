@@ -184,7 +184,7 @@ export default function IntrinsicValue() {
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-4">
-            <div className="p-2 bg-primary/10 rounded-xl">
+            <div className="p-2 bg-chartreuse/10 rounded-xl">
               <Calculator className="h-6 w-6 text-primary" />
             </div>
             <div>
@@ -218,7 +218,7 @@ export default function IntrinsicValue() {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-primary/20 rounded-lg flex items-center justify-center">
+                    <div className="w-12 h-12 bg-chartreuse/20 rounded-lg flex items-center justify-center">
                       <span className="font-bold text-primary">{selectedStock.symbol.charAt(0)}</span>
                     </div>
                     <div>
@@ -277,7 +277,7 @@ export default function IntrinsicValue() {
                           <div className="text-sm text-muted-foreground">Current Price</div>
                           <div className="text-2xl font-bold">{formatCurrency(calculation.currentPrice)}</div>
                         </div>
-                        <div className="p-4 bg-primary/10 rounded-lg">
+                        <div className="p-4 bg-chartreuse/10 rounded-lg">
                           <div className="text-sm text-muted-foreground">Intrinsic Value</div>
                           <div className="text-2xl font-bold text-primary">{formatCurrency(calculation.intrinsicValue)}</div>
                         </div>

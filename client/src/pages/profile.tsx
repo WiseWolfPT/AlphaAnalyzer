@@ -89,7 +89,7 @@ export default function Profile() {
         <div className="mb-8">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <div className="p-2 bg-primary/10 rounded-xl">
+              <div className="p-2 bg-chartreuse/10 rounded-xl">
                 <User className="h-6 w-6 text-primary" />
               </div>
               <div>

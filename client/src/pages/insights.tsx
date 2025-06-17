@@ -95,7 +95,7 @@ export default function Insights() {
         {/* Hero Section */}
         <div className="mb-12">
           <div className="flex items-center gap-3 mb-4">
-            <div className="p-2 bg-primary/10 rounded-xl">
+            <div className="p-2 bg-chartreuse/10 rounded-xl">
               <TrendingUp className="h-6 w-6 text-primary" />
             </div>
             <div>

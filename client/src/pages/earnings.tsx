@@ -113,7 +113,7 @@ export default function EarningsCalendar() {
                     {/* Day Header */}
                     <div className="text-center">
                       <div className="text-sm text-muted-foreground">{format(day, 'EEE')}</div>
-                      <div className="w-8 h-8 mx-auto rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-medium">
+                      <div className="w-8 h-8 mx-auto rounded-full bg-chartreuse text-rich-black flex items-center justify-center text-sm font-medium">
                         {format(day, 'd')}
                       </div>
                     </div>
@@ -130,7 +130,7 @@ export default function EarningsCalendar() {
                             className="flex items-center space-x-2 p-2 rounded-lg hover:bg-muted cursor-pointer transition-colors"
                             onClick={() => setSelectedStock(earning.symbol)}
                           >
-                            <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center">
+                            <div className="w-6 h-6 rounded-full bg-chartreuse/20 flex items-center justify-center">
                               <span className="text-xs font-medium">{earning.symbol.charAt(0)}</span>
                             </div>
                             <span className="text-sm font-medium">{earning.symbol}</span>
@@ -151,7 +151,7 @@ export default function EarningsCalendar() {
                             className="flex items-center space-x-2 p-2 rounded-lg hover:bg-muted cursor-pointer transition-colors"
                             onClick={() => setSelectedStock(earning.symbol)}
                           >
-                            <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center">
+                            <div className="w-6 h-6 rounded-full bg-chartreuse/20 flex items-center justify-center">
                               <span className="text-xs font-medium">{earning.symbol.charAt(0)}</span>
                             </div>
                             <span className="text-sm font-medium">{earning.symbol}</span>
@@ -170,7 +170,7 @@ export default function EarningsCalendar() {
                 <Card>
                   <CardHeader>
                     <div className="flex items-center space-x-3">
-                      <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center">
+                      <div className="w-10 h-10 rounded-lg bg-chartreuse/20 flex items-center justify-center">
                         <span className="font-medium">{selectedStock.charAt(0)}</span>
                       </div>
                       <div>

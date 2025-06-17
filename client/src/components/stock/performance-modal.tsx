@@ -230,7 +230,7 @@ export function PerformanceModal({ isOpen, onClose, stock }: PerformanceModalPro
           {/* Actions */}
           <div className="flex space-x-2 pt-4">
             <Button 
-              className="flex-1 bg-chart-1 hover:bg-chart-1/80 text-black"
+              className="flex-1 bg-gradient-to-r from-chartreuse via-chartreuse-dark to-chartreuse hover:from-chartreuse-dark hover:via-chartreuse hover:to-chartreuse-dark text-rich-black font-semibold shadow-lg shadow-chartreuse/30 hover:shadow-chartreuse/50 hover:scale-105 transition-all duration-300 border-0"
               onClick={() => {
                 // Navigate to stock detail page
                 window.location.href = `/stock/${stock.symbol}`;

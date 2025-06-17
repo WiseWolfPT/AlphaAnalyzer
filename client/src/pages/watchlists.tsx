@@ -201,7 +201,7 @@ export default function Watchlists() {
                       <Card>
                     <CardHeader className="flex flex-row items-center justify-between">
                       <CardTitle>Stocks in {selectedWatchlist.name}</CardTitle>
-                      <Button size="sm" className="bg-chart-1 hover:bg-chart-1/80 text-black">
+                      <Button size="sm" className="bg-gradient-to-r from-chartreuse via-chartreuse-dark to-chartreuse hover:from-chartreuse-dark hover:via-chartreuse hover:to-chartreuse-dark text-rich-black font-semibold shadow-lg shadow-chartreuse/30 hover:shadow-chartreuse/50 hover:scale-105 transition-all duration-300 border-0">
                         <Plus className="h-4 w-4 mr-2" />
                         Add Stock
                       </Button>
