@@ -48,43 +48,57 @@ export function CollapsibleSidebar() {
     )}>
       <div className="flex flex-col h-full">
         {/* Header with Logo and Collapse Button */}
-        <div className="p-4 border-b border-slate-700/50">
-          <div className="flex items-center justify-between">
-            {!isCollapsed && (
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center shadow-lg">
-                  <BarChart3 className="h-4 w-4 text-white" />
+        <div className={cn(
+          "border-b border-slate-700/50 transition-all duration-300",
+          isCollapsed ? "p-2" : "p-4"
+        )}>
+          <div className={cn(
+            "flex items-center",
+            isCollapsed ? "justify-center" : "justify-between"
+          )}>
+            {!isCollapsed ? (
+              <>
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 bg-gradient-to-br from-chartreuse to-chartreuse-dark rounded-lg flex items-center justify-center shadow-lg">
+                    <BarChart3 className="h-4 w-4 text-rich-black" />
+                  </div>
+                  <div>
+                    <h1 className="font-bold text-lg text-white">Alpha Analyzer</h1>
+                    <p className="text-xs text-slate-400">Professional Analytics</p>
+                  </div>
                 </div>
-                <div>
-                  <h1 className="font-bold text-lg text-white">Alpha Analyzer</h1>
-                  <p className="text-xs text-slate-400">Professional Analytics</p>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={toggleSidebar}
+                  className="text-slate-400 hover:text-white hover:bg-slate-700/50 p-2"
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+              </>
+            ) : (
+              <div className="flex flex-col items-center gap-2">
+                <div className="w-8 h-8 bg-gradient-to-br from-chartreuse to-chartreuse-dark rounded-lg flex items-center justify-center shadow-lg">
+                  <BarChart3 className="h-4 w-4 text-rich-black" />
                 </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={toggleSidebar}
+                  className="text-slate-400 hover:text-white hover:bg-slate-700/50 p-1 w-8 h-8"
+                >
+                  <ChevronRight className="h-3 w-3" />
+                </Button>
               </div>
             )}
-            
-            {isCollapsed && (
-              <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center shadow-lg mx-auto">
-                <BarChart3 className="h-4 w-4 text-white" />
-              </div>
-            )}
-            
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={toggleSidebar}
-              className="text-slate-400 hover:text-white hover:bg-slate-700/50 p-2"
-            >
-              {isCollapsed ? (
-                <ChevronRight className="h-4 w-4" />
-              ) : (
-                <ChevronLeft className="h-4 w-4" />
-              )}
-            </Button>
           </div>
         </div>
 
         {/* Navigation Links */}
-        <nav className="flex-1 p-4 space-y-2">
+        <nav className={cn(
+          "flex-1 space-y-1 transition-all duration-300",
+          isCollapsed ? "p-2" : "p-4"
+        )}>
           {navigation.map((item) => {
             const isActive = location === item.href;
             
@@ -97,17 +111,19 @@ export function CollapsibleSidebar() {
               >
                 <div
                   className={cn(
-                    "flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium transition-all duration-200 group cursor-pointer",
+                    "flex items-center text-sm font-medium transition-all duration-200 group cursor-pointer rounded-lg",
                     isActive
-                      ? "bg-gradient-to-r from-blue-500/20 to-purple-500/20 text-white border border-blue-500/30 shadow-lg"
+                      ? "bg-gradient-to-r from-chartreuse/20 to-chartreuse-dark/20 text-white border border-chartreuse/40 shadow-lg"
                       : "text-slate-300 hover:text-white hover:bg-slate-700/50",
-                    isCollapsed && "justify-center"
+                    isCollapsed 
+                      ? "justify-center p-2 mx-1"
+                      : "gap-3 px-3 py-3"
                   )}
                 >
                   <item.icon className={cn(
-                    "h-5 w-5 transition-all",
-                    isActive ? "text-blue-400" : "text-slate-400 group-hover:text-white",
-                    isCollapsed && "h-6 w-6"
+                    "transition-all",
+                    isActive ? "text-chartreuse" : "text-slate-400 group-hover:text-white",
+                    isCollapsed ? "h-5 w-5" : "h-5 w-5"
                   )} />
                   {!isCollapsed && <span>{item.name}</span>}
                 </div>
@@ -117,14 +133,19 @@ export function CollapsibleSidebar() {
         </nav>
 
         {/* User Profile Section at Bottom */}
-        <div className="p-4 border-t border-slate-700/50 mt-auto">
+        <div className={cn(
+          "border-t border-slate-700/50 mt-auto transition-all duration-300",
+          isCollapsed ? "p-2" : "p-4"
+        )}>
           {user ? (
             <div className={cn(
-              "flex items-center gap-3 p-3 rounded-lg bg-slate-800/50 border border-slate-700/50",
-              isCollapsed && "justify-center"
+              "rounded-lg bg-slate-800/50 border border-slate-700/50 transition-all duration-300",
+              isCollapsed 
+                ? "flex flex-col items-center gap-2 p-2"
+                : "flex items-center gap-3 p-3"
             )}>
-              <div className="w-8 h-8 bg-gradient-to-br from-green-500 to-blue-500 rounded-full flex items-center justify-center">
-                <User className="h-4 w-4 text-white" />
+              <div className="w-8 h-8 bg-gradient-to-br from-chartreuse to-chartreuse-dark rounded-full flex items-center justify-center flex-shrink-0">
+                <User className="h-4 w-4 text-rich-black" />
               </div>
               {!isCollapsed && (
                 <div className="flex-1 min-w-0">
@@ -147,8 +168,8 @@ export function CollapsibleSidebar() {
           ) : (
             <Button 
               className={cn(
-                "bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white border-0 shadow-lg",
-                isCollapsed ? "w-10 h-10 p-0" : "w-full"
+                "bg-gradient-to-r from-chartreuse to-chartreuse-dark hover:from-chartreuse-dark hover:to-chartreuse text-rich-black border-0 shadow-lg font-semibold transition-all duration-200",
+                isCollapsed ? "w-10 h-10 p-0 mx-auto" : "w-full"
               )}
             >
               <LogIn className="h-4 w-4" />
