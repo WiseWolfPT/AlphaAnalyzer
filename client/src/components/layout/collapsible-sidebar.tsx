@@ -114,7 +114,7 @@ export function CollapsibleSidebar() {
                     "flex items-center text-sm font-medium transition-all duration-200 group cursor-pointer rounded-lg",
                     isActive
                       ? "bg-gradient-to-r from-chartreuse/20 via-chartreuse-dark/15 to-chartreuse/10 text-white border border-chartreuse/40 shadow-lg shadow-chartreuse/10"
-                      : "text-slate-300 hover:text-white hover:bg-gradient-to-r hover:from-slate-700/50 hover:to-slate-600/50",
+                      : "text-slate-300 hover:text-chartreuse hover:bg-gradient-to-r hover:from-slate-700/50 hover:to-slate-600/50",
                     isCollapsed 
                       ? "justify-center p-2 mx-1"
                       : "gap-3 px-3 py-3"
@@ -124,7 +124,7 @@ export function CollapsibleSidebar() {
                     "transition-all drop-shadow-sm",
                     isActive 
                       ? "text-chartreuse drop-shadow-[0_0_8px_rgba(216,242,45,0.3)]" 
-                      : "text-slate-400 group-hover:text-white group-hover:drop-shadow-[0_0_4px_rgba(255,255,255,0.2)]",
+                      : "text-slate-400 group-hover:text-chartreuse group-hover:drop-shadow-[0_0_6px_rgba(216,242,45,0.4)]",
                     isCollapsed ? "h-5 w-5" : "h-5 w-5"
                   )} />
                   {!isCollapsed && <span>{item.name}</span>}
