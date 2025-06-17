@@ -3,11 +3,15 @@ import { useParams, useLocation } from "wouter";
 import { MainLayout } from "@/components/layout/main-layout";
 import { Button } from "@/components/ui/button";
 import { Breadcrumb, BreadcrumbList, BreadcrumbItem, BreadcrumbLink, BreadcrumbSeparator, BreadcrumbPage } from "@/components/ui/breadcrumb";
-import { ArrowLeft, TrendingUp, TrendingDown, ExternalLink, Home, Calendar, DollarSign, Activity, Target, Clock, Info } from "lucide-react";
+import { ArrowLeft, TrendingUp, TrendingDown, ExternalLink, Home, Calendar, DollarSign, Activity, Target, Clock, Info, Settings, RotateCcw, Eye } from "lucide-react";
 import { Link } from "wouter";
 import { cn } from "@/lib/utils";
 import { MetricTooltip } from "@/components/ui/metric-tooltip";
 import { dataAggregatorService, type AggregatedStockData } from "@/services/data-aggregator";
+import { useChartLayout } from "@/hooks/use-chart-layout";
+import { DraggableChart } from "@/components/charts/draggable-chart";
+import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
+import { arrayMove, SortableContext, sortableKeyboardCoordinates, rectSortingStrategy } from '@dnd-kit/sortable';
 
 // Chart Components
 import { PriceChart } from "@/components/charts/price-chart";
@@ -33,6 +37,76 @@ export default function AdvancedCharts() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [chartPeriod, setChartPeriod] = useState<'quarterly' | 'annual'>('quarterly');
+  const [isDragMode, setIsDragMode] = useState(false);
+  
+  // Chart layout management
+  const { 
+    charts, 
+    visibleCharts, 
+    isCustomized, 
+    reorderCharts, 
+    toggleChartVisibility, 
+    resetLayout 
+  } = useChartLayout(symbol);
+
+  // Drag and drop sensors
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  // Chart component mapping
+  const getChartComponent = (chartId: string) => {
+    if (!stockData) return null;
+    
+    switch (chartId) {
+      case 'price-chart':
+        return <PriceChart data={stockData.charts.price} />;
+      case 'revenue-chart':
+        return <RevenueChart data={stockData.charts.revenue} />;
+      case 'revenue-segment-chart':
+        return <RevenueSegmentChart data={stockData.charts.revenueBySegment} />;
+      case 'ebitda-chart':
+        return <EbitdaChart data={stockData.charts.ebitda} />;
+      case 'fcf-chart':
+        return <FreeCashFlowChart data={stockData.charts.freeCashFlow} />;
+      case 'net-income-chart':
+        return <NetIncomeChart data={stockData.charts.netIncome} />;
+      case 'eps-chart':
+        return <EpsChart data={stockData.charts.eps} />;
+      case 'cash-debt-chart':
+        return <CashDebtChart data={stockData.charts.cashAndDebt} />;
+      case 'dividends-chart':
+        return <DividendsChart data={stockData.charts.dividends} />;
+      case 'return-capital-chart':
+        return <ReturnCapitalChart data={stockData.charts.returnOfCapital} />;
+      case 'shares-chart':
+        return <SharesChart data={stockData.charts.sharesOutstanding} />;
+      case 'ratios-chart':
+        return <RatiosChart data={stockData.charts.ratios} />;
+      case 'valuation-chart':
+        return <ValuationChart data={stockData.charts.valuation} />;
+      case 'expenses-chart':
+        return <ExpensesChart data={stockData.charts.expenses} />;
+      default:
+        return null;
+    }
+  };
+
+  // Handle drag end
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (over && active.id !== over.id) {
+      const oldIndex = charts.findIndex(chart => chart.id === active.id);
+      const newIndex = charts.findIndex(chart => chart.id === over.id);
+      
+      const newCharts = arrayMove(charts, oldIndex, newIndex);
+      reorderCharts(newCharts);
+    }
+  };
 
   useEffect(() => {
     if (symbol && typeof symbol === 'string') {
@@ -507,30 +581,94 @@ export default function AdvancedCharts() {
           </div>
         </div>
 
-        {/* Charts Grid - Full Width */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {/* Row 1 */}
-          <div id="price-chart"><PriceChart data={stockData.charts.price} /></div>
-          <div id="revenue-chart"><RevenueChart data={stockData.charts.revenue} /></div>
-          <div id="revenue-segment-chart"><RevenueSegmentChart data={stockData.charts.revenueBySegment} /></div>
-          <div id="ebitda-chart"><EbitdaChart data={stockData.charts.ebitda} /></div>
+        {/* Chart Controls */}
+        <div className="flex items-center justify-between bg-card/30 rounded-lg p-4">
+          <div className="flex items-center gap-4">
+            <h3 className="text-lg font-semibold">Charts</h3>
+            {isCustomized && (
+              <span className="text-xs text-muted-foreground bg-blue-500/10 text-blue-600 px-2 py-1 rounded-md">
+                Custom Layout
+              </span>
+            )}
+            <span className="text-sm text-muted-foreground">
+              {visibleCharts.length} of {charts.length} visible
+            </span>
+          </div>
           
-          {/* Row 2 */}
-          <div id="fcf-chart"><FreeCashFlowChart data={stockData.charts.freeCashFlow} /></div>
-          <div id="net-income-chart"><NetIncomeChart data={stockData.charts.netIncome} /></div>
-          <div id="eps-chart"><EpsChart data={stockData.charts.eps} /></div>
-          <div id="cash-debt-chart"><CashDebtChart data={stockData.charts.cashAndDebt} /></div>
-          
-          {/* Row 3 */}
-          <div id="dividends-chart"><DividendsChart data={stockData.charts.dividends} /></div>
-          <div id="return-capital-chart"><ReturnCapitalChart data={stockData.charts.returnOfCapital} /></div>
-          <div id="shares-chart"><SharesChart data={stockData.charts.sharesOutstanding} /></div>
-          <div id="ratios-chart"><RatiosChart data={stockData.charts.ratios} /></div>
-          
-          {/* Row 4 */}
-          <div id="valuation-chart"><ValuationChart data={stockData.charts.valuation} /></div>
-          <div id="expenses-chart"><ExpensesChart data={stockData.charts.expenses} /></div>
+          <div className="flex items-center gap-2">
+            <Button
+              variant={isDragMode ? "default" : "outline"}
+              size="sm"
+              onClick={() => setIsDragMode(!isDragMode)}
+              className="flex items-center gap-2"
+            >
+              <Settings className="h-4 w-4" />
+              {isDragMode ? "Done" : "Customize"}
+            </Button>
+            
+            {isCustomized && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={resetLayout}
+                className="flex items-center gap-2"
+              >
+                <RotateCcw className="h-4 w-4" />
+                Reset
+              </Button>
+            )}
+            
+            {isDragMode && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  charts.forEach(chart => {
+                    if (!chart.visible) {
+                      toggleChartVisibility(chart.id);
+                    }
+                  });
+                }}
+                className="flex items-center gap-2"
+              >
+                <Eye className="h-4 w-4" />
+                Show All
+              </Button>
+            )}
+          </div>
         </div>
+
+        {/* Draggable Charts Grid */}
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragEnd={handleDragEnd}
+        >
+          <SortableContext
+            items={charts.map(chart => chart.id)}
+            strategy={rectSortingStrategy}
+          >
+            <div className={cn(
+              "grid gap-6 transition-all duration-200",
+              isDragMode 
+                ? "grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4" 
+                : "grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+            )}>
+              {(isDragMode ? charts : visibleCharts).map((chart) => (
+                <DraggableChart
+                  key={chart.id}
+                  id={chart.id}
+                  name={chart.name}
+                  visible={chart.visible}
+                  onToggleVisibility={toggleChartVisibility}
+                  isDragMode={isDragMode}
+                >
+                  {getChartComponent(chart.id)}
+                </DraggableChart>
+              ))}
+            </div>
+          </SortableContext>
+        </DndContext>
 
       </div>
     </MainLayout>
