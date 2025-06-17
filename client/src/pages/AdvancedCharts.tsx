@@ -354,9 +354,9 @@ export default function AdvancedCharts() {
 
         {/* Company Header - Horizontal Layout */}
         <div className="bg-card/50 backdrop-blur-sm border border-border/50 rounded-xl p-6">
-          <div className="flex items-center justify-between mb-6">
-            {/* Left - Company Info */}
-            <div className="flex items-center gap-6">
+          <div className="flex items-start justify-between mb-6">
+            {/* Left - All Company & Price Info Together */}
+            <div className="flex items-start gap-6">
               {stockData.logo && (
                 <div className="w-10 h-10 rounded-lg overflow-hidden bg-muted/50 flex-shrink-0 ring-1 ring-border/50">
                   <img
@@ -369,23 +369,23 @@ export default function AdvancedCharts() {
                   />
                 </div>
               )}
-              <div className="space-y-1">
-                <h1 className="text-3xl font-bold text-foreground tracking-tight">{stockData.symbol}</h1>
-                <div className="space-y-0.5">
-                  <p className="text-lg font-medium text-foreground/90">{stockData.name}</p>
-                  <p className="text-sm text-muted-foreground">{profile.sector}</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Center - Price + Earnings */}
-            <div className="flex items-start gap-6">
-              {/* Price Section */}
-              <div className="text-left space-y-3">
-                <div className="space-y-1">
-                  <div className="text-4xl font-bold text-foreground tracking-tight">
+              
+              <div className="space-y-2">
+                {/* Top Row: AAPL + Price + Earnings Badge */}
+                <div className="flex items-center gap-6">
+                  <h1 className="text-3xl font-bold text-foreground tracking-tight">{stockData.symbol}</h1>
+                  <div className="text-2xl font-bold text-foreground tracking-tight">
                     ${currentPrice.price.toFixed(2)}
                   </div>
+                  <div className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-500/15 text-blue-600 rounded-lg text-sm font-medium border border-blue-500/20">
+                    <Calendar className="h-4 w-4" />
+                    <span>Earnings: Jul 30</span>
+                  </div>
+                </div>
+
+                {/* Second Row: Company Name + Change */}
+                <div className="flex items-center gap-6">
+                  <p className="text-lg font-medium text-foreground/90">{stockData.name}</p>
                   <div className={cn(
                     "flex items-center gap-2 text-base font-semibold",
                     isPositive ? "text-emerald-500" : "text-red-500"
@@ -400,24 +400,19 @@ export default function AdvancedCharts() {
                     </span>
                   </div>
                 </div>
-                
-                {/* After Hours Price */}
-                <div className="bg-secondary/30 rounded-lg px-3 py-2 border border-border/30">
-                  <div className="text-xs font-medium text-muted-foreground mb-1">After Hours</div>
+
+                {/* Third Row: Sector + After Hours */}
+                <div className="flex items-center gap-6">
+                  <p className="text-sm text-muted-foreground">{profile.sector}</p>
                   <div className="flex items-center gap-2 text-sm font-medium">
-                    <span className="text-foreground">${(currentPrice.price + 0.57).toFixed(2)}</span>
+                    <span className="text-muted-foreground">After Hours</span>
+                    <span className="text-foreground font-semibold">${(currentPrice.price + 0.57).toFixed(2)}</span>
                     <span className="text-emerald-500 flex items-center gap-1">
                       <TrendingUp className="h-3 w-3" />
                       +$0.57 (+0.28%)
                     </span>
                   </div>
                 </div>
-              </div>
-
-              {/* Earnings Badge - Next to Price */}
-              <div className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-500/15 text-blue-600 rounded-lg text-sm font-medium border border-blue-500/20 mt-2">
-                <Calendar className="h-4 w-4" />
-                <span>Earnings: Jul 30</span>
               </div>
             </div>
 
