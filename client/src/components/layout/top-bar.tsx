@@ -25,7 +25,7 @@ export function TopBar() {
   };
 
   return (
-    <header className="bg-card/50 backdrop-blur-xl border-b border-border/50 px-6 py-4 flex items-center justify-between sticky top-0 z-10">
+    <header className="bg-chartreuse/20 backdrop-blur-xl border-b border-chartreuse/30 px-6 py-4 flex items-center justify-between sticky top-0 z-10">
       <div className="flex items-center space-x-8">
         {/* Market Indices */}
         <div className="hidden lg:flex items-center space-x-6">

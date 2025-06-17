@@ -63,8 +63,8 @@ export function CollapsibleSidebar() {
                     <BarChart3 className="h-4 w-4 text-rich-black" />
                   </div>
                   <div>
-                    <h1 className="font-bold text-lg text-gray-900 dark:text-white">Alpha Analyzer</h1>
-                    <p className="text-xs text-gray-600 dark:text-slate-400">Professional Analytics</p>
+                    <h1 className="font-bold text-lg text-gray-800 dark:text-white">Alpha Analyzer</h1>
+                    <p className="text-xs text-gray-700 dark:text-slate-400">Professional Analytics</p>
                   </div>
                 </div>
                 <Button
@@ -124,7 +124,7 @@ export function CollapsibleSidebar() {
                     "transition-all drop-shadow-sm",
                     isActive 
                       ? "text-chartreuse drop-shadow-[0_0_8px_rgba(216,242,45,0.3)]" 
-                      : "text-gray-600 dark:text-slate-400 group-hover:text-chartreuse group-hover:drop-shadow-[0_0_6px_rgba(216,242,45,0.4)]",
+                      : "text-gray-800 dark:text-slate-400 group-hover:text-chartreuse group-hover:drop-shadow-[0_0_6px_rgba(216,242,45,0.4)]",
                     isCollapsed ? "h-5 w-5" : "h-5 w-5"
                   )} />
                   {!isCollapsed && <span>{item.name}</span>}
@@ -151,17 +151,17 @@ export function CollapsibleSidebar() {
               </div>
               {!isCollapsed && (
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                  <p className="text-sm font-medium text-gray-800 dark:text-white truncate">
                     {user.email || "User"}
                   </p>
-                  <p className="text-xs text-gray-600 dark:text-slate-400">Free Plan</p>
+                  <p className="text-xs text-gray-700 dark:text-slate-400">Free Plan</p>
                 </div>
               )}
               {!isCollapsed && (
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="text-gray-600 dark:text-slate-400 hover:text-gray-900 dark:hover:text-white p-1"
+                  className="text-gray-700 dark:text-slate-400 hover:text-gray-900 dark:hover:text-white p-1"
                 >
                   <LogOut className="h-4 w-4" />
                 </Button>

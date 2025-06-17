@@ -480,10 +480,10 @@ export default function AdvancedCharts() {
                     Add to Watchlist
                   </Button>
                   <div className="grid grid-cols-2 gap-2">
-                    <Button variant="outline" size="sm" className="border-chartreuse/30 hover:border-chartreuse hover:bg-chartreuse/10 transition-all duration-300">
+                    <Button variant="outline" size="sm" className="bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 border-gray-300 dark:border-gray-600 transition-all duration-300">
                       Export Report
                     </Button>
-                    <Button variant="outline" size="sm" className="border-chartreuse/30 hover:border-chartreuse hover:bg-chartreuse/10 transition-all duration-300">
+                    <Button variant="outline" size="sm" className="bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 border-gray-300 dark:border-gray-600 transition-all duration-300">
                       Set Alert
                     </Button>
                   </div>

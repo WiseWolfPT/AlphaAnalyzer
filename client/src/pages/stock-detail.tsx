@@ -187,11 +187,11 @@ export default function StockDetail() {
                     <Plus className="h-4 w-4 mr-2" />
                     Add to Watchlist
                   </Button>
-                  <Button variant="outline" className="border-chartreuse/30 hover:border-chartreuse hover:bg-chartreuse/10 transition-all duration-300">
+                  <Button variant="outline" className="bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 border-gray-300 dark:border-gray-600 transition-all duration-300">
                     <Target className="h-4 w-4 mr-2" />
                     Analyze
                   </Button>
-                  <Button variant="outline" className="border-chartreuse/30 hover:border-chartreuse hover:bg-chartreuse/10 transition-all duration-300">
+                  <Button variant="outline" className="bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 border-gray-300 dark:border-gray-600 transition-all duration-300">
                     <Bell className="h-4 w-4 mr-2" />
                     Alert
                   </Button>

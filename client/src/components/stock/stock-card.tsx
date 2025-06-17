@@ -29,7 +29,7 @@ export function StockCard({ stock, onPerformanceClick, onQuickInfoClick, showMin
 
   return (
     <Link href={`/stock/${stock.symbol}/charts`}>
-      <div className="group relative bg-card/50 backdrop-blur-sm border border-border/50 hover:border-primary/50 rounded-xl p-6 cursor-pointer transition-all duration-300 hover:shadow-lg hover:shadow-primary/5 hover:-translate-y-1">
+      <div className="group relative bg-card/50 backdrop-blur-sm border border-chartreuse/30 hover:border-chartreuse rounded-xl p-6 cursor-pointer transition-all duration-300 hover:shadow-lg hover:shadow-chartreuse/20 hover:-translate-y-1 hover:bg-gradient-to-br hover:from-chartreuse/5 hover:to-chartreuse/10">
         {/* Action Icons */}
         <div className="absolute top-4 right-4 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
           <Button
