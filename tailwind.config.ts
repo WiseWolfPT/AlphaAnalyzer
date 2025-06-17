@@ -99,6 +99,7 @@ export default {
         "chartreuse-dark": "#B8D625",
         "pure-white": "#FFFFFF",
         "gray-mouse": "#F5F5F5",
+        "dark-slate-navy": "#172631",
       },
       keyframes: {
         "accordion-down": {

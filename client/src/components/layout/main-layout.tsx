@@ -8,11 +8,11 @@ interface MainLayoutProps {
 
 export function MainLayout({ children }: MainLayoutProps) {
   return (
-    <div className="min-h-screen bg-background flex">
+    <div className="min-h-screen bg-dark-slate-navy flex">
       <CollapsibleSidebar />
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col bg-dark-slate-navy">
         <TopBar />
-        <main className="flex-1 overflow-auto">
+        <main className="flex-1 overflow-auto bg-dark-slate-navy">
           {children}
         </main>
       </div>

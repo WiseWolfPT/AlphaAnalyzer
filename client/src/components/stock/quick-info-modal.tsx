@@ -143,12 +143,12 @@ export function QuickInfoModal({ stock, isOpen, onClose }: QuickInfoModalProps) 
           {/* Action Buttons */}
           <div className="flex gap-2">
             <Link href={`/stock/${stock.symbol}/charts`} className="flex-1">
-              <Button className="w-full" onClick={onClose}>
+              <Button className="w-full bg-gradient-to-r from-chartreuse via-chartreuse-dark to-chartreuse hover:from-chartreuse-dark hover:via-chartreuse hover:to-chartreuse-dark text-rich-black font-semibold shadow-lg shadow-chartreuse/30 hover:shadow-chartreuse/50 hover:scale-105 transition-all duration-300 border-0" onClick={onClose}>
                 <BarChart3 className="h-4 w-4 mr-2" />
                 View Advanced Charts
               </Button>
             </Link>
-            <Button variant="outline" size="icon" title="Company Website">
+            <Button variant="outline" size="icon" title="Company Website" className="border-chartreuse/30 hover:border-chartreuse hover:bg-chartreuse/10">
               <ExternalLink className="h-4 w-4" />
             </Button>
           </div>

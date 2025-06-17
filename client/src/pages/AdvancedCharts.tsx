@@ -346,7 +346,7 @@ export default function AdvancedCharts() {
             </BreadcrumbList>
           </Breadcrumb>
           
-          <Button variant="outline" className="flex items-center gap-2">
+          <Button variant="outline" className="flex items-center gap-2 border-chartreuse/30 hover:border-chartreuse hover:bg-chartreuse/10 transition-all duration-300">
             <ExternalLink className="h-4 w-4" />
             Company Website
           </Button>
@@ -418,10 +418,10 @@ export default function AdvancedCharts() {
 
             {/* Right - Action Buttons */}
             <div className="flex items-center gap-3">
-              <Button size="default" className="px-6 py-2 font-medium">
+              <Button size="default" className="bg-gradient-to-r from-chartreuse via-chartreuse-dark to-chartreuse hover:from-chartreuse-dark hover:via-chartreuse hover:to-chartreuse-dark text-rich-black px-6 py-2 font-semibold shadow-lg shadow-chartreuse/30 hover:shadow-chartreuse/50 hover:scale-105 transition-all duration-300 border-0">
                 Add to Watchlist
               </Button>
-              <Button variant="outline" size="default" className="px-6 py-2 font-medium border-border/50 hover:border-border">
+              <Button variant="outline" size="default" className="px-6 py-2 font-medium border-chartreuse/30 hover:border-chartreuse hover:bg-chartreuse/10 transition-all duration-300">
                 Set Alert
               </Button>
             </div>

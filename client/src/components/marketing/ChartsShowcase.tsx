@@ -262,7 +262,7 @@ export function ChartsShowcase() {
               >
                 <Button 
                   size="lg"
-                  className="bg-chartreuse-dark dark:bg-chartreuse hover:bg-chartreuse-dark/90 dark:hover:bg-chartreuse/90 text-deep-black font-semibold px-8 py-3"
+                  className="bg-gradient-to-r from-chartreuse via-chartreuse-dark to-chartreuse hover:from-chartreuse-dark hover:via-chartreuse hover:to-chartreuse-dark text-rich-black font-semibold px-8 py-3 shadow-lg shadow-chartreuse/30 hover:shadow-chartreuse/50 hover:scale-105 transition-all duration-300 border-0"
                   onClick={() => window.location.href = '/trial'}
                 >
                   📊 Aceder a Todos os Gráficos - Trial Grátis
