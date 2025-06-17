@@ -409,25 +409,6 @@ export default function AdvancedCharts() {
               </div>
             </div>
 
-            {/* Period Toggle */}
-            <div className="flex items-center bg-secondary/20 rounded-lg p-1">
-              <Button
-                variant={chartPeriod === 'quarterly' ? 'default' : 'ghost'}
-                size="sm"
-                onClick={() => setChartPeriod('quarterly')}
-                className="px-4 py-2 text-sm"
-              >
-                Quarterly
-              </Button>
-              <Button
-                variant={chartPeriod === 'annual' ? 'default' : 'ghost'}
-                size="sm"
-                onClick={() => setChartPeriod('annual')}
-                className="px-4 py-2 text-sm"
-              >
-                Annual
-              </Button>
-            </div>
           </div>
 
           {/* 5 Metrics Groups - Horizontal Layout */}
@@ -573,9 +554,6 @@ export default function AdvancedCharts() {
               Add to Watchlist
             </Button>
             <Button variant="outline" size="sm">
-              Export Report
-            </Button>
-            <Button variant="outline" size="sm">
               Set Alert
             </Button>
           </div>
@@ -593,6 +571,26 @@ export default function AdvancedCharts() {
             <span className="text-sm text-muted-foreground">
               {visibleCharts.length} of {charts.length} visible
             </span>
+
+            {/* Period Toggle - Closer to Charts */}
+            <div className="flex items-center bg-secondary/20 rounded-lg p-1 ml-6">
+              <Button
+                variant={chartPeriod === 'quarterly' ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => setChartPeriod('quarterly')}
+                className="px-4 py-2 text-sm"
+              >
+                Quarterly
+              </Button>
+              <Button
+                variant={chartPeriod === 'annual' ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => setChartPeriod('annual')}
+                className="px-4 py-2 text-sm"
+              >
+                Annual
+              </Button>
+            </div>
           </div>
           
           <div className="flex items-center gap-2">
