@@ -35,7 +35,7 @@ export function StockCard({ stock, onPerformanceClick, onQuickInfoClick, showMin
           <Button
             size="sm"
             variant="ghost"
-            className="h-8 w-8 p-0 hover:bg-blue-500/10 hover:text-blue-500"
+            className="h-8 w-8 p-0 hover:bg-chartreuse/10 hover:text-chartreuse transition-all duration-300"
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
@@ -48,7 +48,7 @@ export function StockCard({ stock, onPerformanceClick, onQuickInfoClick, showMin
           <Button
             size="sm"
             variant="ghost"
-            className="h-8 w-8 p-0 hover:bg-primary/10 hover:text-primary"
+            className="h-8 w-8 p-0 hover:bg-chartreuse/10 hover:text-chartreuse transition-all duration-300"
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();

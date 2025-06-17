@@ -201,10 +201,10 @@ export function ChartsShowcase() {
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ duration: 0.3, delay: 0.1 }}
-                  className="bg-blue-500/10 border border-blue-500/20 rounded-xl p-6"
+                  className="bg-chartreuse/10 border border-chartreuse/20 rounded-xl p-6"
                 >
                   <div className="flex items-center gap-3 mb-3">
-                    <Target className="h-5 w-5 text-blue-500" />
+                    <Target className="h-5 w-5 text-chartreuse-dark" />
                     <h4 className="font-semibold text-foreground">Análise de Valor</h4>
                   </div>
                   <div className="space-y-3">

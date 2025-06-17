@@ -166,11 +166,11 @@ export function InteractiveDemo() {
                       initial={{ opacity: 0, scale: 0.9 }}
                       animate={{ opacity: 1, scale: 1 }}
                       transition={{ duration: 0.3, delay: 0.1 }}
-                      className="bg-blue-500/10 border border-blue-500/20 rounded-xl p-6 text-center"
+                      className="bg-chartreuse/10 border border-chartreuse/20 rounded-xl p-6 text-center"
                     >
-                      <DollarSign className="h-8 w-8 text-blue-500 mx-auto mb-3" />
+                      <DollarSign className="h-8 w-8 text-chartreuse-dark mx-auto mb-3" />
                       <h4 className="font-semibold text-foreground mb-2">Preço Atual</h4>
-                      <div className="text-2xl font-bold text-blue-500">${selectedStock.price}</div>
+                      <div className="text-2xl font-bold text-chartreuse-dark">${selectedStock.price}</div>
                       <p className="text-sm text-muted-foreground mt-2">Preço de mercado</p>
                     </motion.div>
 

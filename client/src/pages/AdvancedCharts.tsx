@@ -377,7 +377,7 @@ export default function AdvancedCharts() {
                   <div className="text-2xl font-bold text-foreground tracking-tight">
                     ${currentPrice.price.toFixed(2)}
                   </div>
-                  <div className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-500/15 text-blue-600 rounded-lg text-sm font-medium border border-blue-500/20">
+                  <div className="flex items-center gap-1.5 px-3 py-1.5 bg-chartreuse/15 text-chartreuse-dark rounded-lg text-sm font-medium border border-chartreuse/20">
                     <Calendar className="h-4 w-4" />
                     <span>Earnings: Jul 30</span>
                   </div>
@@ -571,7 +571,7 @@ export default function AdvancedCharts() {
           <div className="flex items-center gap-4">
             <h3 className="text-lg font-semibold">Charts</h3>
             {isCustomized && (
-              <span className="text-xs text-muted-foreground bg-blue-500/10 text-blue-600 px-2 py-1 rounded-md">
+              <span className="text-xs text-muted-foreground bg-chartreuse/10 text-chartreuse-dark px-2 py-1 rounded-md">
                 Custom Layout
               </span>
             )}
@@ -582,18 +582,26 @@ export default function AdvancedCharts() {
             {/* Period Toggle - Closer to Charts */}
             <div className="flex items-center bg-secondary/20 rounded-lg p-1 ml-6">
               <Button
-                variant={chartPeriod === 'quarterly' ? 'default' : 'ghost'}
+                variant="ghost"
                 size="sm"
                 onClick={() => setChartPeriod('quarterly')}
-                className="px-4 py-2 text-sm"
+                className={`px-4 py-2 text-sm transition-all duration-300 ${
+                  chartPeriod === 'quarterly' 
+                    ? 'bg-gradient-to-r from-chartreuse via-chartreuse-dark to-chartreuse text-rich-black font-semibold shadow-sm shadow-chartreuse/30' 
+                    : 'hover:bg-chartreuse/10 hover:text-chartreuse'
+                }`}
               >
                 Quarterly
               </Button>
               <Button
-                variant={chartPeriod === 'annual' ? 'default' : 'ghost'}
+                variant="ghost"
                 size="sm"
                 onClick={() => setChartPeriod('annual')}
-                className="px-4 py-2 text-sm"
+                className={`px-4 py-2 text-sm transition-all duration-300 ${
+                  chartPeriod === 'annual' 
+                    ? 'bg-gradient-to-r from-chartreuse via-chartreuse-dark to-chartreuse text-rich-black font-semibold shadow-sm shadow-chartreuse/30' 
+                    : 'hover:bg-chartreuse/10 hover:text-chartreuse'
+                }`}
               >
                 Annual
               </Button>
@@ -602,10 +610,14 @@ export default function AdvancedCharts() {
           
           <div className="flex items-center gap-2">
             <Button
-              variant={isDragMode ? "default" : "outline"}
+              variant="ghost"
               size="sm"
               onClick={() => setIsDragMode(!isDragMode)}
-              className="flex items-center gap-2"
+              className={`flex items-center gap-2 transition-all duration-300 ${
+                isDragMode 
+                  ? 'bg-gradient-to-r from-chartreuse via-chartreuse-dark to-chartreuse text-rich-black font-semibold shadow-sm shadow-chartreuse/30' 
+                  : 'border border-chartreuse/30 hover:border-chartreuse hover:bg-chartreuse/10 hover:text-chartreuse'
+              }`}
             >
               <Settings className="h-4 w-4" />
               {isDragMode ? "Done" : "Customize"}
@@ -613,10 +625,10 @@ export default function AdvancedCharts() {
             
             {isCustomized && (
               <Button
-                variant="outline"
+                variant="ghost"
                 size="sm"
                 onClick={resetLayout}
-                className="flex items-center gap-2"
+                className="flex items-center gap-2 border border-chartreuse/30 hover:border-chartreuse hover:bg-chartreuse/10 hover:text-chartreuse transition-all duration-300"
               >
                 <RotateCcw className="h-4 w-4" />
                 Reset

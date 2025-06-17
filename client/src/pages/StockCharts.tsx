@@ -300,7 +300,7 @@ export default function AdvancedCharts() {
                 <div>
                   <div className="flex items-center gap-2 mb-1">
                     <h1 className="text-xl font-bold text-foreground">{stockData.symbol}</h1>
-                    <div className="flex items-center gap-1 px-2 py-1 bg-blue-500/10 text-blue-600 rounded-md text-xs font-medium">
+                    <div className="flex items-center gap-1 px-2 py-1 bg-chartreuse/10 text-chartreuse-dark rounded-md text-xs font-medium">
                       <Calendar className="h-3 w-3" />
                       <span>Earnings: Jul 30</span>
                     </div>
@@ -476,14 +476,14 @@ export default function AdvancedCharts() {
 
                 {/* Actions */}
                 <div className="space-y-2 pt-4 border-t border-border/50">
-                  <Button className="w-full" size="sm">
+                  <Button className="w-full bg-gradient-to-r from-chartreuse via-chartreuse-dark to-chartreuse hover:from-chartreuse-dark hover:via-chartreuse hover:to-chartreuse-dark text-rich-black font-semibold shadow-lg shadow-chartreuse/30 hover:shadow-chartreuse/50 hover:scale-105 transition-all duration-300 border-0" size="sm">
                     Add to Watchlist
                   </Button>
                   <div className="grid grid-cols-2 gap-2">
-                    <Button variant="outline" size="sm">
+                    <Button variant="outline" size="sm" className="border-chartreuse/30 hover:border-chartreuse hover:bg-chartreuse/10 transition-all duration-300">
                       Export Report
                     </Button>
-                    <Button variant="outline" size="sm">
+                    <Button variant="outline" size="sm" className="border-chartreuse/30 hover:border-chartreuse hover:bg-chartreuse/10 transition-all duration-300">
                       Set Alert
                     </Button>
                   </div>
@@ -498,18 +498,26 @@ export default function AdvancedCharts() {
             <div className="flex items-center justify-center">
               <div className="flex items-center bg-secondary/20 rounded-lg p-1">
                 <Button
-                  variant={chartPeriod === 'quarterly' ? 'default' : 'ghost'}
+                  variant="ghost"
                   size="sm"
                   onClick={() => setChartPeriod('quarterly')}
-                  className="px-4 py-2 text-sm"
+                  className={`px-4 py-2 text-sm transition-all duration-300 ${
+                    chartPeriod === 'quarterly' 
+                      ? 'bg-gradient-to-r from-chartreuse via-chartreuse-dark to-chartreuse text-rich-black font-semibold shadow-sm shadow-chartreuse/30' 
+                      : 'hover:bg-chartreuse/10 hover:text-chartreuse'
+                  }`}
                 >
                   Quarterly
                 </Button>
                 <Button
-                  variant={chartPeriod === 'annual' ? 'default' : 'ghost'}
+                  variant="ghost"
                   size="sm"
                   onClick={() => setChartPeriod('annual')}
-                  className="px-4 py-2 text-sm"
+                  className={`px-4 py-2 text-sm transition-all duration-300 ${
+                    chartPeriod === 'annual' 
+                      ? 'bg-gradient-to-r from-chartreuse via-chartreuse-dark to-chartreuse text-rich-black font-semibold shadow-sm shadow-chartreuse/30' 
+                      : 'hover:bg-chartreuse/10 hover:text-chartreuse'
+                  }`}
                 >
                   Annual
                 </Button>
