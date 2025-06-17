@@ -113,16 +113,18 @@ export function CollapsibleSidebar() {
                   className={cn(
                     "flex items-center text-sm font-medium transition-all duration-200 group cursor-pointer rounded-lg",
                     isActive
-                      ? "bg-gradient-to-r from-chartreuse/20 to-chartreuse-dark/20 text-white border border-chartreuse/40 shadow-lg"
-                      : "text-slate-300 hover:text-white hover:bg-slate-700/50",
+                      ? "bg-gradient-to-r from-chartreuse/20 via-chartreuse-dark/15 to-chartreuse/10 text-white border border-chartreuse/40 shadow-lg shadow-chartreuse/10"
+                      : "text-slate-300 hover:text-white hover:bg-gradient-to-r hover:from-slate-700/50 hover:to-slate-600/50",
                     isCollapsed 
                       ? "justify-center p-2 mx-1"
                       : "gap-3 px-3 py-3"
                   )}
                 >
                   <item.icon className={cn(
-                    "transition-all",
-                    isActive ? "text-chartreuse" : "text-slate-400 group-hover:text-white",
+                    "transition-all drop-shadow-sm",
+                    isActive 
+                      ? "text-chartreuse drop-shadow-[0_0_8px_rgba(216,242,45,0.3)]" 
+                      : "text-slate-400 group-hover:text-white group-hover:drop-shadow-[0_0_4px_rgba(255,255,255,0.2)]",
                     isCollapsed ? "h-5 w-5" : "h-5 w-5"
                   )} />
                   {!isCollapsed && <span>{item.name}</span>}
@@ -168,7 +170,7 @@ export function CollapsibleSidebar() {
           ) : (
             <Button 
               className={cn(
-                "bg-gradient-to-r from-chartreuse to-chartreuse-dark hover:from-chartreuse-dark hover:to-chartreuse text-rich-black border-0 shadow-lg font-semibold transition-all duration-200",
+                "bg-gradient-to-r from-chartreuse via-chartreuse-dark to-chartreuse hover:from-chartreuse-dark hover:via-chartreuse hover:to-chartreuse-dark text-rich-black border-0 shadow-lg shadow-chartreuse/25 hover:shadow-chartreuse/40 font-semibold transition-all duration-300 hover:scale-105",
                 isCollapsed ? "w-10 h-10 p-0 mx-auto" : "w-full"
               )}
             >
