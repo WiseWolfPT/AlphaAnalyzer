@@ -34,7 +34,7 @@ export function Sidebar() {
   const [showAuthModal, setShowAuthModal] = useState(false);
 
   return (
-    <div className="w-72 bg-card border-r border-border flex-shrink-0 sticky top-0 h-screen overflow-y-auto">
+    <div className="w-72 bg-card flex-shrink-0 sticky top-0 h-screen overflow-y-auto">
       <div className="p-6">
         {/* Logo */}
         <div className="flex items-center gap-3 mb-8">
