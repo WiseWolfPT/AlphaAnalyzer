@@ -528,6 +528,9 @@ export default function AdvancedCharts() {
             </div>
           </div>
 
+          {/* Separator Line to Align with Sidebar */}
+          <div className="border-t border-border/30 my-6"></div>
+
           {/* Main Charts Area */}
           <div className="space-y-6">
             {/* Period Toggle */}
