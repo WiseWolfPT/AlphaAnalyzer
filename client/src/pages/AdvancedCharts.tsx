@@ -609,7 +609,7 @@ export default function AdvancedCharts() {
         </div>
 
         {/* Separator Line to Align with Sidebar */}
-        <div className="border-t border-border/30 my-6"></div>
+        <div className="border-t border-border/30 my-6" style={{marginTop: '1.5rem', marginBottom: '1.5rem'}}></div>
 
         {/* Chart Controls */}
         <div className="flex items-center justify-between bg-card/30 rounded-lg p-4">
