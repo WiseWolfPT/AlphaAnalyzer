@@ -43,7 +43,7 @@ export function CollapsibleSidebar() {
 
   return (
     <div className={cn(
-      "bg-gray-mouse dark:bg-dark-slate-navy flex-shrink-0 sticky top-0 h-screen transition-all duration-300 ease-in-out shadow-lg shadow-black/5 dark:shadow-black/20",
+      "bg-gray-mouse dark:bg-dark-slate-navy flex-shrink-0 sticky top-0 h-screen overflow-hidden transition-all duration-300 ease-in-out shadow-lg shadow-black/5 dark:shadow-black/20",
       isCollapsed ? "w-16" : "w-72"
     )}>
       <div className="flex flex-col h-full">
@@ -135,8 +135,8 @@ export function CollapsibleSidebar() {
           })}
           </nav>
           
-          {/* Spacer to push user section to bottom - Height calculated to align with content */}
-          <div className="flex-1" style={{minHeight: 'calc(100vh - 480px)'}}></div>
+          {/* Spacer to push user section to bottom */}
+          <div className="flex-1 min-h-0"></div>
         </div>
 
         {/* User Profile Section at Bottom */}
@@ -176,7 +176,7 @@ export function CollapsibleSidebar() {
             <Button 
               className={cn(
                 "bg-gradient-to-r from-chartreuse via-chartreuse-dark to-chartreuse hover:from-chartreuse-dark hover:via-chartreuse hover:to-chartreuse-dark text-rich-black border-0 shadow-lg shadow-chartreuse/25 hover:shadow-chartreuse/40 font-semibold transition-all duration-300 hover:scale-105",
-                isCollapsed ? "w-10 h-10 p-0 mx-auto" : "w-full"
+                isCollapsed ? "w-12 h-10 p-1 mx-auto" : "w-full"
               )}
             >
               <LogIn className="h-4 w-4" />
