@@ -29,7 +29,7 @@ export function MetricTooltip({ content }: MetricTooltipProps) {
         </TooltipTrigger>
         <TooltipContent 
           side="top" 
-          className="max-w-xs z-50 pointer-events-auto bg-popover border border-border shadow-lg"
+          className="max-w-xs z-[9999] pointer-events-auto bg-popover border border-border shadow-lg"
           sideOffset={8}
           onMouseEnter={() => setIsOpen(true)}
           onMouseLeave={() => setIsOpen(false)}
