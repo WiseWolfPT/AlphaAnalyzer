@@ -135,8 +135,8 @@ export function CollapsibleSidebar() {
           })}
           </nav>
           
-          {/* Spacer to push user section to bottom */}
-          <div className="flex-1 min-h-[200px]"></div>
+          {/* Spacer to push user section to bottom - Height calculated to align with content */}
+          <div className="flex-1" style={{minHeight: 'calc(100vh - 480px)'}}></div>
         </div>
 
         {/* User Profile Section at Bottom */}

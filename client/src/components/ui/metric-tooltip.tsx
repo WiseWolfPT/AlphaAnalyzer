@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { createPortal } from "react-dom";
 import { Info } from "lucide-react";
 import {
   Tooltip,
@@ -13,31 +14,45 @@ interface MetricTooltipProps {
 
 export function MetricTooltip({ content }: MetricTooltipProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+
+  const handleMouseEnter = (e: React.MouseEvent) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    setPosition({
+      x: rect.left + rect.width / 2,
+      y: rect.top - 10
+    });
+    setIsOpen(true);
+  };
+
+  const handleMouseLeave = () => {
+    setTimeout(() => setIsOpen(false), 150);
+  };
 
   return (
-    <TooltipProvider delayDuration={200} skipDelayDuration={100}>
-      <Tooltip open={isOpen} onOpenChange={setIsOpen}>
-        <TooltipTrigger 
-          asChild
-          onMouseEnter={() => setIsOpen(true)}
-          onMouseLeave={() => {
-            // Add delay before closing to allow hovering over tooltip content
-            setTimeout(() => setIsOpen(false), 150);
+    <>
+      <Info 
+        className="h-3 w-3 text-muted-foreground/60 hover:text-muted-foreground cursor-help ml-1" 
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+      />
+      
+      {isOpen && createPortal(
+        <div
+          className="fixed pointer-events-auto bg-popover border border-border shadow-xl rounded-md px-3 py-2 text-xs leading-relaxed text-popover-foreground max-w-xs animate-in fade-in-0 zoom-in-95"
+          style={{
+            left: position.x,
+            top: position.y,
+            transform: 'translateX(-50%) translateY(-100%)',
+            zIndex: 999999
           }}
-        >
-          <Info className="h-3 w-3 text-muted-foreground/60 hover:text-muted-foreground cursor-help ml-1" />
-        </TooltipTrigger>
-        <TooltipContent 
-          side="top" 
-          className="max-w-xs z-[99999] pointer-events-auto bg-popover border border-border shadow-xl"
-          sideOffset={8}
           onMouseEnter={() => setIsOpen(true)}
           onMouseLeave={() => setIsOpen(false)}
-          style={{ zIndex: 99999 }}
         >
-          <p className="text-xs leading-relaxed text-popover-foreground">{content}</p>
-        </TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
+          {content}
+        </div>,
+        document.body
+      )}
+    </>
   );
 }
