@@ -43,7 +43,7 @@ export function CollapsibleSidebar() {
 
   return (
     <div className={cn(
-      "bg-gray-mouse dark:bg-dark-slate-navy flex-shrink-0 sticky top-0 h-screen transition-all duration-300 ease-in-out",
+      "bg-gray-mouse dark:bg-dark-slate-navy flex-shrink-0 sticky top-0 h-screen transition-all duration-300 ease-in-out shadow-lg shadow-black/5 dark:shadow-black/20",
       isCollapsed ? "w-16" : "w-72"
     )}>
       <div className="flex flex-col h-full">
