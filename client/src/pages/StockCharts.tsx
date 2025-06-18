@@ -279,11 +279,11 @@ export default function AdvancedCharts() {
         </div>
 
         {/* Main Content Layout */}
-        <div className="grid grid-cols-1 xl:grid-cols-[320px_1fr] gap-6">
+        <div className="grid grid-cols-1 xl:grid-cols-[320px_1fr] gap-6 items-start">
           {/* Sidebar - Company Info & Key Metrics */}
           <div className="space-y-4">
             {/* Company Header Card */}
-            <div className="bg-card/50 backdrop-blur-sm border border-border/50 rounded-xl p-6 sticky top-6">
+            <div className="bg-card/50 backdrop-blur-sm border border-border/50 rounded-xl p-6 sticky top-6 min-h-[680px] flex flex-col">
               <div className="flex items-center gap-4 mb-4">
                 {stockData.logo && (
                   <div className="w-12 h-12 rounded-lg overflow-hidden bg-muted flex-shrink-0">
@@ -338,7 +338,7 @@ export default function AdvancedCharts() {
                 </div>
 
                 {/* 5 Metrics Groups */}
-                <div className="space-y-3">
+                <div className="space-y-3 flex-1">
                   {/* VALUATION */}
                   <div className="bg-secondary/10 rounded-lg p-3">
                     <div className="flex items-center gap-2 mb-2">
@@ -354,11 +354,17 @@ export default function AdvancedCharts() {
                         <span className="font-medium">{keyMetrics.pe.toFixed(1)}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-muted-foreground">Market Cap</span>
+                        <div className="flex items-center">
+                          <span className="text-muted-foreground">Market Cap</span>
+                          <MetricTooltip content="Total value of all company shares. Large cap >$10B, Mid cap $2-10B, Small cap <$2B. Larger = more stable, smaller = more growth potential" />
+                        </div>
                         <span className="font-medium">${(profile.marketCap / 1000000000).toFixed(1)}T</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-muted-foreground">Price/Sales</span>
+                        <div className="flex items-center">
+                          <span className="text-muted-foreground">Price/Sales</span>
+                          <MetricTooltip content="Stock price divided by revenue per share. Compares valuation to sales. <1 = cheap, 1-3 = reasonable, >5 = expensive" />
+                        </div>
                         <span className="font-medium">7.8</span>
                       </div>
                       <div className="flex justify-between">
@@ -369,7 +375,10 @@ export default function AdvancedCharts() {
                         <span className="font-medium">$2.98T</span>
                       </div>
                       <div className="flex justify-between col-span-2">
-                        <span className="text-muted-foreground">EV/Revenue</span>
+                        <div className="flex items-center">
+                          <span className="text-muted-foreground">EV/Revenue</span>
+                          <MetricTooltip content="Enterprise Value divided by revenue. Better than P/S for debt-heavy companies. <2 = cheap, 2-5 = fair, >8 = expensive" />
+                        </div>
                         <span className="font-medium">7.6</span>
                       </div>
                     </div>
@@ -390,11 +399,17 @@ export default function AdvancedCharts() {
                         <span className="font-medium">{(keyMetrics.roe * 100).toFixed(1)}%</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-muted-foreground">Net Margin</span>
+                        <div className="flex items-center">
+                          <span className="text-muted-foreground">Net Margin</span>
+                          <MetricTooltip content="Net income as percentage of revenue. Shows profitability after all expenses. >20% = excellent, 10-20% = good, <5% = poor" />
+                        </div>
                         <span className="font-medium">{(keyMetrics.netMargin * 100).toFixed(1)}%</span>
                       </div>
                       <div className="flex justify-between col-span-2">
-                        <span className="text-muted-foreground">Operating Margin</span>
+                        <div className="flex items-center">
+                          <span className="text-muted-foreground">Operating Margin</span>
+                          <MetricTooltip content="Operating income as percentage of revenue. Profit from core business before taxes and interest. >15% = excellent, 5-15% = good" />
+                        </div>
                         <span className="font-medium">29.7%</span>
                       </div>
                     </div>
@@ -408,19 +423,31 @@ export default function AdvancedCharts() {
                     </div>
                     <div className="grid grid-cols-2 gap-2 text-xs">
                       <div className="flex justify-between">
-                        <span className="text-muted-foreground">Free Cash Flow</span>
+                        <div className="flex items-center">
+                          <span className="text-muted-foreground">Free Cash Flow</span>
+                          <MetricTooltip content="Cash left after capital expenditures. Shows real cash generating ability. Positive = good, growing = excellent" />
+                        </div>
                         <span className="font-medium">${(keyMetrics.freeCashFlow / 1000000000).toFixed(1)}B</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-muted-foreground">Total Cash</span>
+                        <div className="flex items-center">
+                          <span className="text-muted-foreground">Total Cash</span>
+                          <MetricTooltip content="Cash and cash equivalents on balance sheet. Higher = more financial flexibility and safety during tough times" />
+                        </div>
                         <span className="font-medium">${(keyMetrics.totalCash / 1000000000).toFixed(1)}B</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-muted-foreground">Debt/Equity</span>
+                        <div className="flex items-center">
+                          <span className="text-muted-foreground">Debt/Equity</span>
+                          <MetricTooltip content="Total debt divided by shareholder equity. Measures financial leverage. <0.5 = conservative, 0.5-1 = moderate, >2 = risky" />
+                        </div>
                         <span className="font-medium">1.75</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-muted-foreground">Total Debt</span>
+                        <div className="flex items-center">
+                          <span className="text-muted-foreground">Total Debt</span>
+                          <MetricTooltip content="All company debt obligations. Compare to cash and earnings to assess ability to service debt" />
+                        </div>
                         <span className="font-medium">$86.5B</span>
                       </div>
                     </div>
@@ -434,15 +461,24 @@ export default function AdvancedCharts() {
                     </div>
                     <div className="grid grid-cols-2 gap-2 text-xs">
                       <div className="flex justify-between">
-                        <span className="text-muted-foreground">Revenue Growth</span>
+                        <div className="flex items-center">
+                          <span className="text-muted-foreground">Revenue Growth</span>
+                          <MetricTooltip content="Year-over-year revenue growth rate. Shows business expansion. >20% = high growth, 10-20% = moderate, <5% = slow" />
+                        </div>
                         <span className="font-medium">8.2%</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-muted-foreground">EPS Growth</span>
+                        <div className="flex items-center">
+                          <span className="text-muted-foreground">EPS Growth</span>
+                          <MetricTooltip content="Earnings per share growth rate. Shows profit growth per share. >15% = excellent, 5-15% = good, negative = declining" />
+                        </div>
                         <span className="font-medium">11.1%</span>
                       </div>
                       <div className="flex justify-between col-span-2">
-                        <span className="text-muted-foreground">Dividend Yield</span>
+                        <div className="flex items-center">
+                          <span className="text-muted-foreground">Dividend Yield</span>
+                          <MetricTooltip content="Annual dividends as percentage of stock price. Provides income to investors. 2-4% = reasonable, >6% = high (may be risky)" />
+                        </div>
                         <span className="font-medium">{(keyMetrics.dividendYield * 100).toFixed(1)}%</span>
                       </div>
                     </div>

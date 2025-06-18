@@ -96,7 +96,7 @@ export function CollapsibleSidebar() {
 
         {/* Navigation Links */}
         <nav className={cn(
-          "flex-1 space-y-1 transition-all duration-300",
+          "space-y-1 transition-all duration-300 min-h-[560px]",
           isCollapsed ? "p-2" : "p-4"
         )}>
           {navigation.map((item) => {
