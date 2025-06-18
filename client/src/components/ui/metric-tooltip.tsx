@@ -29,10 +29,11 @@ export function MetricTooltip({ content }: MetricTooltipProps) {
         </TooltipTrigger>
         <TooltipContent 
           side="top" 
-          className="max-w-xs z-[9999] pointer-events-auto bg-popover border border-border shadow-lg"
+          className="max-w-xs z-[99999] pointer-events-auto bg-popover border border-border shadow-xl"
           sideOffset={8}
           onMouseEnter={() => setIsOpen(true)}
           onMouseLeave={() => setIsOpen(false)}
+          style={{ zIndex: 99999 }}
         >
           <p className="text-xs leading-relaxed text-popover-foreground">{content}</p>
         </TooltipContent>

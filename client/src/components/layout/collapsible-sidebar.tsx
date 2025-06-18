@@ -95,10 +95,11 @@ export function CollapsibleSidebar() {
         </div>
 
         {/* Navigation Links */}
-        <nav className={cn(
-          "space-y-1 transition-all duration-300 flex-1",
-          isCollapsed ? "p-2" : "p-4"
-        )}>
+        <div className="flex flex-col flex-1">
+          <nav className={cn(
+            "space-y-1 transition-all duration-300",
+            isCollapsed ? "p-2" : "p-4"
+          )}>
           {navigation.map((item) => {
             const isActive = location === item.href;
             
@@ -132,7 +133,11 @@ export function CollapsibleSidebar() {
               </a>
             );
           })}
-        </nav>
+          </nav>
+          
+          {/* Spacer to push user section to bottom */}
+          <div className="flex-1 min-h-[200px]"></div>
+        </div>
 
         {/* User Profile Section at Bottom */}
         <div className={cn(
