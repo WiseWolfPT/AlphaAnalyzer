@@ -43,13 +43,13 @@ export function CollapsibleSidebar() {
 
   return (
     <div className={cn(
-      "bg-gray-mouse dark:bg-dark-slate-navy border-r border-gray-300 dark:border-slate-700/50 flex-shrink-0 sticky top-0 h-screen overflow-y-auto transition-all duration-300 ease-in-out",
+      "bg-gray-mouse dark:bg-dark-slate-navy flex-shrink-0 sticky top-0 h-screen overflow-y-auto transition-all duration-300 ease-in-out",
       isCollapsed ? "w-16" : "w-72"
     )}>
       <div className="flex flex-col h-full">
         {/* Header with Logo and Collapse Button */}
         <div className={cn(
-          "border-b border-gray-300 dark:border-slate-700/50 transition-all duration-300",
+          "transition-all duration-300",
           isCollapsed ? "p-2" : "p-4"
         )}>
           <div className={cn(
