@@ -3,8 +3,12 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertStockSchema, insertWatchlistSchema, insertWatchlistStockSchema, insertIntrinsicValueSchema, insertRecentSearchSchema } from "@shared/schema";
 import { z } from "zod";
+import { marketDataRouter } from "./routes/market-data";
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Register market data routes
+  app.use("/api/market", marketDataRouter);
+  
   // Stock routes
   app.get("/api/stocks", async (req, res) => {
     try {

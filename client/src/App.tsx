@@ -9,6 +9,7 @@ import Login from "@/pages/Login";
 import Register from "@/pages/Register";
 import NotFound from "@/pages/not-found";
 import Dashboard from "@/pages/insights-safe";
+import EnhancedDashboard from "@/pages/dashboard-enhanced";
 import StockDetail from "@/pages/stock-detail";
 import AdvancedCharts from "@/pages/AdvancedCharts";
 import Portfolios from "@/pages/portfolios";
@@ -23,8 +24,9 @@ function Router() {
       <Route path="/" component={Landing} />
       <Route path="/login" component={Login} />
       <Route path="/register" component={Register} />
-      <Route path="/dashboard" component={Dashboard} />
-      <Route path="/insights" component={Dashboard} />
+      <Route path="/dashboard" component={EnhancedDashboard} />
+      <Route path="/dashboard-safe" component={Dashboard} />
+      <Route path="/insights" component={EnhancedDashboard} />
       <Route path="/stock/:symbol" component={StockDetail} />
       <Route path="/stock/:symbol/charts" component={AdvancedCharts} />
       <Route path="/portfolios" component={Portfolios} />

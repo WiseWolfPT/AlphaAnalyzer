@@ -1,5 +1,6 @@
-// Smart API rotation system for maximum free tier usage
+// Smart API rotation system for maximum free tier usage with enhanced security
 import { cacheManager } from './cache-manager';
+import { dataSanitizer, DataClassification } from '../../../server/security/data-sanitizer';
 
 interface APIProvider {
   name: string;
@@ -169,11 +170,20 @@ export class APIRotationManager {
       
       const data = await response.json();
       
+      // Sanitize financial data before processing
+      const sanitizedData = dataSanitizer.sanitize(data, {
+        classification: DataClassification.CONFIDENTIAL,
+        maskPII: true,
+        removeScripts: true,
+        validateFinancialData: true,
+        auditLog: true,
+      }).sanitizedData;
+      
       // Update usage
       provider.currentUsage++;
       this.saveUsageToStorage();
       
-      // Log successful call
+      // Log successful call with security audit
       this.callHistory.push({
         provider: provider.name,
         endpoint,
@@ -181,10 +191,10 @@ export class APIRotationManager {
         success: true
       });
 
-      // Cache the result
-      cacheManager.set(cacheKey, data, dataType);
+      // Cache the sanitized result
+      cacheManager.set(cacheKey, sanitizedData, dataType);
       
-      return data;
+      return sanitizedData;
     } catch (error) {
       console.error(`❌ API call failed for ${provider.name}:`, error);
       
