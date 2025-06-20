@@ -8,8 +8,8 @@ import type { Stock, IntrinsicValue } from '@shared/schema';
 export interface MarketDataProvider {
   realtime: TwelveDataService;
   fundamentals: FMPService;
-  backup: FinnhubService;
-  deep: AlphaVantageService;
+  backup: any; // FinnhubService;
+  deep: any; // AlphaVantageService;
 }
 
 export interface QuotaStatus {
@@ -31,8 +31,8 @@ export class MarketDataOrchestrator {
     this.providers = {
       realtime: new TwelveDataService(this.cache),
       fundamentals: new FMPService(this.cache),
-      backup: new FinnhubService(this.cache),
-      deep: new AlphaVantageService(this.cache)
+      backup: {} as any, // placeholder for finnhub
+      deep: {} as any // placeholder for alpha vantage
     };
 
     this.initializeQuotaTracking();
@@ -113,27 +113,27 @@ export class MarketDataOrchestrator {
         }
       }
 
-      // Fallback to Finnhub
-      const finnhubQuota = this.quotaTracker.get('finnhub');
-      if (finnhubQuota && finnhubQuota.remaining > 0) {
-        const quote = await this.providers.backup.getQuote(symbol);
-        if (quote) {
-          this.incrementQuota('finnhub');
-          await this.cache.set(cacheKey, quote, 60 * 1000);
-          return quote;
-        }
-      }
+      // Fallback to Finnhub (currently disabled)
+      // const finnhubQuota = this.quotaTracker.get('finnhub');
+      // if (finnhubQuota && finnhubQuota.remaining > 0) {
+      //   const quote = await this.providers.backup.getQuote(symbol);
+      //   if (quote) {
+      //     this.incrementQuota('finnhub');
+      //     await this.cache.set(cacheKey, quote, 60 * 1000);
+      //     return quote;
+      //   }
+      // }
 
-      // Last resort: Alpha Vantage
-      const alphaQuota = this.quotaTracker.get('alphavantage');
-      if (alphaQuota && alphaQuota.remaining > 0) {
-        const quote = await this.providers.deep.getGlobalQuote(symbol);
-        if (quote) {
-          this.incrementQuota('alphavantage');
-          await this.cache.set(cacheKey, quote, 60 * 1000);
-          return quote;
-        }
-      }
+      // Last resort: Alpha Vantage (currently disabled)
+      // const alphaQuota = this.quotaTracker.get('alphavantage');
+      // if (alphaQuota && alphaQuota.remaining > 0) {
+      //   const quote = await this.providers.deep.getGlobalQuote(symbol);
+      //   if (quote) {
+      //     this.incrementQuota('alphavantage');
+      //     await this.cache.set(cacheKey, quote, 60 * 1000);
+      //     return quote;
+      //   }
+      // }
 
       return null;
     } catch (error) {
@@ -159,41 +159,41 @@ export class MarketDataOrchestrator {
         }
       }
 
-      // Fallback to Alpha Vantage for deep fundamentals
-      const alphaQuota = this.quotaTracker.get('alphavantage');
-      if (alphaQuota && alphaQuota.remaining > 0) {
-        const overview = await this.providers.deep.getCompanyOverview(symbol);
-        if (overview) {
-          this.incrementQuota('alphavantage');
-          
-          // Convert to IntrinsicValue format
-          const fundamentals: Partial<IntrinsicValue> = {
-            stockSymbol: symbol,
-            currentPrice: parseFloat(overview['50DayMovingAverage'] || '0'),
-            eps: parseFloat(overview.EPS || '0'),
-            peMultiple: parseFloat(overview.PERatio || '0'),
-            bookValue: parseFloat(overview.BookValue || '0'),
-            roe: parseFloat(overview.ReturnOnEquityTTM || '0') * 100,
-            debtToEquity: parseFloat(overview.DebtToEquityRatio || '0'),
-            revenue: parseFloat(overview.RevenueTTM || '0'),
-            marketCap: parseFloat(overview.MarketCapitalization || '0'),
-          };
-          
-          await this.cache.set(cacheKey, fundamentals, 24 * 60 * 60 * 1000);
-          return fundamentals;
-        }
-      }
+      // Fallback to Alpha Vantage for deep fundamentals (currently disabled)
+      // const alphaQuota = this.quotaTracker.get('alphavantage');
+      // if (alphaQuota && alphaQuota.remaining > 0) {
+      //   const overview = await this.providers.deep.getCompanyOverview(symbol);
+      //   if (overview) {
+      //     this.incrementQuota('alphavantage');
+      //     
+      //     // Convert to IntrinsicValue format
+      //     const fundamentals: Partial<IntrinsicValue> = {
+      //       stockSymbol: symbol,
+      //       currentPrice: parseFloat(overview['50DayMovingAverage'] || '0'),
+      //       eps: parseFloat(overview.EPS || '0'),
+      //       peMultiple: parseFloat(overview.PERatio || '0'),
+      //       bookValue: parseFloat(overview.BookValue || '0'),
+      //       roe: parseFloat(overview.ReturnOnEquityTTM || '0') * 100,
+      //       debtToEquity: parseFloat(overview.DebtToEquityRatio || '0'),
+      //       revenue: parseFloat(overview.RevenueTTM || '0'),
+      //       marketCap: parseFloat(overview.MarketCapitalization || '0'),
+      //     };
+      //     
+      //     await this.cache.set(cacheKey, fundamentals, 24 * 60 * 60 * 1000);
+      //     return fundamentals;
+      //   }
+      // }
 
-      // Last resort: Finnhub basic fundamentals
-      const finnhubQuota = this.quotaTracker.get('finnhub');
-      if (finnhubQuota && finnhubQuota.remaining > 0) {
-        const metrics = await this.providers.backup.getBasicFinancials(symbol);
-        if (metrics) {
-          this.incrementQuota('finnhub');
-          await this.cache.set(cacheKey, metrics, 24 * 60 * 60 * 1000);
-          return metrics;
-        }
-      }
+      // Last resort: Finnhub basic fundamentals (currently disabled)
+      // const finnhubQuota = this.quotaTracker.get('finnhub');
+      // if (finnhubQuota && finnhubQuota.remaining > 0) {
+      //   const metrics = await this.providers.backup.getBasicFinancials(symbol);
+      //   if (metrics) {
+      //     this.incrementQuota('finnhub');
+      //     await this.cache.set(cacheKey, metrics, 24 * 60 * 60 * 1000);
+      //     return metrics;
+      //   }
+      // }
 
       return null;
     } catch (error) {
@@ -272,18 +272,18 @@ export class MarketDataOrchestrator {
         }
       }
 
-      // Fallback to Alpha Vantage for daily data
-      if (interval === '1day') {
-        const alphaQuota = this.quotaTracker.get('alphavantage');
-        if (alphaQuota && alphaQuota.remaining > 0) {
-          const data = await this.providers.deep.getDailyTimeSeries(symbol);
-          if (data) {
-            this.incrementQuota('alphavantage');
-            await this.cache.set(cacheKey, data, 24 * 60 * 60 * 1000);
-            return data;
-          }
-        }
-      }
+      // Fallback to Alpha Vantage for daily data (currently disabled)
+      // if (interval === '1day') {
+      //   const alphaQuota = this.quotaTracker.get('alphavantage');
+      //   if (alphaQuota && alphaQuota.remaining > 0) {
+      //     const data = await this.providers.deep.getDailyTimeSeries(symbol);
+      //     if (data) {
+      //       this.incrementQuota('alphavantage');
+      //       await this.cache.set(cacheKey, data, 24 * 60 * 60 * 1000);
+      //       return data;
+      //     }
+      //   }
+      // }
 
       return null;
     } catch (error) {
@@ -326,16 +326,24 @@ export class MarketDataOrchestrator {
     symbols: string[], 
     onUpdate: (symbol: string, price: number) => void
   ): void {
-    this.providers.realtime.connectWebSocket((message) => {
-      if (message.event === 'price' && message.symbol && message.price) {
-        onUpdate(message.symbol, message.price);
-      }
-    });
+    try {
+      this.providers.realtime.connectWebSocket((message) => {
+        if (message.event === 'price' && message.symbol && message.price) {
+          onUpdate(message.symbol, message.price);
+        }
+      });
 
-    this.providers.realtime.subscribe(symbols);
+      this.providers.realtime.subscribe(symbols);
+    } catch (error) {
+      console.error('WebSocket connection error:', error);
+    }
   }
 
   disconnectRealTimeUpdates(): void {
-    this.providers.realtime.disconnect();
+    try {
+      this.providers.realtime.disconnect();
+    } catch (error) {
+      console.error('WebSocket disconnect error:', error);
+    }
   }
 }
