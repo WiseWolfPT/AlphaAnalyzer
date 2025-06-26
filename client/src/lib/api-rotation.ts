@@ -1,6 +1,6 @@
 // Smart API rotation system for maximum free tier usage with enhanced security
 import { cacheManager } from './cache-manager';
-import { dataSanitizer, DataClassification } from '../../../server/security/data-sanitizer';
+import { clientDataSanitizer, DataClassification } from './client-data-sanitizer';
 
 interface APIProvider {
   name: string;
@@ -171,7 +171,7 @@ export class APIRotationManager {
       const data = await response.json();
       
       // Sanitize financial data before processing
-      const sanitizedData = dataSanitizer.sanitize(data, {
+      const sanitizedData = clientDataSanitizer.sanitize(data, {
         classification: DataClassification.CONFIDENTIAL,
         maskPII: true,
         removeScripts: true,

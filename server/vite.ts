@@ -2,7 +2,7 @@ import express, { type Express } from "express";
 import fs from "fs";
 import path from "path";
 import { createServer as createViteServer, createLogger } from "vite";
-import { type Server } from "http";
+import { createServer, type Server } from "http";
 import viteConfig from "../vite.config";
 import { nanoid } from "nanoid";
 
@@ -40,13 +40,23 @@ export async function setupVite(app: Express, server: Server) {
     appType: "custom",
   });
 
-  app.use(vite.middlewares);
+  // Apply Vite middlewares first, but exclude API routes and assets
+  app.use((req, res, next) => {
+    if (req.path.startsWith('/api/') || req.path.startsWith('/assets/')) {
+      return next();
+    }
+    vite.middlewares(req, res, next);
+  });
+  
+  // Fallback for client-side routing (only for non-API routes and non-assets)
   app.use("*", async (req, res, next) => {
-    const url = req.originalUrl;
+    if (req.originalUrl.startsWith('/api/') || req.originalUrl.startsWith('/assets/')) {
+      return next();
+    }
 
     try {
       const clientTemplate = path.resolve(
-        import.meta.dirname,
+        decodeURIComponent(path.dirname(new URL(import.meta.url).pathname)),
         "..",
         "client",
         "index.html",
@@ -58,7 +68,7 @@ export async function setupVite(app: Express, server: Server) {
         `src="/src/main.tsx"`,
         `src="/src/main.tsx?v=${nanoid()}"`,
       );
-      const page = await vite.transformIndexHtml(url, template);
+      const page = await vite.transformIndexHtml(req.originalUrl, template);
       res.status(200).set({ "Content-Type": "text/html" }).end(page);
     } catch (e) {
       vite.ssrFixStacktrace(e as Error);

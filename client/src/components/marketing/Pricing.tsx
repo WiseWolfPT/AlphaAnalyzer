@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CheckCircle, Star, Crown, Zap, Timer } from "lucide-react";
 import { motion } from "framer-motion";
+import { useLocation } from "wouter";
 
 interface PricingProps {
   id?: string;
@@ -12,6 +13,7 @@ interface PricingProps {
 
 export function Pricing({ id }: PricingProps = {}) {
   const founderLeft = 23; // Dynamic counter - will be updated later
+  const [, setLocation] = useLocation();
 
   const coreFeatures = [
     "Análise Tesla, Apple, Microsoft",
@@ -103,13 +105,16 @@ export function Pricing({ id }: PricingProps = {}) {
 
                     <Button 
                       className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold py-3"
-                      onClick={() => window.location.href = '/trial'}
+                      onClick={() => setLocation('/register')}
                     >
                       🔥 Garantir Founder 100 - Trial Grátis
                     </Button>
 
                     <p className="text-xs text-center text-muted-foreground">
                       Preço bloqueado para sempre. Sem aumentos futuros.
+                    </p>
+                    <p className="text-xs text-center text-muted-foreground mt-2 border-t pt-2">
+                      ⚠️ Investir envolve riscos. Performances passadas não garantem resultados futuros.
                     </p>
                   </CardContent>
                 </Card>
@@ -157,13 +162,16 @@ export function Pricing({ id }: PricingProps = {}) {
 
                   <Button 
                     className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3"
-                    onClick={() => window.location.href = '/trial'}
+                    onClick={() => setLocation('/register')}
                   >
                     📋 Lista de Espera - Trial Grátis
                   </Button>
 
                   <p className="text-xs text-center text-muted-foreground">
                     Entrar na lista de espera para quando abrir.
+                  </p>
+                  <p className="text-xs text-center text-muted-foreground mt-2 border-t pt-2">
+                    ⚠️ Investir envolve riscos. Performances passadas não garantem resultados futuros.
                   </p>
                 </CardContent>
               </Card>

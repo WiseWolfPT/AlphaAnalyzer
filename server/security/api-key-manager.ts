@@ -68,7 +68,7 @@ export class SecureAPIKeyManager {
    */
   private encryptKey(plainKey: string): { encryptedKey: string; iv: string; tag: string } {
     const iv = crypto.randomBytes(16);
-    const cipher = crypto.createCipher('aes-256-gcm', this.encryptionKey);
+    const cipher = crypto.createCipherGCM('aes-256-gcm', this.encryptionKey, iv);
     cipher.setAAD(Buffer.from('api-key', 'utf8'));
     
     let encrypted = cipher.update(plainKey, 'utf8', 'hex');
@@ -87,7 +87,8 @@ export class SecureAPIKeyManager {
    * Decrypts an API key using AES-256-GCM
    */
   private decryptKey(encryptedData: { encryptedKey: string; iv: string; tag: string }): string {
-    const decipher = crypto.createDecipher('aes-256-gcm', this.encryptionKey);
+    const iv = Buffer.from(encryptedData.iv, 'hex');
+    const decipher = crypto.createDecipherGCM('aes-256-gcm', this.encryptionKey, iv);
     decipher.setAAD(Buffer.from('api-key', 'utf8'));
     decipher.setAuthTag(Buffer.from(encryptedData.tag, 'hex'));
     

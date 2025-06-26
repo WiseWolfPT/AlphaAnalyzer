@@ -1,14 +1,64 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useLocation } from "wouter";
 import { MainLayout } from "@/components/layout/main-layout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ChevronLeft, ChevronRight, Calendar } from "lucide-react";
+import { ChevronLeft, ChevronRight, Calendar, ExternalLink, TrendingUp } from "lucide-react";
 import { format, addWeeks, subWeeks, startOfWeek, endOfWeek, addDays } from "date-fns";
+import { useStock } from "@/hooks/use-enhanced-stocks";
+import { cn } from "@/lib/utils";
 import type { Earnings } from "@shared/schema";
+
+// Enhanced earnings item component with real data
+function EarningsItem({ earning }: { earning: any }) {
+  const [, setLocation] = useLocation();
+  const { data: stock, isLoading } = useStock(earning.symbol);
+
+  const handleClick = () => {
+    setLocation(`/stock/${earning.symbol}/charts`);
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-between p-2 hover:bg-secondary/50 rounded-lg animate-pulse">
+        <div className="flex items-center space-x-2">
+          <div className="w-8 h-8 bg-gray-300 rounded"></div>
+          <div>
+            <div className="h-3 bg-gray-300 rounded w-12 mb-1"></div>
+            <div className="h-2 bg-gray-300 rounded w-16"></div>
+          </div>
+        </div>
+        <ExternalLink className="h-3 w-3 text-muted-foreground" />
+      </div>
+    );
+  }
+
+  return (
+    <div 
+      className="flex items-center justify-between p-2 hover:bg-secondary/50 rounded-lg cursor-pointer transition-colors group"
+      onClick={handleClick}
+    >
+      <div className="flex items-center space-x-2">
+        <div className="w-8 h-8 bg-primary/10 rounded flex items-center justify-center">
+          <span className="text-xs font-medium text-primary">{earning.symbol.charAt(0)}</span>
+        </div>
+        <div>
+          <div className="text-xs font-medium group-hover:text-primary transition-colors">
+            {earning.symbol}
+          </div>
+          <div className="text-xs text-muted-foreground">
+            EPS: ${earning.estimatedEPS?.toFixed(2) || "N/A"}
+          </div>
+        </div>
+      </div>
+      <ExternalLink className="h-3 w-3 text-muted-foreground group-hover:text-primary transition-colors" />
+    </div>
+  );
+}
 
 export default function EarningsCalendar() {
   const [currentWeek, setCurrentWeek] = useState(new Date());
@@ -125,16 +175,7 @@ export default function EarningsCalendar() {
                       </CardHeader>
                       <CardContent className="space-y-2">
                         {getEarningsForDay(day, 'before_open').map((earning, idx) => (
-                          <div
-                            key={idx}
-                            className="flex items-center space-x-2 p-2 rounded-lg hover:bg-muted cursor-pointer transition-colors"
-                            onClick={() => setSelectedStock(earning.symbol)}
-                          >
-                            <div className="w-6 h-6 rounded-full bg-chartreuse/20 flex items-center justify-center">
-                              <span className="text-xs font-medium">{earning.symbol.charAt(0)}</span>
-                            </div>
-                            <span className="text-sm font-medium">{earning.symbol}</span>
-                          </div>
+                          <EarningsItem key={idx} earning={earning} />
                         ))}
                       </CardContent>
                     </Card>
@@ -146,16 +187,7 @@ export default function EarningsCalendar() {
                       </CardHeader>
                       <CardContent className="space-y-2">
                         {getEarningsForDay(day, 'after_close').map((earning, idx) => (
-                          <div
-                            key={idx}
-                            className="flex items-center space-x-2 p-2 rounded-lg hover:bg-muted cursor-pointer transition-colors"
-                            onClick={() => setSelectedStock(earning.symbol)}
-                          >
-                            <div className="w-6 h-6 rounded-full bg-chartreuse/20 flex items-center justify-center">
-                              <span className="text-xs font-medium">{earning.symbol.charAt(0)}</span>
-                            </div>
-                            <span className="text-sm font-medium">{earning.symbol}</span>
-                          </div>
+                          <EarningsItem key={idx} earning={earning} />
                         ))}
                       </CardContent>
                     </Card>

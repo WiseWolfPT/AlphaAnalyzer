@@ -3,7 +3,7 @@ import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { AuthModal } from "@/components/auth/auth-modal";
-import { useAuth } from "@/contexts/simple-auth";
+import { useAuth } from "@/contexts/simple-auth-offline";
 import { 
   BarChart3, 
   Menu, 
@@ -39,7 +39,7 @@ export function LandingHeader() {
                   <BarChart3 className="h-4 w-4 text-primary-foreground" />
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="font-bold text-lg text-foreground">Alpha Analyzer</span>
+                  <span className="font-bold text-lg text-foreground">Alfalyzer</span>
                   <Badge variant="outline" className="border-primary/30 text-primary text-xs">
                     BETA
                   </Badge>
@@ -71,11 +71,11 @@ export function LandingHeader() {
                   <div className="flex items-center gap-2 px-3 py-2 bg-secondary/30 rounded-lg">
                     <div className="w-6 h-6 bg-primary rounded-full flex items-center justify-center">
                       <span className="text-xs font-medium text-primary-foreground">
-                        {profile?.full_name?.charAt(0) || user.email?.charAt(0) || 'U'}
+                        {user.name?.charAt(0) || user.email?.charAt(0) || 'U'}
                       </span>
                     </div>
-                    <span className="text-sm font-medium">{profile?.full_name || user.email}</span>
-                    {profile?.subscription_tier === 'premium' && (
+                    <span className="text-sm font-medium">{user.name || user.email}</span>
+                    {user.subscription === 'premium' && (
                       <Crown className="h-3 w-3 text-amber-500" />
                     )}
                   </div>
@@ -96,11 +96,13 @@ export function LandingHeader() {
                 </div>
               ) : (
                 <>
-                  <Link href="/dashboard">
-                    <Button variant="ghost" size="sm">
-                      Sign In
-                    </Button>
-                  </Link>
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    onClick={() => setShowAuthModal(true)}
+                  >
+                    Sign In
+                  </Button>
                   <Button 
                     size="sm"
                     onClick={() => setShowAuthModal(true)}
@@ -150,13 +152,13 @@ export function LandingHeader() {
                         <div className="flex items-center gap-2">
                           <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
                             <span className="text-sm font-medium text-primary-foreground">
-                              {profile?.full_name?.charAt(0) || user.email?.charAt(0) || 'U'}
+                              {user.name?.charAt(0) || user.email?.charAt(0) || 'U'}
                             </span>
                           </div>
                           <div>
-                            <div className="text-sm font-medium">{profile?.full_name || user.email}</div>
+                            <div className="text-sm font-medium">{user.name || user.email}</div>
                             <div className="text-xs text-muted-foreground">
-                              {profile?.subscription_tier || 'free'} plan
+                              {user.subscription || 'free'} plan
                             </div>
                           </div>
                         </div>

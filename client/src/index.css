@@ -190,6 +190,26 @@
     outline-offset: 2px;
   }
 
+  /* Touch target optimization for mobile */
+  .touch-target-44 {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* Mobile responsive optimizations */
+  @media (max-width: 640px) {
+    .container {
+      padding-left: 0.75rem;
+      padding-right: 0.75rem;
+    }
+    
+    /* Ensure buttons don't get cut off */
+    .mobile-safe-button {
+      min-height: 40px;
+      padding: 0.5rem 1rem;
+    }
+  }
+
   /* Keyboard navigation */
   .kbd {
     background: hsl(var(--muted));

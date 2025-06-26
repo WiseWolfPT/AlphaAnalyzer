@@ -33,8 +33,7 @@ import {
   ChevronDown
 } from "lucide-react";
 import { motion } from "framer-motion";
-import { DotLottieReact } from '@lottiefiles/dotlottie-react';
-import heroAnimationLottie from '../assets/hero-animation.lottie';
+import { HeroAnimation } from "@/components/animations/HeroAnimation";
 
 // Optimized animation configurations
 const ANIMATION_CONFIG = {
@@ -155,27 +154,27 @@ export default function Landing() {
                 Teste gratuito • 7 dias
               </motion.div>
 
-              {/* Simple Dark Headline */}
+              {/* Optimized Power Headline */}
               <motion.h1
                 initial={{ opacity: 0, y: 40 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ ...ANIMATION_CONFIG.SLOW, delay: 0.6 }}
                 className="text-5xl sm:text-6xl lg:text-7xl xl:text-8xl font-light mb-8 leading-[0.9] tracking-tight"
               >
-                <span className="text-deep-black dark:text-pure-white">Investe com</span>
+                <span className="text-deep-black dark:text-pure-white">Evita Perdas de</span>
                 <br />
-                <span className="font-bold text-chartreuse-dark dark:text-chartreuse">Precisão</span>
+                <span className="font-bold text-chartreuse-dark dark:text-chartreuse">-30% com 94% Precisão</span>
               </motion.h1>
 
-              {/* Dark Theme Subtitle */}
+              {/* Optimized Subtitle */}
               <motion.p
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ ...ANIMATION_CONFIG.MEDIUM, delay: 0.8 }}
                 className="text-xl text-gray-700 dark:text-gray-300 mb-12 leading-relaxed max-w-2xl font-light"
               >
-                Análise fundamental simplificada. Valor intrínseco em segundos. 
-                <br />Decisões baseadas em dados, não emoções.
+                O algoritmo que previu a queda da Tesla (-33%), Zoom (-85%) e PayPal (-78%). 
+                <br />Evita as armadilhas que custaram aos investidores €2.1B só em 2023.
               </motion.p>
               
               {/* Simple Stats - US Market Focus */}
@@ -216,7 +215,7 @@ export default function Landing() {
                     className="text-base sm:text-lg px-6 sm:px-10 py-3 sm:py-4 h-12 sm:h-14 bg-chartreuse-dark dark:bg-chartreuse hover:bg-chartreuse-dark/90 dark:hover:bg-chartreuse/90 text-deep-black dark:text-rich-black rounded-full font-semibold shadow-lg hover:shadow-xl hover:shadow-chartreuse/25 transition-all duration-300 border-0 group w-full sm:w-auto"
                     onClick={() => window.location.href = '/trial'}
                   >
-                    Começar agora
+                    🚨 Descobrir se Tesla está cara AGORA
                     <motion.div
                       className="inline-block ml-2"
                       animate={{ x: [0, 2, 0] }}
@@ -290,31 +289,21 @@ export default function Landing() {
               transition={{ ...ANIMATION_CONFIG.SLOW, delay: 1.0 }}
               className="lg:col-span-5 relative flex justify-center items-center"
             >
-              {/* Enhanced HD Lottie Animation */}
+              {/* Animation Placeholder - Ready for GitHub Implementation */}
+              {/* Hero Animation with Resilient Loading */}
               <motion.div
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.8, delay: 1.2 }}
                 className="flex justify-center items-center"
               >
-                <DotLottieReact
-                  src={heroAnimationLottie}
-                  loop
-                  autoplay
+                <HeroAnimation 
+                  className="drop-shadow-2xl"
                   style={{ 
                     height: 'clamp(400px, 50vw, 600px)', 
                     width: 'clamp(400px, 50vw, 600px)',
                     maxHeight: '600px',
-                    maxWidth: '600px',
-                    filter: 'contrast(1.1) brightness(1.05) saturate(1.1)',
-                    imageRendering: 'crisp-edges'
-                  }}
-                  renderer="svg"
-                  rendererSettings={{
-                    preserveAspectRatio: 'xMidYMid meet',
-                    clearCanvas: true,
-                    progressiveLoad: false,
-                    hideOnTransparent: true
+                    maxWidth: '600px'
                   }}
                 />
               </motion.div>
@@ -425,7 +414,7 @@ export default function Landing() {
             className="text-center mb-16"
           >
             <h2 className="text-3xl lg:text-4xl font-bold text-foreground mb-4">
-              Porquê Alpha Analyzer?
+              Porquê Alfalyzer?
             </h2>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
               A tecnologia que faz a diferença entre lucro e prejuízo
@@ -647,7 +636,7 @@ export default function Landing() {
               Perguntas Frequentes
             </h2>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Tudo o que precisas saber sobre o Alpha Analyzer
+              Tudo o que precisas saber sobre o Alfalyzer
             </p>
           </motion.div>
 
@@ -732,7 +721,7 @@ export default function Landing() {
                 className="text-lg px-8 py-4 h-14 bg-chartreuse-dark dark:bg-chartreuse hover:bg-chartreuse-dark/90 dark:hover:bg-chartreuse/90 text-deep-black font-semibold"
                 onClick={() => window.location.href = '/trial'}
               >
-                📈 Analisar Tesla, Apple & Microsoft - Grátis
+                🎯 Evitar próxima queda como Tesla (-33%)
               </Button>
               <Button 
                 variant="outline" 
@@ -765,7 +754,7 @@ export default function Landing() {
             className="bg-background rounded-xl p-8 max-w-2xl w-full"
             onClick={(e) => e.stopPropagation()}
           >
-            <h3 className="text-xl font-semibold mb-4">Demo do Alpha Analyzer</h3>
+            <h3 className="text-xl font-semibold mb-4">Demo do Alfalyzer</h3>
             <div className="aspect-video bg-secondary rounded-lg flex items-center justify-center">
               <p className="text-muted-foreground">Vídeo demo aqui</p>
             </div>

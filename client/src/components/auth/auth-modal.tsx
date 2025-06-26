@@ -7,7 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Eye, EyeOff, Mail, Lock, User, AlertCircle } from 'lucide-react';
-import { useAuth } from '@/contexts/simple-auth';
+import { useAuth } from '@/contexts/simple-auth-offline';
 import { cn } from '@/lib/utils';
 
 interface AuthModalProps {
@@ -29,12 +29,7 @@ export function AuthModal({ isOpen, onClose, defaultTab = 'login' }: AuthModalPr
   const [confirmPassword, setConfirmPassword] = useState('');
   const [fullName, setFullName] = useState('');
 
-  const { user } = useAuth();
-  // Simplified auth methods - disabled for now
-  const signIn = () => Promise.resolve({ data: null, error: new Error('Auth disabled') });
-  const signUp = () => Promise.resolve({ data: null, error: new Error('Auth disabled') });
-  const signInWithGoogle = () => Promise.resolve({ data: null, error: new Error('Auth disabled') });
-  const resetPassword = () => Promise.resolve({ data: null, error: new Error('Auth disabled') });
+  const { user, signIn, register } = useAuth();
 
   const resetForm = () => {
     setEmail('');
@@ -60,12 +55,12 @@ export function AuthModal({ isOpen, onClose, defaultTab = 'login' }: AuthModalPr
       const { error } = await signIn(email, password);
       
       if (error) {
-        setError(error.message);
+        setError(error);
       } else {
         handleClose();
       }
     } catch (err) {
-      setError('An unexpected error occurred');
+      setError('Ocorreu um erro inesperado');
     } finally {
       setLoading(false);
     }
@@ -77,30 +72,30 @@ export function AuthModal({ isOpen, onClose, defaultTab = 'login' }: AuthModalPr
     setError(null);
 
     if (password !== confirmPassword) {
-      setError('Passwords do not match');
+      setError('As palavras-passe não coincidem');
       setLoading(false);
       return;
     }
 
     if (password.length < 6) {
-      setError('Password must be at least 6 characters');
+      setError('A palavra-passe deve ter pelo menos 6 caracteres');
       setLoading(false);
       return;
     }
 
     try {
-      const { error } = await signUp(email, password, { full_name: fullName });
+      const { error } = await register(fullName, email, password);
       
       if (error) {
-        setError(error.message);
+        setError(error);
       } else {
-        setSuccess('Check your email for the confirmation link!');
+        setSuccess('Verifique o seu email para confirmar a conta!');
         setTimeout(() => {
           handleClose();
         }, 2000);
       }
     } catch (err) {
-      setError('An unexpected error occurred');
+      setError('Ocorreu um erro inesperado');
     } finally {
       setLoading(false);
     }
@@ -111,7 +106,9 @@ export function AuthModal({ isOpen, onClose, defaultTab = 'login' }: AuthModalPr
     setError(null);
 
     try {
-      const { error } = await signInWithGoogle();
+      // Import the Google login function from supabase
+      const { auth } = await import('@/lib/supabase');
+      const { error } = await auth.signInWithGoogle();
       
       if (error) {
         setError(error.message);
@@ -134,7 +131,9 @@ export function AuthModal({ isOpen, onClose, defaultTab = 'login' }: AuthModalPr
     setError(null);
 
     try {
-      const { error } = await resetPassword(email);
+      // Import the reset password function from supabase
+      const { auth } = await import('@/lib/supabase');
+      const { error } = await auth.resetPassword(email);
       
       if (error) {
         setError(error.message);
@@ -153,7 +152,7 @@ export function AuthModal({ isOpen, onClose, defaultTab = 'login' }: AuthModalPr
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="text-center">
-            Welcome to Alpha Analyzer
+            Bem-vindo ao Alfalyzer
           </DialogTitle>
         </DialogHeader>
 

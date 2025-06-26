@@ -3,7 +3,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Lock, Crown, Users, TrendingUp } from 'lucide-react';
-import { useAuth } from '@/contexts/simple-auth';
+import { useAuth } from '@/contexts/simple-auth-offline';
 
 interface FeatureLimiterProps {
   children: ReactNode;
@@ -52,7 +52,7 @@ export function FeatureLimiter({
   const tier = requiredTier || config.tier;
   
   // If user has required subscription, show the feature
-  if (user && isSubscribed(tier)) {
+  if (user && isSubscribed()) {
     return <>{children}</>;
   }
 

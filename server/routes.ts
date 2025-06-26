@@ -3,17 +3,131 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertStockSchema, insertWatchlistSchema, insertWatchlistStockSchema, insertIntrinsicValueSchema, insertRecentSearchSchema } from "@shared/schema";
 import { z } from "zod";
-import { marketDataRouter } from "./routes/market-data";
+import marketDataRouter from "./routes/market-data";
+import authRouter from "./routes/auth";
+import adminRouter from "./routes/admin";
+import subscriptionsRouter from "./routes/subscriptions";
+import { authMiddleware } from "./middleware/auth-middleware";
+import { validateRequest, validationSchemas } from "./security/security-middleware";
 
-export async function registerRoutes(app: Express): Promise<Server> {
-  // Register market data routes
-  app.use("/api/market", marketDataRouter);
+// SECURITY FIX: Add API versioning for backward compatibility
+const API_VERSION = 'v1';
+
+// SECURITY FIX: Comprehensive validation schemas for all endpoints
+const routeValidationSchemas = {
+  // Stock routes validation
+  getStocks: z.object({
+    limit: z.coerce.number().min(1).max(100).default(50),
+    offset: z.coerce.number().min(0).default(0),
+  }),
   
-  // Stock routes
-  app.get("/api/stocks", async (req, res) => {
+  searchStocks: z.object({
+    q: z.string().min(1).max(50).regex(/^[A-Za-z0-9\s\-\.]+$/, 'Invalid search query'),
+    limit: z.coerce.number().min(1).max(20).default(10),
+  }),
+  
+  getStock: z.object({
+    symbol: z.string().min(1).max(10).regex(/^[A-Z0-9\-\.]+$/, 'Invalid symbol format').transform(val => val.toUpperCase()),
+  }),
+  
+  // Watchlist validation
+  getWatchlistStocks: z.object({
+    id: z.coerce.number().positive('Invalid watchlist ID'),
+  }),
+  
+  addStockToWatchlist: z.object({
+    id: z.coerce.number().positive('Invalid watchlist ID'),
+  }),
+  
+  removeStockFromWatchlist: z.object({
+    id: z.coerce.number().positive('Invalid watchlist ID'),
+    symbol: z.string().min(1).max(10).regex(/^[A-Z0-9\-\.]+$/, 'Invalid symbol').transform(val => val.toUpperCase()),
+  }),
+  
+  // Intrinsic value validation
+  getIntrinsicValues: z.object({
+    limit: z.coerce.number().min(1).max(100).default(50),
+  }),
+  
+  getIntrinsicValue: z.object({
+    symbol: z.string().min(1).max(10).regex(/^[A-Z0-9\-\.]+$/, 'Invalid symbol').transform(val => val.toUpperCase()),
+  }),
+  
+  calculateIntrinsicValue: z.object({
+    stockSymbol: z.string().min(1).max(10).regex(/^[A-Z0-9\-\.]+$/, 'Invalid symbol'),
+    eps: z.number().positive('EPS must be positive'),
+    growthRate: z.number().min(0).max(50).default(10),
+    horizon: z.number().min(1).max(20).default(10),
+    peMultiple: z.number().positive().optional(),
+    requiredReturn: z.number().min(1).max(50).default(15),
+    marginOfSafety: z.number().min(0).max(50).default(25),
+  }),
+  
+  // Recent searches validation
+  getRecentSearches: z.object({
+    limit: z.coerce.number().min(1).max(20).default(5),
+  }),
+  
+  // Earnings validation
+  getEarnings: z.object({
+    limit: z.coerce.number().min(1).max(100).default(50),
+  }),
+  
+  getEarningsForStock: z.object({
+    symbol: z.string().min(1).max(10).regex(/^[A-Z0-9\-\.]+$/, 'Invalid symbol').transform(val => val.toUpperCase()),
+  }),
+};
+
+export async function registerRoutes(app: Express, server: Server): Promise<void> {
+  // SECURITY FIX: Initialize auth middleware
+  const authService = authMiddleware.instance;
+
+  // Health check endpoint (no auth required)
+  app.get("/api/health", (req, res) => {
+    res.json({
+      status: "healthy",
+      timestamp: new Date().toISOString(),
+      version: "1.0.0",
+      uptime: process.uptime(),
+      env: process.env.NODE_ENV || "development"
+    });
+  });
+
+  // Basic API info endpoint
+  app.get("/api", (req, res) => {
+    res.json({
+      name: "Alfalyzer API",
+      version: "1.0.0",
+      endpoints: [
+        "/api/health",
+        "/api/auth",
+        "/api/stocks",
+        "/api/market-data",
+        "/api/subscriptions",
+        "/api/admin"
+      ]
+    });
+  });
+
+  // SECURITY FIX: Register all route modules with proper authentication
+  app.use("/api/auth", authRouter);
+  app.use("/api/admin", adminRouter);
+  app.use("/api/subscriptions", subscriptionsRouter);
+  
+  // SECURITY FIX: Register versioned routes first
+  app.use(`/api/${API_VERSION}/market-data`, marketDataRouter);
+  
+  // Maintain backward compatibility
+  app.use("/api/market-data", marketDataRouter);
+  
+  // Stock routes - public data, allow optional auth for rate limiting
+  app.get("/api/stocks", 
+    authService.optionalAuth(), 
+    validateRequest(routeValidationSchemas.getStocks),
+    async (req, res) => {
     try {
-      const limit = parseInt(req.query.limit as string) || 50;
-      const offset = parseInt(req.query.offset as string) || 0;
+      const validatedQuery = routeValidationSchemas.getStocks.parse(req.query);
+      const { limit, offset } = validatedQuery;
       const stocks = await storage.getStocks(limit, offset);
       res.json(stocks);
     } catch (error) {
@@ -21,14 +135,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/stocks/search", async (req, res) => {
+  app.get("/api/stocks/search", 
+    authService.optionalAuth(), 
+    validateRequest(routeValidationSchemas.searchStocks),
+    async (req, res) => {
     try {
-      const query = req.query.q as string;
+      const validatedQuery = routeValidationSchemas.searchStocks.parse(req.query);
+      const { q: query, limit } = validatedQuery;
+      
       if (!query || query.trim().length === 0) {
         return res.json([]);
       }
       
-      const limit = parseInt(req.query.limit as string) || 10;
       const stocks = await storage.searchStocks(query, limit);
       res.json(stocks);
     } catch (error) {
@@ -37,10 +155,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/stocks/:symbol", async (req, res) => {
+  app.get("/api/stocks/:symbol", 
+    authService.optionalAuth(), 
+    validateRequest(routeValidationSchemas.getStock),
+    async (req, res) => {
     try {
-      const { symbol } = req.params;
-      const stock = await storage.getStock(symbol.toUpperCase());
+      const validatedParams = routeValidationSchemas.getStock.parse(req.params);
+      const { symbol } = validatedParams;
+      const stock = await storage.getStock(symbol);
       
       if (!stock) {
         return res.status(404).json({ message: "Stock not found" });
@@ -52,7 +174,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/stocks", async (req, res) => {
+  app.post("/api/stocks", authService.authenticate(), async (req, res) => {
     try {
       const stockData = insertStockSchema.parse(req.body);
       const stock = await storage.createStock(stockData);
@@ -65,10 +187,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Watchlist routes
-  app.get("/api/watchlists", async (req, res) => {
+  // Watchlist routes - SECURITY FIX: Require authentication for user-specific data
+  app.get("/api/watchlists", authService.authenticate(), async (req, res) => {
     try {
-      const userId = req.query.userId as string || "default";
+      const userId = req.user?.id || "default";
       const watchlists = await storage.getWatchlists(userId);
       res.json(watchlists);
     } catch (error) {
@@ -76,11 +198,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/watchlists", async (req, res) => {
+  app.post("/api/watchlists", authService.authenticate(), async (req, res) => {
     try {
       const watchlistData = insertWatchlistSchema.parse({
         ...req.body,
-        userId: req.body.userId || "default"
+        userId: req.user?.id || "default"
       });
       const watchlist = await storage.createWatchlist(watchlistData);
       res.status(201).json(watchlist);
@@ -92,7 +214,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/watchlists/:id/stocks", async (req, res) => {
+  app.get("/api/watchlists/:id/stocks", authService.authenticate(), async (req, res) => {
     try {
       const watchlistId = parseInt(req.params.id);
       const watchlistStocks = await storage.getWatchlistStocks(watchlistId);
@@ -102,7 +224,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/watchlists/:id/stocks", async (req, res) => {
+  app.post("/api/watchlists/:id/stocks", authService.authenticate(), async (req, res) => {
     try {
       const watchlistId = parseInt(req.params.id);
       const stockData = insertWatchlistStockSchema.parse({
@@ -119,7 +241,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/watchlists/:id/stocks/:symbol", async (req, res) => {
+  app.delete("/api/watchlists/:id/stocks/:symbol", authService.authenticate(), async (req, res) => {
     try {
       const watchlistId = parseInt(req.params.id);
       const symbol = req.params.symbol.toUpperCase();
@@ -135,8 +257,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Intrinsic value routes
-  app.get("/api/intrinsic-values", async (req, res) => {
+  // Intrinsic value routes - SECURITY FIX: Require authentication for calculations
+  app.get("/api/intrinsic-values", authService.authenticate(), async (req, res) => {
     try {
       const limit = parseInt(req.query.limit as string) || 50;
       const intrinsicValues = await storage.getIntrinsicValues(limit);
@@ -146,7 +268,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/intrinsic-values/:symbol", async (req, res) => {
+  app.get("/api/intrinsic-values/:symbol", authService.authenticate(), async (req, res) => {
     try {
       const symbol = req.params.symbol.toUpperCase();
       const intrinsicValue = await storage.getIntrinsicValue(symbol);
@@ -161,7 +283,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/intrinsic-values", async (req, res) => {
+  app.post("/api/intrinsic-values", authService.authenticate(), async (req, res) => {
     try {
       const intrinsicValueData = insertIntrinsicValueSchema.parse(req.body);
       const intrinsicValue = await storage.createIntrinsicValue(intrinsicValueData);
@@ -175,13 +297,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Adam Khoo intrinsic value calculation
-  app.post("/api/intrinsic-values/calculate", async (req, res) => {
+  app.post("/api/intrinsic-values/calculate", 
+    authService.authenticate(), 
+    validateRequest(routeValidationSchemas.calculateIntrinsicValue),
+    async (req, res) => {
     try {
-      const { stockSymbol, eps, growthRate = 10, horizon = 10, peMultiple, requiredReturn = 15, marginOfSafety = 25 } = req.body;
-      
-      if (!stockSymbol || !eps) {
-        return res.status(400).json({ message: "Stock symbol and EPS are required" });
-      }
+      const validatedData = routeValidationSchemas.calculateIntrinsicValue.parse(req.body);
+      const { stockSymbol, eps, growthRate, horizon, peMultiple, requiredReturn, marginOfSafety } = validatedData;
 
       const stock = await storage.getStock(stockSymbol.toUpperCase());
       if (!stock) {
@@ -248,10 +370,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Recent searches routes
-  app.get("/api/recent-searches", async (req, res) => {
+  // Recent searches routes - SECURITY FIX: Require authentication for user-specific data
+  app.get("/api/recent-searches", authService.authenticate(), async (req, res) => {
     try {
-      const userId = req.query.userId as string || "default";
+      const userId = req.user?.id || "default";
       const limit = parseInt(req.query.limit as string) || 5;
       const searches = await storage.getRecentSearches(userId, limit);
       res.json(searches);
@@ -260,11 +382,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/recent-searches", async (req, res) => {
+  app.post("/api/recent-searches", authService.authenticate(), async (req, res) => {
     try {
       const searchData = insertRecentSearchSchema.parse({
         ...req.body,
-        userId: req.body.userId || "default"
+        userId: req.user?.id || "default"
       });
       const search = await storage.addRecentSearch(searchData);
       res.status(201).json(search);
@@ -276,8 +398,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Earnings routes
-  app.get("/api/earnings", async (req, res) => {
+  // Earnings routes - SECURITY FIX: Public data but add optional auth for rate limiting
+  app.get("/api/earnings", authService.optionalAuth(), async (req, res) => {
     try {
       const limit = parseInt(req.query.limit as string) || 50;
       const earnings = await storage.getEarnings(limit);
@@ -287,7 +409,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/earnings/:symbol", async (req, res) => {
+  app.get("/api/earnings/:symbol", authService.optionalAuth(), async (req, res) => {
     try {
       const symbol = req.params.symbol.toUpperCase();
       const earnings = await storage.getEarningsForStock(symbol);
@@ -297,8 +419,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Market indices endpoint (simulated)
-  app.get("/api/market-indices", async (req, res) => {
+  // Market indices endpoint (simulated) - SECURITY FIX: Public data but add optional auth for rate limiting
+  app.get("/api/market-indices", authService.optionalAuth(), async (req, res) => {
     try {
       // Simulate real-time market data
       const indices = {
@@ -322,6 +444,5 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  const httpServer = createServer(app);
-  return httpServer;
+  // Server is now created in index.ts
 }

@@ -3,7 +3,7 @@ import { Target } from "lucide-react";
 
 interface TrialCTAProps {
   variant?: "primary" | "secondary";
-  size?: "sm" | "md" | "lg";
+  size?: "sm" | "default" | "lg";
   className?: string;
   children?: React.ReactNode;
 }
@@ -23,7 +23,7 @@ export function TrialCTA({
 
   const sizes = {
     sm: "px-4 py-2 h-9 text-sm",
-    md: "px-6 py-3 h-12 text-base", 
+    default: "px-6 py-3 h-12 text-base", 
     lg: "px-8 py-4 h-16 text-lg"
   };
 

@@ -1,0 +1,29 @@
+{
+  "include": ["**/*", "../shared/**/*"],
+  "exclude": ["node_modules", "dist", "**/*.test.ts", "../client/**/*"],
+  "compilerOptions": {
+    "target": "ES2020",
+    "lib": ["ES2020", "ES2021"],
+    "module": "ES2020",
+    "moduleResolution": "node",
+    "allowJs": true,
+    "outDir": "./dist",
+    "rootDir": "..",
+    "removeComments": true,
+    "downlevelIteration": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "strict": false,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "types": ["node"],
+    "paths": {
+      "@shared/*": ["../shared/*"]
+    }
+  }
+}

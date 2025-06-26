@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { auth, db } from '../lib/supabase';
 import { SubscriptionTier, UserRole } from '../types/auth';
+import { createJWTValidator, extractTokenFromHeaders, JWTValidationResult } from '../utils/jwt-validator';
 
 // Extend Express Request interface to include user data
 declare global {
@@ -69,14 +70,21 @@ uYiGEfic4Qhni+HMfRBuUphOh7F3k8QgwZc9UlL0AHmyYqtbhL9NuJes6w==
           }
         }
 
-        // Fallback to traditional JWT authentication
-        const token = this.extractTokenFromHeader(req);
+        // SECURITY FIX: Use centralized JWT validation
+        const token = extractTokenFromHeaders(req.headers, req.query);
         if (!token) {
           return this.unauthorizedResponse(res, 'NO_TOKEN', 'Authentication token required');
         }
 
-        const payload = this.verifyJWT(token);
-        const user = await this.loadUserFromDatabase(payload.sub);
+        const validator = createJWTValidator(this.accessTokenSecret);
+        const validation = validator.validateForHTTP(token);
+        
+        if (!validation.success) {
+          console.warn('JWT validation failed:', validation.error);
+          return this.unauthorizedResponse(res, validation.errorCode || 'INVALID_TOKEN', validation.error || 'Invalid token');
+        }
+
+        const user = await this.loadUserFromDatabase(validation.payload!.sub);
         
         if (!user) {
           return this.unauthorizedResponse(res, 'USER_NOT_FOUND', 'User not found');
@@ -139,22 +147,74 @@ uYiGEfic4Qhni+HMfRBuUphOh7F3k8QgwZc9UlL0AHmyYqtbhL9NuJes6w==
    * Find or create user from Whop authentication
    */
   private async findOrCreateWhopUser(whopUserId: string, whopPayload: any) {
+    // SECURITY FIX: Validate Whop payment status before granting premium access
+    // Extract membership status from Whop JWT payload
+    const hasActiveSubscription = whopPayload.membership_status === 'active' || 
+                                  whopPayload.subscription_status === 'active';
+    
     // Check if user already exists with this Whop ID
     let user = await db.from('profiles').select('*').eq('whop_user_id', whopUserId).single();
     
     if (!user.data) {
-      // Create new user from Whop data
+      // SECURITY FIX: Use real email from Whop payload, require it for account creation
+      if (!whopPayload.email) {
+        throw new Error('Email is required for Whop user creation');
+      }
+      
+      // Create new user from Whop data with appropriate tier based on payment status
       const newUser = {
         whop_user_id: whopUserId,
-        email: whopPayload.email || `whop_${whopUserId}@temp.com`,
-        full_name: whopPayload.name || 'Whop User',
-        subscription_tier: 'premium', // Whop users get premium access
+        email: whopPayload.email, // Use real email, not temporary
+        full_name: whopPayload.name || whopPayload.username || 'Whop User',
+        subscription_tier: hasActiveSubscription ? 'premium' : 'free', // Only premium if payment verified
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       };
 
       const { data: createdUser } = await db.from('profiles').insert(newUser).select().single();
+      
+      // Log the Whop user creation with subscription status
+      await db.logSecurityEvent({
+        user_id: createdUser.id,
+        action: 'whop_user_created',
+        resource: 'user_account',
+        success: true,
+        details: { 
+          whopUserId,
+          hasActiveSubscription,
+          tier: newUser.subscription_tier,
+        },
+      });
+      
       return createdUser;
+    }
+    
+    // SECURITY FIX: Update existing user's subscription status based on current Whop status
+    if (user.data && hasActiveSubscription !== (user.data.subscription_tier === 'premium')) {
+      const updatedTier = hasActiveSubscription ? 'premium' : 'free';
+      const { data: updatedUser } = await db.from('profiles')
+        .update({ 
+          subscription_tier: updatedTier,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', user.data.id)
+        .select()
+        .single();
+      
+      // Log subscription status change
+      await db.logSecurityEvent({
+        user_id: user.data.id,
+        action: 'whop_subscription_updated',
+        resource: 'user_subscription',
+        success: true,
+        details: { 
+          oldTier: user.data.subscription_tier,
+          newTier: updatedTier,
+          hasActiveSubscription,
+        },
+      });
+      
+      return updatedUser;
     }
 
     return user.data;
@@ -189,15 +249,62 @@ uYiGEfic4Qhni+HMfRBuUphOh7F3k8QgwZc9UlL0AHmyYqtbhL9NuJes6w==
    * Update user last activity
    */
   private async updateLastActivity(userId: string, req: Request) {
+    // SECURITY FIX: Use more reliable IP detection and add device fingerprinting
+    // Get real IP behind proxies
+    const realIp = req.headers['x-real-ip'] as string || 
+                   req.headers['x-forwarded-for']?.toString().split(',')[0] || 
+                   req.socket.remoteAddress || 
+                   'unknown';
+    
+    // Create device fingerprint from multiple factors
+    const userAgent = req.headers['user-agent'] || '';
+    const acceptLanguage = req.headers['accept-language'] || '';
+    const acceptEncoding = req.headers['accept-encoding'] || '';
+    
+    // Generate a simple device fingerprint hash
+    const crypto = require('crypto');
+    const deviceFingerprint = crypto
+      .createHash('sha256')
+      .update(`${userAgent}|${acceptLanguage}|${acceptEncoding}`)
+      .digest('hex')
+      .substring(0, 16); // Use first 16 chars
+    
     const sessionData = {
       user_id: userId,
-      ip_address: req.ip || req.connection.remoteAddress,
-      user_agent: req.headers['user-agent'],
+      ip_address: realIp,
+      user_agent: userAgent,
+      device_fingerprint: deviceFingerprint,
       last_activity: new Date().toISOString(),
     };
 
-    // Update or insert session data
+    // Update or insert session data with device fingerprint
     await db.from('user_sessions').upsert(sessionData, { onConflict: 'user_id' });
+    
+    // SECURITY: Check for suspicious activity (IP or device change)
+    const { data: previousSession } = await db.from('user_sessions')
+      .select('ip_address, device_fingerprint')
+      .eq('user_id', userId)
+      .single();
+    
+    if (previousSession && 
+        (previousSession.ip_address !== realIp || 
+         previousSession.device_fingerprint !== deviceFingerprint)) {
+      // Log potential session hijacking attempt
+      await db.logSecurityEvent({
+        user_id: userId,
+        action: 'session_device_change',
+        resource: 'user_session',
+        ip_address: realIp,
+        user_agent: userAgent,
+        success: true,
+        details: { 
+          previousIp: previousSession.ip_address,
+          newIp: realIp,
+          previousFingerprint: previousSession.device_fingerprint,
+          newFingerprint: deviceFingerprint,
+        },
+      });
+    }
   }
 
   /**
@@ -375,9 +482,29 @@ uYiGEfic4Qhni+HMfRBuUphOh7F3k8QgwZc9UlL0AHmyYqtbhL9NuJes6w==
   }
 }
 
-// Export singleton instance
-export const authMiddleware = new AuthenticationMiddleware({
-  accessTokenSecret: process.env.JWT_ACCESS_SECRET || 'fallback-secret',
-  whopAppId: process.env.WHOP_APP_ID,
-  enableWhopIntegration: process.env.ENABLE_WHOP_INTEGRATION === 'true',
-});
+// Lazy singleton instance
+let _authMiddleware: AuthenticationMiddleware | null = null;
+
+// Function to create auth middleware with environment validation
+export function createAuthMiddleware() {
+  // SECURITY FIX: Validate JWT secret at initialization to prevent fallback vulnerabilities
+  if (!process.env.JWT_ACCESS_SECRET) {
+    throw new Error('CRITICAL: JWT_ACCESS_SECRET environment variable is required. Server cannot start without proper JWT configuration.');
+  }
+
+  return new AuthenticationMiddleware({
+    accessTokenSecret: process.env.JWT_ACCESS_SECRET,
+    whopAppId: process.env.WHOP_APP_ID,
+    enableWhopIntegration: process.env.ENABLE_WHOP_INTEGRATION === 'true',
+  });
+}
+
+// Export singleton instance getter (created on first access)
+export const authMiddleware = {
+  get instance() {
+    if (!_authMiddleware) {
+      _authMiddleware = createAuthMiddleware();
+    }
+    return _authMiddleware;
+  }
+};

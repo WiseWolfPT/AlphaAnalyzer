@@ -1,10 +1,12 @@
 import { Router, Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
+import crypto from 'crypto'; // Importar crypto no topo do arquivo para evitar require() dinâmico
 import { authMiddleware } from '../middleware/auth-middleware';
 import { rateLimitMiddleware } from '../middleware/rate-limit-middleware';
 import { sessionManager } from '../lib/session-manager';
 import { db, auth } from '../lib/supabase';
+import { validationSchemas } from '../security/security-middleware'; // Importar esquemas de validação
 import { 
   AuthTokens, 
   LoginRequest, 
@@ -15,6 +17,11 @@ import {
 } from '../types/auth';
 
 const router = Router();
+
+// Verificar se as variáveis de ambiente críticas estão definidas
+if (!process.env.JWT_ACCESS_SECRET || !process.env.JWT_REFRESH_SECRET) {
+  throw new Error('CRITICAL: JWT secrets not configured. Set JWT_ACCESS_SECRET and JWT_REFRESH_SECRET environment variables.');
+}
 
 // Rate limiting for auth endpoints
 const authRateLimit = rateLimitMiddleware.endpointRateLimit('/api/auth', {
@@ -30,6 +37,7 @@ router.post('/login', authRateLimit, async (req: Request, res: Response) => {
   try {
     const { email, password, rememberMe }: LoginRequest & { rememberMe?: boolean } = req.body;
 
+    // Validação de entrada com schema
     if (!email || !password) {
       return res.status(400).json({
         error: 'MISSING_CREDENTIALS',
@@ -37,8 +45,20 @@ router.post('/login', authRateLimit, async (req: Request, res: Response) => {
       });
     }
 
+    // Validar formato de email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({
+        error: 'INVALID_EMAIL',
+        message: 'Invalid email format',
+      });
+    }
+
+    // Sanitizar entrada
+    const sanitizedEmail = email.toLowerCase().trim();
+
     // Attempt Supabase authentication
-    const { data: authData, error: authError } = await auth.signIn(email, password);
+    const { data: authData, error: authError } = await auth.signIn(sanitizedEmail, password);
     
     if (authError || !authData.user) {
       // Log failed authentication attempt
@@ -157,6 +177,35 @@ router.post('/register', authRateLimit, async (req: Request, res: Response) => {
       });
     }
 
+    // Validar formato de email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({
+        error: 'INVALID_EMAIL',
+        message: 'Invalid email format',
+      });
+    }
+
+    // Validar complexidade da senha
+    if (password.length < 8) {
+      return res.status(400).json({
+        error: 'WEAK_PASSWORD',
+        message: 'Password must be at least 8 characters long',
+      });
+    }
+
+    // Validar que a senha contém pelo menos um número e uma letra
+    if (!/(?=.*[a-zA-Z])(?=.*[0-9])/.test(password)) {
+      return res.status(400).json({
+        error: 'WEAK_PASSWORD',
+        message: 'Password must contain at least one letter and one number',
+      });
+    }
+
+    // Sanitizar entradas
+    const sanitizedEmail = email.toLowerCase().trim();
+    const sanitizedName = name.trim();
+
     // Validate subscription tier
     const validTiers: SubscriptionTier[] = ['free', 'pro', 'premium'];
     if (!validTiers.includes(subscriptionTier)) {
@@ -167,8 +216,8 @@ router.post('/register', authRateLimit, async (req: Request, res: Response) => {
     }
 
     // Attempt Supabase registration
-    const { data: authData, error: authError } = await auth.signUp(email, password, {
-      full_name: name,
+    const { data: authData, error: authError } = await auth.signUp(sanitizedEmail, password, {
+      full_name: sanitizedName,
     });
 
     if (authError) {
@@ -188,8 +237,8 @@ router.post('/register', authRateLimit, async (req: Request, res: Response) => {
     // Create user profile
     const profileData = {
       id: authData.user.id,
-      email,
-      full_name: name,
+      email: sanitizedEmail,
+      full_name: sanitizedName,
       subscription_tier: subscriptionTier,
       roles: [], // Default to no roles, assign as needed
     };
@@ -238,7 +287,7 @@ router.post('/register', authRateLimit, async (req: Request, res: Response) => {
 /**
  * Logout endpoint with session cleanup
  */
-router.post('/logout', authMiddleware.authenticate(), async (req: Request, res: Response) => {
+router.post('/logout', authMiddleware.instance.authenticate(), async (req: Request, res: Response) => {
   try {
     const sessionToken = req.cookies?.alfalyzer_session;
     
@@ -280,7 +329,7 @@ router.post('/logout', authMiddleware.authenticate(), async (req: Request, res: 
 /**
  * Get current user profile
  */
-router.get('/me', authMiddleware.authenticate(), async (req: Request, res: Response) => {
+router.get('/me', authMiddleware.instance.authenticate(), async (req: Request, res: Response) => {
   try {
     const user = req.user!;
     
@@ -325,8 +374,8 @@ router.get('/me', authMiddleware.authenticate(), async (req: Request, res: Respo
  * Update subscription tier (admin only)
  */
 router.put('/subscription/:userId', 
-  authMiddleware.authenticate(),
-  authMiddleware.requirePermissions(['admin:users']),
+  authMiddleware.instance.authenticate(),
+  authMiddleware.instance.requirePermissions(['admin:users']),
   async (req: Request, res: Response) => {
     try {
       const { userId } = req.params;
@@ -385,7 +434,7 @@ router.put('/subscription/:userId',
 /**
  * Get user's active sessions
  */
-router.get('/sessions', authMiddleware.authenticate(), async (req: Request, res: Response) => {
+router.get('/sessions', authMiddleware.instance.authenticate(), async (req: Request, res: Response) => {
   try {
     const sessions = await sessionManager.getUserActiveSessions(req.user!.id);
     
@@ -413,9 +462,70 @@ router.get('/sessions', authMiddleware.authenticate(), async (req: Request, res:
 });
 
 /**
+ * Refresh token endpoint
+ */
+router.post('/refresh', authRateLimit, async (req: Request, res: Response) => {
+  try {
+    const { refreshToken } = req.body;
+
+    if (!refreshToken) {
+      return res.status(400).json({
+        error: 'MISSING_REFRESH_TOKEN',
+        message: 'Refresh token is required',
+      });
+    }
+
+    // Verificar e decodificar o refresh token
+    const secret = process.env.JWT_REFRESH_SECRET;
+    if (!secret) {
+      throw new Error('JWT_REFRESH_SECRET not configured');
+    }
+
+    let decoded: any;
+    try {
+      decoded = jwt.verify(refreshToken, secret);
+    } catch (error) {
+      return res.status(401).json({
+        error: 'INVALID_REFRESH_TOKEN',
+        message: 'Invalid or expired refresh token',
+      });
+    }
+
+    // Buscar o usuário
+    const userProfile = await db.getProfile(decoded.sub);
+    if (!userProfile) {
+      return res.status(404).json({
+        error: 'USER_NOT_FOUND',
+        message: 'User not found',
+      });
+    }
+
+    // Gerar novos tokens
+    const newAccessToken = generateAccessToken(userProfile);
+    const newRefreshToken = generateRefreshToken(userProfile.id);
+
+    res.json({
+      statusCode: '200',
+      message: 'Token refreshed successfully',
+      data: {
+        accessToken: newAccessToken,
+        refreshToken: newRefreshToken,
+        expiresIn: 15 * 60, // 15 minutes
+      },
+    });
+  } catch (error) {
+    console.error('Token refresh error:', error);
+    res.status(500).json({
+      error: 'REFRESH_TOKEN_ERROR',
+      message: 'Failed to refresh token',
+    });
+  }
+});
+
+/**
  * Revoke all sessions except current
  */
-router.post('/sessions/revoke-all', authMiddleware.authenticate(), async (req: Request, res: Response) => {
+router.post('/sessions/revoke-all', authMiddleware.instance.authenticate(), async (req: Request, res: Response) => {
   try {
     const currentSessionToken = req.cookies?.alfalyzer_session;
     let currentSessionId: string | undefined;
@@ -465,6 +575,12 @@ router.post('/sessions/revoke-all', authMiddleware.authenticate(), async (req: R
  * Helper function to generate access token
  */
 function generateAccessToken(user: any): string {
+  // Garantir que temos a secret (já verificada no início do arquivo)
+  const secret = process.env.JWT_ACCESS_SECRET;
+  if (!secret) {
+    throw new Error('JWT_ACCESS_SECRET not configured');
+  }
+
   const payload = {
     sub: user.id,
     email: user.email,
@@ -477,21 +593,27 @@ function generateAccessToken(user: any): string {
     aud: 'alfalyzer-app',
   };
 
-  return jwt.sign(payload, process.env.JWT_ACCESS_SECRET || 'fallback-secret');
+  return jwt.sign(payload, secret);
 }
 
 /**
  * Helper function to generate refresh token
  */
 function generateRefreshToken(userId: string): string {
+  // Garantir que temos a secret (já verificada no início do arquivo)
+  const secret = process.env.JWT_REFRESH_SECRET;
+  if (!secret) {
+    throw new Error('JWT_REFRESH_SECRET not configured');
+  }
+
   const payload = {
     sub: userId,
-    tokenId: require('crypto').randomBytes(32).toString('hex'),
+    tokenId: crypto.randomBytes(32).toString('hex'), // Usar crypto importado no topo
     iat: Math.floor(Date.now() / 1000),
     exp: Math.floor(Date.now() / 1000) + (7 * 24 * 60 * 60), // 7 days
   };
 
-  return jwt.sign(payload, process.env.JWT_REFRESH_SECRET || 'fallback-secret');
+  return jwt.sign(payload, secret);
 }
 
 export default router;
