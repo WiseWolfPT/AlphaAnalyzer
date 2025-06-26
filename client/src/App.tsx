@@ -13,8 +13,11 @@ const Landing = lazy(() => import("@/pages/landing"));
 const Login = lazy(() => import("@/pages/Login"));
 const Register = lazy(() => import("@/pages/Register"));
 const NotFound = lazy(() => import("@/pages/not-found"));
+const Home = lazy(() => import("@/pages/home"));
+const FindStocks = lazy(() => import("@/pages/find-stocks"));
 const Dashboard = lazy(() => import("@/pages/insights-safe"));
 const EnhancedDashboard = lazy(() => import("@/pages/dashboard-enhanced"));
+const NewEnhancedDashboard = lazy(() => import("@/pages/enhanced-dashboard"));
 const StockDetail = lazy(() => import("@/pages/stock-detail"));
 const AdvancedCharts = lazy(() => import("@/pages/AdvancedCharts"));
 const Portfolios = lazy(() => import("@/pages/portfolios"));
@@ -24,6 +27,10 @@ const Transcripts = lazy(() => import("@/pages/transcripts"));
 const Profile = lazy(() => import("@/pages/profile"));
 const IntrinsicValue = lazy(() => import("@/pages/intrinsic-value"));
 const Trial = lazy(() => import("@/pages/trial"));
+const Settings = lazy(() => import("@/pages/settings"));
+const Help = lazy(() => import("@/pages/help"));
+const News = lazy(() => import("@/pages/news"));
+const AdminDashboard = lazy(() => import("@/pages/admin-dashboard"));
 
 // Loading component for Suspense
 const PageLoader = () => (
@@ -40,7 +47,9 @@ function Router() {
         <Route path="/login" component={Login} />
         <Route path="/register" component={Register} />
         <Route path="/trial" component={Trial} />
-        <Route path="/dashboard" component={EnhancedDashboard} />
+        <Route path="/home" component={Home} />
+        <Route path="/dashboard" component={NewEnhancedDashboard} />
+        <Route path="/find-stocks" component={FindStocks} />
         <Route path="/dashboard-safe" component={Dashboard} />
         <Route path="/insights" component={EnhancedDashboard} />
         <Route path="/stock/:symbol" component={StockDetail} />
@@ -50,7 +59,11 @@ function Router() {
         <Route path="/earnings" component={Earnings} />
         <Route path="/transcripts" component={Transcripts} />
         <Route path="/profile" component={Profile} />
+        <Route path="/settings" component={Settings} />
+        <Route path="/help" component={Help} />
+        <Route path="/news" component={News} />
         <Route path="/intrinsic-value" component={IntrinsicValue} />
+        <Route path="/admin" component={AdminDashboard} />
         <Route component={NotFound} />
       </Switch>
     </Suspense>
@@ -76,4 +89,4 @@ function App() {
   );
 }
 
-export default App;// Force rebuild
+export default App;
