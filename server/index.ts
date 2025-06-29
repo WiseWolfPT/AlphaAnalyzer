@@ -2,12 +2,27 @@
 import dotenv from 'dotenv';
 dotenv.config();
 
+// Validate environment variables
+import { env, isProduction, isDevelopment } from './config/env';
+
 import express, { type Request, Response, NextFunction } from "express";
 import cors from "cors";
+import helmet from "helmet";
+import compression from "compression";
 import path from "path";
 import { createServer, type Server } from "http";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
+import { db } from "./db";
+
+// Extend Express Request interface
+declare module 'express-serve-static-core' {
+  interface Request {
+    csrfToken?: () => string;
+    requestId?: string;
+  }
+}
+
 import { 
   securityHeaders, 
   rateLimiters, 
@@ -29,11 +44,58 @@ import csrf from 'csurf';
 import crypto from 'crypto';
 // SECURITY FIX: Import log retention policy
 import logRetention from './security/log-retention-policy';
+import * as schema from '@shared/schema';
 
 const app = express();
+const APP_VERSION = process.env.npm_package_version || '1.0.0';
 
-// Apply security headers first
-app.use(securityHeaders);
+// CRITICAL: Health check endpoint MUST be before ALL middleware
+app.get('/health', (req, res) => {
+  console.log(`Health check requested from ${req.ip}`);
+  res.status(200).json({
+    status: 'healthy',
+    timestamp: new Date().toISOString(),
+    version: APP_VERSION,
+    uptime: process.uptime(),
+    environment: env.NODE_ENV
+  });
+});
+
+// Production security headers using helmet
+if (isProduction) {
+  app.use(helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+        scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
+        imgSrc: ["'self'", "data:", "https:"],
+        connectSrc: ["'self'", "wss:", "https:"]
+      }
+    },
+    hsts: {
+      maxAge: 31536000,
+      includeSubDomains: true,
+      preload: true
+    }
+  }));
+} else {
+  // Use custom security headers in development
+  app.use(securityHeaders);
+}
+
+// Enable compression for all responses
+app.use(compression({
+  filter: (req, res) => {
+    // Don't compress responses with this request header
+    if (req.headers['x-no-compression']) {
+      return false;
+    }
+    // Fallback to standard filter function
+    return compression.filter(req, res);
+  },
+  level: 6 // Balanced compression level
+}));
 
 // CORS configuration
 app.use(cors(corsConfig));
@@ -41,8 +103,25 @@ app.use(cors(corsConfig));
 // Trust proxy for accurate IP addresses
 app.set('trust proxy', 1);
 
-// Request parsing with size limits for security
-app.use(express.json({ limit: '1mb' }));
+// Body parsing middleware with different limits
+// Standard JSON parsing with 1MB limit
+app.use('/api', express.json({ 
+  limit: '1mb',
+  verify: (req, res, buf) => {
+    // Store raw body for webhook verification if needed
+    if (req.originalUrl.includes('/stripe/webhook')) {
+      (req as any).rawBody = buf.toString('utf8');
+    }
+  }
+}));
+
+// Raw body parser for Stripe webhooks
+app.use('/api/stripe/webhook', express.raw({ 
+  type: 'application/json',
+  limit: '5mb' // Stripe can send larger payloads
+}));
+
+// URL encoded for form submissions
 app.use(express.urlencoded({ extended: false, limit: '1mb' }));
 
 // SECURITY FIX: Enable CSRF protection for state-changing operations (production only)
@@ -55,14 +134,46 @@ const csrfProtection = process.env.NODE_ENV === 'production' ? csrf({
   }
 }) : null;
 
-// SECURITY FIX: Add request ID for traceability and request signing
+// Add request ID and logging middleware
 app.use((req, res, next) => {
   // Generate unique request ID
   const requestId = crypto.randomUUID();
-  (req as any).requestId = requestId;
+  req.requestId = requestId;
   
   // Add request ID to response headers
   res.setHeader('X-Request-ID', requestId);
+  res.setHeader('X-API-Version', APP_VERSION);
+  
+  // Log request start
+  const startTime = Date.now();
+  
+  // Capture response for logging
+  const originalSend = res.send;
+  res.send = function(data) {
+    res.locals.responseBody = data;
+    return originalSend.call(this, data);
+  };
+  
+  res.on('finish', () => {
+    const duration = Date.now() - startTime;
+    const logData = {
+      requestId,
+      method: req.method,
+      path: req.path,
+      statusCode: res.statusCode,
+      duration,
+      userAgent: req.headers['user-agent'],
+      ip: req.ip
+    };
+    
+    if (isProduction) {
+      // Structured logging in production
+      console.log(JSON.stringify(logData));
+    } else {
+      // Human-readable logging in development
+      console.log(`${req.method} ${req.path} ${res.statusCode} in ${duration}ms`);
+    }
+  });
   
   next();
 });
@@ -71,7 +182,7 @@ app.use((req, res, next) => {
 app.use(auditLogger);
 app.use(sanitizeInput);
 
-// Rate limiting by route type
+// Apply rate limiting based on endpoint sensitivity
 app.use('/api/auth', rateLimiters.auth);
 app.use('/api/search', rateLimiters.search);
 app.use('/api/stocks', rateLimiters.financial);
@@ -139,35 +250,7 @@ if (process.env.NODE_ENV === 'production' && csrfProtection) {
   });
 }
 
-app.use((req, res, next) => {
-  const start = Date.now();
-  const path = req.path;
-  let capturedJsonResponse: Record<string, any> | undefined = undefined;
-
-  const originalResJson = res.json;
-  res.json = function (bodyJson, ...args) {
-    capturedJsonResponse = bodyJson;
-    return originalResJson.apply(res, [bodyJson, ...args]);
-  };
-
-  res.on("finish", () => {
-    const duration = Date.now() - start;
-    if (path.startsWith("/api")) {
-      let logLine = `${req.method} ${path} ${res.statusCode} in ${duration}ms`;
-      if (capturedJsonResponse) {
-        logLine += ` :: ${JSON.stringify(capturedJsonResponse)}`;
-      }
-
-      if (logLine.length > 80) {
-        logLine = logLine.slice(0, 79) + "…";
-      }
-
-      log(logLine);
-    }
-  });
-
-  next();
-});
+// (Request logging is now handled by the request ID middleware above)
 
 (async () => {
   try {
@@ -185,16 +268,53 @@ app.use((req, res, next) => {
     // Register API routes SECOND
     await registerRoutes(app, server);
 
-    // Apply financial data security to financial endpoints
+    // Apply financial data security to sensitive endpoints
     app.use('/api/stocks', financialDataSecurity);
     app.use('/api/intrinsic-values', financialDataSecurity);
     app.use('/api/earnings', financialDataSecurity);
 
-    // Security error handler
-    app.use(securityErrorHandler);
+    // Global error handling middleware
+    app.use((err: any, req: Request, res: Response, next: NextFunction) => {
+      // Log error details
+      const errorLog = {
+        requestId: req.requestId,
+        error: err.message,
+        stack: isProduction ? undefined : err.stack,
+        method: req.method,
+        path: req.path,
+        timestamp: new Date().toISOString()
+      };
+      
+      console.error(isProduction ? JSON.stringify(errorLog) : errorLog);
+      
+      // Determine status code
+      const statusCode = err.statusCode || err.status || 500;
+      
+      // Send appropriate error response
+      res.status(statusCode).json({
+        error: {
+          message: isProduction ? 'An error occurred' : err.message,
+          code: err.code || 'INTERNAL_ERROR',
+          statusCode,
+          requestId: req.requestId,
+          timestamp: new Date().toISOString()
+        }
+      });
+    });
 
-    // SECURITY FIX: Use centralized secure error handler  
-    // TODO: Implement createSecureErrorHandler as ES module
+    // 404 handler
+    app.use((req, res) => {
+      res.status(404).json({
+        error: {
+          message: 'Resource not found',
+          code: 'NOT_FOUND',
+          statusCode: 404,
+          requestId: req.requestId,
+          path: req.path,
+          timestamp: new Date().toISOString()
+        }
+      });
+    });
 
     // Setup Vite AFTER everything else
     // if (process.env.NODE_ENV === "development") {
@@ -204,7 +324,7 @@ app.use((req, res, next) => {
     //   serveStatic(app);
     // }
 
-    const port = Number(process.env.PORT) || 3001;
+    const port = Number(env.PORT) || 3001;
     
     // ULTRATHINK PARALLEL EXECUTION: Multiple binding strategies
     const bindingStrategies = [
@@ -352,9 +472,12 @@ app.use((req, res, next) => {
     // Start the binding process
     tryNextStrategy();
 
+    // WebSocket server reference for graceful shutdown
+    let wss: WebSocketServer | null = null;
+    
     // SECURITY FIX: Enhanced secure WebSocket server (disabled in development to avoid conflicts with Vite HMR)
     if (process.env.NODE_ENV === 'production') {
-      const wss = new WebSocketServer({ 
+      wss = new WebSocketServer({ 
         server,
         // SECURITY FIX: Additional verification callback for origin checking
         verifyClient: (info) => {
@@ -533,7 +656,8 @@ app.use((req, res, next) => {
             }
             
             // SECURITY FIX: Validate message size and format
-            if (message.length > 1024) { // Max 1KB per message
+            const messageBuffer = Buffer.isBuffer(message) ? message : Buffer.from(message.toString());
+            if (messageBuffer.length > 1024) { // Max 1KB per message
               ws.send(JSON.stringify({ error: 'Message too large' }));
               return;
             }
@@ -693,12 +817,72 @@ app.use((req, res, next) => {
 
     } // Close the production WebSocket block
 
-    // Handle graceful shutdown
-    process.on('SIGTERM', () => {
-      console.log('SIGTERM received, shutting down gracefully');
-      server.close(() => {
-        console.log('Process terminated');
+    // Enhanced graceful shutdown handling
+    let isShuttingDown = false;
+    const shutdownTimeout = 30000; // 30 seconds
+    
+    const gracefulShutdown = (signal: string) => {
+      if (isShuttingDown) return;
+      isShuttingDown = true;
+      
+      console.log(`\n${signal} received, starting graceful shutdown...`);
+      
+      // Stop accepting new connections
+      server.close((err) => {
+        if (err) {
+          console.error('Error during server close:', err);
+        }
+        console.log('HTTP server closed');
       });
+      
+      // Close WebSocket connections if they exist
+      if (wss && wss.clients) {
+        console.log(`Closing ${wss.clients.size} WebSocket connections...`);
+        wss.clients.forEach((ws) => {
+          ws.close(1001, 'Server shutting down');
+        });
+        wss.close(() => {
+          console.log('WebSocket server closed');
+        });
+      }
+      
+      // Close database connections
+      try {
+        // For better-sqlite3, we don't have a destroy method
+        // The connection will be closed when the process exits
+        console.log('Database connections will close on exit');
+      } catch (error) {
+        console.error('Error closing database:', error);
+      }
+      
+      // Force shutdown after timeout
+      const forceShutdown = setTimeout(() => {
+        console.error('Could not close connections in time, forcefully shutting down');
+        process.exit(1);
+      }, shutdownTimeout);
+      
+      // Clear the timeout if we finish before it triggers
+      server.on('close', () => {
+        clearTimeout(forceShutdown);
+        console.log('Graceful shutdown completed');
+        process.exit(0);
+      });
+    };
+    
+    // Handle various shutdown signals
+    process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+    process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+    process.on('SIGUSR2', () => gracefulShutdown('SIGUSR2')); // For nodemon
+    
+    // Handle uncaught errors
+    process.on('uncaughtException', (error) => {
+      console.error('Uncaught Exception:', error);
+      gracefulShutdown('UNCAUGHT_EXCEPTION');
+    });
+    
+    process.on('unhandledRejection', (reason, promise) => {
+      console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+      gracefulShutdown('UNHANDLED_REJECTION');
     });
 
   } catch (error) {
