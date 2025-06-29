@@ -410,7 +410,7 @@ export class ComplianceAuditSystem {
    */
   private encryptLogEntry(entry: string): string {
     const iv = crypto.randomBytes(16);
-    const cipher = crypto.createCipher('aes-256-gcm', this.encryptionKey);
+    const cipher = crypto.createCipherGCM('aes-256-gcm', this.encryptionKey, iv);
     
     let encrypted = cipher.update(entry, 'utf8', 'hex');
     encrypted += cipher.final('hex');

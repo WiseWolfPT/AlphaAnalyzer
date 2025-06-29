@@ -9,24 +9,35 @@ import {
   BarChart3, 
   Calculator, 
   DollarSign,
-  Loader2
+  Loader2,
+  X
 } from "lucide-react";
 import { useStock, useIntrinsicValue } from "@/hooks/use-enhanced-stocks";
 import { cn } from "@/lib/utils";
+import { useLocation } from "wouter";
 
 interface EnhancedStockCardProps {
   symbol: string;
   onPerformanceClick?: () => void;
   onQuickInfoClick?: () => void;
+  onRemove?: () => void;
+  showRemove?: boolean;
 }
 
 export function EnhancedStockCard({ 
   symbol, 
   onPerformanceClick, 
-  onQuickInfoClick 
+  onQuickInfoClick,
+  onRemove,
+  showRemove = false
 }: EnhancedStockCardProps) {
   const { data: stock, isLoading: stockLoading, error: stockError } = useStock(symbol);
   const { data: intrinsicValue, isLoading: ivLoading } = useIntrinsicValue(symbol);
+  const [, setLocation] = useLocation();
+
+  const handleChartsClick = () => {
+    setLocation(`/stock/${symbol}/charts`);
+  };
 
   if (stockLoading) {
     return (
@@ -65,14 +76,24 @@ export function EnhancedStockCard({
     );
   }
 
-  const isPositive = stock.changePercent >= 0;
+  const isPositive = Number(stock.changePercent) >= 0;
   const hasIntrinsicValue = intrinsicValue && intrinsicValue.intrinsicValue;
   const safetyMargin = hasIntrinsicValue && stock.currentPrice && intrinsicValue.intrinsicValue
-    ? ((intrinsicValue.intrinsicValue - stock.currentPrice) / stock.currentPrice) * 100
+    ? ((Number(intrinsicValue.intrinsicValue) - Number(stock.currentPrice)) / Number(stock.currentPrice)) * 100
     : null;
 
   return (
-    <Card className="h-full hover:shadow-lg transition-shadow">
+    <Card className="h-full hover:shadow-lg transition-shadow relative">
+      {showRemove && onRemove && (
+        <Button
+          variant="ghost"
+          size="sm"
+          className="absolute top-2 right-2 h-6 w-6 p-0 hover:bg-red-100 hover:text-red-600 z-10"
+          onClick={onRemove}
+        >
+          <X className="h-3 w-3" />
+        </Button>
+      )}
       <CardHeader>
         <div className="flex justify-between items-start mb-2">
           <div className="flex items-center gap-3">
@@ -90,7 +111,7 @@ export function EnhancedStockCard({
             isPositive ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"
           )}>
             {isPositive ? <TrendingUp className="h-4 w-4" /> : <TrendingDown className="h-4 w-4" />}
-            <span className="font-semibold">{Math.abs(stock.changePercent).toFixed(2)}%</span>
+            <span className="font-semibold">{Math.abs(Number(stock.changePercent)).toFixed(2)}%</span>
           </div>
         </div>
         
@@ -102,28 +123,28 @@ export function EnhancedStockCard({
       
       <CardContent className="space-y-4">
         <div>
-          <p className="text-2xl font-bold">${stock.currentPrice.toFixed(2)}</p>
+          <p className="text-2xl font-bold">${Number(stock.currentPrice).toFixed(2)}</p>
           <p className={cn(
             "text-sm",
             isPositive ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"
           )}>
-            {isPositive ? '+' : ''}{stock.change.toFixed(2)}
+            {isPositive ? '+' : ''}{Number(stock.change).toFixed(2)}
           </p>
         </div>
 
         <div className="grid grid-cols-2 gap-2 text-sm">
           <div className="bg-muted/50 rounded-lg p-2">
             <p className="text-muted-foreground text-xs">Market Cap</p>
-            <p className="font-semibold">{formatMarketCap(stock.marketCap)}</p>
+            <p className="font-semibold">{typeof stock.marketCap === 'string' ? stock.marketCap : formatMarketCap(Number(stock.marketCap))}</p>
           </div>
           <div className="bg-muted/50 rounded-lg p-2">
             <p className="text-muted-foreground text-xs">Volume</p>
-            <p className="font-semibold">{formatVolume(stock.volume)}</p>
+            <p className="font-semibold">{formatVolume(Number(stock.volume))}</p>
           </div>
           {stock.peRatio && (
             <div className="bg-muted/50 rounded-lg p-2">
               <p className="text-muted-foreground text-xs">P/E Ratio</p>
-              <p className="font-semibold">{stock.peRatio.toFixed(2)}</p>
+              <p className="font-semibold">{Number(stock.peRatio).toFixed(2)}</p>
             </div>
           )}
           {hasIntrinsicValue && safetyMargin !== null && (
@@ -133,7 +154,7 @@ export function EnhancedStockCard({
                 "font-semibold",
                 safetyMargin > 0 ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"
               )}>
-                {safetyMargin.toFixed(1)}%
+                {Number(safetyMargin).toFixed(1)}%
               </p>
             </div>
           )}
@@ -149,7 +170,7 @@ export function EnhancedStockCard({
                 ) : (
                   <>
                     <DollarSign className="h-4 w-4 text-chartreuse" />
-                    <span className="font-semibold">${intrinsicValue.intrinsicValue.toFixed(2)}</span>
+                    <span className="font-semibold">${Number(intrinsicValue.intrinsicValue).toFixed(2)}</span>
                   </>
                 )}
               </div>
@@ -171,10 +192,10 @@ export function EnhancedStockCard({
             variant="outline"
             size="sm"
             className="flex-1"
-            onClick={onPerformanceClick}
+            onClick={handleChartsClick}
           >
             <BarChart3 className="h-4 w-4 mr-1" />
-            Charts
+            Gráficos
           </Button>
         </div>
       </CardContent>
@@ -182,15 +203,19 @@ export function EnhancedStockCard({
   );
 }
 
-function formatMarketCap(value: number): string {
-  if (value >= 1e12) return `${(value / 1e12).toFixed(1)}T`;
-  if (value >= 1e9) return `${(value / 1e9).toFixed(1)}B`;
-  if (value >= 1e6) return `${(value / 1e6).toFixed(1)}M`;
-  return value.toLocaleString();
+function formatMarketCap(value: number | string): string {
+  const numValue = Number(value);
+  if (isNaN(numValue)) return 'N/A';
+  if (numValue >= 1e12) return `${(numValue / 1e12).toFixed(1)}T`;
+  if (numValue >= 1e9) return `${(numValue / 1e9).toFixed(1)}B`;
+  if (numValue >= 1e6) return `${(numValue / 1e6).toFixed(1)}M`;
+  return numValue.toLocaleString();
 }
 
-function formatVolume(value: number): string {
-  if (value >= 1e6) return `${(value / 1e6).toFixed(1)}M`;
-  if (value >= 1e3) return `${(value / 1e3).toFixed(1)}K`;
-  return value.toLocaleString();
+function formatVolume(value: number | string): string {
+  const numValue = Number(value);
+  if (isNaN(numValue)) return 'N/A';
+  if (numValue >= 1e6) return `${(numValue / 1e6).toFixed(1)}M`;
+  if (numValue >= 1e3) return `${(numValue / 1e3).toFixed(1)}K`;
+  return numValue.toLocaleString();
 }

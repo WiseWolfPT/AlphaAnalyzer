@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { useLocation } from "wouter";
 import { cn } from "@/lib/utils";
-import { useAuth } from "@/contexts/simple-auth";
+import { useAuth } from "@/contexts/simple-auth-offline";
 import { Button } from "@/components/ui/button";
+import { AuthModal } from "@/components/auth/auth-modal";
 import { 
   BarChart3, 
   Heart, 
@@ -22,10 +23,10 @@ const navigation = [
   { name: "🏠 Dashboard", href: "/dashboard", icon: ChartLine },
   { name: "Watchlists", href: "/watchlists", icon: Heart },
   { name: "Earnings", href: "/earnings", icon: Calendar },
-  { name: "Transcripts", href: "#", icon: FileText },
+  { name: "Transcripts", href: "/transcripts", icon: FileText },
   { name: "Portfolios", href: "/portfolios", icon: Briefcase },
   { name: "Intrinsic Value", href: "/intrinsic-value", icon: Calculator },
-  { name: "Settings", href: "#", icon: Settings },
+  { name: "Settings", href: "/profile", icon: Settings },
 ];
 
 export function Sidebar() {
@@ -42,7 +43,7 @@ export function Sidebar() {
             <BarChart3 className="h-5 w-5 text-primary-foreground" />
           </div>
           <div>
-            <h1 className="font-bold text-xl text-foreground">Alpha Analyzer</h1>
+            <h1 className="font-bold text-xl text-foreground">Alfalyzer</h1>
             <p className="text-xs text-muted-foreground">Professional Analytics</p>
           </div>
         </div>
@@ -84,13 +85,22 @@ export function Sidebar() {
         {/* Auth Section */}
         <div className="mt-8 pt-6 border-t border-border">
           {!user && (
-            <Button className="w-full bg-gradient-to-r from-chartreuse via-chartreuse-dark to-chartreuse hover:from-chartreuse-dark hover:via-chartreuse hover:to-chartreuse-dark text-rich-black font-semibold shadow-lg shadow-chartreuse/30 hover:shadow-chartreuse/50 hover:scale-105 transition-all duration-300 border-0">
+            <Button 
+              className="w-full bg-gradient-to-r from-chartreuse via-chartreuse-dark to-chartreuse hover:from-chartreuse-dark hover:via-chartreuse hover:to-chartreuse-dark text-rich-black font-semibold shadow-lg shadow-chartreuse/30 hover:shadow-chartreuse/50 hover:scale-105 transition-all duration-300 border-0"
+              onClick={() => setShowAuthModal(true)}
+            >
               <LogIn className="h-4 w-4 mr-2" />
               Sign In
             </Button>
           )}
         </div>
       </div>
+
+      {/* Auth Modal */}
+      <AuthModal 
+        isOpen={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
+      />
     </div>
   );
 }

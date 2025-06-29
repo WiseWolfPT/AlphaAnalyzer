@@ -107,7 +107,7 @@ export class SecureTransmissionManager {
     const jsonData = JSON.stringify(data);
     const iv = crypto.randomBytes(16);
     
-    const cipher = crypto.createCipher('aes-256-gcm', this.encryptionKey);
+    const cipher = crypto.createCipherGCM('aes-256-gcm', this.encryptionKey, iv);
     cipher.setAAD(Buffer.from('financial-data', 'utf8'));
     
     let encrypted = cipher.update(jsonData, 'utf8', 'base64');
@@ -134,7 +134,8 @@ export class SecureTransmissionManager {
       throw new Error('Encrypted payload expired');
     }
 
-    const decipher = crypto.createDecipher('aes-256-gcm', this.encryptionKey);
+    const iv = Buffer.from(encryptedPayload.iv, 'base64');
+    const decipher = crypto.createDecipherGCM('aes-256-gcm', this.encryptionKey, iv);
     decipher.setAAD(Buffer.from('financial-data', 'utf8'));
     decipher.setAuthTag(Buffer.from(encryptedPayload.tag, 'base64'));
 

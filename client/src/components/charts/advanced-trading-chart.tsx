@@ -1,5 +1,5 @@
 import { useRef, useEffect, useState } from "react";
-import { TrendingUp, TrendingDown, Volume2, BarChart3, Candlestick, Settings, Fullscreen, Download } from "lucide-react";
+import { TrendingUp, TrendingDown, Volume2, BarChart3, Settings, Fullscreen, Download, BarChart2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -333,7 +333,7 @@ export function AdvancedTradingChart({
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="sm">
-                <Candlestick className="h-4 w-4" />
+                <BarChart2 className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent>

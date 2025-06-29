@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useLocation } from "wouter";
 import { MainLayout } from "@/components/layout/main-layout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -7,10 +8,79 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Plus, Edit, Trash2, TrendingUp, TrendingDown, Heart } from "lucide-react";
+import { Plus, Edit, Trash2, TrendingUp, TrendingDown, Heart, ExternalLink } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { useStock } from "@/hooks/use-enhanced-stocks";
+import { cn } from "@/lib/utils";
 import type { Watchlist, WatchlistStock, Stock } from "@shared/schema";
+
+// Component for individual stock item with real data
+function WatchlistStockItem({ ws }: { ws: WatchlistStock }) {
+  const [, setLocation] = useLocation();
+  const { data: stock, isLoading } = useStock(ws.stockSymbol);
+
+  const handleClick = () => {
+    setLocation(`/stock/${ws.stockSymbol}/charts`);
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-between p-3 border rounded-lg animate-pulse">
+        <div className="flex items-center space-x-3">
+          <div className="w-10 h-10 bg-gray-300 rounded-lg"></div>
+          <div>
+            <div className="h-4 bg-gray-300 rounded w-16 mb-1"></div>
+            <div className="h-3 bg-gray-300 rounded w-24"></div>
+          </div>
+        </div>
+        <div className="text-right">
+          <div className="h-4 bg-gray-300 rounded w-20 mb-1"></div>
+          <div className="h-3 bg-gray-300 rounded w-16"></div>
+        </div>
+      </div>
+    );
+  }
+
+  const price = stock?.currentPrice || 0;
+  const change = stock?.changePercent || 0;
+  const isPositive = change >= 0;
+
+  return (
+    <div 
+      className="flex items-center justify-between p-3 border rounded-lg hover:bg-secondary/50 cursor-pointer transition-colors group"
+      onClick={handleClick}
+    >
+      <div className="flex items-center space-x-3">
+        <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
+          <span className="text-sm font-medium text-primary">{ws.stockSymbol.charAt(0)}</span>
+        </div>
+        <div>
+          <div className="font-medium group-hover:text-primary transition-colors">
+            {ws.stockSymbol}
+          </div>
+          <div className="text-sm text-muted-foreground">
+            {stock?.companyName || "Loading..."}
+          </div>
+        </div>
+      </div>
+      <div className="text-right flex items-center space-x-2">
+        <div>
+          <div className="font-medium">
+            ${price.toFixed(2)}
+          </div>
+          <div className={cn(
+            "text-sm",
+            isPositive ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"
+          )}>
+            {isPositive ? "+" : ""}{change.toFixed(2)}%
+          </div>
+        </div>
+        <ExternalLink className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
+      </div>
+    </div>
+  );
+}
 
 export default function Watchlists() {
   const [selectedWatchlistId, setSelectedWatchlistId] = useState<number | null>(null);
@@ -210,21 +280,7 @@ export default function Watchlists() {
                       {watchlistStocks?.length ? (
                         <div className="space-y-3">
                           {watchlistStocks.map((ws) => (
-                            <div key={ws.id} className="flex items-center justify-between p-3 border rounded-lg">
-                              <div className="flex items-center space-x-3">
-                                <div className="w-10 h-10 bg-muted rounded-lg flex items-center justify-center">
-                                  <span className="text-sm font-medium">{ws.stockSymbol.charAt(0)}</span>
-                                </div>
-                                <div>
-                                  <div className="font-medium">{ws.stockSymbol}</div>
-                                  <div className="text-sm text-muted-foreground">Stock Name</div>
-                                </div>
-                              </div>
-                              <div className="text-right">
-                                <div className="font-medium">$175.43</div>
-                                <div className="text-sm text-positive">+2.34%</div>
-                              </div>
-                            </div>
+                            <WatchlistStockItem key={ws.id} ws={ws} />
                           ))}
                         </div>
                       ) : (

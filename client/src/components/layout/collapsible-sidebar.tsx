@@ -1,8 +1,9 @@
 import { useState } from "react";
-import { useLocation } from "wouter";
+import { useLocation, Link } from "wouter";
 import { cn } from "@/lib/utils";
-import { useAuth } from "@/contexts/simple-auth";
+import { useAuth } from "@/contexts/simple-auth-offline";
 import { Button } from "@/components/ui/button";
+import { AuthModal } from "@/components/auth/auth-modal";
 import { 
   BarChart3, 
   Heart, 
@@ -28,14 +29,15 @@ const navigation = [
   { name: "Earnings", href: "/earnings", icon: Calendar, category: "main" },
   { name: "Portfolios", href: "/portfolios", icon: Briefcase, category: "main" },
   { name: "Intrinsic Value", href: "/intrinsic-value", icon: Calculator, category: "tools" },
-  { name: "Transcripts", href: "#", icon: FileText, category: "tools" },
-  { name: "Settings", href: "#", icon: Settings, category: "system" },
+  { name: "Transcripts", href: "/transcripts", icon: FileText, category: "tools" },
+  { name: "Settings", href: "/profile", icon: Settings, category: "system" },
 ];
 
 export function CollapsibleSidebar() {
   const [location] = useLocation();
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [showAuthModal, setShowAuthModal] = useState(false);
 
   const toggleSidebar = () => {
     setIsCollapsed(!isCollapsed);
@@ -104,11 +106,10 @@ export function CollapsibleSidebar() {
             const isActive = location === item.href;
             
             return (
-              <a 
+              <Link 
                 key={item.name} 
                 href={item.href}
                 className="block"
-                title={isCollapsed ? item.name : undefined}
               >
                 <div
                   className={cn(
@@ -120,6 +121,7 @@ export function CollapsibleSidebar() {
                       ? "justify-center p-2 mx-1"
                       : "gap-3 px-3 py-3"
                   )}
+                  title={isCollapsed ? item.name : undefined}
                 >
                   <item.icon className={cn(
                     "transition-all drop-shadow-sm",
@@ -130,7 +132,7 @@ export function CollapsibleSidebar() {
                   )} />
                   {!isCollapsed && <span>{item.name}</span>}
                 </div>
-              </a>
+              </Link>
             );
           })}
           </nav>
@@ -167,6 +169,8 @@ export function CollapsibleSidebar() {
                   variant="ghost"
                   size="sm"
                   className="text-gray-700 dark:text-slate-400 hover:text-gray-900 dark:hover:text-white p-1"
+                  onClick={signOut}
+                  title="Sign Out"
                 >
                   <LogOut className="h-4 w-4" />
                 </Button>
@@ -178,6 +182,7 @@ export function CollapsibleSidebar() {
                 "bg-gradient-to-r from-chartreuse via-chartreuse-dark to-chartreuse hover:from-chartreuse-dark hover:via-chartreuse hover:to-chartreuse-dark text-rich-black border-0 shadow-lg shadow-chartreuse/25 hover:shadow-chartreuse/40 font-semibold transition-all duration-300 hover:scale-105",
                 isCollapsed ? "w-12 h-10 p-1 mx-auto" : "w-full"
               )}
+              onClick={() => setShowAuthModal(true)}
             >
               <LogIn className="h-4 w-4" />
               {!isCollapsed && <span className="ml-2">Sign In</span>}
@@ -185,6 +190,12 @@ export function CollapsibleSidebar() {
           )}
         </div>
       </div>
+      
+      {/* Auth Modal */}
+      <AuthModal 
+        isOpen={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
+      />
     </div>
   );
 }

@@ -7,8 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Checkbox } from "@/components/ui/checkbox";
 import { BarChart3, Mail, Lock, Eye, EyeOff, User, ArrowLeft, Check } from "lucide-react";
-import { useAuth } from "@/contexts/simple-auth";
-import { auth } from "@/lib/supabase";
+import { useAuth } from "@/contexts/simple-auth-offline";
 
 export default function Register() {
   const [formData, setFormData] = useState({

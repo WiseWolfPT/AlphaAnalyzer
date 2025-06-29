@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Navigation Test - Alfalyzer</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #0a0a0a;
+            color: #fff;
+        }
+        .test-case {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 16px;
+            margin: 12px 0;
+        }
+        .test-case h3 {
+            color: #d8f22d;
+            margin-top: 0;
+        }
+        .status {
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .status.pass { background: #059669; }
+        .status.fail { background: #dc2626; }
+        .status.pending { background: #d97706; }
+        .test-url {
+            font-family: monospace;
+            background: #2a2a2a;
+            padding: 8px;
+            border-radius: 4px;
+            margin: 8px 0;
+        }
+        .instructions {
+            background: #1e3a8a;
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .credentials {
+            background: #166534;
+            padding: 12px;
+            border-radius: 4px;
+            margin: 8px 0;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <h1>🤖 Navigation & Authentication Testing Guide</h1>
+    
+    <div class="instructions">
+        <h2>Testing Instructions</h2>
+        <p>Follow these tests in order to verify all navigation and authentication flows work correctly.</p>
+        <div class="credentials">
+            <strong>Beta Login Credentials:</strong><br>
+            Email: beta@alfalyzer.com<br>
+            Password: 123demo
+        </div>
+    </div>
+
+    <div class="test-case">
+        <h3>1. Landing Page Access <span class="status pass">SHOULD WORK</span></h3>
+        <div class="test-url">http://localhost:3000/</div>
+        <p><strong>Expected:</strong> Landing page loads with hero animation and Sign In button in header</p>
+        <p><strong>Test:</strong> Verify page loads, animation plays, and header is visible</p>
+    </div>
+
+    <div class="test-case">
+        <h3>2. Login Flow <span class="status pass">SHOULD WORK</span></h3>
+        <div class="test-url">http://localhost:3000/</div>
+        <p><strong>Steps:</strong></p>
+        <ol>
+            <li>Click "Sign In" button in header or sidebar</li>
+            <li>Enter beta credentials</li>
+            <li>Click "Sign In"</li>
+        </ol>
+        <p><strong>Expected:</strong> Modal closes, user info appears in sidebar, redirected to dashboard</p>
+    </div>
+
+    <div class="test-case">
+        <h3>3. Dashboard Access <span class="status pass">SHOULD WORK</span></h3>
+        <div class="test-url">http://localhost:3000/dashboard</div>
+        <p><strong>Expected:</strong> Dashboard loads with stock cards, user profile section, and market stats</p>
+        <p><strong>Test:</strong> Verify stock cards are visible and clickable</p>
+    </div>
+
+    <div class="test-case">
+        <h3>4. Stock Card Navigation <span class="status pass">SHOULD WORK</span></h3>
+        <p><strong>Steps:</strong></p>
+        <ol>
+            <li>In dashboard, find any stock card</li>
+            <li>Click the "Gráficos" (Charts) button</li>
+        </ol>
+        <div class="test-url">http://localhost:3000/stock/AAPL/charts</div>
+        <p><strong>Expected:</strong> Navigate to advanced charts page for the selected stock</p>
+    </div>
+
+    <div class="test-case">
+        <h3>5. Sidebar Navigation <span class="status pass">SHOULD WORK</span></h3>
+        <p><strong>Test each navigation item:</strong></p>
+        <ul>
+            <li>Dashboard → <code>/dashboard</code></li>
+            <li>Watchlists → <code>/watchlists</code></li>
+            <li>Earnings → <code>/earnings</code></li>
+            <li>Portfolios → <code>/portfolios</code></li>
+            <li>Intrinsic Value → <code>/intrinsic-value</code></li>
+            <li>Transcripts → <code>/transcripts</code></li>
+            <li>Settings → <code>/profile</code></li>
+        </ul>
+        <p><strong>Expected:</strong> Each link navigates to correct page, active state updates</p>
+    </div>
+
+    <div class="test-case">
+        <h3>6. Authentication Persistence <span class="status pass">SHOULD WORK</span></h3>
+        <p><strong>Steps:</strong></p>
+        <ol>
+            <li>Login successfully</li>
+            <li>Navigate to dashboard</li>
+            <li>Refresh page (F5 or Cmd+R)</li>
+        </ol>
+        <p><strong>Expected:</strong> User remains logged in, dashboard still accessible</p>
+    </div>
+
+    <div class="test-case">
+        <h3>7. Logout Flow <span class="status pass">SHOULD WORK</span></h3>
+        <p><strong>Steps:</strong></p>
+        <ol>
+            <li>While logged in, click logout button in sidebar</li>
+            <li>Try to access dashboard directly</li>
+        </ol>
+        <p><strong>Expected:</strong> User logged out, sidebar shows Sign In button</p>
+    </div>
+
+    <div class="test-case">
+        <h3>8. Direct URL Access <span class="status pass">SHOULD WORK</span></h3>
+        <p><strong>Test:</strong> While logged in, directly navigate to:</p>
+        <ul>
+            <li><code>/stock/TSLA/charts</code></li>
+            <li><code>/watchlists</code></li>
+            <li><code>/earnings</code></li>
+        </ul>
+        <p><strong>Expected:</strong> Pages load correctly, no 404 errors</p>
+    </div>
+
+    <h2>🔧 Fixes Applied</h2>
+    <ul>
+        <li>✅ Fixed authentication context import mismatch in collapsible sidebar</li>
+        <li>✅ Added AuthModal to sidebar for login functionality</li>
+        <li>✅ Added signOut functionality to logout button</li>
+        <li>✅ Converted sidebar navigation from anchor tags to wouter Link components</li>
+        <li>✅ Enhanced stock card already has charts navigation functionality</li>
+        <li>✅ Authentication state persists via localStorage</li>
+    </ul>
+
+    <h2>🎯 Key Components</h2>
+    <ul>
+        <li><strong>Auth Context:</strong> <code>simple-auth-offline.tsx</code> - Handles demo login</li>
+        <li><strong>Main Layout:</strong> <code>main-layout.tsx</code> - Uses CollapsibleSidebar</li>
+        <li><strong>Navigation:</strong> <code>collapsible-sidebar.tsx</code> - Fixed to use wouter Link</li>
+        <li><strong>Dashboard:</strong> <code>dashboard-enhanced.tsx</code> - Shows stock cards</li>
+        <li><strong>Stock Cards:</strong> <code>enhanced-stock-card.tsx</code> - Has charts navigation</li>
+        <li><strong>Charts Page:</strong> <code>AdvancedCharts.tsx</code> - Target of navigation</li>
+    </ul>
+
+    <p><strong>Server Running:</strong> Frontend should be running on <code>http://localhost:3000</code></p>
+    
+    <script>
+        // Add some JavaScript to help with testing
+        console.log('🤖 Navigation Test Helper Loaded');
+        console.log('Use beta@alfalyzer.com / 123demo to login');
+        
+        // Helper function to test localStorage
+        window.checkAuthState = function() {
+            const user = localStorage.getItem('alfalyzer-user');
+            console.log('Auth state:', user ? JSON.parse(user) : 'Not logged in');
+        };
+        
+        // Helper to clear auth state
+        window.clearAuth = function() {
+            localStorage.removeItem('alfalyzer-user');
+            console.log('Auth cleared - refresh page');
+        };
+    </script>
+</body>
+</html>

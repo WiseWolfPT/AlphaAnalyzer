@@ -375,7 +375,7 @@ export class FinancialDataSanitizer {
    */
   private encryptValue(value: string): string {
     const iv = crypto.randomBytes(16);
-    const cipher = crypto.createCipher('aes-256-gcm', this.encryptionKey);
+    const cipher = crypto.createCipherGCM('aes-256-gcm', this.encryptionKey, iv);
     
     let encrypted = cipher.update(value, 'utf8', 'hex');
     encrypted += cipher.final('hex');

@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  alfalyzer:
+    build:
+      context: .
+      dockerfile: docker-rescue.dockerfile
+    ports:
+      - "3000:3000"
+      - "3001:3001"
+    environment:
+      - NODE_ENV=development
+      - PORT=3001
+    volumes:
+      - .:/app
+      - /app/node_modules
+    command: npm run dev

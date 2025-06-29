@@ -6,8 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { BarChart3, Mail, Lock, Eye, EyeOff, ArrowLeft } from "lucide-react";
-import { useAuth } from "@/contexts/simple-auth";
-import { auth } from "@/lib/supabase";
+import { useAuth } from "@/contexts/simple-auth-offline";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -36,10 +35,7 @@ export default function Login() {
   };
 
   const handleGoogleSignIn = async () => {
-    const { error } = await auth.signInWithGoogle();
-    if (error) {
-      setError(error.message);
-    }
+    setError("Google Sign-In não disponível em modo demo");
   };
 
   const handleResetPassword = async () => {
@@ -47,13 +43,8 @@ export default function Login() {
       setError("Por favor, insira o seu email primeiro");
       return;
     }
-
-    const { error } = await auth.resetPassword(email);
-    if (error) {
-      setError(error.message);
-    } else {
-      setResetEmailSent(true);
-    }
+    
+    setError("Recuperação de password não disponível em modo demo. Use beta@alfalyzer.com / 123demo");
   };
 
   return (
@@ -88,6 +79,15 @@ export default function Login() {
               <CardTitle className="text-center">Login</CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
+              {/* Beta Demo Credentials */}
+              <Alert className="border-chartreuse/50 bg-chartreuse/10">
+                <AlertDescription className="text-chartreuse-dark">
+                  <strong>Credenciais Beta:</strong><br />
+                  Email: beta@alfalyzer.com<br />
+                  Password: 123demo
+                </AlertDescription>
+              </Alert>
+
               {error && (
                 <Alert className="border-red-500/50 bg-red-500/10">
                   <AlertDescription className="text-red-600">{error}</AlertDescription>

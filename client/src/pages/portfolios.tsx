@@ -1,15 +1,86 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useLocation } from "wouter";
 import { MainLayout } from "@/components/layout/main-layout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { BarChart3, PieChart, Activity, TrendingUp, TrendingDown, Target, DollarSign, Percent, Plus } from "lucide-react";
+import { BarChart3, PieChart, Activity, TrendingUp, TrendingDown, Target, DollarSign, Percent, Plus, ExternalLink } from "lucide-react";
 import { SectorPerformance } from "@/components/stock/sector-performance";
 import { LineChart, Line, ResponsiveContainer, Tooltip, XAxis, YAxis, CartesianGrid, AreaChart, Area } from "recharts";
+import { useStock } from "@/hooks/use-enhanced-stocks";
 import { cn } from "@/lib/utils";
 import type { MockStock } from "@/lib/mock-api";
+
+// Enhanced portfolio holding component with real data
+function PortfolioHolding({ holding }: { holding: any }) {
+  const [, setLocation] = useLocation();
+  const { data: stock, isLoading } = useStock(holding.symbol);
+
+  const handleClick = () => {
+    setLocation(`/stock/${holding.symbol}/charts`);
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-between p-4 hover:bg-secondary/50 rounded-lg animate-pulse">
+        <div className="flex items-center space-x-3">
+          <div className="w-10 h-10 bg-gray-300 rounded-lg"></div>
+          <div>
+            <div className="h-4 bg-gray-300 rounded w-16 mb-1"></div>
+            <div className="h-3 bg-gray-300 rounded w-20"></div>
+          </div>
+        </div>
+        <div className="text-right">
+          <div className="h-4 bg-gray-300 rounded w-20 mb-1"></div>
+          <div className="h-3 bg-gray-300 rounded w-16"></div>
+        </div>
+      </div>
+    );
+  }
+
+  const currentPrice = stock?.currentPrice || holding.currentPrice;
+  const gainLoss = (currentPrice - holding.avgPrice) * holding.shares;
+  const gainLossPercent = ((currentPrice - holding.avgPrice) / holding.avgPrice) * 100;
+  const isPositive = gainLoss >= 0;
+  const currentValue = currentPrice * holding.shares;
+
+  return (
+    <div 
+      className="flex items-center justify-between p-4 hover:bg-secondary/50 rounded-lg cursor-pointer transition-colors group border"
+      onClick={handleClick}
+    >
+      <div className="flex items-center space-x-3">
+        <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
+          <span className="text-sm font-medium text-primary">{holding.symbol.charAt(0)}</span>
+        </div>
+        <div>
+          <div className="font-medium group-hover:text-primary transition-colors">
+            {holding.symbol}
+          </div>
+          <div className="text-sm text-muted-foreground">
+            {holding.shares} shares × ${currentPrice.toFixed(2)}
+          </div>
+        </div>
+      </div>
+      <div className="text-right flex items-center space-x-3">
+        <div>
+          <div className="font-medium">
+            ${currentValue.toFixed(2)}
+          </div>
+          <div className={cn(
+            "text-sm",
+            isPositive ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"
+          )}>
+            {isPositive ? "+" : ""}${gainLoss.toFixed(2)} ({isPositive ? "+" : ""}{gainLossPercent.toFixed(2)}%)
+          </div>
+        </div>
+        <ExternalLink className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
+      </div>
+    </div>
+  );
+}
 
 export default function Portfolios() {
   // Get all stocks for sector analysis
@@ -214,41 +285,9 @@ export default function Portfolios() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  {portfolioData.holdings.map((holding) => {
-                    const gainLoss = holding.shares * (holding.currentPrice - holding.avgPrice);
-                    const gainLossPercent = ((holding.currentPrice - holding.avgPrice) / holding.avgPrice) * 100;
-                    const isPositive = gainLoss >= 0;
-                    
-                    return (
-                      <div key={holding.symbol} className="flex items-center justify-between p-4 bg-secondary/20 rounded-lg">
-                        <div className="flex items-center gap-4">
-                          <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
-                            <span className="font-bold text-sm">{holding.symbol.charAt(0)}</span>
-                          </div>
-                          <div>
-                            <div className="font-bold">{holding.symbol}</div>
-                            <div className="text-sm text-muted-foreground">
-                              {holding.shares} shares @ ${holding.avgPrice.toFixed(2)} avg
-                            </div>
-                          </div>
-                        </div>
-                        
-                        <div className="text-right">
-                          <div className="font-bold">${holding.value.toFixed(2)}</div>
-                          <div className={cn(
-                            "text-sm font-medium",
-                            isPositive ? "text-green-600" : "text-red-600"
-                          )}>
-                            {isPositive ? '+' : ''}${gainLoss.toFixed(2)} ({gainLossPercent.toFixed(1)}%)
-                          </div>
-                        </div>
-                        
-                        <Badge variant={isPositive ? "default" : "destructive"}>
-                          ${holding.currentPrice.toFixed(2)}
-                        </Badge>
-                      </div>
-                    );
-                  })}
+                  {portfolioData.holdings.map((holding) => (
+                    <PortfolioHolding key={holding.symbol} holding={holding} />
+                  ))}
                 </div>
               </CardContent>
             </Card>

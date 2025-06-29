@@ -1,20 +1,47 @@
-import { BarChart3, Instagram, Twitter } from "lucide-react";
+import { BarChart3, Instagram, Twitter, MessageCircle, ShoppingBag } from "lucide-react";
 import { motion } from "framer-motion";
 
 export function Footer() {
   const currentYear = new Date().getFullYear();
 
   const socialLinks = [
-    { name: "Instagram", href: "https://instagram.com/alphaanalyzer", icon: Instagram },
-    { name: "Twitter", href: "https://twitter.com/alphaanalyzer", icon: Twitter },
-    { name: "Discord", href: "https://discord.gg/alphaanalyzer", icon: null },
-    { name: "Whop", href: "https://whop.com/alphaanalyzer", icon: null }
+    { name: "Instagram", href: "https://instagram.com/alfalyzer", icon: Instagram },
+    { name: "Twitter", href: "https://twitter.com/alfalyzer", icon: Twitter },
+    { name: "Discord", href: "https://discord.gg/alfalyzer", icon: MessageCircle },
+    { name: "Whop", href: "https://whop.com/alfalyzer", icon: ShoppingBag }
   ];
 
   const legalLinks = [
     { name: "Termos de Serviço", href: "#" },
     { name: "Política de Privacidade", href: "#" }
   ];
+
+  const renderSocialLinks = () => socialLinks.map((link, index) => (
+    <a
+      key={link.name}
+      href={link.href}
+      className="flex items-center gap-2 text-muted-foreground/80 hover:text-foreground transition-colors duration-200"
+      target="_blank"
+      rel="noopener noreferrer"
+    >
+      {link.icon && <link.icon className="h-4 w-4" />}
+      <span className="text-sm">{link.name}</span>
+    </a>
+  ));
+
+  const renderLegalLinks = () => legalLinks.map((link, index) => (
+    <span key={link.name} className="flex items-center">
+      <a
+        href={link.href}
+        className="text-muted-foreground hover:text-foreground transition-colors duration-200"
+      >
+        {link.name}
+      </a>
+      {index < legalLinks.length - 1 && (
+        <span className="mx-3 text-muted-foreground/50">·</span>
+      )}
+    </span>
+  ));
 
   return (
     <footer className="bg-card/30 border-t border-border/50">
@@ -32,7 +59,7 @@ export function Footer() {
               <BarChart3 className="h-5 w-5 text-white" />
             </div>
             <div className="font-bold text-xl text-foreground">
-              Alpha Analyzer
+              Alfalyzer
             </div>
           </div>
 
@@ -41,40 +68,17 @@ export function Footer() {
             Análise profissional de ações para investidores inteligentes.
           </p>
 
-          {/* Desktop Links Layout for >= 1280px */}
+          {/* Links Layout */}
           <div className="w-full max-w-4xl">
             <div className="hidden xl:flex items-center justify-center gap-8">
               {/* Social Links on the left */}
               <div className="flex items-center gap-6">
-                {socialLinks.map((link, index) => (
-                  <a
-                    key={link.name}
-                    href={link.href}
-                    className="flex items-center gap-2 text-muted-foreground/80 hover:text-foreground transition-colors duration-200"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    {link.icon && <link.icon className="h-4 w-4" />}
-                    <span className="text-sm">{link.name}</span>
-                  </a>
-                ))}
+                {renderSocialLinks()}
               </div>
 
               {/* Legal Links on the right */}
               <div className="flex items-center gap-6 text-sm">
-                {legalLinks.map((link, index) => (
-                  <span key={link.name} className="flex items-center">
-                    <a
-                      href={link.href}
-                      className="text-muted-foreground hover:text-foreground transition-colors duration-200"
-                    >
-                      {link.name}
-                    </a>
-                    {index < legalLinks.length - 1 && (
-                      <span className="mx-3 text-muted-foreground/50">·</span>
-                    )}
-                  </span>
-                ))}
+                {renderLegalLinks()}
               </div>
             </div>
 
@@ -82,42 +86,19 @@ export function Footer() {
             <div className="xl:hidden space-y-6">
               {/* Social Links */}
               <div className="flex flex-wrap justify-center items-center gap-6">
-                {socialLinks.map((link, index) => (
-                  <a
-                    key={link.name}
-                    href={link.href}
-                    className="flex items-center gap-2 text-muted-foreground/80 hover:text-foreground transition-colors duration-200"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    {link.icon && <link.icon className="h-4 w-4" />}
-                    <span className="text-sm">{link.name}</span>
-                  </a>
-                ))}
+                {renderSocialLinks()}
               </div>
 
               {/* Legal Links */}
               <div className="flex flex-wrap justify-center items-center gap-6 text-sm">
-                {legalLinks.map((link, index) => (
-                  <span key={link.name} className="flex items-center">
-                    <a
-                      href={link.href}
-                      className="text-muted-foreground hover:text-foreground transition-colors duration-200"
-                    >
-                      {link.name}
-                    </a>
-                    {index < legalLinks.length - 1 && (
-                      <span className="mx-3 text-muted-foreground/50">·</span>
-                    )}
-                  </span>
-                ))}
+                {renderLegalLinks()}
               </div>
             </div>
           </div>
 
           {/* Copyright */}
           <div className="text-xs text-muted-foreground">
-            © {currentYear} Alpha Analyzer. Todos os direitos reservados.
+            © {currentYear} Alfalyzer. Todos os direitos reservados.
           </div>
         </motion.div>
       </div>
