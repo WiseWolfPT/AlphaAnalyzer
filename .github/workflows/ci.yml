@@ -32,7 +32,8 @@ jobs:
       continue-on-error: true
 
     - name: Run tests
-      run: npm test || true
+      run: npm test
+      continue-on-error: true
 
     - name: Health-check endpoint test
       run: npm run test:health
