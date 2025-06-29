@@ -67,10 +67,10 @@ export function Header() {
           {/* Logo */}
           <div 
             className="flex items-center gap-2 sm:gap-3 cursor-pointer hover:opacity-80 transition-opacity"
-            onClick={() => setLocation(user ? "/dashboard" : "/")}
+            onClick={() => setLocation(user ? "/find-stocks" : "/")}
           >
-            <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-chartreuse-dark to-chartreuse rounded-xl flex items-center justify-center shadow-lg">
-              <BarChart3 className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
+            <div className="w-8 h-8 sm:w-10 sm:h-10 bg-chartreuse-dark dark:bg-chartreuse rounded-xl flex items-center justify-center shadow-lg hover:shadow-chartreuse/30 transition-all duration-300 hover:scale-105">
+              <BarChart3 className="h-4 w-4 sm:h-5 sm:w-5 text-deep-black" />
             </div>
             <div className="font-bold text-lg sm:text-xl text-foreground">
               Alfalyzer
@@ -83,12 +83,12 @@ export function Header() {
               <button
                 key={item.name}
                 onClick={() => scrollToSection(item.href)}
-                className={`relative text-muted-foreground hover:text-tangerine transition-all duration-200 font-medium group ${
+                className={`relative text-muted-foreground hover:text-chartreuse transition-all duration-200 font-medium group ${
                   activeSection === item.id ? 'text-foreground' : ''
                 }`}
               >
                 {item.name}
-                <div className={`absolute bottom-0 left-0 w-full h-0.5 bg-tangerine transform origin-left transition-transform duration-200 ${
+                <div className={`absolute bottom-0 left-0 w-full h-0.5 bg-chartreuse transform origin-left transition-transform duration-200 ${
                   activeSection === item.id ? 'scale-x-100' : 'scale-x-0 group-hover:scale-x-100'
                 }`} />
               </button>
@@ -120,7 +120,7 @@ export function Header() {
                   <span className="hidden lg:inline">{user.name}</span>
                 </div>
                 <Button 
-                  onClick={() => setLocation('/dashboard')}
+                  onClick={() => setLocation('/find-stocks')}
                   className="bg-chartreuse-dark dark:bg-chartreuse hover:bg-chartreuse-dark/90 dark:hover:bg-chartreuse/90 text-deep-black dark:text-rich-black"
                 >
                   Dashboard
@@ -223,7 +223,7 @@ export function Header() {
                         <span>{user.name}</span>
                       </div>
                       <Button 
-                        onClick={() => setLocation('/dashboard')}
+                        onClick={() => setLocation('/find-stocks')}
                         className="bg-chartreuse-dark dark:bg-chartreuse hover:bg-chartreuse-dark/90 dark:hover:bg-chartreuse/90 text-deep-black dark:text-rich-black justify-start"
                       >
                         <User className="h-4 w-4 mr-2" />
