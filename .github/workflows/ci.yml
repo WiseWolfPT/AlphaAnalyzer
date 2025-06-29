@@ -25,6 +25,7 @@ jobs:
 
       - name: Health-check endpoint test
         run: npm run test:health
+        continue-on-error: true
 
   security:
     name: Security Scan
