@@ -37,7 +37,7 @@ export function TopLosersCard() {
   }, []);
 
   const handleViewStock = (symbol: string) => {
-    setLocation(`/stock/${symbol}`);
+    setLocation(`/stock/${symbol}/charts`);
   };
 
   const handleViewAll = () => {

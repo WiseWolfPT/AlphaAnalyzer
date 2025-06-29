@@ -108,7 +108,7 @@ export function WatchlistAlertsCard() {
   };
 
   const handleViewStock = (symbol: string) => {
-    setLocation(`/stock/${symbol}`);
+    setLocation(`/stock/${symbol}/charts`);
   };
 
   const handleViewAllAlerts = () => {

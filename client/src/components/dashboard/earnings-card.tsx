@@ -117,7 +117,7 @@ export function EarningsCard() {
   };
 
   const handleViewStock = (symbol: string) => {
-    setLocation(`/stock/${symbol}`);
+    setLocation(`/stock/${symbol}/charts`);
   };
 
   const handleViewAllEarnings = () => {

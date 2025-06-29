@@ -105,7 +105,7 @@ export function NewsHighlightsCard() {
   };
 
   const handleViewStock = (symbol: string) => {
-    setLocation(`/stock/${symbol}`);
+    setLocation(`/stock/${symbol}/charts`);
   };
 
   const handleViewAllNews = () => {
