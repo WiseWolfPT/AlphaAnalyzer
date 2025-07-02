@@ -2,21 +2,46 @@ import { createClient } from '@supabase/supabase-js';
 import { UserProfile, UserSession, SecurityLog, DataAccessLog } from '../types/auth';
 
 // Supabase configuration
-const supabaseUrl = process.env.SUPABASE_URL || 'https://your-project-id.supabase.co';
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || 'your-service-role-key';
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+// Validate required environment variables
+if (!supabaseUrl || !supabaseServiceKey || 
+    supabaseUrl === 'https://your-project-id.supabase.co' || 
+    supabaseServiceKey === 'your-service-role-key') {
+  console.warn('Supabase credentials not properly configured. Profile features may not work correctly.');
+}
 
 // Create Supabase client with service role key for server-side operations
-export const supabase = createClient(supabaseUrl, supabaseServiceKey, {
-  auth: {
-    autoRefreshToken: false,
-    persistSession: false
-  }
-});
+export const supabase = supabaseUrl && supabaseServiceKey && 
+  supabaseUrl !== 'https://your-project-id.supabase.co' && 
+  supabaseServiceKey !== 'your-service-role-key' 
+    ? createClient(supabaseUrl, supabaseServiceKey, {
+        auth: {
+          autoRefreshToken: false,
+          persistSession: false
+        }
+      })
+    : null;
 
 // Database helper functions for authentication and security
 export const db = {
   // User profile operations
   async getProfile(userId: string): Promise<UserProfile | null> {
+    if (!supabase) {
+      console.warn('Supabase not configured, returning mock profile');
+      // Return a mock profile for development when Supabase is not configured
+      return {
+        id: userId,
+        email: 'user@example.com',
+        full_name: 'Test User',
+        subscription_tier: 'free',
+        roles: [],
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      } as UserProfile;
+    }
+
     const { data, error } = await supabase
       .from('profiles')
       .select(`
@@ -37,6 +62,14 @@ export const db = {
   },
 
   async updateProfile(userId: string, updates: Partial<UserProfile>) {
+    if (!supabase) {
+      console.warn('Supabase not configured, mocking profile update');
+      return { 
+        data: { ...updates, id: userId, updated_at: new Date().toISOString() }, 
+        error: null 
+      };
+    }
+
     const { data, error } = await supabase
       .from('profiles')
       .update({
@@ -51,6 +84,17 @@ export const db = {
   },
 
   async createProfile(profileData: Omit<UserProfile, 'id' | 'created_at' | 'updated_at'>) {
+    if (!supabase) {
+      console.warn('Supabase not configured, mocking profile creation');
+      const mockProfile = {
+        ...profileData,
+        id: 'mock-user-id',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      };
+      return { data: mockProfile, error: null };
+    }
+
     const { data, error } = await supabase
       .from('profiles')
       .insert({
@@ -85,6 +129,21 @@ export const db = {
   },
 
   async getSession(sessionToken: string): Promise<UserSession | null> {
+    if (!supabase) {
+      console.warn('Supabase not configured, mocking session');
+      return {
+        id: 'mock-session-id',
+        session_token: sessionToken,
+        user_id: 'mock-user-id',
+        active: true,
+        created_at: new Date(),
+        expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000),
+        last_activity: new Date(),
+        ip_address: '127.0.0.1',
+        user_agent: 'Mock Browser'
+      } as UserSession;
+    }
+
     const { data, error } = await supabase
       .from('user_sessions')
       .select('*')
@@ -149,6 +208,11 @@ export const db = {
 
   // Security logging operations
   async logSecurityEvent(logData: Omit<SecurityLog, 'id' | 'timestamp'>) {
+    if (!supabase) {
+      console.log('Security event (Supabase not configured):', logData);
+      return;
+    }
+
     const { error } = await supabase
       .from('security_logs')
       .insert({
@@ -357,6 +421,20 @@ export const db = {
 // Auth helper functions for client-side operations
 export const auth = {
   async signUp(email: string, password: string, metadata: { full_name?: string } = {}) {
+    if (!supabase) {
+      console.warn('Supabase not configured, mocking signup');
+      return { 
+        data: { 
+          user: { 
+            id: 'mock-user-id', 
+            email,
+            user_metadata: metadata 
+          } 
+        }, 
+        error: null 
+      };
+    }
+
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
@@ -368,6 +446,20 @@ export const auth = {
   },
 
   async signIn(email: string, password: string) {
+    if (!supabase) {
+      console.warn('Supabase not configured, mocking signin');
+      return { 
+        data: { 
+          user: { 
+            id: 'mock-user-id', 
+            email 
+          },
+          session: null
+        }, 
+        error: null 
+      };
+    }
+
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password

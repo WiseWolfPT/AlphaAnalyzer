@@ -39,7 +39,8 @@ class FinnhubEnhancedService {
   private onErrorHandlers: Array<(error: string) => void> = [];
   private onConnectionHandlers: Array<(connected: boolean) => void> = [];
 
-  constructor(private apiKey: string = import.meta.env.VITE_FINNHUB_API_KEY || 'demo') {}
+  // SECURITY: API key moved to server-side - use proxy endpoints instead
+  constructor(private apiKey: string = 'DEPRECATED_USE_SERVER_PROXY') {}
 
   // Rate limiting management
   private checkRateLimit(): boolean {

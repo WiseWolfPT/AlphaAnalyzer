@@ -417,6 +417,8 @@ export const corsConfig = {
         // Only allow no-origin requests for specific endpoints in production
         return callback(new Error('Origin header required in production'), false);
       }
+      // Allow no-origin requests in development (useful for testing)
+      console.log('🔧 CORS: Allowing no-origin request in development');
       return callback(null, true);
     }
     
@@ -432,9 +434,18 @@ export const corsConfig = {
       
       // SECURITY FIX: Check against allowed origins
       if (allowedOrigins.includes(origin)) {
+        console.log(`✅ CORS: Allowing authorized origin: ${origin}`);
         return callback(null, true);
       } else {
         console.warn(`🚨 CORS: Rejecting unauthorized origin: ${origin}`);
+        console.log(`🔧 CORS: Allowed origins: ${allowedOrigins.join(', ')}`);
+        
+        // In development, be more lenient for localhost variations
+        if (process.env.NODE_ENV === 'development' && origin.includes('localhost')) {
+          console.log(`🔧 CORS: Allowing localhost variant in development: ${origin}`);
+          return callback(null, true);
+        }
+        
         return callback(new Error(`Origin ${origin} not allowed by CORS policy`), false);
       }
     } catch (error) {

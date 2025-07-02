@@ -127,7 +127,7 @@ uYiGEfic4Qhni+HMfRBuUphOh7F3k8QgwZc9UlL0AHmyYqtbhL9NuJes6w==
       const whopUserId = payload.sub;
       
       // Find or create user in our database linked to Whop user
-      const user = await this.findOrCreateWhopUser(whopUserId, payload);
+      const user = await this.findOrCreateWhopUser(whopUserId, payload, req);
       
       return {
         id: user.id,
@@ -146,14 +146,14 @@ uYiGEfic4Qhni+HMfRBuUphOh7F3k8QgwZc9UlL0AHmyYqtbhL9NuJes6w==
   /**
    * Find or create user from Whop authentication
    */
-  private async findOrCreateWhopUser(whopUserId: string, whopPayload: any) {
+  private async findOrCreateWhopUser(whopUserId: string, whopPayload: any, req: Request) {
     // SECURITY FIX: Validate Whop payment status before granting premium access
     // Extract membership status from Whop JWT payload
     const hasActiveSubscription = whopPayload.membership_status === 'active' || 
                                   whopPayload.subscription_status === 'active';
     
     // Check if user already exists with this Whop ID
-    let user = await db.from('profiles').select('*').eq('whop_user_id', whopUserId).single();
+    let user = await db.findUserByWhopId(whopUserId);
     
     if (!user.data) {
       // SECURITY FIX: Use real email from Whop payload, require it for account creation
@@ -171,13 +171,15 @@ uYiGEfic4Qhni+HMfRBuUphOh7F3k8QgwZc9UlL0AHmyYqtbhL9NuJes6w==
         updated_at: new Date().toISOString(),
       };
 
-      const { data: createdUser } = await db.from('profiles').insert(newUser).select().single();
+      const { data: createdUser } = await db.createWhopLinkedProfile(whopUserId, whopPayload);
       
       // Log the Whop user creation with subscription status
       await db.logSecurityEvent({
         user_id: createdUser.id,
         action: 'whop_user_created',
         resource: 'user_account',
+        ip_address: req.ip || 'unknown',
+        user_agent: req.headers['user-agent'] || 'unknown',
         success: true,
         details: { 
           whopUserId,
@@ -206,6 +208,8 @@ uYiGEfic4Qhni+HMfRBuUphOh7F3k8QgwZc9UlL0AHmyYqtbhL9NuJes6w==
         user_id: user.data.id,
         action: 'whop_subscription_updated',
         resource: 'user_subscription',
+        ip_address: req.ip || 'unknown',
+        user_agent: req.headers['user-agent'] || 'unknown',
         success: true,
         details: { 
           oldTier: user.data.subscription_tier,
@@ -241,7 +245,7 @@ uYiGEfic4Qhni+HMfRBuUphOh7F3k8QgwZc9UlL0AHmyYqtbhL9NuJes6w==
    * Load user from database
    */
   private async loadUserFromDatabase(userId: string) {
-    const { data: user } = await db.from('profiles').select('*').eq('id', userId).single();
+    const user = await db.getProfile(userId);
     return user;
   }
 

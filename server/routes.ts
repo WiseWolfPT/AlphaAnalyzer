@@ -7,6 +7,9 @@ import marketDataRouter from "./routes/market-data";
 import authRouter from "./routes/auth";
 import adminRouter from "./routes/admin";
 import subscriptionsRouter from "./routes/subscriptions";
+import enhancedValuationRouter from "./routes/enhanced-valuation";
+import healthRouter from "./routes/health";
+import stocksRouter from "./routes/stocks";
 import { authMiddleware } from "./middleware/auth-middleware";
 import { validateRequest, validationSchemas } from "./security/security-middleware";
 
@@ -82,16 +85,8 @@ export async function registerRoutes(app: Express, server: Server): Promise<void
   // SECURITY FIX: Initialize auth middleware
   const authService = authMiddleware.instance;
 
-  // Health check endpoint (no auth required)
-  app.get("/api/health", (req, res) => {
-    res.json({
-      status: "healthy",
-      timestamp: new Date().toISOString(),
-      version: "1.0.0",
-      uptime: process.uptime(),
-      env: process.env.NODE_ENV || "development"
-    });
-  });
+  // Enhanced health monitoring endpoints (no auth required)
+  app.use("/api/health", healthRouter);
 
   // Basic API info endpoint
   app.get("/api", (req, res) => {
@@ -100,6 +95,11 @@ export async function registerRoutes(app: Express, server: Server): Promise<void
       version: "1.0.0",
       endpoints: [
         "/api/health",
+        "/api/health/detailed",
+        "/api/health/quick",
+        "/api/health/ready",
+        "/api/health/live",
+        "/api/health/metrics",
         "/api/auth",
         "/api/stocks",
         "/api/market-data",
@@ -113,12 +113,17 @@ export async function registerRoutes(app: Express, server: Server): Promise<void
   app.use("/api/auth", authRouter);
   app.use("/api/admin", adminRouter);
   app.use("/api/subscriptions", subscriptionsRouter);
+  app.use("/api/valuation", enhancedValuationRouter);
   
   // SECURITY FIX: Register versioned routes first
   app.use(`/api/${API_VERSION}/market-data`, marketDataRouter);
+  app.use(`/api/${API_VERSION}/valuation`, enhancedValuationRouter);
   
   // Maintain backward compatibility
   app.use("/api/market-data", marketDataRouter);
+  
+  // Stock data routes
+  app.use("/api", stocksRouter);
   
   // Stock routes - public data, allow optional auth for rate limiting
   app.get("/api/stocks", 

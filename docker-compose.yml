@@ -1,0 +1,203 @@
+# Alfalyzer Docker Compose Configuration
+# Multiple access methods and development environments
+
+version: '3.8'
+
+services:
+  # Main Development Environment
+  alfalyzer-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: multi-access
+    container_name: alfalyzer-dev
+    ports:
+      - "3000:3000"   # Main frontend
+      - "3001:3001"   # Main backend API
+      - "3005:3005"   # Dev frontend
+      - "8080:8080"   # Alt frontend
+      - "8090:8090"   # Simple tunnel
+      - "80:80"       # nginx proxy
+      - "8081:8081"   # nginx dev
+      - "8082:8082"   # nginx API only
+      - "8083:8083"   # nginx status
+    environment:
+      - NODE_ENV=development
+      - DOCKER_ENV=true
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - alfalyzer_logs:/var/log/alfalyzer
+    command: ["multi"]
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3001/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - alfalyzer-net
+    restart: unless-stopped
+
+  # Minimal Development (lightweight)
+  alfalyzer-minimal:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development
+    container_name: alfalyzer-minimal
+    ports:
+      - "3010:3000"   # Frontend
+      - "3011:3001"   # Backend
+    environment:
+      - NODE_ENV=development
+      - DOCKER_ENV=true
+    volumes:
+      - .:/app
+      - /app/node_modules
+    command: ["minimal"]
+    profiles: ["minimal"]
+    networks:
+      - alfalyzer-net
+
+  # Production Environment
+  alfalyzer-prod:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    container_name: alfalyzer-prod
+    ports:
+      - "8000:80"     # nginx proxy
+      - "8001:3001"   # Application
+    environment:
+      - NODE_ENV=production
+      - DOCKER_ENV=true
+    volumes:
+      - alfalyzer_prod_logs:/var/log/alfalyzer
+    command: ["start"]
+    profiles: ["production"]
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - alfalyzer-net
+    restart: unless-stopped
+
+  # Nginx Reverse Proxy (standalone)
+  alfalyzer-proxy:
+    image: nginx:alpine
+    container_name: alfalyzer-proxy
+    ports:
+      - "8090:80"
+    volumes:
+      - ./nginx/alfalyzer.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - alfalyzer-backend
+      - alfalyzer-frontend
+    profiles: ["proxy"]
+    networks:
+      - alfalyzer-net
+    restart: unless-stopped
+
+  # Backend Only (API service)
+  alfalyzer-backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development
+    container_name: alfalyzer-backend
+    ports:
+      - "3021:3001"
+    environment:
+      - NODE_ENV=development
+      - DOCKER_ENV=true
+    volumes:
+      - .:/app
+      - /app/node_modules
+    command: ["backend-only"]
+    profiles: ["services"]
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3001/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - alfalyzer-net
+
+  # Frontend Only (development server)
+  alfalyzer-frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development
+    container_name: alfalyzer-frontend
+    ports:
+      - "3020:3000"
+    environment:
+      - NODE_ENV=development
+      - DOCKER_ENV=true
+    volumes:
+      - .:/app
+      - /app/node_modules
+    command: ["frontend-only"]
+    profiles: ["services"]
+    depends_on:
+      - alfalyzer-backend
+    networks:
+      - alfalyzer-net
+
+  # Database (SQLite in volume for persistence)
+  alfalyzer-db:
+    image: alpine:latest
+    container_name: alfalyzer-db
+    volumes:
+      - alfalyzer_db:/data
+    command: ["tail", "-f", "/dev/null"]
+    profiles: ["database"]
+    networks:
+      - alfalyzer-net
+
+  # Redis Cache (optional)
+  alfalyzer-redis:
+    image: redis:alpine
+    container_name: alfalyzer-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - alfalyzer_redis:/data
+    profiles: ["cache"]
+    networks:
+      - alfalyzer-net
+    restart: unless-stopped
+
+  # Monitoring (simple health dashboard)
+  alfalyzer-monitor:
+    image: nginx:alpine
+    container_name: alfalyzer-monitor
+    ports:
+      - "9090:80"
+    volumes:
+      - ./docker/monitor.html:/usr/share/nginx/html/index.html:ro
+    profiles: ["monitoring"]
+    networks:
+      - alfalyzer-net
+
+volumes:
+  alfalyzer_logs:
+    driver: local
+  alfalyzer_prod_logs:
+    driver: local
+  alfalyzer_db:
+    driver: local
+  alfalyzer_redis:
+    driver: local
+
+networks:
+  alfalyzer-net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16

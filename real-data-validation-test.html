@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alfalyzer Real Data Validation Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .test-container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .test-result {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            border-left: 4px solid;
+        }
+        .success {
+            background-color: #d4edda;
+            border-left-color: #28a745;
+            color: #155724;
+        }
+        .error {
+            background-color: #f8d7da;
+            border-left-color: #dc3545;
+            color: #721c24;
+        }
+        .warning {
+            background-color: #fff3cd;
+            border-left-color: #ffc107;
+            color: #856404;
+        }
+        .loading {
+            background-color: #d1ecf1;
+            border-left-color: #17a2b8;
+            color: #0c5460;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .stock-data {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        .stock-card {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 6px;
+            border: 1px solid #dee2e6;
+        }
+        .stock-symbol {
+            font-weight: bold;
+            font-size: 1.2em;
+            color: #495057;
+        }
+        .stock-price {
+            font-size: 1.5em;
+            font-weight: bold;
+            margin: 5px 0;
+        }
+        .positive { color: #28a745; }
+        .negative { color: #dc3545; }
+        .metric {
+            display: flex;
+            justify-content: space-between;
+            margin: 3px 0;
+            font-size: 0.9em;
+        }
+        .timestamp {
+            font-size: 0.8em;
+            color: #6c757d;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🚀 Alfalyzer Real Data Integration Validation</h1>
+    
+    <div class="test-container">
+        <h2>📊 Real-Time API Testing</h2>
+        <p>Testing various API endpoints to validate real data integration:</p>
+        
+        <button onclick="testBackendHealth()">Test Backend Health</button>
+        <button onclick="testMarketDataAPI()">Test Market Data API</button>
+        <button onclick="testStockQuotes()">Test Stock Quotes</button>
+        <button onclick="testFrontendAPI()">Test Frontend API</button>
+        <button onclick="runFullValidation()">Run Full Validation</button>
+        
+        <div id="test-results"></div>
+    </div>
+    
+    <div class="test-container">
+        <h2>📈 Real Stock Data Display</h2>
+        <p>Live data from external APIs:</p>
+        <div id="stock-display"></div>
+    </div>
+
+    <script>
+        const testResults = document.getElementById('test-results');
+        const stockDisplay = document.getElementById('stock-display');
+        
+        function addResult(message, type = 'loading') {
+            const div = document.createElement('div');
+            div.className = `test-result ${type}`;
+            div.innerHTML = `<strong>${new Date().toLocaleTimeString()}</strong>: ${message}`;
+            testResults.appendChild(div);
+            testResults.scrollTop = testResults.scrollHeight;
+        }
+        
+        function clearResults() {
+            testResults.innerHTML = '';
+        }
+        
+        async function testBackendHealth() {
+            addResult('Testing backend health endpoints...', 'loading');
+            
+            const endpoints = [
+                'http://localhost:3001/health',
+                'http://localhost:3001/api/health',
+                'http://localhost:3003/health',
+                'http://localhost:3003/api/health'
+            ];
+            
+            for (const endpoint of endpoints) {
+                try {
+                    const response = await fetch(endpoint);
+                    if (response.ok) {
+                        const data = await response.json();
+                        addResult(`✅ ${endpoint} - Status: ${data.status || 'healthy'}`, 'success');
+                    } else {
+                        addResult(`❌ ${endpoint} - HTTP ${response.status}`, 'error');
+                    }
+                } catch (error) {
+                    addResult(`❌ ${endpoint} - Connection failed: ${error.message}`, 'error');
+                }
+            }
+        }
+        
+        async function testMarketDataAPI() {
+            addResult('Testing market data API endpoints...', 'loading');
+            
+            const endpoints = [
+                'http://localhost:3001/api/market-data/test',
+                'http://localhost:3003/api/market-data/test',
+                'http://localhost:3001/api/market-data/quote/AAPL',
+                'http://localhost:3003/api/market-data/quote/AAPL'
+            ];
+            
+            for (const endpoint of endpoints) {
+                try {
+                    const response = await fetch(endpoint);
+                    if (response.ok) {
+                        const data = await response.json();
+                        if (data.symbol || data.providers || data.overallStatus) {
+                            addResult(`✅ ${endpoint} - Real API data received`, 'success');
+                        } else {
+                            addResult(`⚠️ ${endpoint} - Unexpected response format`, 'warning');
+                        }
+                    } else {
+                        addResult(`❌ ${endpoint} - HTTP ${response.status}`, 'error');
+                    }
+                } catch (error) {
+                    addResult(`❌ ${endpoint} - Failed: ${error.message}`, 'error');
+                }
+            }
+        }
+        
+        async function testStockQuotes() {
+            addResult('Testing real stock quote data...', 'loading');
+            
+            const testSymbols = ['AAPL', 'GOOGL', 'MSFT', 'TSLA'];
+            const baseUrls = [
+                'http://localhost:3001/api/stocks',
+                'http://localhost:3003/api/stocks'
+            ];
+            
+            for (const baseUrl of baseUrls) {
+                for (const symbol of testSymbols) {
+                    try {
+                        const response = await fetch(`${baseUrl}/${symbol}`);
+                        if (response.ok) {
+                            const stock = await response.json();
+                            displayStockData(stock, baseUrl);
+                            addResult(`✅ ${symbol} from ${baseUrl} - Price: $${stock.price}`, 'success');
+                        } else {
+                            addResult(`❌ ${symbol} from ${baseUrl} - HTTP ${response.status}`, 'error');
+                        }
+                    } catch (error) {
+                        addResult(`❌ ${symbol} from ${baseUrl} - Failed: ${error.message}`, 'error');
+                    }
+                }
+            }
+        }
+        
+        async function testFrontendAPI() {
+            addResult('Testing frontend data flow...', 'loading');
+            
+            try {
+                // Test if frontend can reach backend
+                const response = await fetch('http://localhost:3000');
+                if (response.ok) {
+                    addResult('✅ Frontend server is accessible', 'success');
+                } else {
+                    addResult('❌ Frontend server returned error', 'error');
+                }
+            } catch (error) {
+                addResult(`❌ Frontend server not accessible: ${error.message}`, 'error');
+            }
+        }
+        
+        function displayStockData(stock, source) {
+            const stockCard = document.createElement('div');
+            stockCard.className = 'stock-card';
+            
+            const isPositive = stock.change && parseFloat(stock.change) >= 0;
+            const priceColor = isPositive ? 'positive' : 'negative';
+            const changeSign = isPositive ? '+' : '';
+            
+            stockCard.innerHTML = `
+                <div class="stock-symbol">${stock.symbol}</div>
+                <div class="stock-price ${priceColor}">$${stock.price}</div>
+                <div class="metric">
+                    <span>Change:</span>
+                    <span class="${priceColor}">${changeSign}${stock.change} (${changeSign}${stock.changePercent}%)</span>
+                </div>
+                ${stock.marketCap ? `<div class="metric"><span>Market Cap:</span><span>${stock.marketCap}</span></div>` : ''}
+                ${stock.eps ? `<div class="metric"><span>EPS:</span><span>${stock.eps}</span></div>` : ''}
+                ${stock.peRatio ? `<div class="metric"><span>P/E:</span><span>${stock.peRatio}</span></div>` : ''}
+                <div class="timestamp">Source: ${source}</div>
+                <div class="timestamp">Updated: ${new Date().toLocaleString()}</div>
+            `;
+            
+            stockDisplay.appendChild(stockCard);
+        }
+        
+        async function runFullValidation() {
+            clearResults();
+            stockDisplay.innerHTML = '';
+            
+            addResult('🚀 Starting comprehensive validation...', 'loading');
+            
+            await testBackendHealth();
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            await testMarketDataAPI();
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            await testStockQuotes();
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            await testFrontendAPI();
+            
+            addResult('✅ Validation complete! Check results above.', 'success');
+        }
+        
+        // Test external APIs directly (CORS permitting)
+        async function testExternalAPIs() {
+            addResult('Testing external API access...', 'loading');
+            
+            try {
+                // Test Twelve Data (demo)
+                const response = await fetch('https://api.twelvedata.com/quote?symbol=AAPL&apikey=demo');
+                if (response.ok) {
+                    const data = await response.json();
+                    addResult(`✅ Twelve Data API - AAPL: $${data.close}`, 'success');
+                } else {
+                    addResult('❌ Twelve Data API failed', 'error');
+                }
+            } catch (error) {
+                addResult(`❌ External API test failed: ${error.message}`, 'error');
+            }
+        }
+        
+        // Auto-run basic tests on page load
+        window.addEventListener('DOMContentLoaded', () => {
+            addResult('Page loaded. Ready to test real data integration.', 'success');
+        });
+    </script>
+</body>
+</html>

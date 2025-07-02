@@ -1,6 +1,18 @@
 import { QueryClient, QueryFunction } from "@tanstack/react-query";
 import { getMockApiData } from "./mock-api";
 import { realAPI } from "./real-api";
+import { enhancedFetch, environment, apiConfig } from "./api-config";
+
+// Get authentication headers
+function getAuthHeaders(): Record<string, string> {
+  const token = localStorage.getItem('alfalyzer-token') || localStorage.getItem('auth-token');
+  if (token) {
+    return {
+      'Authorization': `Bearer ${token}`
+    };
+  }
+  return {};
+}
 
 async function throwIfResNotOk(res: Response) {
   if (!res.ok) {
@@ -14,15 +26,27 @@ export async function apiRequest(
   url: string,
   data?: unknown | undefined,
 ): Promise<Response> {
-  const res = await fetch(url, {
-    method,
-    headers: data ? { "Content-Type": "application/json" } : {},
-    body: data ? JSON.stringify(data) : undefined,
-    credentials: "include",
-  });
+  try {
+    // Use enhanced fetch with retry logic and proper error handling
+    const res = await enhancedFetch(url, {
+      method,
+      headers: {
+        ...(data ? { "Content-Type": "application/json" } : {}),
+        ...getAuthHeaders(),
+      },
+      body: data ? JSON.stringify(data) : undefined,
+      credentials: "include",
+    });
 
-  await throwIfResNotOk(res);
-  return res;
+    await throwIfResNotOk(res);
+    return res;
+  } catch (error) {
+    // Log the error in development
+    if (environment.debug) {
+      console.error(`🔴 API Request failed: ${method} ${url}`, error);
+    }
+    throw error;
+  }
 }
 
 // Check if we're running in production/Vercel (no backend available)
@@ -44,7 +68,33 @@ export const getQueryFn: <T>(options: {
     try {
       console.log('🔄 Query for:', url);
       
-      // Try real API first for stock data
+      // FIXED: Always try real backend API first
+      try {
+        const fullURL = url.startsWith('/api') ? `${apiConfig.baseURL}${url}` : url;
+        const res = await fetch(fullURL, {
+          credentials: "include",
+          headers: {
+            'Content-Type': 'application/json',
+            ...getAuthHeaders(),
+          },
+        });
+        
+        if (unauthorizedBehavior === "returnNull" && res.status === 401) {
+          return null;
+        }
+        
+        if (res.ok) {
+          const data = await res.json();
+          console.log('✅ Backend API success for:', url);
+          return data;
+        } else {
+          console.warn('⚠️ Backend API failed, falling back to mock:', res.status, res.statusText);
+        }
+      } catch (fetchError) {
+        console.warn('⚠️ Backend fetch failed, falling back to mock:', fetchError);
+      }
+      
+      // FALLBACK: Use enhanced mock data with real API integration
       if (url === '/api/stocks') {
         console.log('📊 Fetching all stocks with real API enhancement');
         
@@ -108,16 +158,6 @@ export const getQueryFn: <T>(options: {
       console.error('❌ Query function error:', error);
       throw error;
     }
-
-    // Commented out real API calls for now
-    // const res = await fetch(url, {
-    //   credentials: "include",
-    // });
-    // if (unauthorizedBehavior === "returnNull" && res.status === 401) {
-    //   return null;
-    // }
-    // await throwIfResNotOk(res);
-    // return await res.json();
   };
 
 export const queryClient = new QueryClient({
@@ -126,8 +166,10 @@ export const queryClient = new QueryClient({
       queryFn: getQueryFn({ on401: "throw" }),
       refetchInterval: false,
       refetchOnWindowFocus: false,
-      staleTime: Infinity,
-      retry: false,
+      staleTime: 5 * 60 * 1000, // 5 minutes (not Infinity for real-time data)
+      cacheTime: 10 * 60 * 1000, // 10 minutes
+      retry: 2, // Retry failed requests
+      retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000),
     },
     mutations: {
       retry: false,

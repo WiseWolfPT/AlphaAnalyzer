@@ -64,8 +64,8 @@ class RealDataIntegrationService {
     // Check if we have valid API keys (not 'demo')
     try {
       const { env } = await import('@/lib/env');
-      this.hasValidApiKeys = env.VITE_FINNHUB_API_KEY !== 'demo' || 
-                            env.VITE_ALPHA_VANTAGE_API_KEY !== 'demo';
+      // SECURITY: API keys moved to server-side - always use server proxy
+      this.hasValidApiKeys = false; // Force use of server proxy endpoints
       
       if (!this.hasValidApiKeys) {
         console.warn('⚠️ Using demo API keys - real data may be limited');

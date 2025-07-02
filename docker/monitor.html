@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alfalyzer Docker Monitor</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            min-height: 100vh;
+            padding: 2rem;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+        
+        .header h1 {
+            font-size: 3rem;
+            margin-bottom: 0.5rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+        
+        .card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 2rem;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+        
+        .card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #4ade80;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        
+        .access-list {
+            list-style: none;
+        }
+        
+        .access-list li {
+            margin: 0.5rem 0;
+            padding: 0.5rem;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            transition: background 0.3s ease;
+        }
+        
+        .access-list li:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        .access-list a {
+            color: white;
+            text-decoration: none;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .access-list a:hover {
+            text-decoration: underline;
+        }
+        
+        .port {
+            font-family: 'Monaco', 'Menlo', monospace;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+        
+        .commands {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-top: 2rem;
+        }
+        
+        .commands h3 {
+            margin-bottom: 1rem;
+        }
+        
+        .command-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+        }
+        
+        .command-item {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 1rem;
+            border-radius: 8px;
+            border-left: 4px solid #4ade80;
+        }
+        
+        .command-item code {
+            display: block;
+            font-family: 'Monaco', 'Menlo', monospace;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 0.5rem;
+            border-radius: 4px;
+            margin-top: 0.5rem;
+            font-size: 0.9rem;
+        }
+        
+        .footer {
+            text-align: center;
+            margin-top: 3rem;
+            opacity: 0.7;
+        }
+        
+        .refresh-btn {
+            position: fixed;
+            top: 2rem;
+            right: 2rem;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            padding: 1rem;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.5rem;
+            transition: all 0.3s ease;
+        }
+        
+        .refresh-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: rotate(180deg);
+        }
+    </style>
+</head>
+<body>
+    <button class="refresh-btn" onclick="location.reload()">🔄</button>
+    
+    <div class="container">
+        <div class="header">
+            <h1>🐳 Alfalyzer Docker Monitor</h1>
+            <p>Multi-Access Development Environment Status</p>
+        </div>
+        
+        <div class="grid">
+            <div class="card">
+                <h3>
+                    <span class="status-indicator"></span>
+                    Main Application
+                </h3>
+                <ul class="access-list">
+                    <li>
+                        <a href="http://localhost:3000" target="_blank">
+                            Primary Frontend
+                            <span class="port">:3000</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="http://localhost" target="_blank">
+                            Nginx Proxy
+                            <span class="port">:80</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="http://localhost:3001/api/health" target="_blank">
+                            API Health Check
+                            <span class="port">:3001</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+            
+            <div class="card">
+                <h3>
+                    <span class="status-indicator"></span>
+                    Development Servers
+                </h3>
+                <ul class="access-list">
+                    <li>
+                        <a href="http://localhost:3005" target="_blank">
+                            Dev Frontend
+                            <span class="port">:3005</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="http://localhost:8080" target="_blank">
+                            Alt Frontend
+                            <span class="port">:8080</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="http://localhost:8081" target="_blank">
+                            Nginx Dev Proxy
+                            <span class="port">:8081</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+            
+            <div class="card">
+                <h3>
+                    <span class="status-indicator"></span>
+                    API & Services
+                </h3>
+                <ul class="access-list">
+                    <li>
+                        <a href="http://localhost:3001/api/stocks" target="_blank">
+                            Stocks API
+                            <span class="port">:3001</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="http://localhost:8082" target="_blank">
+                            API-Only Proxy
+                            <span class="port">:8082</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="http://localhost:8083" target="_blank">
+                            Load Balancer Status
+                            <span class="port">:8083</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+            
+            <div class="card">
+                <h3>
+                    <span class="status-indicator"></span>
+                    Tunneling
+                </h3>
+                <ul class="access-list">
+                    <li>
+                        <a href="http://localhost:8090" target="_blank">
+                            Simple Tunnel
+                            <span class="port">:8090</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="http://localhost:4040" target="_blank">
+                            ngrok Dashboard
+                            <span class="port">:4040</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="commands">
+            <h3>🛠️ Docker Management Commands</h3>
+            <div class="command-grid">
+                <div class="command-item">
+                    <strong>Start Development</strong>
+                    <code>bash scripts/docker-manager.sh dev</code>
+                </div>
+                <div class="command-item">
+                    <strong>Start Minimal</strong>
+                    <code>bash scripts/docker-manager.sh minimal</code>
+                </div>
+                <div class="command-item">
+                    <strong>View Logs</strong>
+                    <code>bash scripts/docker-manager.sh logs</code>
+                </div>
+                <div class="command-item">
+                    <strong>Container Shell</strong>
+                    <code>bash scripts/docker-manager.sh shell</code>
+                </div>
+                <div class="command-item">
+                    <strong>Status Check</strong>
+                    <code>bash scripts/docker-manager.sh status</code>
+                </div>
+                <div class="command-item">
+                    <strong>Stop Services</strong>
+                    <code>bash scripts/docker-manager.sh stop</code>
+                </div>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>🚀 Alfalyzer Multi-Access Development Environment</p>
+            <p>Auto-refresh this page to check service status</p>
+        </div>
+    </div>
+    
+    <script>
+        // Auto-refresh every 30 seconds
+        setInterval(() => {
+            location.reload();
+        }, 30000);
+        
+        // Check service status
+        async function checkServices() {
+            const services = [
+                { url: 'http://localhost:3000', name: 'Frontend' },
+                { url: 'http://localhost:3001/api/health', name: 'API' },
+                { url: 'http://localhost:3005', name: 'Dev Frontend' },
+                { url: 'http://localhost:8080', name: 'Alt Frontend' }
+            ];
+            
+            for (const service of services) {
+                try {
+                    const response = await fetch(service.url, { mode: 'no-cors' });
+                    console.log(`${service.name}: OK`);
+                } catch (error) {
+                    console.log(`${service.name}: Error - ${error.message}`);
+                }
+            }
+        }
+        
+        // Check services on load
+        window.addEventListener('load', checkServices);
+    </script>
+</body>
+</html>

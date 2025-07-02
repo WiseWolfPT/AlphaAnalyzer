@@ -121,15 +121,15 @@ export default function Landing() {
       {/* Hero Section */}
       <section id="hero" className="relative overflow-hidden min-h-screen flex items-center">
         {/* Theme-aware Background */}
-        <div className="absolute inset-0 bg-gradient-to-br from-slate-50 to-white dark:bg-gray-900 dark:from-[#0d1117] dark:to-[#161b22]" />
+        <div className="absolute inset-0 bg-slate-50 dark:bg-gray-900" />
         
         {/* CSS Variables for themes */}
         <style jsx>{`
           :global(.light) {
-            --dashboard-bg: linear-gradient(145deg, rgb(255, 255, 255) 0%, rgb(248, 250, 252) 100%);
+            --dashboard-bg: rgb(255, 255, 255);
           }
           :global(.dark) {
-            --dashboard-bg: linear-gradient(145deg, #111827 0%, #0f172a 100%);
+            --dashboard-bg: #111827;
           }
         `}</style>
         
@@ -432,7 +432,7 @@ export default function Landing() {
               >
                 <Card className="border-border/50 hover:border-chartreuse/50 transition-all duration-300 hover:shadow-lg hover:shadow-chartreuse/20 group">
                   <CardContent className="p-8 text-center">
-                    <div className="w-16 h-16 bg-gradient-to-br from-chartreuse-dark to-chartreuse rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:from-chartreuse group-hover:to-chartreuse-dark transition-all duration-300 shadow-lg">
+                    <div className="w-16 h-16 bg-chartreuse-dark dark:bg-chartreuse rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:bg-chartreuse dark:group-hover:bg-chartreuse-dark transition-all duration-300 shadow-lg hover:shadow-chartreuse/30 hover:scale-105">
                       <benefit.icon className="h-8 w-8 text-deep-black" />
                     </div>
                     <h3 className="text-xl font-semibold text-foreground mb-4">
@@ -485,13 +485,13 @@ export default function Landing() {
                   className="text-center relative"
                 >
                   {/* Step Number */}
-                  <div className="w-16 h-16 bg-gradient-to-br from-chartreuse-dark to-chartreuse rounded-full flex items-center justify-center mx-auto mb-6 text-deep-black font-bold text-lg shadow-lg">
+                  <div className="w-16 h-16 bg-chartreuse-dark dark:bg-chartreuse rounded-full flex items-center justify-center mx-auto mb-6 text-deep-black font-bold text-lg shadow-lg hover:shadow-chartreuse/30 hover:scale-105 transition-all duration-300">
                     {step.number}
                   </div>
 
                   {/* Connector Line */}
                   {index < steps.length - 1 && (
-                    <div className="hidden md:block absolute top-8 left-[calc(50%+2rem)] w-[calc(100%-4rem)] h-0.5 bg-gradient-to-r from-chartreuse/50 to-transparent" />
+                    <div className="hidden md:block absolute top-8 left-[calc(50%+2rem)] w-[calc(100%-4rem)] h-0.5 bg-chartreuse/30" />
                   )}
 
                   <h3 className="text-xl font-semibold text-foreground mb-4">
@@ -602,7 +602,7 @@ export default function Landing() {
                   O preço é o que pagas. O valor é o que recebes.
                 </p>
                 <div className="flex items-center justify-center gap-3">
-                  <div className="w-12 h-12 bg-gradient-to-br from-gray-700 to-gray-900 rounded-full flex items-center justify-center text-white font-bold text-lg">
+                  <div className="w-12 h-12 bg-gray-800 dark:bg-gray-700 rounded-full flex items-center justify-center text-white font-bold text-lg shadow-md">
                     WB
                   </div>
                   <div className="text-left">

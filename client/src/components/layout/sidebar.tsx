@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useLocation } from "wouter";
+import { useLocation, useRoute } from "wouter";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/simple-auth-offline";
 import { Button } from "@/components/ui/button";
@@ -12,21 +12,21 @@ import {
   Briefcase, 
   Calculator, 
   Settings,
-  ChartLine,
+  Home,
   LogIn,
-  LogOut,
   User,
-  Crown
+  Crown,
+  Newspaper,
+  Search
 } from "lucide-react";
 
 const navigation = [
-  { name: "🏠 Dashboard", href: "/dashboard", icon: ChartLine },
-  { name: "Watchlists", href: "/watchlists", icon: Heart },
-  { name: "Earnings", href: "/earnings", icon: Calendar },
-  { name: "Transcripts", href: "/transcripts", icon: FileText },
-  { name: "Portfolios", href: "/portfolios", icon: Briefcase },
+  { name: "Find Stocks", href: "/home", icon: Search },
   { name: "Intrinsic Value", href: "/intrinsic-value", icon: Calculator },
-  { name: "Settings", href: "/profile", icon: Settings },
+  { name: "My Portfolios", href: "/portfolios", icon: Briefcase },
+  { name: "Watchlists", href: "/watchlists", icon: Heart },
+  { name: "Transcripts", href: "/transcripts", icon: FileText },
+  { name: "Earnings", href: "/earnings", icon: Calendar },
 ];
 
 export function Sidebar() {
@@ -36,7 +36,7 @@ export function Sidebar() {
 
   return (
     <div className="w-72 bg-card flex-shrink-0 sticky top-0 h-screen shadow-lg shadow-black/5 dark:shadow-black/20">
-      <div className="p-6">
+      <div className="p-6 h-full flex flex-col">
         {/* Logo */}
         <div className="flex items-center gap-3 mb-8">
           <div className="w-10 h-10 bg-gradient-to-br from-primary to-accent rounded-xl flex items-center justify-center shadow-lg">
@@ -49,19 +49,19 @@ export function Sidebar() {
         </div>
 
         {/* Navigation Links */}
-        <nav className="space-y-1">
+        <nav className="space-y-1 flex-1">
           {navigation.map((item) => {
             const isActive = location === item.href;
             
             return (
-              <a 
-                key={item.name} 
-                href={item.href}
-                id={`nav-${item.name.toLowerCase()}`}
+              <button
+                key={item.name}
                 onClick={(e) => {
-                  console.log(`Clicked ${item.name} -> ${item.href}`);
-                  // Don't prevent default - let it navigate normally
+                  e.preventDefault();
+                  console.log(`Navigating to ${item.name} -> ${item.href}`);
+                  window.location.href = item.href;
                 }}
+                className="w-full text-left"
               >
                 <div
                   className={cn(
@@ -77,14 +77,50 @@ export function Sidebar() {
                   )} />
                   <span>{item.name}</span>
                 </div>
-              </a>
+              </button>
             );
           })}
         </nav>
 
-        {/* Auth Section */}
-        <div className="mt-8 pt-6 border-t border-border">
-          {!user && (
+        {/* User Section */}
+        <div className="pt-6 border-t border-border">
+          {user ? (
+            <div className="space-y-3">
+              {/* Enhanced User Banner with better visual balance */}
+              <div className="bg-gradient-to-br from-chartreuse/15 via-chartreuse/10 to-chartreuse/5 border border-chartreuse/25 rounded-2xl p-5 shadow-sm hover:shadow-md transition-shadow duration-300">
+                <div className="flex items-center gap-4 mb-4">
+                  <div className="w-12 h-12 bg-gradient-to-br from-chartreuse/30 to-chartreuse/20 rounded-full flex items-center justify-center shadow-sm">
+                    <User className="h-5 w-5 text-chartreuse" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-semibold text-base text-foreground">{user.name || "User"}</p>
+                    <p className="text-sm text-muted-foreground/90">{user.email}</p>
+                  </div>
+                </div>
+                
+                {/* Enhanced Plan Badge Section */}
+                <div className="flex items-center justify-between bg-background/50 rounded-xl px-3 py-2.5">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-6 h-6 bg-amber-500/20 rounded-full flex items-center justify-center">
+                      <Crown className="h-3.5 w-3.5 text-amber-500" />
+                    </div>
+                    <span className="text-sm font-medium text-amber-600 dark:text-amber-400">
+                      {user.plan || "Free"} Plan
+                    </span>
+                  </div>
+                  {(!user.plan || user.plan === "Free") && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="h-7 px-3 text-xs font-medium border-chartreuse/40 text-chartreuse hover:bg-chartreuse/15 hover:border-chartreuse/60 transition-all duration-200"
+                    >
+                      Upgrade
+                    </Button>
+                  )}
+                </div>
+              </div>
+            </div>
+          ) : (
             <Button 
               className="w-full bg-gradient-to-r from-chartreuse via-chartreuse-dark to-chartreuse hover:from-chartreuse-dark hover:via-chartreuse hover:to-chartreuse-dark text-rich-black font-semibold shadow-lg shadow-chartreuse/30 hover:shadow-chartreuse/50 hover:scale-105 transition-all duration-300 border-0"
               onClick={() => setShowAuthModal(true)}

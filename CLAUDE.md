@@ -3,6 +3,18 @@
 This file provides comprehensive guidance to Claude Code (claude.ai/code) when working with the Alfalyzer codebase. 
 **IMPORTANT: This document was created by Claude Opus 4 with detailed insights for Claude Sonnet to execute efficiently.**
 
+## 🆕 IMPLEMENTATION STATUS (Updated: 2025-06-28)
+
+**RECENT CHANGES:**
+- ✅ User dropdown menu implemented in top bar
+- ✅ Help and Logout moved from sidebar to dropdown
+- ✅ Sidebar visual optimizations completed
+- ⏳ All data still using mock - needs real API integration
+- ⏳ Supabase migration pending
+- ⏳ Stripe integration pending
+
+**SEE ALSO**: `/IMPLEMENTATION_GUIDE.md` for detailed implementation instructions
+
 ## 🎯 PROJECT OVERVIEW
 
 **Alfalyzer** is a comprehensive financial analysis platform inspired by Qualtrim, providing real-time market data, earnings transcripts, advanced charts, and investment insights. The platform aims to democratize financial analysis with a focus on the Portuguese market while serving global users.
@@ -70,14 +82,16 @@ npm run format
 ## 🏗️ ARCHITECTURE
 
 ### Technology Stack
-- **Frontend**: React 18 + TypeScript + Vite + Tailwind CSS
+- **Frontend**: React 18 + TypeScript + Vite + Tailwind CSS + shadcn/ui
 - **Backend**: Node.js + Express + TypeScript
-- **Database**: SQLite (local) → PostgreSQL (production)
-- **Real-time**: WebSockets for price updates
+- **Database**: SQLite (local) → Supabase (production)
+- **Real-time**: WebSockets + Supabase Realtime for price updates
 - **Cache**: In-memory + Redis (when scaled)
-- **APIs**: Alpha Vantage, Finnhub, FMP, Twelve Data
+- **APIs**: Alpha Vantage, Finnhub, FMP, Twelve Data, Polygon (configured)
 - **AI**: ChatGPT API for transcript summaries
-- **Auth**: JWT + bcrypt
+- **Auth**: Supabase Auth (migrating from JWT + bcrypt)
+- **State**: React Query + Context API
+- **Routing**: Wouter (NOT React Router!)
 - **Deployment**: Vercel/Railway + GitHub Actions
 
 ### Key Design Patterns
@@ -106,23 +120,60 @@ npm run format
 6. **Portfolios**: Static mock data
 7. **Authentication**: Basic implementation needs enhancement
 
+## ⚠️ CRITICAL SECURITY CONSIDERATIONS
+
+### Environment Variable Security
+```bash
+# SECURITY WARNING: VITE_ PREFIX EXPOSES VARIABLES TO CLIENT
+# -----------------------------------------------------------------
+# Variables WITHOUT VITE_ prefix stay on the server (secure)
+# Variables WITH VITE_ prefix are exposed in client-side JavaScript
+#
+# Backend only (.env - NEVER commit):
+#   SUPABASE_SERVICE_KEY=...
+#   ALPHA_VANTAGE_API_KEY=...
+#   TWELVE_DATA_API_KEY=...
+#   FMP_API_KEY=...
+#   FINNHUB_API_KEY=...
+#   POLYGON_API_KEY=...
+#   STRIPE_SECRET_KEY=...
+#   STRIPE_WEBHOOK_SECRET=...
+#
+# Frontend build (.env.public - safe to expose):
+#   VITE_SUPABASE_URL=...
+#   VITE_SUPABASE_ANON_KEY=...
+# -----------------------------------------------------------------
+```
+
+### Row Level Security (RLS)
+All Supabase tables MUST have RLS enabled:
+```sql
+-- Enable RLS on all tables
+ALTER TABLE table_name ENABLE ROW LEVEL SECURITY;
+
+-- Create policies for user data isolation
+CREATE POLICY "Users can only see own data" ON table_name
+  FOR SELECT USING (auth.uid() = user_id);
+```
+
 ## 🚀 DETAILED IMPLEMENTATION PLAN
 
 ### PHASE 1: CRITICAL FIXES (Week 1)
 
-#### 1.1 Fix Dashboard Navigation
-**File**: `client/src/App.tsx`
+#### 1.1 Fix Dashboard Navigation & Routing
+**CRITICAL**: Use Wouter, NOT React Router!
 ```typescript
-// Change line 27 from:
-<Route path="/dashboard" component={EnhancedDashboard} />
-// To:
-<Route path="/dashboard" component={Dashboard} />
-// Or modify EnhancedStockCard to navigate to charts
+// ❌ WRONG - Don't use React Router
+import { useNavigate } from 'react-router-dom';
+
+// ✅ CORRECT - Use Wouter
+import { useLocation, useRoute } from 'wouter';
+const [location, navigate] = useLocation();
 ```
 
-**Sonnet Instructions**:
-- The issue is that `EnhancedDashboard` uses `EnhancedStockCard` which only opens modals
-- Either switch to `Dashboard` component or modify `EnhancedStockCard` to wrap in Link component
+**File**: `client/src/App.tsx`
+- Fix navigation using Wouter's `<Link>` component
+- Modify `EnhancedStockCard` to navigate to charts
 - Test navigation from dashboard → `/stock/{symbol}/charts`
 
 #### 1.2 Implement Real-time Data
@@ -161,7 +212,7 @@ Create new directory: `client/src/pages/admin/`
 **Backend**: Create `server/services/transcripts/`
 ```typescript
 // transcript-service.ts - Core logic
-// transcript-storage.ts - SQLite operations
+// transcript-storage.ts - Supabase operations
 // chatgpt-integration.ts - AI summaries
 ```
 
@@ -343,11 +394,12 @@ Add real-time prices to watchlist items:
 ```bash
 Frontend: Vercel (free tier)
 Backend: Railway.app (free tier)
-Database: SQLite → Supabase (free tier)
+Database: Supabase (free tier - includes auth, realtime, storage)
 Domain: alfalyzer.vercel.app (free)
 SSL: Automatic (free)
-Monitoring: LogRocket (free tier)
+Monitoring: LogRocket (free tier) + Prometheus
 Analytics: Google Analytics (free)
+CI/CD: GitHub Actions (free for public repos)
 ```
 
 ### Scaling Strategy
@@ -358,6 +410,24 @@ When revenue allows:
 4. Add monitoring (Sentry)
 5. Database replication
 6. Load balancing
+
+## 🆘 BACKUP API OPTIONS
+
+### When Primary APIs Fail
+```typescript
+// 1. POLYGON.IO (5 calls/minute free)
+// - Great for US market data
+// - REST + WebSocket support
+
+// 2. YAHOO FINANCE (via yfinance)
+// - Unlimited calls (use responsibly)
+// - Python microservice recommended
+// - WARNING: Non-commercial use only
+
+// 3. MARKETSTACK (1000 calls/month)
+// - End-of-day data
+// - Good for historical data
+```
 
 ## 📝 IMPLEMENTATION PRIORITIES FOR SONNET
 
@@ -396,6 +466,9 @@ When revenue allows:
 5. **Keep functions small** (< 50 lines)
 6. **Handle errors properly** (no silent failures)
 7. **Add loading and error states** to all async operations
+8. **Accessibility**: Follow WCAG 2.1 AA standards
+9. **i18n Ready**: Use constants for all user-facing text
+10. **Mobile First**: Test on mobile devices first
 
 ### Testing Requirements
 1. **Test critical paths** (auth, payments, data)
@@ -403,6 +476,11 @@ When revenue allows:
 3. **Test on mobile devices**
 4. **Validate in different browsers**
 5. **Check accessibility** (WCAG 2.1 AA)
+6. **Unit tests** using Vitest for hooks and services
+7. **Integration tests** for API endpoints
+8. **E2E tests** for critical user flows
+9. **Performance tests** for data-heavy pages
+10. **Security tests** for auth and payments
 
 ### Performance Guidelines
 1. **Lazy load all routes**
@@ -421,6 +499,51 @@ style: Formatting changes
 test: Test additions/changes
 chore: Maintenance tasks
 ```
+
+## 📊 MONITORING & OBSERVABILITY
+
+### API Usage Monitoring
+```typescript
+// server/middleware/api-monitor.ts
+export const apiMonitor = {
+  trackRequest: (provider: string, endpoint: string) => {
+    // Log to Prometheus/console
+    console.log(`📊 API Call: ${provider} - ${endpoint}`);
+  },
+  
+  checkQuotaUsage: async () => {
+    const usage = await getAPIUsageStats();
+    if (usage.percentage > 80) {
+      console.warn(`⚠️ API quota at ${usage.percentage}% for ${usage.provider}`);
+    }
+  }
+};
+```
+
+### Real-time Data Strategy
+```typescript
+// Use WebSocket + Supabase Realtime
+// Backend: Connect to TwelveData WebSocket
+// Broadcast to Supabase Realtime channel
+// Frontend: Subscribe to channel for updates
+// Fallback: Polling every 60 seconds if WebSocket fails
+```
+
+### Performance Monitoring
+- Monitor WebSocket connections
+- Track Supabase Realtime subscriptions
+- Log client-side errors to Sentry
+- Performance metrics with Web Vitals
+
+## 🚀 CI/CD PIPELINE
+
+### GitHub Actions Workflow
+- Lint and type check on every PR
+- Run tests before merge
+- Security audit with npm audit
+- Check for exposed secrets
+- Auto-deploy to staging on develop branch
+- Manual approval for production deploy
 
 ## 📚 ADDITIONAL RESOURCES FOR SONNET
 
@@ -444,7 +567,11 @@ chore: Maintenance tasks
   "vite": "^5.0.0",
   "tailwindcss": "^3.3.0",
   "express": "^4.18.0",
-  "sqlite3": "^5.1.0"
+  "@supabase/supabase-js": "^2.39.0",
+  "wouter": "^3.0.0",
+  "@tanstack/react-query": "^5.0.0",
+  "vitest": "^1.0.0",
+  "stripe": "^14.0.0"
 }
 ```
 
@@ -476,5 +603,33 @@ chore: Maintenance tasks
 
 ---
 
+## ⚠️ COMMON PITFALLS TO AVOID
+
+### DON'T DO THIS
+```typescript
+// ❌ Don't create new auth systems (use Supabase Auth)
+// ❌ Don't use React Router (use Wouter)
+// ❌ Don't expose API keys with VITE_ prefix
+// ❌ Don't make API calls without caching
+// ❌ Don't forget RLS policies on new tables
+// ❌ Don't skip error and loading states
+// ❌ Don't ignore mobile responsiveness
+```
+
+### ALWAYS DO THIS
+```typescript
+// ✅ Check if component exists before creating
+// ✅ Use TypeScript strict mode
+// ✅ Handle loading and error states
+// ✅ Cache API responses appropriately
+// ✅ Test on mobile devices
+// ✅ Follow existing patterns
+// ✅ Add aria-labels for accessibility
+// ✅ Use environment variables correctly
+// ✅ Enable RLS on all Supabase tables
+// ✅ Write tests for critical paths
+```
+
 **Document created by Claude Opus 4 on June 23, 2025**
+**Updated with security and implementation improvements on June 28, 2025**
 **For questions about implementation details, Sonnet should refer to this document first**

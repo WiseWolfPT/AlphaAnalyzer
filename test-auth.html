@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Authentication Test</title>
+</head>
+<body>
+    <h1>Authentication System Test</h1>
+    
+    <div id="loginForm">
+        <h2>Login</h2>
+        <input type="email" id="email" placeholder="Email" value="beta@alfalyzer.com">
+        <input type="password" id="password" placeholder="Password" value="123demo">
+        <button onclick="login()">Login</button>
+    </div>
+    
+    <div id="authStatus" style="margin-top: 20px;">
+        <h2>Authentication Status</h2>
+        <p>User: <span id="user">Not logged in</span></p>
+        <p>Token: <span id="token">No token</span></p>
+        <button onclick="checkAuth()">Check Auth Status</button>
+        <button onclick="logout()">Logout</button>
+    </div>
+
+    <div id="apiTest" style="margin-top: 20px;">
+        <h2>API Test</h2>
+        <button onclick="testMarketData()">Test Market Data</button>
+        <div id="apiResult"></div>
+    </div>
+
+    <script>
+        // Simple auth context simulation
+        let user = null;
+        let token = null;
+
+        // Generate a JWT-like token for demo purposes
+        function generateToken(user) {
+            const header = { alg: 'HS256', typ: 'JWT' };
+            const payload = {
+                sub: user.id,
+                email: user.email,
+                name: user.name,
+                iat: Math.floor(Date.now() / 1000),
+                exp: Math.floor(Date.now() / 1000) + (24 * 60 * 60) // 24 hours
+            };
+            
+            // Simple base64 encoding for demo (not cryptographically secure)
+            const encodedHeader = btoa(JSON.stringify(header));
+            const encodedPayload = btoa(JSON.stringify(payload));
+            const signature = btoa(`alfalyzer-${user.id}-${Date.now()}`);
+            
+            return `${encodedHeader}.${encodedPayload}.${signature}`;
+        }
+
+        function login() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            // Demo credentials
+            if ((email === 'demo@alfalyzer.com' && password === 'demo123') ||
+                (email === 'admin@alfalyzer.com' && password === 'admin123') ||
+                (email === 'beta@alfalyzer.com' && password === '123demo') ||
+                (email === 'test@test.com' && password === 'test123')) {
+                
+                const demoUser = {
+                    id: 'demo-user-' + Date.now(),
+                    name: email === 'admin@alfalyzer.com' ? 'Admin User' : 
+                          email === 'beta@alfalyzer.com' ? 'António Francisco (Beta)' : 'Demo User',
+                    email: email,
+                    avatar: email === 'admin@alfalyzer.com' ? 'AU' : 
+                            email === 'beta@alfalyzer.com' ? 'AF' : 'DU'
+                };
+                
+                const authToken = generateToken(demoUser);
+                
+                user = demoUser;
+                token = authToken;
+                localStorage.setItem('alfalyzer-user', JSON.stringify(demoUser));
+                localStorage.setItem('alfalyzer-token', authToken);
+                localStorage.setItem('auth-token', authToken); // For market data client
+                
+                updateAuthDisplay();
+                alert('Login successful!');
+            } else {
+                alert('Invalid credentials. Use beta@alfalyzer.com / 123demo');
+            }
+        }
+
+        function logout() {
+            user = null;
+            token = null;
+            localStorage.removeItem('alfalyzer-user');
+            localStorage.removeItem('alfalyzer-token');
+            localStorage.removeItem('auth-token');
+            updateAuthDisplay();
+            alert('Logged out successfully!');
+        }
+
+        function checkAuth() {
+            // Check for saved user and token in localStorage
+            const savedUser = localStorage.getItem('alfalyzer-user');
+            const savedToken = localStorage.getItem('alfalyzer-token');
+            
+            if (savedUser && savedToken) {
+                try {
+                    user = JSON.parse(savedUser);
+                    token = savedToken;
+                } catch (error) {
+                    console.error('Error parsing saved user:', error);
+                    localStorage.removeItem('alfalyzer-user');
+                    localStorage.removeItem('alfalyzer-token');
+                }
+            }
+            updateAuthDisplay();
+        }
+
+        function updateAuthDisplay() {
+            document.getElementById('user').textContent = user ? `${user.name} (${user.email})` : 'Not logged in';
+            document.getElementById('token').textContent = token ? `${token.substring(0, 50)}...` : 'No token';
+        }
+
+        async function testMarketData() {
+            if (!user || !token) {
+                alert('Please login first!');
+                return;
+            }
+
+            const resultDiv = document.getElementById('apiResult');
+            resultDiv.innerHTML = '<p>Testing API call...</p>';
+
+            try {
+                // Test direct backend API call
+                const response = await fetch('http://localhost:3002/api/market-data/quote/AAPL', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`,
+                    },
+                    credentials: 'include',
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    resultDiv.innerHTML = `<h3>API Test Success!</h3><pre>${JSON.stringify(data, null, 2)}</pre>`;
+                } else {
+                    resultDiv.innerHTML = `<h3>API Test Failed</h3><p>Status: ${response.status} ${response.statusText}</p>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<h3>API Test Error</h3><p>${error.message}</p>`;
+            }
+        }
+
+        // Initialize on page load
+        checkAuth();
+    </script>
+</body>
+</html>

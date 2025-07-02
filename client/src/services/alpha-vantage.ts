@@ -1,5 +1,6 @@
 // Alpha Vantage API Service - For missing data (EPS, Revenue Segments, Expenses)
-const ALPHA_VANTAGE_API_KEY = import.meta.env.VITE_ALPHA_VANTAGE_API_KEY || 'demo';
+// SECURITY: API key moved to server-side - use proxy endpoints instead
+const ALPHA_VANTAGE_API_KEY = 'DEPRECATED_USE_SERVER_PROXY';
 const ALPHA_VANTAGE_BASE_URL = 'https://www.alphavantage.co/query';
 
 export interface CompanyOverview {

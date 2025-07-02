@@ -38,7 +38,8 @@ class AlphaVantageEnhancedService {
     historicalPrices: 60 * 60 * 1000, // 1 hour - price data
   };
 
-  constructor(private apiKey: string = import.meta.env.VITE_ALPHA_VANTAGE_API_KEY || 'demo') {}
+  // SECURITY: API key moved to server-side - use proxy endpoints instead
+  constructor(private apiKey: string = 'DEPRECATED_USE_SERVER_PROXY') {}
 
   // Rate limiting management
   private checkRateLimit(): { canMakeRequest: boolean; reason?: string; waitTime?: number } {

@@ -30,7 +30,9 @@ const Trial = lazy(() => import("@/pages/trial"));
 const Settings = lazy(() => import("@/pages/settings"));
 const Help = lazy(() => import("@/pages/help"));
 const News = lazy(() => import("@/pages/news"));
-const AdminDashboard = lazy(() => import("@/pages/admin-dashboard"));
+const AdminDashboard = lazy(() => import("@/pages/admin/admin-dashboard"));
+const ApiMonitoring = lazy(() => import("@/pages/admin/api-monitoring"));
+const StockHeaderTest = lazy(() => import("@/components/stock/stock-header-test"));
 
 // Loading component for Suspense
 const PageLoader = () => (
@@ -47,7 +49,7 @@ function Router() {
         <Route path="/login" component={Login} />
         <Route path="/register" component={Register} />
         <Route path="/trial" component={Trial} />
-        <Route path="/home" component={Home} />
+        <Route path="/home" component={FindStocks} />
         <Route path="/dashboard" component={NewEnhancedDashboard} />
         <Route path="/find-stocks" component={FindStocks} />
         <Route path="/dashboard-safe" component={Dashboard} />
@@ -64,6 +66,8 @@ function Router() {
         <Route path="/news" component={News} />
         <Route path="/intrinsic-value" component={IntrinsicValue} />
         <Route path="/admin" component={AdminDashboard} />
+        <Route path="/admin/api-monitoring" component={ApiMonitoring} />
+        <Route path="/test/stock-header" component={StockHeaderTest} />
         <Route component={NotFound} />
       </Switch>
     </Suspense>

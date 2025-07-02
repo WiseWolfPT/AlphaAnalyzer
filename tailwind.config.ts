@@ -90,16 +90,23 @@ export default {
         negative: "#ef4444", 
         neutral: "#f59e0b",
         tangerine: "#f28500",
-        // New Color Palette
+        // Enhanced Green Theme Color Palette
         "rich-black": "#000000",
         "deep-black": "#000000",
         "non-photo-blue": "#B1EBFF",
         "xanthous": "#F4B514",
         "chartreuse": "#D8F22D",
         "chartreuse-dark": "#B8D625",
+        "chartreuse-light": "#E5F845",
+        "chartreuse-darker": "#9CB81D",
+        "chartreuse-muted": "#C4D626",
         "pure-white": "#FFFFFF",
         "gray-mouse": "#F5F5F5",
         "dark-slate-navy": "#172631",
+        // Accent colors to complement green theme
+        "accent-blue": "#4A90E2",
+        "accent-purple": "#8E44AD",
+        "accent-orange": "#F39C12",
       },
       keyframes: {
         "accordion-down": {
@@ -118,10 +125,55 @@ export default {
             height: "0",
           },
         },
+        "glow-pulse": {
+          "0%, 100%": {
+            boxShadow: "0 0 10px rgba(216, 242, 45, 0.3)",
+          },
+          "50%": {
+            boxShadow: "0 0 25px rgba(216, 242, 45, 0.6)",
+          },
+        },
+        "bounce-gentle": {
+          "0%, 100%": {
+            transform: "translateY(0)",
+          },
+          "50%": {
+            transform: "translateY(-2px)",
+          },
+        },
+        "scale-pulse": {
+          "0%, 100%": {
+            transform: "scale(1)",
+          },
+          "50%": {
+            transform: "scale(1.05)",
+          },
+        },
+        "wiggle": {
+          "0%, 100%": {
+            transform: "rotate(-1deg)",
+          },
+          "50%": {
+            transform: "rotate(1deg)",
+          },
+        },
+        "float": {
+          "0%, 100%": {
+            transform: "translateY(0px)",
+          },
+          "50%": {
+            transform: "translateY(-6px)",
+          },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+        "glow-pulse": "glow-pulse 2s ease-in-out infinite",
+        "bounce-gentle": "bounce-gentle 1s ease-in-out infinite",
+        "scale-pulse": "scale-pulse 2s ease-in-out infinite",
+        "wiggle": "wiggle 1s ease-in-out infinite",
+        "float": "float 3s ease-in-out infinite",
       },
     },
   },

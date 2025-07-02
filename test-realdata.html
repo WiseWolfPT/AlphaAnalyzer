@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alfalyzer Real Data Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 20px; border: 1px solid #ccc; border-radius: 8px; }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        .loading { background-color: #e2e3e5; border-color: #d1d3d4; }
+        button { padding: 10px 20px; margin: 10px 0; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 4px; overflow: auto; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Alfalyzer Real Data Test</h1>
+    
+    <div class="test-section loading" id="health-test">
+        <h3>📊 Health Check</h3>
+        <p>Testing backend connectivity...</p>
+        <pre id="health-result">Loading...</pre>
+    </div>
+
+    <div class="test-section loading" id="single-quote-test">
+        <h3>📈 Single Quote Test (AAPL)</h3>
+        <p>Testing individual stock quote...</p>
+        <pre id="single-quote-result">Loading...</pre>
+    </div>
+
+    <div class="test-section loading" id="batch-test">
+        <h3>📊 Batch Quotes Test</h3>
+        <p>Testing multiple stock quotes (Frontend Client)...</p>
+        <pre id="batch-result">Loading...</pre>
+    </div>
+
+    <button onclick="runTests()">🔄 Run Tests Again</button>
+
+    <script>
+        // Market Data Client (simplified version for testing)
+        class TestMarketDataClient {
+            constructor() {
+                this.baseUrl = 'http://localhost:3001/api/market-data';
+                this.authToken = 'demo-token-development';
+            }
+
+            getHeaders() {
+                return {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${this.authToken}`
+                };
+            }
+
+            async getQuote(symbol) {
+                try {
+                    const response = await fetch(`${this.baseUrl}/quote/${symbol}`, {
+                        method: 'GET',
+                        headers: this.getHeaders(),
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    }
+
+                    return await response.json();
+                } catch (error) {
+                    console.error(`Error fetching quote for ${symbol}:`, error);
+                    throw error;
+                }
+            }
+
+            async getBatchQuotes(symbols) {
+                try {
+                    const quotePromises = symbols.map(symbol => this.getQuote(symbol));
+                    const results = await Promise.allSettled(quotePromises);
+                    
+                    const quotes = [];
+                    const failed = [];
+                    
+                    results.forEach((result, index) => {
+                        if (result.status === 'fulfilled' && result.value) {
+                            quotes.push(result.value);
+                        } else {
+                            failed.push(symbols[index]);
+                        }
+                    });
+
+                    return {
+                        quotes,
+                        failed,
+                        timestamp: Date.now()
+                    };
+                } catch (error) {
+                    console.error('Failed to fetch batch quotes:', error);
+                    return { quotes: [], failed: symbols, timestamp: Date.now() };
+                }
+            }
+        }
+
+        const client = new TestMarketDataClient();
+
+        async function testHealth() {
+            const section = document.getElementById('health-test');
+            const result = document.getElementById('health-result');
+            
+            try {
+                const response = await fetch('http://localhost:3001/api/health');
+                const data = await response.json();
+                
+                result.textContent = JSON.stringify(data, null, 2);
+                section.className = 'test-section success';
+            } catch (error) {
+                result.textContent = `Error: ${error.message}`;
+                section.className = 'test-section error';
+            }
+        }
+
+        async function testSingleQuote() {
+            const section = document.getElementById('single-quote-test');
+            const result = document.getElementById('single-quote-result');
+            
+            try {
+                const data = await client.getQuote('AAPL');
+                result.textContent = JSON.stringify(data, null, 2);
+                section.className = 'test-section success';
+            } catch (error) {
+                result.textContent = `Error: ${error.message}`;
+                section.className = 'test-section error';
+            }
+        }
+
+        async function testBatchQuotes() {
+            const section = document.getElementById('batch-test');
+            const result = document.getElementById('batch-result');
+            
+            try {
+                const symbols = ['AAPL', 'NVDA', 'TSLA', 'META'];
+                const data = await client.getBatchQuotes(symbols);
+                result.textContent = JSON.stringify(data, null, 2);
+                section.className = 'test-section success';
+            } catch (error) {
+                result.textContent = `Error: ${error.message}`;
+                section.className = 'test-section error';
+            }
+        }
+
+        async function runTests() {
+            // Reset sections
+            document.querySelectorAll('.test-section').forEach(section => {
+                section.className = 'test-section loading';
+            });
+            
+            document.querySelectorAll('pre').forEach(pre => {
+                pre.textContent = 'Loading...';
+            });
+
+            // Run tests
+            await Promise.all([
+                testHealth(),
+                testSingleQuote(),
+                testBatchQuotes()
+            ]);
+        }
+
+        // Run tests on page load
+        runTests();
+    </script>
+</body>
+</html>

@@ -173,8 +173,8 @@ export const BundleAnalyzer = {
       console.log(`[Bundle] ${chunkName} loaded in ${loadTime.toFixed(2)}ms`);
       
       // Report to analytics if needed
-      if (typeof gtag !== 'undefined') {
-        gtag('event', 'chunk_load_time', {
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'chunk_load_time', {
           chunk_name: chunkName,
           load_time: Math.round(loadTime)
         });

@@ -1,4 +1,5 @@
-// Smart API rotation system for maximum free tier usage with enhanced security
+// DEPRECATED: Client-side API calls moved to server for security
+// All API calls now go through server-side proxy endpoints
 import { cacheManager } from './cache-manager';
 import { clientDataSanitizer, DataClassification } from './client-data-sanitizer';
 
@@ -28,7 +29,8 @@ export class APIRotationManager {
       dailyLimit: 250,
       currentUsage: 0,
       lastReset: Date.now(),
-      apiKey: import.meta.env.VITE_FMP_API_KEY,
+      // SECURITY: API keys moved to server-side
+      apiKey: undefined,
       enabled: true
     },
     {
@@ -37,7 +39,8 @@ export class APIRotationManager {
       dailyLimit: 500,
       currentUsage: 0,
       lastReset: Date.now(),
-      apiKey: import.meta.env.VITE_ALPHA_VANTAGE_API_KEY,
+      // SECURITY: API keys moved to server-side
+      apiKey: undefined,
       enabled: true
     },
     {
@@ -46,7 +49,8 @@ export class APIRotationManager {
       dailyLimit: 3000, // 100k monthly = ~3k daily
       currentUsage: 0,
       lastReset: Date.now(),
-      apiKey: import.meta.env.VITE_IEX_API_KEY,
+      // SECURITY: API keys moved to server-side
+      apiKey: undefined,
       enabled: true
     },
     {
@@ -56,7 +60,8 @@ export class APIRotationManager {
       minuteLimit: 60,
       currentUsage: 0,
       lastReset: Date.now(),
-      apiKey: import.meta.env.VITE_FINNHUB_API_KEY,
+      // SECURITY: API keys moved to server-side
+      apiKey: undefined,
       enabled: true
     }
   ];

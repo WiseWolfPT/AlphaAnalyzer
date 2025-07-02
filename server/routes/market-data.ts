@@ -1,6 +1,7 @@
 import { Router, Request, Response } from 'express';
 import { z } from 'zod';
 import { authMiddleware } from '../middleware/auth-middleware';
+import { demoAuthMiddleware, optionalDemoAuth } from '../middleware/demo-auth-middleware';
 import { rateLimitMiddleware } from '../middleware/rate-limit-middleware';
 import { dbUtils } from '../db';
 import crypto from 'crypto';
@@ -11,8 +12,16 @@ import {
   MarketDataSchema, 
   SearchResultSchema 
 } from '../cache/lru-cache';
+import { ServerMarketDataService } from '../services/market-data-service';
 
 const router = Router();
+
+// Use demo authentication in development mode
+const isDevelopment = process.env.NODE_ENV !== 'production';
+const authService = isDevelopment ? demoAuthMiddleware() : authMiddleware.instance.authenticate();
+
+// Initialize the enhanced market data service
+const marketDataService = new ServerMarketDataService();
 
 // SECURITY FIX: Replace simple Map with secure LRU cache to prevent memory exhaustion
 const marketDataCache = createMarketDataCache();
@@ -309,9 +318,98 @@ async function fetchFromFMP(symbol: string): Promise<any> {
   };
 }
 
+// Yahoo Finance fallback (no API key required)
+async function fetchFromYahooFinance(symbol: string): Promise<any> {
+  const response = await fetch(
+    `https://query1.finance.yahoo.com/v8/finance/chart/${symbol}`,
+    { 
+      headers: { 'User-Agent': 'Mozilla/5.0 (compatible; Alfalyzer/1.0)' },
+      signal: AbortSignal.timeout(10000),
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error(`Yahoo Finance API error: ${response.status}`);
+  }
+
+  const data = await response.json();
+  
+  if (!data?.chart?.result?.[0]) {
+    throw new Error('No data available from Yahoo Finance');
+  }
+
+  const result = data.chart.result[0];
+  const meta = result.meta;
+  
+  const price = meta.regularMarketPrice || meta.previousClose || 0;
+  const previousClose = meta.previousClose || 0;
+  const change = price - previousClose;
+  const changePercent = previousClose > 0 ? (change / previousClose) * 100 : 0;
+
+  // Normalizar dados do Yahoo Finance
+  return {
+    symbol: meta.symbol || symbol,
+    price: price,
+    change: change,
+    changePercent: changePercent,
+    high: meta.regularMarketDayHigh || 0,
+    low: meta.regularMarketDayLow || 0,
+    open: meta.regularMarketOpen || 0,
+    previousClose: previousClose,
+    volume: meta.regularMarketVolume || 0,
+    timestamp: Math.floor(Date.now() / 1000),
+    provider: 'yahoo_finance',
+    marketCap: meta.marketCap || 0,
+  };
+}
+
+// Twelve Data with demo key support
+async function fetchFromTwelveData(symbol: string): Promise<any> {
+  const apiKey = process.env.TWELVE_DATA_API_KEY || 'demo';
+  
+  const response = await fetch(
+    `https://api.twelvedata.com/quote?symbol=${symbol}&apikey=${apiKey}`,
+    { 
+      headers: { 'User-Agent': 'Alfalyzer/1.0' },
+      signal: AbortSignal.timeout(10000),
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error(`Twelve Data API error: ${response.status}`);
+  }
+
+  const data = await response.json();
+  
+  if (data.code === 401) {
+    throw new Error('Twelve Data: API key invalid');
+  }
+  
+  if (!data.close) {
+    throw new Error('No data available from Twelve Data');
+  }
+
+  // Normalizar dados do Twelve Data
+  return {
+    symbol: data.symbol,
+    price: parseFloat(data.close),
+    change: parseFloat(data.change),
+    changePercent: parseFloat(data.percent_change),
+    high: parseFloat(data.high),
+    low: parseFloat(data.low),
+    open: parseFloat(data.open),
+    previousClose: parseFloat(data.previous_close),
+    volume: parseInt(data.volume) || 0,
+    timestamp: data.timestamp || Math.floor(Date.now() / 1000),
+    provider: 'twelve_data',
+  };
+}
+
 // Função principal para buscar cotação com fallback
 async function fetchQuoteWithFallback(symbol: string, userId?: string): Promise<any> {
   const providers = [
+    { name: 'twelve_data', fetch: fetchFromTwelveData },
+    { name: 'yahoo_finance', fetch: fetchFromYahooFinance },
     { name: 'finnhub', fetch: fetchFromFinnhub },
     { name: 'fmp', fetch: fetchFromFMP },
     { name: 'alpha_vantage', fetch: fetchFromAlphaVantage },
@@ -351,10 +449,10 @@ async function fetchQuoteWithFallback(symbol: string, userId?: string): Promise<
 
 /**
  * GET /api/market-data/quote/:symbol
- * Buscar cotação de uma ação com dados reais
+ * Buscar cotação de uma ação com dados reais usando o enhanced service
  */
 router.get('/quote/:symbol',
-  authMiddleware.instance.authenticate(),
+  authService,
   marketDataRateLimit,
   async (req: Request, res: Response) => {
     try {
@@ -368,50 +466,45 @@ router.get('/quote/:symbol',
       }
 
       const { symbol } = validation.data;
-      const cacheKey = `quote:${symbol}`;
 
-      // Verificar cache primeiro
-      const cached = checkCache(cacheKey);
-      if (cached) {
-        console.log(`Cache hit for ${symbol}`);
-        return res.json({
-          ...cached,
-          _cached: true,
-          _cacheAge: Date.now() - cached._timestamp,
+      console.log(`🔍 API request for quote: ${symbol}`);
+
+      // Use the enhanced market data service
+      const stockData = await marketDataService.getRealTimeQuote(symbol);
+      
+      if (!stockData) {
+        return res.status(404).json({
+          error: 'QUOTE_NOT_FOUND',
+          message: `Unable to fetch quote for ${symbol}. All providers failed.`,
+          symbol,
+          timestamp: new Date().toISOString(),
         });
       }
 
-      // Buscar dados reais com fallback
-      const quoteData = await fetchQuoteWithFallback(symbol, req.user?.id);
-      
-      // Adicionar metadados
-      const enrichedData = {
-        ...quoteData,
+      // Convert Stock to API response format
+      const quoteResponse = {
+        symbol: stockData.symbol,
+        name: stockData.name,
+        price: stockData.price,
+        change: stockData.change,
+        changePercent: stockData.changePercent,
+        high: stockData.high,
+        low: stockData.low,
+        open: stockData.open,
+        previousClose: stockData.previousClose,
+        volume: stockData.volume,
+        marketCap: stockData.marketCap,
+        eps: stockData.eps,
+        pe: stockData.peRatio,
+        provider: (stockData as any).provider || 'unknown',
+        timestamp: Math.floor(stockData.lastUpdated.getTime() / 1000),
         _timestamp: Date.now(),
         _cached: false,
       };
 
-      // Salvar no cache
-      saveToCache(cacheKey, enrichedData);
+      console.log(`✅ Successfully fetched ${symbol} via ${quoteResponse.provider}`);
 
-      // Salvar no banco para histórico (opcional)
-      try {
-        dbUtils.insertStock({
-          symbol: quoteData.symbol,
-          name: `${quoteData.symbol} Corp`, // Poderia buscar o nome real em outro endpoint
-          price: quoteData.price,
-          change: quoteData.change,
-          changePercent: quoteData.changePercent,
-          marketCap: quoteData.marketCap,
-          eps: quoteData.eps,
-          peRatio: quoteData.pe,
-        });
-      } catch (dbError) {
-        console.error('Failed to save to database:', dbError);
-        // Não falhar a requisição por isso
-      }
-
-      res.json(enrichedData);
+      res.json(quoteResponse);
     } catch (error) {
       console.error('Quote fetch error:', error);
       
@@ -450,7 +543,7 @@ router.get('/quote/:symbol',
  * Buscar múltiplas cotações de uma vez
  */
 router.post('/quotes/batch',
-  authMiddleware.instance.authenticate(),
+  authService,
   marketDataRateLimit,
   async (req: Request, res: Response) => {
     try {
@@ -516,7 +609,7 @@ router.post('/quotes/batch',
  * Buscar símbolos de ações
  */
 router.get('/search',
-  authMiddleware.instance.authenticate(),
+  authService,
   marketDataRateLimit,
   async (req: Request, res: Response) => {
     try {
@@ -567,36 +660,166 @@ router.get('/search',
 );
 
 /**
+ * GET /api/market-data/test
+ * Test API configuration and connectivity (public endpoint for testing)
+ */
+router.get('/test', 
+  async (req: Request, res: Response) => {
+    const testSymbol = 'AAPL';
+    const testResults: any = {
+      timestamp: new Date().toISOString(),
+      symbol: testSymbol,
+      providers: {},
+      workingProviders: [],
+      failedProviders: [],
+    };
+
+    // Test each provider individually
+    const providers = [
+      { name: 'twelve_data', fetch: fetchFromTwelveData },
+      { name: 'yahoo_finance', fetch: fetchFromYahooFinance },
+      { name: 'finnhub', fetch: fetchFromFinnhub },
+      { name: 'fmp', fetch: fetchFromFMP },
+      { name: 'alpha_vantage', fetch: fetchFromAlphaVantage },
+    ];
+
+    for (const provider of providers) {
+      try {
+        const startTime = Date.now();
+        const data = await provider.fetch(testSymbol);
+        const responseTime = Date.now() - startTime;
+        
+        testResults.providers[provider.name] = {
+          status: 'success',
+          responseTime: responseTime,
+          data: {
+            symbol: data.symbol,
+            price: data.price,
+            provider: data.provider,
+          },
+        };
+        testResults.workingProviders.push(provider.name);
+      } catch (error) {
+        testResults.providers[provider.name] = {
+          status: 'failed',
+          error: error instanceof Error ? error.message : 'Unknown error',
+        };
+        testResults.failedProviders.push(provider.name);
+      }
+    }
+
+    // Overall status
+    testResults.overallStatus = testResults.workingProviders.length > 0 ? 'success' : 'failed';
+    testResults.summary = {
+      working: testResults.workingProviders.length,
+      failed: testResults.failedProviders.length,
+      total: providers.length,
+    };
+
+    res.json(testResults);
+  }
+);
+
+/**
  * GET /api/market-data/status
- * Verificar status dos providers de API
+ * Enhanced API status with real key validation
  */
 router.get('/status', 
-  authMiddleware.instance.authenticate(),
+  authService,
   async (req: Request, res: Response) => {
-    const providers = Object.entries(API_PROVIDERS).map(([key, config]) => {
-      const apiKey = config.getKey();
-      return {
-        name: config.name,
-        key: key,
-        configured: !!(apiKey && apiKey !== 'demo'),
-        rateLimit: config.rateLimit,
-      };
-    });
+    try {
+      const apiStatus = marketDataService.getApiStatus();
+      const quotaStatus = Array.from(marketDataService.getQuotaStatus().entries());
 
-    res.json({
-      providers,
-      cache: {
-        marketData: {
-          ...marketDataCache.getStats(),
-          ttl: CACHE_TTL,
+      res.json({
+        ...apiStatus,
+        quotas: quotaStatus.map(([provider, quota]) => ({
+          provider,
+          ...quota,
+        })),
+        cache: {
+          marketData: {
+            ...marketDataCache.getStats(),
+            ttl: CACHE_TTL,
+          },
+          search: {
+            ...searchCache.getStats(),
+            ttl: 5 * 60 * 1000,
+          },
         },
-        search: {
-          ...searchCache.getStats(),
-          ttl: 5 * 60 * 1000,
+        timestamp: new Date().toISOString(),
+      });
+    } catch (error) {
+      console.error('Status check error:', error);
+      res.status(500).json({
+        error: 'STATUS_CHECK_FAILED',
+        message: 'Unable to check API status',
+        timestamp: new Date().toISOString(),
+      });
+    }
+  }
+);
+
+/**
+ * GET /api/market-data/diagnostics
+ * Comprehensive API connectivity test
+ */
+router.get('/diagnostics',
+  authService,
+  async (req: Request, res: Response) => {
+    try {
+      console.log('🔧 Running API diagnostics...');
+      const diagnostics = await marketDataService.testApiConnections();
+      
+      res.json({
+        ...diagnostics,
+        summary: {
+          total: Object.keys(diagnostics).length,
+          working: Object.values(diagnostics).filter((result: any) => result.status === 'success').length,
+          failed: Object.values(diagnostics).filter((result: any) => result.status === 'failed').length,
         },
-      },
-      timestamp: new Date().toISOString(),
-    });
+        timestamp: new Date().toISOString(),
+      });
+    } catch (error) {
+      console.error('Diagnostics error:', error);
+      res.status(500).json({
+        error: 'DIAGNOSTICS_FAILED',
+        message: 'Unable to run API diagnostics',
+        timestamp: new Date().toISOString(),
+      });
+    }
+  }
+);
+
+/**
+ * POST /api/market-data/warm-cache
+ * Warm cache with popular symbols
+ */
+router.post('/warm-cache',
+  authService,
+  async (req: Request, res: Response) => {
+    try {
+      const { symbols } = req.body;
+      const defaultSymbols = ['AAPL', 'NVDA', 'TSLA', 'META', 'GOOGL', 'AMZN', 'MSFT'];
+      const symbolsToWarm = Array.isArray(symbols) ? symbols : defaultSymbols;
+
+      console.log(`🔥 Warming cache for ${symbolsToWarm.length} symbols...`);
+      await marketDataService.warmCache(symbolsToWarm);
+
+      res.json({
+        message: 'Cache warming completed',
+        symbols: symbolsToWarm,
+        count: symbolsToWarm.length,
+        timestamp: new Date().toISOString(),
+      });
+    } catch (error) {
+      console.error('Cache warming error:', error);
+      res.status(500).json({
+        error: 'CACHE_WARMING_FAILED',
+        message: 'Unable to warm cache',
+        timestamp: new Date().toISOString(),
+      });
+    }
   }
 );
 

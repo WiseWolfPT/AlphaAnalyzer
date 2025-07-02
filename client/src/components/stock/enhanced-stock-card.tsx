@@ -13,31 +13,35 @@ import {
   X
 } from "lucide-react";
 import { useStock, useIntrinsicValue } from "@/hooks/use-enhanced-stocks";
+import { useNormalizedStock, getStockPrice, getStockChangePercent, getStockChange, isStockPositive } from "@/lib/stock-data-normalizer";
 import { cn } from "@/lib/utils";
 import { useLocation } from "wouter";
+import { memo, useMemo, useCallback } from "react";
+import type { StockCardProps } from "./types";
 
-interface EnhancedStockCardProps {
-  symbol: string;
-  onPerformanceClick?: () => void;
-  onQuickInfoClick?: () => void;
-  onRemove?: () => void;
-  showRemove?: boolean;
-}
-
-export function EnhancedStockCard({ 
+export const EnhancedStockCard = memo(function EnhancedStockCard({ 
   symbol, 
   onPerformanceClick, 
   onQuickInfoClick,
   onRemove,
   showRemove = false
-}: EnhancedStockCardProps) {
-  const { data: stock, isLoading: stockLoading, error: stockError } = useStock(symbol);
+}: StockCardProps) {
+  const { data: rawStock, isLoading: stockLoading, error: stockError } = useStock(symbol);
   const { data: intrinsicValue, isLoading: ivLoading } = useIntrinsicValue(symbol);
+  const stock = useNormalizedStock(rawStock);
   const [, setLocation] = useLocation();
 
-  const handleChartsClick = () => {
+  const handleChartsClick = useCallback(() => {
     setLocation(`/stock/${symbol}/charts`);
-  };
+  }, [symbol, setLocation]);
+
+  const handleQuickInfoClick = useCallback(() => {
+    onQuickInfoClick?.();
+  }, [onQuickInfoClick]);
+
+  const handleRemoveClick = useCallback(() => {
+    onRemove?.(symbol);
+  }, [onRemove, symbol]);
 
   if (stockLoading) {
     return (
@@ -76,20 +80,34 @@ export function EnhancedStockCard({
     );
   }
 
-  const isPositive = Number(stock.changePercent) >= 0;
-  const hasIntrinsicValue = intrinsicValue && intrinsicValue.intrinsicValue;
-  const safetyMargin = hasIntrinsicValue && stock.currentPrice && intrinsicValue.intrinsicValue
-    ? ((Number(intrinsicValue.intrinsicValue) - Number(stock.currentPrice)) / Number(stock.currentPrice)) * 100
-    : null;
+  // Memoize expensive calculations
+  const calculations = useMemo(() => {
+    const isPositive = isStockPositive(stock);
+    const hasIntrinsicValue = intrinsicValue && intrinsicValue.intrinsicValue;
+    const currentPrice = getStockPrice(stock);
+    const safetyMargin = hasIntrinsicValue && currentPrice && intrinsicValue.intrinsicValue
+      ? ((Number(intrinsicValue.intrinsicValue) - currentPrice) / currentPrice) * 100
+      : null;
+    
+    return {
+      isPositive,
+      hasIntrinsicValue,
+      currentPrice,
+      safetyMargin
+    };
+  }, [stock, intrinsicValue]);
+
+  const { isPositive, hasIntrinsicValue, currentPrice, safetyMargin } = calculations;
 
   return (
-    <Card className="h-full hover:shadow-lg transition-shadow relative">
+    <Card className="h-full modern-card stock-card relative" tabIndex={0} role="article" aria-label={`Stock card for ${stock.symbol} - ${stock.name}`}>
       {showRemove && onRemove && (
         <Button
           variant="ghost"
           size="sm"
-          className="absolute top-2 right-2 h-6 w-6 p-0 hover:bg-red-100 hover:text-red-600 z-10"
-          onClick={onRemove}
+          className="absolute top-2 right-2 h-6 w-6 p-0 hover:bg-red-100 hover:text-red-600 z-10 rounded-full touch-friendly"
+          onClick={handleRemoveClick}
+          aria-label={`Remove ${stock.symbol} from watchlist`}
         >
           <X className="h-3 w-3" />
         </Button>
@@ -97,7 +115,7 @@ export function EnhancedStockCard({
       <CardHeader>
         <div className="flex justify-between items-start mb-2">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-chartreuse/10 rounded-lg flex items-center justify-center">
+            <div className="w-12 h-12 bg-chartreuse/10 border border-chartreuse/20 rounded-lg flex items-center justify-center hover:bg-chartreuse/20 hover:border-chartreuse/40 transition-all duration-300 hover:scale-105">
               <span className="text-lg font-bold text-chartreuse-dark">
                 {stock.symbol.slice(0, 2)}
               </span>
@@ -111,7 +129,7 @@ export function EnhancedStockCard({
             isPositive ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"
           )}>
             {isPositive ? <TrendingUp className="h-4 w-4" /> : <TrendingDown className="h-4 w-4" />}
-            <span className="font-semibold">{Math.abs(Number(stock.changePercent)).toFixed(2)}%</span>
+            <span className="font-semibold">{Math.abs(getStockChangePercent(stock)).toFixed(2)}%</span>
           </div>
         </div>
         
@@ -123,12 +141,12 @@ export function EnhancedStockCard({
       
       <CardContent className="space-y-4">
         <div>
-          <p className="text-2xl font-bold">${Number(stock.currentPrice).toFixed(2)}</p>
+          <p className="text-2xl font-bold">${currentPrice.toFixed(2)}</p>
           <p className={cn(
             "text-sm",
             isPositive ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"
           )}>
-            {isPositive ? '+' : ''}{Number(stock.change).toFixed(2)}
+            {isPositive ? '+' : ''}{getStockChange(stock).toFixed(2)}
           </p>
         </div>
 
@@ -139,7 +157,7 @@ export function EnhancedStockCard({
           </div>
           <div className="bg-muted/50 rounded-lg p-2">
             <p className="text-muted-foreground text-xs">Volume</p>
-            <p className="font-semibold">{formatVolume(Number(stock.volume))}</p>
+            <p className="font-semibold">{formatVolume(Number((stock as any)?.volume || 0))}</p>
           </div>
           {stock.peRatio && (
             <div className="bg-muted/50 rounded-lg p-2">
@@ -182,8 +200,9 @@ export function EnhancedStockCard({
           <Button
             variant="outline"
             size="sm"
-            className="flex-1"
-            onClick={onQuickInfoClick}
+            className="flex-1 btn-bounce mobile-safe-button"
+            onClick={handleQuickInfoClick}
+            aria-label={`View detailed information for ${stock.symbol}`}
           >
             <Info className="h-4 w-4 mr-1" />
             Info
@@ -191,8 +210,9 @@ export function EnhancedStockCard({
           <Button
             variant="outline"
             size="sm"
-            className="flex-1"
+            className="flex-1 btn-bounce mobile-safe-button"
             onClick={handleChartsClick}
+            aria-label={`View charts for ${stock.symbol}`}
           >
             <BarChart3 className="h-4 w-4 mr-1" />
             Gráficos
@@ -201,7 +221,7 @@ export function EnhancedStockCard({
       </CardContent>
     </Card>
   );
-}
+});
 
 function formatMarketCap(value: number | string): string {
   const numValue = Number(value);

@@ -228,7 +228,7 @@ export class DatabaseStorage implements IStorage {
 
   async deleteWatchlist(id: number): Promise<boolean> {
     const result = await db.delete(watchlists).where(eq(watchlists.id, id));
-    return result.rowCount > 0;
+    return result.changes > 0;
   }
 
   // Watchlist Stocks
@@ -253,7 +253,7 @@ export class DatabaseStorage implements IStorage {
       .where(
         sql`${watchlistStocks.watchlistId} = ${watchlistId} AND ${watchlistStocks.stockSymbol} = ${stockSymbol}`
       );
-    return result.rowCount > 0;
+    return result.changes > 0;
   }
 
   // Intrinsic Values

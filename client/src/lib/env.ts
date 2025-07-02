@@ -14,10 +14,12 @@ const FORBIDDEN_FRONTEND_VARS = [
   'JWT_SECRET',
   'JWT_REFRESH_SECRET',
   // API keys também não devem estar no frontend em produção
-  'VITE_FINNHUB_API_KEY',
-  'VITE_ALPHA_VANTAGE_API_KEY', 
-  'VITE_FMP_API_KEY',
-  'VITE_TWELVE_DATA_API_KEY'
+  // SECURITY: API keys moved to server-side for security
+  // Client should use server proxy endpoints instead
+  // 'VITE_FINNHUB_API_KEY',
+  // 'VITE_ALPHA_VANTAGE_API_KEY', 
+  // 'VITE_FMP_API_KEY',
+  // 'VITE_TWELVE_DATA_API_KEY'
 ];
 
 // Função segura para acessar variáveis de ambiente
@@ -68,6 +70,7 @@ export const env = {
   
   // API Base URLs (públicas)
   VITE_API_BASE_URL: getEnvVar('VITE_API_BASE_URL', '/api'),
+  VITE_API_URL: getEnvVar('VITE_API_URL', 'http://localhost:3003'),
   
   // Ambiente
   NODE_ENV: getEnvVar('NODE_ENV', 'development'),

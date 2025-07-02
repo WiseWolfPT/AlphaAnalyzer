@@ -425,7 +425,7 @@ if (process.env.NODE_ENV === 'production' && csrfProtection) {
       // Test the server internally
       console.log('🔍 Testing internal connection...');
       import('node:http').then(http => {
-        http.get(`http://localhost:${finalPort}/api/health`, (res) => {
+        http.get(`http://localhost:${finalPort}/health`, (res) => {
           console.log('✅ Internal test successful, status:', res.statusCode);
         }).on('error', (err) => {
           console.log('⚠️  Internal test note:', err.message);
@@ -469,14 +469,34 @@ if (process.env.NODE_ENV === 'production' && csrfProtection) {
       console.log('   php -S localhost:3001 server/emergency-php-server.php');
     }
 
-    // Start the binding process
-    tryNextStrategy();
+    // SIMPLIFIED: Start with single server instance
+    console.log(`🔄 Starting server on localhost:${port}...`);
+    server.listen(port, '127.0.0.1', () => {
+      console.log(`🚀 MAIN SERVER ACTIVE!`);
+      console.log(`📱 Local:    http://localhost:${port}`);
+      console.log(`🔧 API:      http://localhost:${port}/api/stocks`);
+      console.log(`🔧 Health:   http://localhost:${port}/health`);
+      console.log('✅ Ready to accept connections...');
+      
+      // Test the server internally
+      console.log('🔍 Testing internal connection...');
+      import('node:http').then(http => {
+        http.get(`http://localhost:${port}/health`, (res) => {
+          console.log('✅ Internal test successful, status:', res.statusCode);
+        }).on('error', (err) => {
+          console.log('⚠️  Internal test note:', err.message);
+        });
+      });
+    });
+    
+    // Keep the complex binding logic as backup
+    // tryNextStrategy();
 
     // WebSocket server reference for graceful shutdown
     let wss: WebSocketServer | null = null;
     
-    // SECURITY FIX: Enhanced secure WebSocket server (disabled in development to avoid conflicts with Vite HMR)
-    if (process.env.NODE_ENV === 'production') {
+    // SECURITY FIX: Enhanced secure WebSocket server (completely disabled to avoid HTTP conflicts)
+    if (false && process.env.NODE_ENV === 'production') {
       wss = new WebSocketServer({ 
         server,
         // SECURITY FIX: Additional verification callback for origin checking

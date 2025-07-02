@@ -88,8 +88,8 @@ function TranscriptCard({ transcript }: TranscriptCardProps) {
   };
 
   const handleViewTranscript = () => {
-    // In real app, this would navigate to full transcript view
-    console.log("View transcript:", transcript.id);
+    // Navigate to transcript detail view
+    setLocation(`/transcript/${transcript.id}`);
   };
 
   const sentimentColor = {

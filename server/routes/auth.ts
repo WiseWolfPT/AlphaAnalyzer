@@ -523,6 +523,178 @@ router.post('/refresh', authRateLimit, async (req: Request, res: Response) => {
 });
 
 /**
+ * Get user profile (detailed version for profile page)
+ */
+router.get('/user/profile', authMiddleware.instance.authenticate(), async (req: Request, res: Response) => {
+  try {
+    const user = req.user!;
+    
+    // Get fresh user profile data
+    const profile = await db.getProfile(user.id);
+    
+    if (!profile) {
+      return res.status(404).json({
+        error: 'USER_NOT_FOUND',
+        message: 'User profile not found',
+      });
+    }
+
+    // Return profile data in the format expected by the frontend
+    const profileData = {
+      firstName: profile.full_name?.split(' ')[0] || 'User',
+      lastName: profile.full_name?.split(' ').slice(1).join(' ') || '',
+      email: profile.email,
+      phone: profile.phone || '',
+      location: profile.location || '',
+      joinDate: profile.created_at ? new Date(profile.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long' }) : 'Recently',
+      investmentExperience: profile.investment_experience || 'Intermediate',
+      riskTolerance: profile.risk_tolerance || 'Moderate',
+      preferredSectors: profile.preferred_sectors || ['Technology', 'Healthcare', 'Finance'],
+      avatar_url: profile.avatar_url,
+      subscription_tier: profile.subscription_tier,
+      created_at: profile.created_at,
+      updated_at: profile.updated_at,
+    };
+
+    res.json(profileData);
+  } catch (error) {
+    console.error('Get detailed profile error:', error);
+    res.status(500).json({
+      error: 'PROFILE_ERROR',
+      message: 'Failed to retrieve user profile',
+    });
+  }
+});
+
+/**
+ * Get user statistics (for profile page)
+ */
+router.get('/user/stats', authMiddleware.instance.authenticate(), async (req: Request, res: Response) => {
+  try {
+    const user = req.user!;
+    
+    // Calculate user statistics (mock data for now, can be enhanced with real queries)
+    const joinDate = new Date('2024-01-01'); // Default join date
+    const daysActive = Math.floor((Date.now() - joinDate.getTime()) / (1000 * 60 * 60 * 24));
+    
+    // Mock portfolio calculations - can be replaced with real data
+    const stats = {
+      watchlists: 3 + Math.floor(Math.random() * 5), // Random between 3-7
+      trackedStocks: 20 + Math.floor(Math.random() * 30), // Random between 20-50
+      alertsSet: 8 + Math.floor(Math.random() * 20), // Random between 8-28
+      daysActive: Math.max(daysActive, 1),
+      totalValue: `$${(10000 + Math.random() * 50000).toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`,
+      todayChange: Math.random() > 0.5 
+        ? `+${(Math.random() * 3).toFixed(1)}%` 
+        : `-${(Math.random() * 2).toFixed(1)}%`
+    };
+
+    res.json(stats);
+  } catch (error) {
+    console.error('Get user stats error:', error);
+    res.status(500).json({
+      error: 'STATS_ERROR',
+      message: 'Failed to retrieve user statistics',
+    });
+  }
+});
+
+/**
+ * Update user profile
+ */
+router.put('/user/profile', authMiddleware.instance.authenticate(), async (req: Request, res: Response) => {
+  try {
+    const user = req.user!;
+    const profileUpdates = req.body;
+
+    // Validate and sanitize the update data
+    const allowedFields = [
+      'firstName', 'lastName', 'phone', 'location', 
+      'investmentExperience', 'riskTolerance', 'preferredSectors'
+    ];
+
+    const sanitizedUpdates: any = {};
+    
+    // Process each field
+    if (profileUpdates.firstName && profileUpdates.lastName) {
+      sanitizedUpdates.full_name = `${profileUpdates.firstName.trim()} ${profileUpdates.lastName.trim()}`;
+    }
+    
+    if (profileUpdates.phone) {
+      sanitizedUpdates.phone = profileUpdates.phone.trim();
+    }
+    
+    if (profileUpdates.location) {
+      sanitizedUpdates.location = profileUpdates.location.trim();
+    }
+    
+    if (profileUpdates.investmentExperience) {
+      const validExperiences = ['Beginner', 'Intermediate', 'Advanced', 'Professional'];
+      if (validExperiences.includes(profileUpdates.investmentExperience)) {
+        sanitizedUpdates.investment_experience = profileUpdates.investmentExperience;
+      }
+    }
+    
+    if (profileUpdates.riskTolerance) {
+      const validRiskLevels = ['Conservative', 'Moderate', 'Aggressive'];
+      if (validRiskLevels.includes(profileUpdates.riskTolerance)) {
+        sanitizedUpdates.risk_tolerance = profileUpdates.riskTolerance;
+      }
+    }
+    
+    if (profileUpdates.preferredSectors && Array.isArray(profileUpdates.preferredSectors)) {
+      sanitizedUpdates.preferred_sectors = profileUpdates.preferredSectors.filter(sector => 
+        typeof sector === 'string' && sector.trim().length > 0
+      );
+    }
+
+    // Update the profile in the database
+    const { data: updatedProfile, error } = await db.updateProfile(user.id, sanitizedUpdates);
+
+    if (error || !updatedProfile) {
+      return res.status(500).json({
+        error: 'UPDATE_FAILED',
+        message: 'Failed to update profile',
+      });
+    }
+
+    // Log profile update
+    await db.logSecurityEvent({
+      user_id: user.id,
+      action: 'profile_updated',
+      resource: 'user_profile',
+      ip_address: req.ip || '',
+      user_agent: req.headers['user-agent'] || '',
+      success: true,
+      details: { 
+        updatedFields: Object.keys(sanitizedUpdates),
+      },
+    });
+
+    // Return the updated profile in the expected format
+    const responseData = {
+      firstName: updatedProfile.full_name?.split(' ')[0] || 'User',
+      lastName: updatedProfile.full_name?.split(' ').slice(1).join(' ') || '',
+      email: updatedProfile.email,
+      phone: updatedProfile.phone || '',
+      location: updatedProfile.location || '',
+      joinDate: updatedProfile.created_at ? new Date(updatedProfile.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long' }) : 'Recently',
+      investmentExperience: updatedProfile.investment_experience || 'Intermediate',
+      riskTolerance: updatedProfile.risk_tolerance || 'Moderate',
+      preferredSectors: updatedProfile.preferred_sectors || ['Technology', 'Healthcare', 'Finance'],
+    };
+
+    res.json(responseData);
+  } catch (error) {
+    console.error('Update profile error:', error);
+    res.status(500).json({
+      error: 'PROFILE_UPDATE_ERROR',
+      message: 'Failed to update profile',
+    });
+  }
+});
+
+/**
  * Revoke all sessions except current
  */
 router.post('/sessions/revoke-all', authMiddleware.instance.authenticate(), async (req: Request, res: Response) => {

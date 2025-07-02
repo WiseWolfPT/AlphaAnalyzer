@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useLocation, Link } from "wouter";
+import { useState, useEffect } from "react";
+import { useLocation } from "wouter";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/simple-auth-offline";
 import { Button } from "@/components/ui/button";
@@ -12,11 +12,12 @@ import {
   Briefcase, 
   Calculator, 
   Settings,
-  ChartLine,
+  Home,
   LogIn,
-  LogOut,
   User,
   Crown,
+  Newspaper,
+  Search,
   Menu,
   X,
   ChevronLeft,
@@ -24,178 +25,244 @@ import {
 } from "lucide-react";
 
 const navigation = [
-  { name: "Dashboard", href: "/dashboard", icon: ChartLine, category: "main" },
-  { name: "Watchlists", href: "/watchlists", icon: Heart, category: "main" },
-  { name: "Earnings", href: "/earnings", icon: Calendar, category: "main" },
-  { name: "Portfolios", href: "/portfolios", icon: Briefcase, category: "main" },
-  { name: "Intrinsic Value", href: "/intrinsic-value", icon: Calculator, category: "tools" },
-  { name: "Transcripts", href: "/transcripts", icon: FileText, category: "tools" },
-  { name: "Settings", href: "/profile", icon: Settings, category: "system" },
+  { name: "Find Stocks", href: "/home", icon: Search },
+  { name: "Intrinsic Value", href: "/intrinsic-value", icon: Calculator },
+  { name: "My Portfolios", href: "/portfolios", icon: Briefcase },
+  { name: "Watchlists", href: "/watchlists", icon: Heart },
+  { name: "Transcripts", href: "/transcripts", icon: FileText },
+  { name: "Earnings", href: "/earnings", icon: Calendar },
 ];
 
 export function CollapsibleSidebar() {
-  const [location] = useLocation();
-  const { user, signOut } = useAuth();
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [location, navigate] = useLocation();
+  const { user } = useAuth();
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  useEffect(() => {
+    const checkIsMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+      if (window.innerWidth >= 768) {
+        setIsMobileMenuOpen(false);
+      }
+    };
+
+    checkIsMobile();
+    window.addEventListener('resize', checkIsMobile);
+
+    return () => window.removeEventListener('resize', checkIsMobile);
+  }, []);
 
   const toggleSidebar = () => {
-    setIsCollapsed(!isCollapsed);
+    if (isMobile) {
+      setIsMobileMenuOpen(!isMobileMenuOpen);
+    } else {
+      setIsCollapsed(!isCollapsed);
+    }
   };
 
   return (
-    <div className={cn(
-      "bg-gray-mouse dark:bg-dark-slate-navy flex-shrink-0 sticky top-0 h-screen overflow-hidden transition-all duration-300 ease-in-out shadow-lg shadow-black/5 dark:shadow-black/20",
-      isCollapsed ? "w-16" : "w-72"
-    )}>
-      <div className="flex flex-col h-full">
-        {/* Header with Logo and Collapse Button */}
-        <div className={cn(
-          "transition-all duration-300",
-          isCollapsed ? "p-2" : "p-4"
-        )}>
+    <>
+      {/* Mobile Menu Button */}
+      {isMobile && (
+        <div className="fixed top-4 left-4 z-50 md:hidden">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={toggleSidebar}
+            className="bg-background border-chartreuse/20 hover:bg-chartreuse/10"
+          >
+            {isMobileMenuOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
+          </Button>
+        </div>
+      )}
+
+      {/* Mobile Overlay */}
+      {isMobile && isMobileMenuOpen && (
+        <div 
+          className="fixed inset-0 bg-black/50 z-40 md:hidden"
+          onClick={() => setIsMobileMenuOpen(false)}
+        />
+      )}
+      
+      <div className={cn(
+        "bg-sidebar-background border-r border-sidebar-border flex-shrink-0 sticky top-0 h-screen overflow-hidden transition-all duration-300 ease-out shadow-lg",
+        isMobile ? (
+          isMobileMenuOpen ? "fixed left-0 top-0 z-50 w-72" : "hidden"
+        ) : (
+          isCollapsed ? "w-16" : "w-64"
+        )
+      )}>
+        <div className="flex h-full flex-col">
+          {/* Header */}
           <div className={cn(
-            "flex items-center",
-            isCollapsed ? "justify-center" : "justify-between"
+            "border-b border-sidebar-border p-4 transition-all duration-300",
+            isCollapsed && !isMobile ? "relative" : "flex items-center justify-between"
           )}>
-            {!isCollapsed ? (
-              <>
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 bg-gradient-to-br from-chartreuse to-chartreuse-dark rounded-lg flex items-center justify-center shadow-lg">
-                    <BarChart3 className="h-4 w-4 text-rich-black" />
-                  </div>
-                  <div>
-                    <h1 className="font-bold text-lg text-gray-800 dark:text-white">Alpha Analyzer</h1>
-                    <p className="text-xs text-gray-700 dark:text-slate-400">Professional Analytics</p>
-                  </div>
+            {isCollapsed && !isMobile ? (
+              <div className="flex flex-col items-center space-y-2">
+                <div className="w-10 h-10 bg-gradient-to-br from-chartreuse to-chartreuse-dark rounded-xl flex items-center justify-center shadow-lg">
+                  <BarChart3 className="h-5 w-5 text-black" />
                 </div>
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={toggleSidebar}
-                  className="text-slate-400 hover:text-white hover:bg-slate-700/50 p-2"
+                  className="text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-chartreuse/10 transition-all duration-200 rounded-lg p-1 w-8 h-8 border border-transparent hover:border-chartreuse/30"
                 >
-                  <ChevronLeft className="h-4 w-4" />
-                </Button>
-              </>
-            ) : (
-              <div className="flex flex-col items-center gap-2">
-                <div className="w-8 h-8 bg-gradient-to-br from-chartreuse to-chartreuse-dark rounded-lg flex items-center justify-center shadow-lg">
-                  <BarChart3 className="h-4 w-4 text-rich-black" />
-                </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={toggleSidebar}
-                  className="text-slate-400 hover:text-white hover:bg-slate-700/50 p-1 w-8 h-8"
-                >
-                  <ChevronRight className="h-3 w-3" />
+                  <ChevronRight className="w-3 h-3" />
                 </Button>
               </div>
+            ) : (
+              <>
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-gradient-to-br from-chartreuse to-chartreuse-dark rounded-xl flex items-center justify-center shadow-lg">
+                    <BarChart3 className="h-5 w-5 text-black" />
+                  </div>
+                  <div className="overflow-hidden">
+                    <h1 className="font-bold text-lg text-sidebar-foreground truncate">Alfalyzer</h1>
+                    <p className="text-xs text-sidebar-foreground/60">Financial Analytics</p>
+                  </div>
+                </div>
+                {!isMobile && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={toggleSidebar}
+                    className="text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-chartreuse/10 transition-all duration-200 rounded-lg p-2 flex-shrink-0 border border-transparent hover:border-chartreuse/30"
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                  </Button>
+                )}
+              </>
+            )}
+          </div>
+
+          {/* Navigation */}
+          <nav className="flex-1 overflow-y-auto p-3">
+            <div className={cn(
+              "space-y-1",
+              isCollapsed && !isMobile ? "space-y-2" : ""
+            )}>
+              {navigation.map((item) => {
+                const Icon = item.icon;
+                const isActive = location === item.href || 
+                  (item.href === '/dashboard' && location === '/') ||
+                  (item.href === '/home' && location === '/dashboard');
+                
+                return (
+                  <button
+                    key={item.name}
+                    onClick={() => {
+                      navigate(item.href);
+                      if (isMobile) setIsMobileMenuOpen(false);
+                    }}
+                    className={cn(
+                      "w-full group relative transition-all duration-200 ease-out rounded-xl",
+                      isCollapsed && !isMobile 
+                        ? "flex items-center justify-center p-3 h-12" 
+                        : "flex items-center gap-3 px-4 py-3",
+                      isActive 
+                        ? "bg-chartreuse/15 text-chartreuse shadow-lg shadow-chartreuse/20 border border-chartreuse/30" 
+                        : "text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-chartreuse/5 hover:shadow-md border border-transparent hover:border-chartreuse/20"
+                    )}
+                    title={isCollapsed && !isMobile ? item.name : undefined}
+                  >
+                    <Icon className={cn(
+                      "flex-shrink-0 transition-all duration-200",
+                      isCollapsed && !isMobile ? "w-5 h-5" : "w-5 h-5",
+                      isActive ? "text-chartreuse" : "group-hover:scale-110"
+                    )} />
+                    {(!isCollapsed || isMobile) && (
+                      <span className="text-sm font-medium truncate transition-all duration-200">
+                        {item.name}
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          </nav>
+
+          {/* Footer */}
+          <div className="border-t border-sidebar-border p-3">
+            {user ? (
+              <div className="space-y-3">
+                {(!isCollapsed || isMobile) && (
+                  <div className="bg-gradient-to-r from-chartreuse/10 to-chartreuse/5 border border-chartreuse/20 rounded-xl p-3">
+                    <button
+                      onClick={() => {
+                        navigate('/profile');
+                        if (isMobile) setIsMobileMenuOpen(false);
+                      }}
+                      className="flex items-center gap-3 mb-2 w-full hover:bg-chartreuse/5 rounded-lg p-2 -m-2 transition-colors duration-200 group"
+                    >
+                      <div className="w-8 h-8 bg-chartreuse/20 rounded-full flex items-center justify-center group-hover:bg-chartreuse/30 transition-colors duration-200">
+                        <User className="h-4 w-4 text-chartreuse" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-sm text-sidebar-foreground truncate">{user.name || "User"}</p>
+                        <p className="text-xs text-sidebar-foreground/60 truncate">{user.email}</p>
+                      </div>
+                    </button>
+                    
+                    {/* Plan Badge */}
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Crown className="h-3 w-3 text-amber-500" />
+                        <span className="text-xs font-medium text-amber-600 dark:text-amber-400">
+                          {user.plan || "Free"} Plan
+                        </span>
+                      </div>
+                      {(!user.plan || user.plan === "Free") && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="h-6 px-2 text-xs border-chartreuse/30 text-chartreuse hover:bg-chartreuse/10"
+                        >
+                          Upgrade
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                )}
+                {isCollapsed && !isMobile && (
+                  <button
+                    onClick={() => navigate('/profile')}
+                    className="flex justify-center mb-2 w-full hover:bg-chartreuse/5 rounded-lg p-2 transition-colors duration-200 group"
+                    title="Profile Settings"
+                  >
+                    <div className="w-8 h-8 bg-gradient-to-br from-chartreuse/20 to-chartreuse/10 rounded-full flex items-center justify-center group-hover:bg-chartreuse/30 transition-colors duration-200">
+                      <User className="w-4 h-4 text-chartreuse" />
+                    </div>
+                  </button>
+                )}
+              </div>
+            ) : (
+              <Button
+                onClick={() => setShowAuthModal(true)}
+                className={cn(
+                  "w-full bg-gradient-to-r from-chartreuse to-chartreuse-dark hover:from-chartreuse-dark hover:to-chartreuse text-black font-semibold shadow-lg hover:shadow-xl transition-all duration-200 rounded-lg",
+                  isCollapsed && !isMobile ? "px-2 py-3" : "py-3"
+                )}
+                title={isCollapsed && !isMobile ? "Sign In" : undefined}
+              >
+                <LogIn className="w-4 h-4" />
+                {(!isCollapsed || isMobile) && (
+                  <span className="ml-2">Sign In</span>
+                )}
+              </Button>
             )}
           </div>
         </div>
-
-        {/* Navigation Links */}
-        <div className="flex flex-col flex-1">
-          <nav className={cn(
-            "space-y-1 transition-all duration-300",
-            isCollapsed ? "p-2" : "p-4"
-          )}>
-          {navigation.map((item) => {
-            const isActive = location === item.href;
-            
-            return (
-              <Link 
-                key={item.name} 
-                href={item.href}
-                className="block"
-              >
-                <div
-                  className={cn(
-                    "flex items-center text-sm font-medium transition-all duration-200 group cursor-pointer rounded-lg",
-                    isActive
-                      ? "bg-gradient-to-r from-chartreuse/20 via-chartreuse-dark/15 to-chartreuse/10 text-gray-900 dark:text-white border border-chartreuse/40 shadow-lg shadow-chartreuse/10"
-                      : "text-gray-700 dark:text-slate-300 hover:text-chartreuse hover:bg-gradient-to-r hover:from-slate-700/50 hover:to-slate-600/50",
-                    isCollapsed 
-                      ? "justify-center p-2 mx-1"
-                      : "gap-3 px-3 py-3"
-                  )}
-                  title={isCollapsed ? item.name : undefined}
-                >
-                  <item.icon className={cn(
-                    "transition-all drop-shadow-sm",
-                    isActive 
-                      ? "text-chartreuse drop-shadow-[0_0_8px_rgba(216,242,45,0.3)]" 
-                      : "text-gray-800 dark:text-slate-400 group-hover:text-chartreuse group-hover:drop-shadow-[0_0_6px_rgba(216,242,45,0.4)]",
-                    isCollapsed ? "h-5 w-5" : "h-5 w-5"
-                  )} />
-                  {!isCollapsed && <span>{item.name}</span>}
-                </div>
-              </Link>
-            );
-          })}
-          </nav>
-          
-          {/* Spacer to push user section to bottom */}
-          <div className="flex-1 min-h-0"></div>
-        </div>
-
-        {/* User Profile Section at Bottom */}
-        <div className={cn(
-          "border-t border-gray-300 dark:border-slate-700/50 mt-auto transition-all duration-300",
-          isCollapsed ? "p-2" : "p-4"
-        )}>
-          {user ? (
-            <div className={cn(
-              "rounded-lg bg-gray-100 dark:bg-slate-800/50 border border-gray-300 dark:border-slate-700/50 transition-all duration-300",
-              isCollapsed 
-                ? "flex flex-col items-center gap-2 p-2"
-                : "flex items-center gap-3 p-3"
-            )}>
-              <div className="w-8 h-8 bg-gradient-to-br from-chartreuse to-chartreuse-dark rounded-full flex items-center justify-center flex-shrink-0">
-                <User className="h-4 w-4 text-rich-black" />
-              </div>
-              {!isCollapsed && (
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-800 dark:text-white truncate">
-                    {user.email || "User"}
-                  </p>
-                  <p className="text-xs text-gray-700 dark:text-slate-400">Free Plan</p>
-                </div>
-              )}
-              {!isCollapsed && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="text-gray-700 dark:text-slate-400 hover:text-gray-900 dark:hover:text-white p-1"
-                  onClick={signOut}
-                  title="Sign Out"
-                >
-                  <LogOut className="h-4 w-4" />
-                </Button>
-              )}
-            </div>
-          ) : (
-            <Button 
-              className={cn(
-                "bg-gradient-to-r from-chartreuse via-chartreuse-dark to-chartreuse hover:from-chartreuse-dark hover:via-chartreuse hover:to-chartreuse-dark text-rich-black border-0 shadow-lg shadow-chartreuse/25 hover:shadow-chartreuse/40 font-semibold transition-all duration-300 hover:scale-105",
-                isCollapsed ? "w-12 h-10 p-1 mx-auto" : "w-full"
-              )}
-              onClick={() => setShowAuthModal(true)}
-            >
-              <LogIn className="h-4 w-4" />
-              {!isCollapsed && <span className="ml-2">Sign In</span>}
-            </Button>
-          )}
-        </div>
       </div>
-      
-      {/* Auth Modal */}
-      <AuthModal 
+
+      <AuthModal
         isOpen={showAuthModal}
         onClose={() => setShowAuthModal(false)}
       />
-    </div>
+    </>
   );
 }

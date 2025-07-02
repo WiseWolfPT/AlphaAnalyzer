@@ -8,9 +8,11 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ErrorBoundary } from "@/components/ui/error-boundary";
+import { StockCardSkeleton } from "@/components/ui/stock-card-skeleton";
 import { TrendingUp, Activity, Target, RefreshCw, Zap, AlertCircle, User, Settings, Crown, Calendar } from "lucide-react";
-// Import simplified hooks temporarily
-// import { useStocks, useMarketIndices, useApiQuota, useWarmCache } from "@/hooks/use-enhanced-stocks";
+// Import enhanced hooks for real data
+import { useStocks, useMarketIndices, useApiQuota, useWarmCache } from "@/hooks/use-enhanced-stocks";
 import { useAuth } from "@/contexts/simple-auth-offline";
 import { cn } from "@/lib/utils";
 
@@ -94,58 +96,44 @@ export default function EnhancedDashboard() {
     return saved ? JSON.parse(saved) : POPULAR_SYMBOLS.slice(0, 9);
   });
   
-  // Temporarily use mock data while fixing API issues
-  const stocks = displayedSymbols.map((symbol, index) => {
-    // Generate realistic base price for each symbol
-    const basePrice = Math.random() * 300 + 50; // $50-$350
-    const change = (Math.random() - 0.5) * 20; // -$10 to +$10
+  // Use real data from API hooks
+  const { data: stocks, isLoading: stocksLoading, error: stocksError } = useStocks(displayedSymbols);
+  
+  // Fallback to mock data only if API fails
+  const mockStocks = stocksError ? displayedSymbols.map((symbol, index) => {
+    const basePrice = Math.random() * 300 + 50;
+    const change = (Math.random() - 0.5) * 20;
     const changePercent = (change / basePrice) * 100;
     
     return {
-      // Required fields from Stock schema
       id: index + 1,
       symbol,
       name: getCompanyName(symbol),
-      price: basePrice.toString(), // Schema expects string
-      change: change.toString(), // Schema expects string
-      changePercent: changePercent.toString(), // Schema expects string
-      marketCap: (Math.random() * 1000000000000).toString(), // Schema expects string
+      price: basePrice.toString(),
+      change: change.toString(),
+      changePercent: changePercent.toString(),
+      marketCap: (Math.random() * 1000000000000).toString(),
       sector: getSector(symbol),
       industry: getIndustry(symbol),
-      
-      // Additional fields expected by components
-      currentPrice: basePrice, // Number for component usage
-      volume: Math.floor(Math.random() * 50000000 + 1000000), // 1M-50M volume
-      eps: Number((Math.random() * 10 + 0.5).toFixed(2)), // $0.50-$10.50 EPS
-      peRatio: Number((basePrice / (Math.random() * 10 + 0.5)).toFixed(2)), // Realistic P/E
+      currentPrice: basePrice,
+      volume: Math.floor(Math.random() * 50000000 + 1000000),
+      eps: Number((Math.random() * 10 + 0.5).toFixed(2)),
+      peRatio: Number((basePrice / (Math.random() * 10 + 0.5)).toFixed(2)),
       logo: null,
       lastUpdated: new Date()
     };
-  });
-  const stocksLoading = false;
+  }) : null;
   
-  const marketIndices = {
-    sp500: { 
-      value: Number((4500 + Math.random() * 200).toFixed(2)), 
-      change: Number(((Math.random() - 0.5) * 3).toFixed(2))
-    },
-    dow: { 
-      value: Number((35000 + Math.random() * 1000).toFixed(2)), 
-      change: Number(((Math.random() - 0.5) * 3).toFixed(2))
-    },
-    nasdaq: { 
-      value: Number((15000 + Math.random() * 500).toFixed(2)), 
-      change: Number(((Math.random() - 0.5) * 3).toFixed(2))
-    }
-  };
-  const indicesLoading = false;
+  const displayStocks = stocks || mockStocks || [];
   
-  const quotaStatus = null;
-  const isWarmingCache = false;
+  // Use real market indices data
+  const { data: marketIndices, isLoading: indicesLoading, error: indicesError } = useMarketIndices();
   
-  const warmCache = () => {
-    console.log('Cache warming simulated');
-  };
+  // Use real API quota data
+  const { data: quotaStatus } = useApiQuota();
+  
+  // Use real cache warming
+  const { mutate: warmCache, isLoading: isWarmingCache } = useWarmCache();
 
 
   const handleAddStock = (symbol: string) => {
@@ -373,26 +361,52 @@ export default function EnhancedDashboard() {
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-semibold">Lista de Seguimento</h2>
             <Badge variant="secondary">
-              {stocksLoading ? "Carregando..." : `${stocks?.length || 0} Ações`}
+              {stocksLoading ? "Carregando..." : `${displayStocks?.length || 0} Ações`}
             </Badge>
           </div>
           
           {stocksLoading ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {[...Array(9)].map((_, i) => (
-                <div key={i} className="h-64 bg-muted animate-pulse rounded-lg" />
+                <StockCardSkeleton key={i} />
               ))}
             </div>
-          ) : stocks && stocks.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {stocks.map((stock) => (
-                <EnhancedStockCard
-                  key={stock.symbol}
-                  symbol={stock.symbol}
-                  showRemove={false}
-                />
-              ))}
-            </div>
+          ) : displayStocks && displayStocks.length > 0 ? (
+            <ErrorBoundary fallback={
+              <Alert>
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>
+                  Erro ao carregar as ações. Por favor, recarregue a página.
+                </AlertDescription>
+              </Alert>
+            }>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 stock-grid">
+                {displayStocks.map((stock) => (
+                  <EnhancedStockCard
+                    key={stock.symbol}
+                    symbol={stock.symbol}
+                    showRemove={false}
+                    onQuickInfoClick={() => setLocation(`/stock/${stock.symbol}/charts`)}
+                  />
+                ))}
+              </div>
+            </ErrorBoundary>
+          ) : stocksError ? (
+            <Alert className="border-orange-200 bg-orange-50 dark:border-orange-800 dark:bg-orange-900/20">
+              <AlertCircle className="h-4 w-4 text-orange-600" />
+              <AlertDescription>
+                <div className="space-y-2">
+                  <p>Falha ao carregar dados em tempo real. Usando dados de demonstração.</p>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => window.location.reload()}
+                  >
+                    Tentar Novamente
+                  </Button>
+                </div>
+              </AlertDescription>
+            </Alert>
           ) : (
             <Alert>
               <AlertCircle className="h-4 w-4" />

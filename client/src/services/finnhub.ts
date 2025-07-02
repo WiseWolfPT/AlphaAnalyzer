@@ -1,5 +1,6 @@
 // Finnhub API Service
-const FINNHUB_API_KEY = import.meta.env.VITE_FINNHUB_API_KEY || 'demo';
+// SECURITY: API key moved to server-side - use proxy endpoints instead
+const FINNHUB_API_KEY = 'DEPRECATED_USE_SERVER_PROXY';
 const FINNHUB_BASE_URL = 'https://finnhub.io/api/v1';
 
 export interface StockPrice {

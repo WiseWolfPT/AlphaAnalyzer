@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { TrendingDown, ArrowRight, AlertTriangle } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useMarketQuotes } from "@/hooks/use-market-data";
 
 interface Stock {
   symbol: string;
@@ -14,27 +15,63 @@ interface Stock {
   changePercent: number;
 }
 
+// Helper function to get company names
+function getCompanyName(symbol: string): string {
+  const companyNames: Record<string, string> = {
+    'COIN': 'Coinbase Global',
+    'RIOT': 'Riot Platforms',
+    'MARA': 'Marathon Digital',
+    'PINS': 'Pinterest Inc',
+    'ROKU': 'Roku Inc',
+    'SNAP': 'Snap Inc',
+    'PYPL': 'PayPal Holdings',
+    'SQ': 'Block Inc',
+    'HOOD': 'Robinhood Markets',
+    'DKNG': 'DraftKings Inc',
+    'PTON': 'Peloton Interactive',
+    'ZM': 'Zoom Video',
+    'DOCU': 'DocuSign Inc',
+    'CRWD': 'CrowdStrike'
+  };
+  return companyNames[symbol] || symbol;
+}
+
 export function TopLosersCard() {
   const [, setLocation] = useLocation();
   const [topLosers, setTopLosers] = useState<Stock[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  
+  // Stocks often volatile
+  const trackedSymbols = ['COIN', 'RIOT', 'MARA', 'PINS', 'ROKU', 'SNAP', 'PYPL', 'SQ', 'HOOD', 'DKNG', 'PTON', 'ZM'];
+  const { data: quotesData, isLoading } = useMarketQuotes(trackedSymbols);
 
   useEffect(() => {
-    // Mock data for top losers - in real implementation, fetch from API
-    const mockLosers: Stock[] = [
-      { symbol: "COIN", name: "Coinbase Global", price: 89.34, change: -8.76, changePercent: -8.93 },
-      { symbol: "RIOT", name: "Riot Platforms", price: 12.45, change: -1.34, changePercent: -9.73 },
-      { symbol: "MARA", name: "Marathon Digital", price: 18.67, change: -1.89, changePercent: -9.18 },
-      { symbol: "PINS", name: "Pinterest Inc", price: 35.78, change: -2.98, changePercent: -7.69 },
-      { symbol: "ROKU", name: "Roku Inc", price: 65.23, change: -4.12, changePercent: -5.94 }
-    ];
-
-    // Simulate API delay
-    setTimeout(() => {
+    if (quotesData?.quotes && quotesData.quotes.length > 0) {
+      // Convert market quotes to our Stock format and sort by loss percentage
+      const stocks = quotesData.quotes
+        .map(quote => ({
+          symbol: quote.symbol,
+          name: getCompanyName(quote.symbol),
+          price: quote.price,
+          change: quote.change,
+          changePercent: quote.changePercent
+        }))
+        .filter(stock => stock.changePercent < 0) // Only show losers
+        .sort((a, b) => a.changePercent - b.changePercent) // Sort by biggest loss
+        .slice(0, 5); // Top 5 losers
+      
+      setTopLosers(stocks);
+    } else if (!isLoading) {
+      // Fallback to mock data if API fails
+      const mockLosers: Stock[] = [
+        { symbol: "COIN", name: "Coinbase Global", price: 89.34, change: -8.76, changePercent: -8.93 },
+        { symbol: "RIOT", name: "Riot Platforms", price: 12.45, change: -1.34, changePercent: -9.73 },
+        { symbol: "MARA", name: "Marathon Digital", price: 18.67, change: -1.89, changePercent: -9.18 },
+        { symbol: "PINS", name: "Pinterest Inc", price: 35.78, change: -2.98, changePercent: -7.69 },
+        { symbol: "ROKU", name: "Roku Inc", price: 65.23, change: -4.12, changePercent: -5.94 }
+      ];
       setTopLosers(mockLosers);
-      setIsLoading(false);
-    }, 1000);
-  }, []);
+    }
+  }, [quotesData, isLoading]);
 
   const handleViewStock = (symbol: string) => {
     setLocation(`/stock/${symbol}/charts`);

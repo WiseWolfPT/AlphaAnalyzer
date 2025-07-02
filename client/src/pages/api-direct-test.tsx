@@ -43,10 +43,11 @@ export default function ApiDirectTest() {
     updateTest('API Keys Check', { status: 'pending' });
 
     const keys = {
-      FINNHUB: import.meta.env.VITE_FINNHUB_API_KEY,
-      ALPHA_VANTAGE: import.meta.env.VITE_ALPHA_VANTAGE_API_KEY,
-      TWELVE_DATA: import.meta.env.VITE_TWELVE_DATA_API_KEY,
-      FMP: import.meta.env.VITE_FMP_API_KEY
+      // SECURITY: API keys moved to server-side - this page is deprecated
+      FINNHUB: 'DEPRECATED_USE_SERVER_PROXY',
+      ALPHA_VANTAGE: 'DEPRECATED_USE_SERVER_PROXY',
+      TWELVE_DATA: 'DEPRECATED_USE_SERVER_PROXY',
+      FMP: 'DEPRECATED_USE_SERVER_PROXY'
     };
 
     const keyStatus = Object.entries(keys).map(([name, key]) => ({
@@ -73,8 +74,8 @@ export default function ApiDirectTest() {
     updateTest('Direct Finnhub API', { status: 'pending' });
 
     try {
-      const apiKey = import.meta.env.VITE_FINNHUB_API_KEY;
-      if (!apiKey) throw new Error('VITE_FINNHUB_API_KEY not found');
+      // SECURITY: API keys moved to server-side - use proxy endpoints instead
+      throw new Error('Direct API calls deprecated - use /api/market-data/finnhub endpoints');
 
       const response = await fetch(`https://finnhub.io/api/v1/quote?symbol=AAPL&token=${apiKey}`);
       const data = await response.json();
@@ -108,8 +109,8 @@ export default function ApiDirectTest() {
     updateTest('Direct Alpha Vantage API', { status: 'pending' });
 
     try {
-      const apiKey = import.meta.env.VITE_ALPHA_VANTAGE_API_KEY;
-      if (!apiKey) throw new Error('VITE_ALPHA_VANTAGE_API_KEY not found');
+      // SECURITY: API keys moved to server-side - use proxy endpoints instead
+      throw new Error('Direct API calls deprecated - use /api/market-data/alpha-vantage endpoints');
 
       const response = await fetch(`https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=AAPL&apikey=${apiKey}`);
       const data = await response.json();
@@ -144,8 +145,8 @@ export default function ApiDirectTest() {
     updateTest('Direct Twelve Data API', { status: 'pending' });
 
     try {
-      const apiKey = import.meta.env.VITE_TWELVE_DATA_API_KEY;
-      if (!apiKey) throw new Error('VITE_TWELVE_DATA_API_KEY not found');
+      // SECURITY: API keys moved to server-side - use proxy endpoints instead
+      throw new Error('Direct API calls deprecated - use /api/market-data/twelve-data endpoints');
 
       const response = await fetch(`https://api.twelvedata.com/quote?symbol=AAPL&apikey=${apiKey}`);
       const data = await response.json();
@@ -179,8 +180,8 @@ export default function ApiDirectTest() {
     updateTest('Direct FMP API', { status: 'pending' });
 
     try {
-      const apiKey = import.meta.env.VITE_FMP_API_KEY;
-      if (!apiKey) throw new Error('VITE_FMP_API_KEY not found');
+      // SECURITY: API keys moved to server-side - use proxy endpoints instead
+      throw new Error('Direct API calls deprecated - use /api/market-data/fmp endpoints');
 
       const response = await fetch(`https://financialmodelingprep.com/api/v3/quote/AAPL?apikey=${apiKey}`);
       const data = await response.json();

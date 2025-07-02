@@ -1,5 +1,5 @@
 import { advancedCache } from './advanced-cache-manager';
-// import { MarketDataOrchestrator } from '../../client/src/services/api/market-data-orchestrator';
+import { ServerMarketDataService } from '../services/market-data-service';
 import { EventEmitter } from 'events';
 
 interface WarmingTask {
@@ -28,7 +28,7 @@ export class CacheWarmer extends EventEmitter {
     errors: []
   };
   
-  private orchestrator: MarketDataOrchestrator;
+  private marketDataService: ServerMarketDataService;
   private rateLimiter: Map<string, number> = new Map();
   
   // Popular stocks that should always be warm
@@ -47,7 +47,7 @@ export class CacheWarmer extends EventEmitter {
 
   constructor() {
     super();
-    this.orchestrator = new MarketDataOrchestrator();
+    this.marketDataService = new ServerMarketDataService();
     
     // Listen for cache warming requests
     advancedCache.on('warmCache', (symbols: string[]) => {
@@ -175,7 +175,7 @@ export class CacheWarmer extends EventEmitter {
     await advancedCache.get(key, async () => {
       this.stats.apiCallsUsed++;
       this.updateRateLimit('quote');
-      return await this.orchestrator.getRealTimeQuote(symbol);
+      return await this.marketDataService.getQuote(symbol);
     }, {
       dataType: 'quote',
       symbol
@@ -191,7 +191,7 @@ export class CacheWarmer extends EventEmitter {
     await advancedCache.get(key, async () => {
       this.stats.apiCallsUsed++;
       this.updateRateLimit('fundamentals');
-      return await this.orchestrator.getFundamentals(symbol);
+      return await this.marketDataService.getFundamentals(symbol);
     }, {
       dataType: 'fundamentals',
       symbol
@@ -210,7 +210,7 @@ export class CacheWarmer extends EventEmitter {
       await advancedCache.get(key, async () => {
         this.stats.apiCallsUsed++;
         this.updateRateLimit('charts');
-        return await this.orchestrator.getHistoricalData(symbol, '1day', this.getOutputSize(timeframe));
+        return await this.marketDataService.getHistoricalData(symbol, '1day', this.getOutputSize(timeframe));
       }, {
         dataType: 'charts',
         symbol

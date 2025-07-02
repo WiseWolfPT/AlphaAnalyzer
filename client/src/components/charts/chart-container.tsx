@@ -6,7 +6,7 @@ interface ChartContainerProps {
   title: string;
   children: ReactNode;
   height?: string;
-  subtitle?: string;
+  subtitle?: string | ReactNode;
   trend?: 'up' | 'down' | 'neutral';
   value?: string;
   change?: string;

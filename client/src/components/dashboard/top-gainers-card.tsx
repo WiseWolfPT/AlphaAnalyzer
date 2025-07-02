@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { TrendingUp, ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useMarketQuotes } from "@/hooks/use-market-data";
 
 interface Stock {
   symbol: string;
@@ -14,27 +15,63 @@ interface Stock {
   changePercent: number;
 }
 
+// Helper function to get company names
+function getCompanyName(symbol: string): string {
+  const companyNames: Record<string, string> = {
+    'NVDA': 'NVIDIA Corp',
+    'AMD': 'Advanced Micro Devices',
+    'TSLA': 'Tesla Inc',
+    'META': 'Meta Platforms',
+    'AMZN': 'Amazon.com',
+    'AAPL': 'Apple Inc',
+    'MSFT': 'Microsoft Corp',
+    'GOOGL': 'Alphabet Inc',
+    'NFLX': 'Netflix Inc',
+    'JPM': 'JPMorgan Chase',
+    'V': 'Visa Inc',
+    'MA': 'Mastercard',
+    'WMT': 'Walmart Inc',
+    'DIS': 'Walt Disney Co'
+  };
+  return companyNames[symbol] || symbol;
+}
+
 export function TopGainersCard() {
   const [, setLocation] = useLocation();
   const [topGainers, setTopGainers] = useState<Stock[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  
+  // Popular stocks to track for gainers
+  const trackedSymbols = ['NVDA', 'AMD', 'TSLA', 'META', 'AMZN', 'AAPL', 'MSFT', 'GOOGL'];
+  const { data: quotesData, isLoading } = useMarketQuotes(trackedSymbols);
 
   useEffect(() => {
-    // Mock data for top gainers - in real implementation, fetch from API
-    const mockGainers: Stock[] = [
-      { symbol: "NVDA", name: "NVIDIA Corp", price: 892.45, change: 45.67, changePercent: 5.39 },
-      { symbol: "AMD", name: "Advanced Micro", price: 187.23, change: 8.94, changePercent: 5.01 },
-      { symbol: "TSLA", name: "Tesla Inc", price: 248.73, change: 11.28, changePercent: 4.75 },
-      { symbol: "META", name: "Meta Platforms", price: 512.89, change: 22.34, changePercent: 4.56 },
-      { symbol: "AMZN", name: "Amazon.com", price: 165.78, change: 6.89, changePercent: 4.33 }
-    ];
-
-    // Simulate API delay
-    setTimeout(() => {
+    if (quotesData?.quotes && quotesData.quotes.length > 0) {
+      // Convert market quotes to our Stock format and sort by gain percentage
+      const stocks = quotesData.quotes
+        .map(quote => ({
+          symbol: quote.symbol,
+          name: getCompanyName(quote.symbol), // Helper function to get company name
+          price: quote.price,
+          change: quote.change,
+          changePercent: quote.changePercent
+        }))
+        .filter(stock => stock.changePercent > 0) // Only show gainers
+        .sort((a, b) => b.changePercent - a.changePercent) // Sort by highest gain
+        .slice(0, 5); // Top 5 gainers
+      
+      setTopGainers(stocks);
+    } else if (!isLoading) {
+      // Fallback to mock data if API fails
+      const mockGainers: Stock[] = [
+        { symbol: "NVDA", name: "NVIDIA Corp", price: 892.45, change: 45.67, changePercent: 5.39 },
+        { symbol: "AMD", name: "Advanced Micro", price: 187.23, change: 8.94, changePercent: 5.01 },
+        { symbol: "TSLA", name: "Tesla Inc", price: 248.73, change: 11.28, changePercent: 4.75 },
+        { symbol: "META", name: "Meta Platforms", price: 512.89, change: 22.34, changePercent: 4.56 },
+        { symbol: "AMZN", name: "Amazon.com", price: 165.78, change: 6.89, changePercent: 4.33 }
+      ];
       setTopGainers(mockGainers);
-      setIsLoading(false);
-    }, 1000);
-  }, []);
+    }
+  }, [quotesData, isLoading]);
 
   const handleViewStock = (symbol: string) => {
     setLocation(`/stock/${symbol}/charts`);

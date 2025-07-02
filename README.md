@@ -21,6 +21,34 @@ This project uses automatic deployment:
 - Routing: Wouter
 - APIs: Finnhub + Alpha Vantage
 
+## Database Configuration
+
+Alfalyzer uses different databases depending on the environment:
+
+- **Development**: SQLite (local file-based database)
+  - Location: `./data/alfalyzer.db`
+  - Automatic setup with migrations
+  - No additional configuration needed
+
+- **Staging/Production**: Supabase (PostgreSQL)
+  - Cloud-hosted PostgreSQL
+  - Requires Supabase account and keys
+  - Migrations in `migrations/postgres-migrations/`
+
+### Migration Management
+
+```bash
+# SQLite (Development)
+npm run migrate          # Run all pending migrations
+npm run migrate:status   # Check migration status
+npm run migrate:rollback # Rollback last migration
+
+# Supabase (Production)
+# Use Supabase dashboard or CLI to run migrations from migrations/postgres-migrations/
+```
+
+**Note**: Keep both SQLite and PostgreSQL migrations synchronized when making schema changes.
+
 ## Development
 ```bash
 npm install

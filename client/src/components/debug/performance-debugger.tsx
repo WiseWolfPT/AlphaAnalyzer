@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Activity, Clock, Memory, Zap, AlertTriangle, TrendingUp } from 'lucide-react';
+import { Activity, Clock, HardDrive, Zap, AlertTriangle, TrendingUp, Cpu } from 'lucide-react';
 import { usePerformanceMonitor, useMemoryMonitor, PerformanceUtils } from '@/hooks/use-performance-monitor';
 
 interface PerformanceDebuggerProps {
@@ -12,7 +12,7 @@ interface PerformanceDebuggerProps {
 }
 
 export function PerformanceDebugger({ 
-  show = process.env.NODE_ENV === 'development',
+  show = process.env.NODE_ENV === 'development' && !window.location.search.includes('hide-debug'),
   position = 'bottom-right'
 }: PerformanceDebuggerProps) {
   const [isVisible, setIsVisible] = useState(false);
@@ -210,7 +210,7 @@ export function PerformanceDebugger({
               <TabsContent value="memory" className="space-y-3">
                 <div className="space-y-2 text-xs">
                   <div className="flex items-center gap-2">
-                    <Memory className="h-4 w-4" />
+                    <HardDrive className="h-4 w-4" />
                     <span className="font-medium">Memory Usage</span>
                   </div>
                   
@@ -290,7 +290,7 @@ export function PerformanceDebugger({
                 onClick={() => PerformanceUtils.reportMemoryUsage('Manual Check')}
                 className="text-xs flex-1"
               >
-                <Memory className="h-3 w-3 mr-1" />
+                <HardDrive className="h-3 w-3 mr-1" />
                 Check Memory
               </Button>
               <Button 
@@ -338,7 +338,7 @@ export function PerformanceInsights() {
         for (const entry of list.getEntries()) {
           if (entry.entryType === 'navigation') {
             const navEntry = entry as PerformanceNavigationTiming;
-            if (navEntry.loadEventEnd - navEntry.navigationStart > 3000) {
+            if (navEntry.loadEventEnd - navEntry.startTime > 3000) {
               newInsights.push('Slow page load detected. Consider code splitting and preloading.');
             }
           }

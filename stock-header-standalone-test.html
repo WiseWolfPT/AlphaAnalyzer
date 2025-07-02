@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StockHeader Component Test - Standalone</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        chartreuse: '#7FFF00',
+                        muted: {
+                            DEFAULT: '#f1f5f9',
+                            foreground: '#64748b'
+                        }
+                    }
+                }
+            },
+            darkMode: 'class'
+        }
+    </script>
+    <style>
+        /* Custom styles for components not available in CDN */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            border-radius: 0.375rem;
+            padding: 0.125rem 0.625rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            transition: color 0.2s;
+        }
+        .badge-outline {
+            background-color: transparent;
+            border: 1px solid;
+        }
+        .button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 0.375rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: all 0.2s;
+            cursor: pointer;
+            border: 1px solid transparent;
+        }
+        .button-outline {
+            border: 1px solid #e2e8f0;
+            background-color: transparent;
+        }
+        .button-outline:hover {
+            background-color: #f8fafc;
+        }
+        .button-sm {
+            height: 2rem;
+            padding: 0 0.75rem;
+        }
+        .dark .button-outline {
+            border-color: #374151;
+        }
+        .dark .button-outline:hover {
+            background-color: #1f2937;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+    <div class="container mx-auto p-8 max-w-4xl">
+        <div class="space-y-8">
+            <div class="space-y-4">
+                <h1 class="text-3xl font-bold mb-4">StockHeader Component Test - Standalone</h1>
+                
+                <!-- Test Controls -->
+                <div class="space-y-4 p-4 bg-gray-100 dark:bg-gray-800 rounded-lg">
+                    <h2 class="text-xl font-semibold">Test Controls</h2>
+                    
+                    <div class="flex gap-4">
+                        <button 
+                            onclick="switchDataSet('positive')"
+                            id="btn-positive"
+                            class="px-4 py-2 rounded bg-blue-500 text-white"
+                        >
+                            Positive Change (AAPL)
+                        </button>
+                        
+                        <button 
+                            onclick="switchDataSet('negative')"
+                            id="btn-negative"
+                            class="px-4 py-2 rounded bg-gray-200 text-gray-700 hover:bg-gray-300"
+                        >
+                            Negative Change (TSLA)
+                        </button>
+                        
+                        <button 
+                            onclick="switchDataSet('invalid-logo')"
+                            id="btn-invalid"
+                            class="px-4 py-2 rounded bg-gray-200 text-gray-700 hover:bg-gray-300"
+                        >
+                            Invalid Logo (TEST)
+                        </button>
+                    </div>
+
+                    <div class="space-y-2">
+                        <p><strong>Current Dataset:</strong> <span id="current-dataset">positive</span></p>
+                        <p><strong>Watchlist Status:</strong> <span id="watchlist-status">Not in Watchlist</span></p>
+                    </div>
+                </div>
+
+                <!-- Component Test Area -->
+                <div class="border-2 border-dashed border-gray-300 dark:border-gray-600 p-6 rounded-lg">
+                    <h2 class="text-xl font-semibold mb-4">StockHeader Component Output</h2>
+                    
+                    <div id="stock-header-container">
+                        <!-- StockHeader component will be rendered here -->
+                    </div>
+                </div>
+
+                <!-- Data Display for Verification -->
+                <div class="p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
+                    <h2 class="text-xl font-semibold mb-4">Current Mock Data</h2>
+                    <pre id="current-data" class="text-sm overflow-auto bg-white dark:bg-gray-800 p-4 rounded border"></pre>
+                </div>
+
+                <!-- Expected Layout Description -->
+                <div class="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                    <h2 class="text-xl font-semibold mb-2">Expected 3-Line Layout</h2>
+                    <ol class="list-decimal list-inside space-y-1 text-sm">
+                        <li><strong>Line 1:</strong> Logo + Ticker Symbol + Current Price + Daily Change (with colors)</li>
+                        <li><strong>Line 2:</strong> Company Name (left) + After Hours Price & Change (right)</li>
+                        <li><strong>Line 3:</strong> Sector Badge (left) + Earnings Date (right)</li>
+                        <li><strong>Line 4:</strong> Action Buttons (Add to Watchlist + Share)</li>
+                    </ol>
+                </div>
+
+                <!-- Test Results Section -->
+                <div class="p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                    <h2 class="text-xl font-semibold mb-2">Manual Test Checklist</h2>
+                    <div class="space-y-2 text-sm">
+                        <label class="flex items-center gap-2">
+                            <input type="checkbox" />
+                            <span>Logo displays correctly (or shows fallback letter)</span>
+                        </label>
+                        <label class="flex items-center gap-2">
+                            <input type="checkbox" />
+                            <span>Ticker symbol shows in correct size and weight</span>
+                        </label>
+                        <label class="flex items-center gap-2">
+                            <input type="checkbox" />
+                            <span>Price displays with 2 decimal places</span>
+                        </label>
+                        <label class="flex items-center gap-2">
+                            <input type="checkbox" />
+                            <span>Daily change shows correct color (green for positive, red for negative)</span>
+                        </label>
+                        <label class="flex items-center gap-2">
+                            <input type="checkbox" />
+                            <span>Company name displays on left side of line 2</span>
+                        </label>
+                        <label class="flex items-center gap-2">
+                            <input type="checkbox" />
+                            <span>After hours data displays on right side of line 2</span>
+                        </label>
+                        <label class="flex items-center gap-2">
+                            <input type="checkbox" />
+                            <span>Sector badge displays with correct styling</span>
+                        </label>
+                        <label class="flex items-center gap-2">
+                            <input type="checkbox" />
+                            <span>Earnings date displays on right side of line 3</span>
+                        </label>
+                        <label class="flex items-center gap-2">
+                            <input type="checkbox" />
+                            <span>Watchlist button toggles correctly</span>
+                        </label>
+                        <label class="flex items-center gap-2">
+                            <input type="checkbox" />
+                            <span>Share button triggers alert</span>
+                        </label>
+                        <label class="flex items-center gap-2">
+                            <input type="checkbox" />
+                            <span>Logo error handling works (shows first letter of symbol)</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Mock data for testing StockHeader component
+        const mockData = {
+            positive: {
+                symbol: 'AAPL',
+                company: {
+                    name: 'Apple Inc.',
+                    sector: 'Technology',
+                    price: 175.43,
+                    change: 2.15,
+                    changePercent: 1.24,
+                    afterHoursPrice: 176.20,
+                    afterHoursChange: 0.77,
+                    afterHoursChangePercent: 0.44,
+                    earningsDate: 'Feb 1, 2024',
+                    logo: 'https://logo.clearbit.com/apple.com'
+                }
+            },
+            negative: {
+                symbol: 'TSLA',
+                company: {
+                    name: 'Tesla, Inc.',
+                    sector: 'Automotive',
+                    price: 243.84,
+                    change: -5.67,
+                    changePercent: -2.27,
+                    afterHoursPrice: 242.10,
+                    afterHoursChange: -1.74,
+                    afterHoursChangePercent: -0.71,
+                    earningsDate: 'Jan 24, 2024',
+                    logo: 'https://logo.clearbit.com/tesla.com'
+                }
+            },
+            'invalid-logo': {
+                symbol: 'TEST',
+                company: {
+                    name: 'Test Company Ltd.',
+                    sector: 'Testing',
+                    price: 50.00,
+                    change: 1.25,
+                    changePercent: 2.56,
+                    afterHoursPrice: 50.50,
+                    afterHoursChange: 0.50,
+                    afterHoursChangePercent: 1.00,
+                    earningsDate: 'Dec 15, 2024',
+                    logo: 'https://invalid-logo-url.com/test.png'
+                }
+            }
+        };
+
+        let currentDataSet = 'positive';
+        let isInWatchlist = false;
+
+        function switchDataSet(dataset) {
+            currentDataSet = dataset;
+            updateUI();
+            renderStockHeader();
+        }
+
+        function updateUI() {
+            document.getElementById('current-dataset').textContent = currentDataSet;
+            document.getElementById('current-data').textContent = JSON.stringify(mockData[currentDataSet], null, 2);
+            
+            // Update button states
+            ['positive', 'negative', 'invalid-logo'].forEach(type => {
+                const btn = document.getElementById(`btn-${type === 'invalid-logo' ? 'invalid' : type}`);
+                if (type === currentDataSet) {
+                    btn.className = 'px-4 py-2 rounded bg-blue-500 text-white';
+                } else {
+                    btn.className = 'px-4 py-2 rounded bg-gray-200 text-gray-700 hover:bg-gray-300';
+                }
+            });
+        }
+
+        function toggleWatchlist() {
+            isInWatchlist = !isInWatchlist;
+            document.getElementById('watchlist-status').textContent = isInWatchlist ? 'In Watchlist' : 'Not in Watchlist';
+            console.log(`${isInWatchlist ? 'Added to' : 'Removed from'} watchlist:`, mockData[currentDataSet].symbol);
+            renderStockHeader();
+        }
+
+        function shareStock() {
+            const data = mockData[currentDataSet];
+            console.log('Share clicked for:', data.symbol);
+            alert(`Sharing ${data.symbol} - ${data.company.name}`);
+        }
+
+        function renderStockHeader() {
+            const data = mockData[currentDataSet];
+            const isPositive = data.company.change >= 0;
+            const isAfterHoursPositive = data.company.afterHoursChange >= 0;
+            
+            const html = `
+                <div class="space-y-3">
+                    <!-- Line 1: Logo + Ticker + Current Price + Daily Change -->
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-xl overflow-hidden bg-muted flex items-center justify-center shrink-0 border">
+                            <img 
+                                src="${data.company.logo}" 
+                                alt="${data.symbol} logo"
+                                class="w-full h-full object-cover"
+                                onerror="this.style.display='none'; this.parentElement.innerHTML='<div class=\\"text-xl font-bold text-chartreuse\\">${data.symbol[0]}</div>';"
+                            />
+                        </div>
+                        <h1 class="text-2xl sm:text-3xl font-bold">${data.symbol}</h1>
+                        <span class="text-2xl sm:text-3xl font-bold">$${data.company.price.toFixed(2)}</span>
+                        <span class="text-lg sm:text-xl font-medium ${isPositive ? 'text-green-500' : 'text-red-500'}">
+                            ${isPositive ? '+' : ''}$${data.company.change.toFixed(2)} (${isPositive ? '+' : ''}${data.company.changePercent.toFixed(2)}%)
+                        </span>
+                    </div>
+
+                    <!-- Line 2: Company Name + After Hours (right aligned) -->
+                    <div class="flex items-center justify-between">
+                        <p class="text-lg font-medium text-muted-foreground">${data.company.name}</p>
+                        <div class="text-right">
+                            <span class="text-base font-medium">
+                                After Hours $${data.company.afterHoursPrice.toFixed(2)} 
+                                <span class="ml-2 ${isAfterHoursPositive ? 'text-green-500' : 'text-red-500'}">
+                                    ${isAfterHoursPositive ? '+' : ''}$${data.company.afterHoursChange.toFixed(2)} (${isAfterHoursPositive ? '+' : ''}${data.company.afterHoursChangePercent.toFixed(2)}%)
+                                </span>
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Line 3: Sector + Earnings Date (right aligned) -->
+                    <div class="flex items-center justify-between">
+                        <span class="badge badge-outline border-chartreuse/30 text-chartreuse w-fit text-sm">
+                            ${data.company.sector}
+                        </span>
+                        <p class="text-sm text-muted-foreground">
+                            Earnings: <span class="font-medium">${data.company.earningsDate}</span>
+                        </p>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="flex items-center gap-2 pt-2">
+                        <button
+                            class="button button-outline button-sm gap-2 ${isInWatchlist 
+                                ? 'bg-chartreuse/10 border-chartreuse/30 text-chartreuse' 
+                                : 'border-chartreuse/20 hover:bg-chartreuse/10'
+                            }"
+                            onclick="toggleWatchlist()"
+                        >
+                            <span class="w-4 h-4 ${isInWatchlist ? '★' : '+'}"></span>
+                            ${isInWatchlist ? 'In Watchlist' : 'Add to Watchlist'}
+                        </button>
+                        <button class="button button-outline button-sm gap-2" onclick="shareStock()">
+                            <span class="w-4 h-4">↗</span>
+                            Share
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('stock-header-container').innerHTML = html;
+        }
+
+        // Initialize the page
+        document.addEventListener('DOMContentLoaded', function() {
+            updateUI();
+            renderStockHeader();
+        });
+    </script>
+</body>
+</html>

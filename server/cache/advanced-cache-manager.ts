@@ -328,7 +328,7 @@ export class AdvancedCacheManager extends EventEmitter {
   private async getFromRedis(key: string): Promise<CacheEntry<any> | null> {
     try {
       const data = await this.redis.get(key);
-      return data ? JSON.parse(data) : null;
+      return data && typeof data === 'string' ? JSON.parse(data) : null;
     } catch (error) {
       console.error(`Redis get error for ${key}:`, error);
       return null;
@@ -445,7 +445,7 @@ export class AdvancedCacheManager extends EventEmitter {
   private async warmPopularStocks(): Promise<void> {
     try {
       const popularData = await this.redis.get('popular:stocks');
-      if (!popularData) return;
+      if (!popularData || typeof popularData !== 'string') return;
 
       const popular: PopularityScore[] = JSON.parse(popularData);
       

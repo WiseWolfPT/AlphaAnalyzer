@@ -26,6 +26,26 @@ Alfalyzer now integrates with multiple financial data APIs to provide real-time 
 - **Purpose**: Detailed financial data when other sources fail
 - **Cache**: 24 hours
 
+## Backup API Providers (If Primary APIs Fail)
+
+### 5. **Polygon.io** - Alternative Real-time Data
+- **Quota**: 5 calls/minute (free tier)
+- **Purpose**: Backup for US market data, aggregates, and real-time prices
+- **Cache**: 1 minute for prices, 1 hour for aggregates
+- **Note**: Excellent WebSocket support for live data
+
+### 6. **Yahoo Finance** (via yfinance) - Unofficial but Reliable
+- **Quota**: No official limit (use responsibly)
+- **Purpose**: Comprehensive backup for all data types
+- **Cache**: Follow same strategy as primary APIs
+- **Warning**: For personal/non-commercial use initially. Consider official APIs when monetizing
+
+### 7. **MarketStack** - Historical Data Alternative
+- **Quota**: 1000 calls/month (free tier)
+- **Purpose**: End-of-day historical data
+- **Cache**: 24 hours minimum
+- **Note**: Good for historical data but limited real-time capabilities
+
 ## Setup Instructions
 
 ### 1. Get API Keys

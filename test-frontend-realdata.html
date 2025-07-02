@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Frontend Real Data Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 20px; border: 1px solid #ccc; border-radius: 8px; }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        .loading { background-color: #e2e3e5; border-color: #d1d3d4; }
+        button { padding: 10px 20px; margin: 10px 0; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 4px; overflow: auto; }
+        .stock-card { background: white; border: 1px solid #ddd; border-radius: 8px; padding: 15px; margin: 10px 0; }
+        .price { font-size: 1.5em; font-weight: bold; color: #2563eb; }
+        .change-positive { color: #16a34a; }
+        .change-negative { color: #dc2626; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Frontend Real Data Test</h1>
+    <p>Testing if the React frontend is receiving real stock data from APIs.</p>
+    
+    <div class="test-section loading" id="frontend-test">
+        <h3>📊 Frontend API Test</h3>
+        <p>Testing direct frontend market data client...</p>
+        <div id="stock-cards"></div>
+        <pre id="frontend-result">Loading...</pre>
+    </div>
+
+    <div class="test-section loading" id="proxy-test">
+        <h3>🔄 Frontend Proxy Test</h3>
+        <p>Testing if frontend can access backend through Vite proxy...</p>
+        <pre id="proxy-result">Loading...</pre>
+    </div>
+
+    <button onclick="runTests()">🔄 Run Tests Again</button>
+
+    <script>
+        // Simulate the market data client from the React app
+        class FrontendMarketDataClient {
+            constructor() {
+                // This should match the React app configuration
+                this.baseUrl = 'http://localhost:3003/api/market-data';
+                this.authToken = 'demo-token-development';
+            }
+
+            getHeaders() {
+                return {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${this.authToken}`
+                };
+            }
+
+            async getQuote(symbol) {
+                try {
+                    const response = await fetch(`${this.baseUrl}/quote/${symbol}`, {
+                        method: 'GET',
+                        headers: this.getHeaders(),
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    }
+
+                    return await response.json();
+                } catch (error) {
+                    console.error(`Error fetching quote for ${symbol}:`, error);
+                    throw error;
+                }
+            }
+
+            async getBatchQuotes(symbols) {
+                try {
+                    const quotePromises = symbols.map(symbol => this.getQuote(symbol));
+                    const results = await Promise.allSettled(quotePromises);
+                    
+                    const quotes = [];
+                    const failed = [];
+                    
+                    results.forEach((result, index) => {
+                        if (result.status === 'fulfilled' && result.value) {
+                            quotes.push(result.value);
+                        } else {
+                            failed.push(symbols[index]);
+                        }
+                    });
+
+                    return {
+                        quotes,
+                        failed,
+                        timestamp: Date.now()
+                    };
+                } catch (error) {
+                    console.error('Failed to fetch batch quotes:', error);
+                    return { quotes: [], failed: symbols, timestamp: Date.now() };
+                }
+            }
+        }
+
+        const client = new FrontendMarketDataClient();
+
+        function createStockCard(quote) {
+            const changeClass = quote.change >= 0 ? 'change-positive' : 'change-negative';
+            const changeSymbol = quote.change >= 0 ? '+' : '';
+            
+            return `
+                <div class="stock-card">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <h4 style="margin: 0;">${quote.symbol}</h4>
+                            <small style="color: #666;">Provider: ${quote.provider || 'unknown'}</small>
+                        </div>
+                        <div style="text-align: right;">
+                            <div class="price">$${quote.price?.toFixed(2) || 'N/A'}</div>
+                            <div class="${changeClass}">
+                                ${changeSymbol}${quote.change?.toFixed(2) || 'N/A'} 
+                                (${changeSymbol}${quote.changePercent?.toFixed(2) || 'N/A'}%)
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        async function testFrontendAPI() {
+            const section = document.getElementById('frontend-test');
+            const result = document.getElementById('frontend-result');
+            const cardsContainer = document.getElementById('stock-cards');
+            
+            try {
+                const symbols = ['AAPL', 'NVDA', 'TSLA', 'META'];
+                const data = await client.getBatchQuotes(symbols);
+                
+                // Create stock cards
+                if (data.quotes && data.quotes.length > 0) {
+                    cardsContainer.innerHTML = data.quotes.map(createStockCard).join('');
+                    
+                    result.textContent = JSON.stringify({
+                        success: true,
+                        quotesReceived: data.quotes.length,
+                        failed: data.failed,
+                        sampleQuote: data.quotes[0],
+                        allRealData: data.quotes.every(q => q.provider && q.provider !== 'mock'),
+                        providers: [...new Set(data.quotes.map(q => q.provider))]
+                    }, null, 2);
+                    
+                    section.className = 'test-section success';
+                } else {
+                    cardsContainer.innerHTML = '<div class="stock-card">No real data received - showing fallback</div>';
+                    result.textContent = 'No quotes received - API may be failing';
+                    section.className = 'test-section error';
+                }
+            } catch (error) {
+                cardsContainer.innerHTML = '<div class="stock-card">Error loading data</div>';
+                result.textContent = `Error: ${error.message}`;
+                section.className = 'test-section error';
+            }
+        }
+
+        async function testProxyAccess() {
+            const section = document.getElementById('proxy-test');
+            const result = document.getElementById('proxy-result');
+            
+            try {
+                // Test proxy through frontend (port 3000)
+                const response = await fetch('/api/market-data/quote/AAPL', {
+                    headers: {
+                        'Authorization': 'Bearer demo-token-development'
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    result.textContent = JSON.stringify({
+                        proxyWorking: true,
+                        data: data,
+                        isRealData: data.provider && data.provider !== 'mock',
+                        price: data.price,
+                        provider: data.provider
+                    }, null, 2);
+                    section.className = 'test-section success';
+                } else {
+                    throw new Error(`Proxy failed: ${response.status}`);
+                }
+            } catch (error) {
+                result.textContent = `Proxy Error: ${error.message}`;
+                section.className = 'test-section error';
+            }
+        }
+
+        async function runTests() {
+            // Reset sections
+            document.querySelectorAll('.test-section').forEach(section => {
+                section.className = 'test-section loading';
+            });
+            
+            document.querySelectorAll('pre').forEach(pre => {
+                pre.textContent = 'Loading...';
+            });
+
+            document.getElementById('stock-cards').innerHTML = '';
+
+            // Run tests
+            await Promise.all([
+                testFrontendAPI(),
+                testProxyAccess()
+            ]);
+        }
+
+        // Run tests on page load
+        runTests();
+    </script>
+</body>
+</html>

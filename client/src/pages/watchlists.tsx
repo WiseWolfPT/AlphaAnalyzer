@@ -86,6 +86,8 @@ export default function Watchlists() {
   const [selectedWatchlistId, setSelectedWatchlistId] = useState<number | null>(null);
   const [newWatchlistName, setNewWatchlistName] = useState("");
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [isAddStockDialogOpen, setIsAddStockDialogOpen] = useState(false);
+  const [stockSymbolToAdd, setStockSymbolToAdd] = useState("");
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
@@ -145,6 +147,38 @@ export default function Watchlists() {
     },
   });
 
+  const addStockMutation = useMutation({
+    mutationFn: async (data: { watchlistId: number; stockSymbol: string }) => {
+      await apiRequest("POST", `/api/watchlists/${data.watchlistId}/stocks`, {
+        stockSymbol: data.stockSymbol.toUpperCase()
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["watchlist-stocks", selectedWatchlistId] });
+      setIsAddStockDialogOpen(false);
+      setStockSymbolToAdd("");
+      toast({
+        title: "Success",
+        description: "Stock added to watchlist successfully",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error", 
+        description: "Failed to add stock to watchlist",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleAddStock = () => {
+    if (!selectedWatchlistId || !stockSymbolToAdd.trim()) return;
+    addStockMutation.mutate({
+      watchlistId: selectedWatchlistId,
+      stockSymbol: stockSymbolToAdd.trim()
+    });
+  };
+
   const selectedWatchlist = watchlists?.find(w => w.id === selectedWatchlistId);
 
   return (
@@ -194,6 +228,43 @@ export default function Watchlists() {
                         className="bg-gradient-to-r from-chartreuse via-chartreuse-dark to-chartreuse hover:from-chartreuse-dark hover:via-chartreuse hover:to-chartreuse-dark text-rich-black font-semibold shadow-lg shadow-chartreuse/30 hover:shadow-chartreuse/50 hover:scale-105 transition-all duration-300 border-0"
                       >
                         Create
+                      </Button>
+                    </div>
+                  </div>
+                </DialogContent>
+              </Dialog>
+
+              {/* Add Stock Dialog */}
+              <Dialog open={isAddStockDialogOpen} onOpenChange={setIsAddStockDialogOpen}>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Add Stock to {selectedWatchlist?.name}</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-4">
+                    <div>
+                      <Label htmlFor="stockSymbol">Stock Symbol</Label>
+                      <Input
+                        id="stockSymbol"
+                        value={stockSymbolToAdd}
+                        onChange={(e) => setStockSymbolToAdd(e.target.value.toUpperCase())}
+                        placeholder="Enter stock symbol (e.g., AAPL)"
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            handleAddStock();
+                          }
+                        }}
+                      />
+                    </div>
+                    <div className="flex justify-end space-x-2">
+                      <Button variant="outline" onClick={() => setIsAddStockDialogOpen(false)}>
+                        Cancel
+                      </Button>
+                      <Button 
+                        onClick={handleAddStock}
+                        disabled={!stockSymbolToAdd.trim() || addStockMutation.isPending}
+                        className="bg-gradient-to-r from-chartreuse via-chartreuse-dark to-chartreuse hover:from-chartreuse-dark hover:via-chartreuse hover:to-chartreuse-dark text-rich-black font-semibold shadow-lg shadow-chartreuse/30 hover:shadow-chartreuse/50 hover:scale-105 transition-all duration-300 border-0"
+                      >
+                        {addStockMutation.isPending ? "Adding..." : "Add Stock"}
                       </Button>
                     </div>
                   </div>
@@ -271,7 +342,11 @@ export default function Watchlists() {
                       <Card>
                     <CardHeader className="flex flex-row items-center justify-between">
                       <CardTitle>Stocks in {selectedWatchlist.name}</CardTitle>
-                      <Button size="sm" className="bg-gradient-to-r from-chartreuse via-chartreuse-dark to-chartreuse hover:from-chartreuse-dark hover:via-chartreuse hover:to-chartreuse-dark text-rich-black font-semibold shadow-lg shadow-chartreuse/30 hover:shadow-chartreuse/50 hover:scale-105 transition-all duration-300 border-0">
+                      <Button 
+                        size="sm" 
+                        onClick={() => setIsAddStockDialogOpen(true)}
+                        className="bg-gradient-to-r from-chartreuse via-chartreuse-dark to-chartreuse hover:from-chartreuse-dark hover:via-chartreuse hover:to-chartreuse-dark text-rich-black font-semibold shadow-lg shadow-chartreuse/30 hover:shadow-chartreuse/50 hover:scale-105 transition-all duration-300 border-0"
+                      >
                         <Plus className="h-4 w-4 mr-2" />
                         Add Stock
                       </Button>
@@ -286,7 +361,13 @@ export default function Watchlists() {
                       ) : (
                         <div className="text-center py-8">
                           <p className="text-muted-foreground">No stocks in this watchlist</p>
-                          <Button size="sm" className="mt-2 bg-gradient-to-r from-chartreuse via-chartreuse-dark to-chartreuse hover:from-chartreuse-dark hover:via-chartreuse hover:to-chartreuse-dark text-rich-black font-semibold shadow-lg shadow-chartreuse/30 hover:shadow-chartreuse/50 hover:scale-105 transition-all duration-300 border-0">Add your first stock</Button>
+                          <Button 
+                            size="sm" 
+                            onClick={() => setIsAddStockDialogOpen(true)}
+                            className="mt-2 bg-gradient-to-r from-chartreuse via-chartreuse-dark to-chartreuse hover:from-chartreuse-dark hover:via-chartreuse hover:to-chartreuse-dark text-rich-black font-semibold shadow-lg shadow-chartreuse/30 hover:shadow-chartreuse/50 hover:scale-105 transition-all duration-300 border-0"
+                          >
+                            Add your first stock
+                          </Button>
                         </div>
                       )}
                     </CardContent>

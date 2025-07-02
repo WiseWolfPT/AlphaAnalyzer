@@ -9,6 +9,7 @@ interface User {
 
 interface SimpleAuthContextType {
   user: User | null;
+  token: string | null;
   loading: boolean;
   signOut: () => Promise<void>;
   signIn: (email: string, password: string) => Promise<{ error?: string }>;
@@ -18,6 +19,7 @@ interface SimpleAuthContextType {
 
 const SimpleAuthContext = createContext<SimpleAuthContextType>({
   user: null,
+  token: null,
   loading: false,
   signOut: async () => {},
   signIn: async () => ({}),
@@ -33,25 +35,72 @@ interface SimpleAuthProviderProps {
 
 export function SimpleAuthProvider({ children }: SimpleAuthProviderProps) {
   const [user, setUser] = useState<User | null>(null);
+  const [token, setToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // Generate a JWT-like token for demo purposes
+  const generateToken = (user: User): string => {
+    const header = { alg: 'HS256', typ: 'JWT' };
+    const payload = {
+      sub: user.id,
+      email: user.email,
+      name: user.name,
+      iat: Math.floor(Date.now() / 1000),
+      exp: Math.floor(Date.now() / 1000) + (24 * 60 * 60) // 24 hours
+    };
+    
+    // Simple base64 encoding for demo (not cryptographically secure)
+    const encodedHeader = btoa(JSON.stringify(header));
+    const encodedPayload = btoa(JSON.stringify(payload));
+    const signature = btoa(`alfalyzer-${user.id}-${Date.now()}`);
+    
+    return `${encodedHeader}.${encodedPayload}.${signature}`;
+  };
+
   useEffect(() => {
-    // Check for saved user in localStorage
+    // Check for saved user and token in localStorage
     const savedUser = localStorage.getItem('alfalyzer-user');
-    if (savedUser) {
+    const savedToken = localStorage.getItem('alfalyzer-token');
+    
+    if (savedUser && savedToken) {
       try {
-        setUser(JSON.parse(savedUser));
+        const parsedUser = JSON.parse(savedUser);
+        setUser(parsedUser);
+        setToken(savedToken);
+        setLoading(false);
+        return;
       } catch (error) {
         console.error('Error parsing saved user:', error);
         localStorage.removeItem('alfalyzer-user');
+        localStorage.removeItem('alfalyzer-token');
       }
     }
+    
+    // Auto-login demo user for development to enable real data
+    const demoUser: User = {
+      id: 'demo-user-' + Date.now(),
+      name: 'Demo User',
+      email: 'demo@alfalyzer.com'
+    };
+    
+    const demoToken = generateToken(demoUser);
+    setUser(demoUser);
+    setToken(demoToken);
+    
+    // Store for persistence
+    localStorage.setItem('alfalyzer-user', JSON.stringify(demoUser));
+    localStorage.setItem('alfalyzer-token', demoToken);
+    localStorage.setItem('auth-token', demoToken);
+    
     setLoading(false);
   }, []);
 
   const signOut = async () => {
     setUser(null);
+    setToken(null);
     localStorage.removeItem('alfalyzer-user');
+    localStorage.removeItem('alfalyzer-token');
+    localStorage.removeItem('auth-token');
   };
 
   const signIn = async (email: string, password: string) => {
@@ -70,8 +119,13 @@ export function SimpleAuthProvider({ children }: SimpleAuthProviderProps) {
                 email === 'beta@alfalyzer.com' ? 'AF' : 'DU'
       };
       
+      const authToken = generateToken(demoUser);
+      
       setUser(demoUser);
+      setToken(authToken);
       localStorage.setItem('alfalyzer-user', JSON.stringify(demoUser));
+      localStorage.setItem('alfalyzer-token', authToken);
+      localStorage.setItem('auth-token', authToken); // For market data client
       return {};
     }
     
@@ -87,8 +141,13 @@ export function SimpleAuthProvider({ children }: SimpleAuthProviderProps) {
       avatar: name.charAt(0).toUpperCase()
     };
     
+    const authToken = generateToken(newUser);
+    
     setUser(newUser);
+    setToken(authToken);
     localStorage.setItem('alfalyzer-user', JSON.stringify(newUser));
+    localStorage.setItem('alfalyzer-token', authToken);
+    localStorage.setItem('auth-token', authToken); // For market data client
     return {};
   };
 
@@ -96,7 +155,10 @@ export function SimpleAuthProvider({ children }: SimpleAuthProviderProps) {
   const toggleAuthState = () => {
     if (user) {
       setUser(null);
+      setToken(null);
       localStorage.removeItem('alfalyzer-user');
+      localStorage.removeItem('alfalyzer-token');
+      localStorage.removeItem('auth-token');
     } else {
       const demoUser: User = {
         id: 'demo-1',
@@ -104,14 +166,20 @@ export function SimpleAuthProvider({ children }: SimpleAuthProviderProps) {
         email: 'joao@demo.com',
         avatar: 'JS'
       };
+      const authToken = generateToken(demoUser);
+      
       setUser(demoUser);
+      setToken(authToken);
       localStorage.setItem('alfalyzer-user', JSON.stringify(demoUser));
+      localStorage.setItem('alfalyzer-token', authToken);
+      localStorage.setItem('auth-token', authToken);
     }
   };
 
   return (
     <SimpleAuthContext.Provider value={{ 
       user, 
+      token,
       loading, 
       signOut, 
       signIn, 

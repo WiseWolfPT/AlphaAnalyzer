@@ -145,11 +145,20 @@ export function RealStockCard({
     );
   }
 
+  // Ensure stock is not null before accessing properties
+  if (!stock) {
+    return (
+      <div className="bg-card/50 backdrop-blur-sm border border-red-500/30 rounded-xl p-6">
+        <div className="text-center text-red-500">Stock data unavailable</div>
+      </div>
+    );
+  }
+
   const changePercent = typeof stock.changePercent === 'string' ? parseFloat(stock.changePercent) : stock.changePercent;
   const isPositive = !isNaN(changePercent) && changePercent >= 0;
   
   // Mock intrinsic value for now (in real app, this would come from backend)
-  const currentPrice = parseFloat(stock.price);
+  const currentPrice = parseFloat(stock.price || '0');
   const intrinsicValue = currentPrice * (1 + (Math.random() - 0.5) * 0.3); // ±15% variation
   const valuationDiff = ((currentPrice - intrinsicValue) / intrinsicValue) * 100;
   const isUndervalued = valuationDiff < 0;
@@ -291,7 +300,7 @@ export function RealStockCard({
           
           <div className="flex items-center justify-between text-sm">
             <span className="text-muted-foreground">Market Cap</span>
-            <span className="text-foreground font-medium">{stock.marketCap}</span>
+            <span className="text-foreground font-medium">{stock.marketCap || 'N/A'}</span>
           </div>
 
           <div className="flex items-center justify-between text-sm">
@@ -300,7 +309,7 @@ export function RealStockCard({
               "font-medium",
               isPositive ? "text-emerald-500" : "text-red-500"
             )}>
-              {isPositive ? '+' : ''}${stock.change}
+              {isPositive ? '+' : ''}${stock.change || '0.00'}
             </span>
           </div>
           
