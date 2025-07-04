@@ -55,19 +55,13 @@ export function SimpleAuthProvider({ children }: SimpleAuthProviderProps) {
   };
 
   const signIn = async (email: string, password: string) => {
-    // Demo credentials
-    if ((email === 'demo@alfalyzer.com' && password === 'demo123') ||
-        (email === 'admin@alfalyzer.com' && password === 'admin123') ||
-        (email === 'beta@alfalyzer.com' && password === '123demo') ||
-        (email === 'test@test.com' && password === 'test123')) {
-      
+    // Demo mode - accepts any email/password for testing
+    if (email && password) {
       const demoUser: User = {
         id: 'demo-user-' + Date.now(),
-        name: email === 'admin@alfalyzer.com' ? 'Admin User' : 
-              email === 'beta@alfalyzer.com' ? 'António Francisco (Beta)' : 'Demo User',
+        name: 'Demo User',
         email: email,
-        avatar: email === 'admin@alfalyzer.com' ? 'AU' : 
-                email === 'beta@alfalyzer.com' ? 'AF' : 'DU'
+        avatar: email.charAt(0).toUpperCase()
       };
       
       setUser(demoUser);
@@ -75,7 +69,7 @@ export function SimpleAuthProvider({ children }: SimpleAuthProviderProps) {
       return {};
     }
     
-    return { error: 'Credenciais inválidas. Use beta@alfalyzer.com / 123demo' };
+    return { error: 'Por favor, insira email e senha' };
   };
 
   const register = async (name: string, email: string, password: string) => {
