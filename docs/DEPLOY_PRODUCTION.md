@@ -205,7 +205,18 @@ CREATE INDEX idx_portfolios_user_id ON portfolios(user_id);
 
 ## 🌐 3. DEPLOY TO VERCEL (Frontend + Backend)
 
-### 3.1 Prepare Repository
+### 3.1 Staging Preview
+Use the automated script to create a preview deployment:
+```bash
+# Run preview script
+./scripts/vercel-preview.sh
+
+# Set VERCEL_TOKEN for automated deployment (optional)
+export VERCEL_TOKEN=your_vercel_token
+./scripts/vercel-preview.sh
+```
+
+### 3.2 Prepare Repository
 ```bash
 # Ensure latest changes are committed
 git add .
@@ -213,7 +224,7 @@ git commit -m "feat: prepare for production deployment"
 git push origin main
 ```
 
-### 3.2 Deploy to Vercel
+### 3.3 Deploy to Vercel
 1. Visit [Vercel Dashboard](https://vercel.com/dashboard)
 2. Click "New Project"
 3. Import from GitHub: select your repository
@@ -221,9 +232,19 @@ git push origin main
    - **Framework Preset**: Vite
    - **Root Directory**: `.` (default)
    - **Build Command**: `npm run build`
-   - **Output Directory**: `dist/public`
+   - **Output Directory**: `client/dist`
 
-### 3.3 Configure Environment Variables in Vercel
+### 3.4 Supabase Production Migration
+Use SQL dump approach for production database:
+```bash
+# Export current schema
+pg_dump --schema-only alfalyzer_dev > schema.sql
+
+# Or use Supabase CLI
+supabase db push --include-all
+```
+
+### 3.5 Configure Environment Variables in Vercel
 Go to Settings → Environment Variables and add:
 
 **Backend Variables** (Server-side only):
@@ -248,7 +269,27 @@ VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
 VITE_API_BASE_URL=https://your-domain.vercel.app
 ```
 
-### 3.4 Deploy
+### 3.6 GitHub Secrets Table
+Configure the following secrets in GitHub repository settings:
+
+| Secret Name | Purpose | Required |
+|-------------|---------|----------|
+| `SUPABASE_URL` | Production database URL | ✅ |
+| `SUPABASE_SERVICE_ROLE_KEY` | Admin database access | ✅ |
+| `UPSTASH_REDIS_URL` | Rate limiting KV store | ✅ |
+| `UPSTASH_REDIS_TOKEN` | KV authentication | ✅ |
+| `VERCEL_TOKEN` | Automated deployments | ⚠️ |
+
+**Note**: VERCEL_TOKEN requires `workflow` scope for GitHub Actions.
+
+### 3.7 Security Checklist
+- [ ] **Enable 2FA** on all accounts (GitHub, Supabase, Vercel, Upstash)
+- [ ] **Row Level Security ON** for all Supabase tables
+- [ ] **Protect main branch** - require PR reviews
+- [ ] **API key rotation** scheduled quarterly
+- [ ] **Environment isolation** - separate dev/prod keys
+
+### 3.8 Deploy
 1. Click "Deploy"
 2. Wait for build completion (~3-5 minutes)
 3. Visit your deployed app at `https://your-project.vercel.app`

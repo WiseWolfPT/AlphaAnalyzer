@@ -1,0 +1,69 @@
+name: KV Usage Check
+
+on:
+  schedule:
+    # Run every 6 hours
+    - cron: '0 */6 * * *'
+  workflow_dispatch:
+
+jobs:
+  check-kv-usage:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Use Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20.x'
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Check KV quota usage
+      env:
+        UPSTASH_REDIS_URL: ${{ secrets.UPSTASH_REDIS_URL }}
+        UPSTASH_REDIS_TOKEN: ${{ secrets.UPSTASH_REDIS_TOKEN }}
+      run: |
+        node -e "
+        const { Redis } = require('@upstash/redis');
+        const redis = new Redis({
+          url: process.env.UPSTASH_REDIS_URL,
+          token: process.env.UPSTASH_REDIS_TOKEN
+        });
+        
+        (async () => {
+          try {
+            const info = await redis.info();
+            console.log('KV Usage Check:', new Date().toISOString());
+            console.log('Redis Info:', info);
+            
+            // Check if usage is above 80%
+            const memoryUsed = info.used_memory || 0;
+            const memoryMax = info.maxmemory || 0;
+            
+            if (memoryMax > 0) {
+              const usagePercent = (memoryUsed / memoryMax) * 100;
+              console.log(`Memory usage: ${usagePercent.toFixed(2)}%`);
+              
+              if (usagePercent > 80) {
+                console.error('WARNING: KV usage above 80%!');
+                process.exit(1);
+              }
+            }
+            
+            console.log('KV usage check completed successfully');
+          } catch (error) {
+            console.error('KV usage check failed:', error);
+            process.exit(1);
+          }
+        })();
+        "
+    
+    - name: Notify on failure
+      if: failure()
+      run: |
+        echo "KV quota check failed - consider upgrading or optimizing usage"
+        # Could add Slack/Discord webhook here

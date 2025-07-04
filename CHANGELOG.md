@@ -5,6 +5,46 @@ Todas as mudanças notáveis neste projeto serão documentadas neste arquivo.
 O formato é baseado em [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 e este projeto adere a [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v1.0.0] – 2025-07-04
+
+### 🚀 MVP GA Release
+- ✅ **Supabase Auth**: Sistema de autenticação completo integrado
+- ✅ **Upstash Rate Limiting**: Rate limiting com KV monitoring implementado
+- ✅ **KV Quota Monitor**: Monitorização automática de usage com GitHub Actions
+- ✅ **Production Build**: Build otimizado (2.3M gzipped)
+- ✅ **GitHub Workflows**: CI/CD pipeline com health checks restaurado
+- ✅ **Vercel Preview**: Script automatizado para preview deployments
+- ✅ **Security**: 2FA obrigatório, RLS habilitado, secrets protegidos
+- ✅ **Documentation**: Guia completo de deploy para produção
+
+### Added
+- GitHub Actions workflows (ci.yml, kv-usage-check.yml)
+- Vercel preview deployment script (`scripts/vercel-preview.sh`)
+- Production deployment guide with security checklist
+- KV quota monitoring with automated alerts
+- Environment variable security validation
+- Row Level Security policies for all tables
+
+### Fixed
+- POSIX disk space check in health endpoint
+- Vite peer dependency conflicts resolved
+- Build output directory corrected (`client/dist`)
+- Production environment configuration
+
+### Security
+- Upstash Redis rate limiting implementation
+- GitHub repository protection with required reviews
+- API key rotation schedule documented
+- Environment isolation for dev/prod
+
+### Infrastructure
+- Vercel deployment configuration optimized
+- Supabase production migration strategy
+- GitHub Secrets management documented
+- Automated KV usage monitoring (6-hour intervals)
+
+---
+
 ## [1.2.0] - 2025-01-24
 
 ### 🛡️ Segurança
