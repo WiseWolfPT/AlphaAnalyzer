@@ -257,8 +257,10 @@ pre_flight_checks() {
     
     # Check 5: Disk space
     local available_space
-    available_space=$(df -h "$ROOT_DIR" | awk 'NR==2 {print $4}' | tr -d 'G')
-    if [ "${available_space%.*}" -gt 1 ]; then
+    available_space=$(df -h "$ROOT_DIR" | awk 'NR==2 {print $4}' | sed 's/[^0-9.]//g')
+    # Extract numeric part safely
+    available_space_num=$(echo "$available_space" | cut -d'.' -f1)
+    if echo "$available_space_num" | grep -qE '^[0-9]+$' && [ "$available_space_num" -gt 1 ]; then
         success "Sufficient disk space available (${available_space}G)"
         ((checks_passed++))
     else

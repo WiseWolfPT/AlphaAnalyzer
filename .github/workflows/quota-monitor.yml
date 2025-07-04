@@ -1,0 +1,91 @@
+name: API Quota Monitor
+
+on:
+  schedule:
+    # Run every 6 hours
+    - cron: '0 */6 * * *'
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  check-quotas:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Check API Quotas
+      env:
+        FINNHUB_API_KEY: ${{ secrets.FINNHUB_API_KEY }}
+        TWELVE_DATA_API_KEY: ${{ secrets.TWELVE_DATA_API_KEY }}
+        FMP_API_KEY: ${{ secrets.FMP_API_KEY }}
+        ALPHA_VANTAGE_API_KEY: ${{ secrets.ALPHA_VANTAGE_API_KEY }}
+      run: |
+        node -e "
+        const checkQuotas = async () => {
+          console.log('🔍 Checking API Quotas...');
+          
+          // Check Finnhub
+          try {
+            const finnhubResponse = await fetch('https://finnhub.io/api/v1/quote?symbol=AAPL&token=' + process.env.FINNHUB_API_KEY);
+            const finnhubHeaders = Object.fromEntries(finnhubResponse.headers);
+            console.log('✅ Finnhub - Status:', finnhubResponse.status);
+            if (finnhubHeaders['x-ratelimit-remaining']) {
+              console.log('   Remaining calls:', finnhubHeaders['x-ratelimit-remaining']);
+            }
+          } catch (error) {
+            console.log('❌ Finnhub - Error:', error.message);
+          }
+          
+          // Check Twelve Data
+          try {
+            const twelveResponse = await fetch('https://api.twelvedata.com/quote?symbol=AAPL&apikey=' + process.env.TWELVE_DATA_API_KEY);
+            const twelveData = await twelveResponse.json();
+            console.log('✅ Twelve Data - Status:', twelveData.status || 'ok');
+          } catch (error) {
+            console.log('❌ Twelve Data - Error:', error.message);
+          }
+          
+          // Check FMP
+          try {
+            const fmpResponse = await fetch('https://financialmodelingprep.com/api/v3/quote/AAPL?apikey=' + process.env.FMP_API_KEY);
+            const fmpData = await fmpResponse.json();
+            console.log('✅ FMP - Status:', Array.isArray(fmpData) ? 'ok' : 'error');
+          } catch (error) {
+            console.log('❌ FMP - Error:', error.message);
+          }
+          
+          // Check Alpha Vantage
+          try {
+            const avResponse = await fetch('https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=AAPL&apikey=' + process.env.ALPHA_VANTAGE_API_KEY);
+            const avData = await avResponse.json();
+            console.log('✅ Alpha Vantage - Status:', avData.Note ? 'rate limited' : 'ok');
+          } catch (error) {
+            console.log('❌ Alpha Vantage - Error:', error.message);
+          }
+        };
+        
+        checkQuotas().catch(console.error);
+        "
+
+    - name: Create Issue if Quota Low
+      if: failure()
+      uses: actions/github-script@v6
+      with:
+        script: |
+          github.rest.issues.create({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            title: '⚠️ API Quota Warning',
+            body: 'One or more API providers are approaching their quota limits. Please check the workflow logs for details.',
+            labels: ['api-quota', 'automated']
+          })

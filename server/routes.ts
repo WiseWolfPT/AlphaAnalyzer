@@ -10,6 +10,7 @@ import subscriptionsRouter from "./routes/subscriptions";
 import enhancedValuationRouter from "./routes/enhanced-valuation";
 import healthRouter from "./routes/health";
 import stocksRouter from "./routes/stocks";
+import transcriptsRouter from "./routes/transcripts";
 import { authMiddleware } from "./middleware/auth-middleware";
 import { validateRequest, validationSchemas } from "./security/security-middleware";
 
@@ -95,16 +96,19 @@ export async function registerRoutes(app: Express, server: Server): Promise<void
       version: "1.0.0",
       endpoints: [
         "/api/health",
-        "/api/health/detailed",
+        "/api/health/detailed", 
         "/api/health/quick",
         "/api/health/ready",
         "/api/health/live",
         "/api/health/metrics",
+        "/api/health/kv",
+        "/api/health/ttfb",
         "/api/auth",
         "/api/stocks",
         "/api/market-data",
         "/api/subscriptions",
-        "/api/admin"
+        "/api/admin",
+        "/api/transcripts"
       ]
     });
   });
@@ -114,6 +118,9 @@ export async function registerRoutes(app: Express, server: Server): Promise<void
   app.use("/api/admin", adminRouter);
   app.use("/api/subscriptions", subscriptionsRouter);
   app.use("/api/valuation", enhancedValuationRouter);
+  
+  // ROADMAP V4: Public transcripts routes
+  app.use("/api/transcripts", transcriptsRouter);
   
   // SECURITY FIX: Register versioned routes first
   app.use(`/api/${API_VERSION}/market-data`, marketDataRouter);

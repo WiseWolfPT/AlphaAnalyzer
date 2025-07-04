@@ -45,6 +45,14 @@ import crypto from 'crypto';
 // SECURITY FIX: Import log retention policy
 import logRetention from './security/log-retention-policy';
 import * as schema from '@shared/schema';
+// ROADMAP V4: Import global back-off middleware for 429 responses
+import { globalBackoffMiddleware } from './middleware/global-backoff';
+// ROADMAP V4: Import TTFB middleware for X-Edge-TTFB header
+import { ttfbMiddleware } from './middleware/ttfb-middleware';
+// ROADMAP V4: Import Upstash rate limiting middleware (30 req/min IP using contador KV)
+import { upstashRateLimiters } from './middleware/upstash-rate-limit';
+// ROADMAP V4: Import Supabase authentication middleware
+import { requireAuth, requireAdmin, optionalAuth } from './middleware/supabase-auth';
 
 const app = express();
 const APP_VERSION = process.env.npm_package_version || '1.0.0';
@@ -178,15 +186,23 @@ app.use((req, res, next) => {
   next();
 });
 
+// ROADMAP V4: TTFB middleware for X-Edge-TTFB header (must be early in chain)
+app.use(ttfbMiddleware());
+
+// ROADMAP V4: Global back-off middleware for 429 responses
+app.use(globalBackoffMiddleware());
+
 // Security middleware
 app.use(auditLogger);
 app.use(sanitizeInput);
 
-// Apply rate limiting based on endpoint sensitivity
-app.use('/api/auth', rateLimiters.auth);
-app.use('/api/search', rateLimiters.search);
-app.use('/api/stocks', rateLimiters.financial);
-app.use('/api', rateLimiters.general);
+// ROADMAP V4: Apply Upstash rate limiting based on endpoint sensitivity (30 req/min IP using contador KV)
+app.use('/api/auth', upstashRateLimiters.auth);        // 5 req/min for auth
+app.use('/api/admin', upstashRateLimiters.admin);      // 10 req/min for admin  
+app.use('/api/search', upstashRateLimiters.api);       // 20 req/min for search
+app.use('/api/stocks', upstashRateLimiters.api);       // 20 req/min for financial data
+app.use('/api/health', upstashRateLimiters.public);    // 60 req/min for health checks
+app.use('/api', upstashRateLimiters.general);          // 30 req/min general (as specified in roadmap)
 
 // SECURITY FIX: Add endpoint to get CSRF token for frontend (production only)
 if (process.env.NODE_ENV === 'production' && csrfProtection) {
@@ -267,6 +283,15 @@ if (process.env.NODE_ENV === 'production' && csrfProtection) {
 
     // Register API routes SECOND
     await registerRoutes(app, server);
+
+    // ROADMAP V4: Apply Supabase authentication to protected routes
+    app.use('/api/admin/**', requireAdmin);       // Admin routes require admin role
+    app.use('/api/portfolio/**', requireAuth);    // Portfolio routes require authentication
+    app.use('/api/watchlist/**', requireAuth);    // Watchlist routes require authentication
+    
+    // Apply optional auth to public routes that benefit from user context
+    app.use('/api/stocks', optionalAuth);
+    app.use('/api/transcripts', optionalAuth);
 
     // Apply financial data security to sensitive endpoints
     app.use('/api/stocks', financialDataSecurity);

@@ -5,9 +5,41 @@
 
 import { Router, Request, Response } from 'express';
 import HealthMonitor from '../services/health-monitor';
+import kvRouter from './health/kv';
+import { getTTFBStats, getTTFBRecommendations } from '../middleware/ttfb-middleware';
 
 const router = Router();
 const healthMonitor = HealthMonitor.getInstance();
+
+// ROADMAP V4: Mount KV health router
+router.use('/kv', kvRouter);
+
+/**
+ * TTFB Performance endpoint - Roadmap V4
+ * GET /api/health/ttfb
+ */
+router.get('/ttfb', (req: Request, res: Response) => {
+  try {
+    const stats = getTTFBStats();
+    const recommendations = getTTFBRecommendations();
+    
+    res.json({
+      ...stats,
+      recommendations,
+      targets: {
+        cacheHitTTFB: '< 300ms',
+        averageTTFB: '< 1000ms',
+        cacheHitRate: '> 80%'
+      },
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    res.status(500).json({
+      error: 'Failed to get TTFB statistics',
+      timestamp: new Date().toISOString()
+    });
+  }
+});
 
 /**
  * Quick health check - fast response for load balancers

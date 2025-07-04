@@ -398,8 +398,9 @@ export const financialDataSecurity = (req: express.Request, res: express.Respons
 // SECURITY FIX: Enhanced CORS configuration for financial applications
 export const corsConfig = {
   origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
-    // SECURITY FIX: Environment-specific allowed origins
-    const productionOrigins = (process.env.ALLOWED_ORIGINS || '').split(',').filter(Boolean);
+    // SECURITY FIX: Environment-specific allowed origins from FRONTEND_ORIGIN
+    const frontendOrigin = process.env.FRONTEND_ORIGIN;
+    const productionOrigins = frontendOrigin ? [frontendOrigin] : [];
     const developmentOrigins = [
       'http://localhost:3000',
       'http://localhost:8080',

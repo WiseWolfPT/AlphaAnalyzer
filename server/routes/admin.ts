@@ -1,12 +1,16 @@
 import { Router } from 'express';
 import { z } from 'zod';
 import { authMiddleware } from '../middleware/auth-middleware';
+import transcriptsRouter from './admin/transcripts';
 
 const router = Router();
 
 // SECURITY FIX: Apply admin authentication to ALL admin routes
 router.use(authMiddleware.instance.authenticate());
 router.use(authMiddleware.instance.requirePermissions(['admin:access']));
+
+// ROADMAP V4: Mount transcripts admin router
+router.use('/transcripts', transcriptsRouter);
 
 // Mock data for admin metrics (in a real app, this would come from a database)
 interface APIMetric {

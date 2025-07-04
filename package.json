@@ -64,11 +64,15 @@
     "migrate:rollback": "tsx server/db/migrations.ts down 1",
     "db:test": "tsx server/db/test-connection.ts",
     "db:check": "tsx server/db/check-tables.ts",
+    "supabase:seed": "tsx scripts/supabase-seed.ts",
+    "validate:checklist": "tsx scripts/validation-checklist.ts",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
     "test:security": "jest security-tests.test.ts",
     "test:ci": "jest --ci --coverage --watchAll=false",
+    "test:e2e": "playwright test e2e/smoke-v4.spec.ts",
+    "test:e2e:ui": "playwright test e2e/smoke-v4.spec.ts --ui",
     "test:api": "node test-api-connection.js",
     "test:ports": "npm run test:api",
     "test:cors": "npm run test:api",
@@ -86,7 +90,8 @@
     "logs:all": "tail -f logs/*.log",
     "status": "echo '🔍 Alfalyzer Status Check' && npm run port:check && echo '' && npm run health:quick",
     "debug": "echo '🐛 Debug Information' && npm run status && echo '' && npm run health:detailed",
-    "troubleshoot": "echo '🔧 Troubleshooting Guide' && scripts/health-check.sh && echo '' && scripts/connectivity-test.ts"
+    "troubleshoot": "echo '🔧 Troubleshooting Guide' && scripts/health-check.sh && echo '' && scripts/connectivity-test.ts",
+    "postinstall": "playwright install"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
@@ -128,6 +133,8 @@
     "@stripe/stripe-js": "^7.4.0",
     "@supabase/supabase-js": "^2.50.0",
     "@tanstack/react-query": "^5.60.5",
+    "@upstash/ratelimit": "^2.0.5",
+    "@upstash/redis": "^1.35.1",
     "axios": "^1.10.0",
     "bcryptjs": "^3.0.2",
     "better-sqlite3": "^11.10.0",
@@ -183,6 +190,7 @@
     "zod-validation-error": "^3.4.0"
   },
   "devDependencies": {
+    "@playwright/test": "^1.53.2",
     "@replit/vite-plugin-cartographer": "^0.2.7",
     "@replit/vite-plugin-runtime-error-modal": "^0.0.3",
     "@tailwindcss/typography": "^0.5.15",
@@ -218,9 +226,12 @@
     "ts-jest": "^29.1.2",
     "tsx": "^4.19.1",
     "typescript": "5.6.3",
-    "vite": "^7.0.0"
+    "vite": "^6.0.0"
   },
   "optionalDependencies": {
     "bufferutil": "^4.0.8"
+  },
+  "resolutions": {
+    "vite": "^6.0.0"
   }
 }

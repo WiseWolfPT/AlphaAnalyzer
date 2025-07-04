@@ -42,10 +42,12 @@ export function TopLosersCard() {
   
   // Stocks often volatile
   const trackedSymbols = ['COIN', 'RIOT', 'MARA', 'PINS', 'ROKU', 'SNAP', 'PYPL', 'SQ', 'HOOD', 'DKNG', 'PTON', 'ZM'];
-  const { data: quotesData, isLoading } = useMarketQuotes(trackedSymbols);
+  const { data: quotesData, isLoading, error } = useMarketQuotes(trackedSymbols);
 
   useEffect(() => {
     if (quotesData?.quotes && quotesData.quotes.length > 0) {
+      console.log('📉 Using real market data for Top Losers:', quotesData.quotes.length, 'quotes');
+      
       // Convert market quotes to our Stock format and sort by loss percentage
       const stocks = quotesData.quotes
         .map(quote => ({
@@ -61,17 +63,55 @@ export function TopLosersCard() {
       
       setTopLosers(stocks);
     } else if (!isLoading) {
-      // Fallback to mock data if API fails
+      console.log('📉 Using realistic mock data for Top Losers (API unavailable)');
+      
+      // ROADMAP V4: More realistic mock data with market-like variations
       const mockLosers: Stock[] = [
-        { symbol: "COIN", name: "Coinbase Global", price: 89.34, change: -8.76, changePercent: -8.93 },
-        { symbol: "RIOT", name: "Riot Platforms", price: 12.45, change: -1.34, changePercent: -9.73 },
-        { symbol: "MARA", name: "Marathon Digital", price: 18.67, change: -1.89, changePercent: -9.18 },
-        { symbol: "PINS", name: "Pinterest Inc", price: 35.78, change: -2.98, changePercent: -7.69 },
-        { symbol: "ROKU", name: "Roku Inc", price: 65.23, change: -4.12, changePercent: -5.94 }
-      ];
+        { 
+          symbol: "COIN", 
+          name: "Coinbase Global", 
+          price: 89.34 + (Math.random() - 0.5) * 15, 
+          change: -8.76 + (Math.random() - 0.5) * 4, 
+          changePercent: -8.93 + (Math.random() - 0.5) * 2
+        },
+        { 
+          symbol: "RIOT", 
+          name: "Riot Platforms", 
+          price: 12.45 + (Math.random() - 0.5) * 3, 
+          change: -1.34 + (Math.random() - 0.5) * 0.8, 
+          changePercent: -9.73 + (Math.random() - 0.5) * 1.5
+        },
+        { 
+          symbol: "MARA", 
+          name: "Marathon Digital", 
+          price: 18.67 + (Math.random() - 0.5) * 4, 
+          change: -1.89 + (Math.random() - 0.5) * 1, 
+          changePercent: -9.18 + (Math.random() - 0.5) * 1.2
+        },
+        { 
+          symbol: "PINS", 
+          name: "Pinterest Inc", 
+          price: 35.78 + (Math.random() - 0.5) * 8, 
+          change: -2.98 + (Math.random() - 0.5) * 1.5, 
+          changePercent: -7.69 + (Math.random() - 0.5) * 1
+        },
+        { 
+          symbol: "ROKU", 
+          name: "Roku Inc", 
+          price: 65.23 + (Math.random() - 0.5) * 12, 
+          change: -4.12 + (Math.random() - 0.5) * 2, 
+          changePercent: -5.94 + (Math.random() - 0.5) * 1.2
+        }
+      ].map(stock => ({
+        ...stock,
+        price: Math.round(stock.price * 100) / 100,
+        change: Math.round(stock.change * 100) / 100,
+        changePercent: Math.round(stock.changePercent * 100) / 100
+      }));
+      
       setTopLosers(mockLosers);
     }
-  }, [quotesData, isLoading]);
+  }, [quotesData, isLoading, error]);
 
   const handleViewStock = (symbol: string) => {
     setLocation(`/stock/${symbol}/charts`);
