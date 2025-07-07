@@ -6,8 +6,8 @@
 
 import { globalCache, DataType } from '../cache/intelligent-cache-manager';
 import { ServerMarketDataService } from './market-data-service';
-// Import alert monitor for AGENTE 3: Alert Engine Backend
-// import { alertMonitor } from '../workers/alert-monitor'; // TODO: Create alert-monitor module
+// AGENTE 8: Import alert manager for complete notification system
+import { alertManager } from './alerts/alert-manager';
 
 interface ScheduledJob {
   id: string;
@@ -283,11 +283,17 @@ export class BackgroundScheduler {
     console.log('🚨 Alert monitoring cycle starting...');
     
     try {
-      // TODO: Implement alert monitor worker in ONDA 2
-      // await alertMonitor.processActiveAlerts();
+      // AGENTE 8: Use the complete alert manager system
+      if (!alertManager) {
+        console.warn('⚠️ Alert manager not available');
+        return;
+      }
+
+      // The alert manager has its own processing loop, but we can trigger
+      // a manual check here if needed for immediate processing
+      const stats = alertManager.getAlertStats();
+      console.log(`🚨 Alert system status: ${stats.activeAlerts} active alerts, processing: ${stats.processingStatus ? 'active' : 'idle'}`);
       
-      // Placeholder implementation for now
-      console.log('🚨 Alert monitoring placeholder - will be implemented in ONDA 2');
       console.log('🚨 Alert monitoring cycle completed');
     } catch (error) {
       console.error('❌ Alert monitoring cycle failed:', error);
@@ -347,13 +353,21 @@ export class BackgroundScheduler {
   }
 
   // Public methods for admin panel
-  start(): void {
+  async start(): Promise<void> {
     console.log('🚀 Background Scheduler starting...');
     
     for (const [jobId, job] of this.jobs) {
       if (job.enabled) {
         this.scheduleJob(jobId);
       }
+    }
+
+    // AGENTE 8: Start the alert manager system
+    try {
+      await alertManager.start();
+      console.log('🚨 Alert Manager started with Background Scheduler');
+    } catch (error) {
+      console.error('❌ Failed to start Alert Manager:', error);
     }
     
     console.log('✅ Background Scheduler started');
@@ -367,6 +381,15 @@ export class BackgroundScheduler {
     }
     
     this.timers.clear();
+
+    // AGENTE 8: Stop the alert manager system
+    try {
+      alertManager.stop();
+      console.log('🚨 Alert Manager stopped with Background Scheduler');
+    } catch (error) {
+      console.error('❌ Error stopping Alert Manager:', error);
+    }
+    
     console.log('✅ Background Scheduler stopped');
   }
 

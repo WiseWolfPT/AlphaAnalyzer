@@ -7,9 +7,9 @@
  * for cost overruns, performance issues, and failures.
  */
 
-const https = require('https');
-const fs = require('fs');
-const path = require('path');
+import https from 'https';
+import fs from 'fs';
+import path from 'path';
 
 const COLORS = {
   RED: '\x1b[31m',
@@ -359,7 +359,7 @@ class DeploymentMonitor {
 }
 
 // Run deployment monitoring
-if (require.main === module) {
+if (import.meta.url === `file://${process.argv[1]}`) {
   const monitor = new DeploymentMonitor();
   monitor.run().then(exitCode => {
     process.exit(exitCode);
@@ -369,4 +369,4 @@ if (require.main === module) {
   });
 }
 
-module.exports = DeploymentMonitor;
+export default DeploymentMonitor;

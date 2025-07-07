@@ -4,6 +4,12 @@ import { finnhubService } from '../services/finnhub-service';
 import { alphaVantageService } from '../services/alpha-vantage-service';
 import { cacheService } from '../services/cache-service';
 import { authMiddleware } from '../middleware/auth-middleware';
+import { 
+  companyProfileCache, 
+  stockQuoteCache, 
+  fundamentalsCache,
+  createCacheInvalidationMiddleware 
+} from '../middleware/cache-middleware';
 
 const router = Router();
 
@@ -12,39 +18,66 @@ const stockSymbolSchema = z.string().min(1).max(10).toUpperCase();
 const periodSchema = z.enum(['quarterly', 'annual']).default('quarterly');
 const daysSchema = z.coerce.number().min(1).max(365).default(30);
 
-// Get stock profile
-router.get('/stocks/:symbol/profile', authMiddleware.instance.authenticate(), async (req, res) => {
-  try {
-    const symbol = stockSymbolSchema.parse(req.params.symbol);
-    
-    // Try cache first
-    const cacheKey = `profile:${symbol}`;
-    const cached = await cacheService.get(cacheKey);
-    if (cached) {
-      return res.json(cached);
+// Get real-time stock quote - with intelligent caching
+router.get('/stocks/:symbol/quote', 
+  authMiddleware.instance.authenticate(),
+  stockQuoteCache(60), // 60 seconds cache for real-time data
+  async (req, res) => {
+    try {
+      const symbol = stockSymbolSchema.parse(req.params.symbol);
+      
+      // Try Finnhub first for real-time data
+      let quote = await finnhubService.getQuote(symbol);
+      
+      // If Finnhub fails, try Alpha Vantage
+      if (!quote) {
+        quote = await alphaVantageService.getQuote(symbol);
+      }
+      
+      if (!quote) {
+        return res.status(404).json({ error: 'Stock quote not found' });
+      }
+      
+      res.json({
+        ...quote,
+        symbol,
+        timestamp: new Date().toISOString(),
+        _cached: false // Will be overridden by cache middleware if served from cache
+      });
+    } catch (error) {
+      console.error('Error fetching stock quote:', error);
+      res.status(500).json({ error: 'Failed to fetch stock quote' });
     }
-    
-    // Try Finnhub first
-    let profile = await finnhubService.getCompanyProfile(symbol);
-    
-    // If Finnhub fails, try Alpha Vantage
-    if (!profile) {
-      profile = await alphaVantageService.getCompanyOverview(symbol);
-    }
-    
-    if (!profile) {
-      return res.status(404).json({ error: 'Stock profile not found' });
-    }
-    
-    // Cache for 24 hours
-    await cacheService.set(cacheKey, profile, 86400);
-    
-    res.json(profile);
-  } catch (error) {
-    console.error('Error fetching stock profile:', error);
-    res.status(500).json({ error: 'Failed to fetch stock profile' });
   }
-});
+);
+
+// Get stock profile - with intelligent caching
+router.get('/stocks/:symbol/profile', 
+  authMiddleware.instance.authenticate(),
+  companyProfileCache(24 * 3600), // 24 hours cache
+  async (req, res) => {
+    try {
+      const symbol = stockSymbolSchema.parse(req.params.symbol);
+      
+      // Try Finnhub first
+      let profile = await finnhubService.getCompanyProfile(symbol);
+      
+      // If Finnhub fails, try Alpha Vantage
+      if (!profile) {
+        profile = await alphaVantageService.getCompanyOverview(symbol);
+      }
+      
+      if (!profile) {
+        return res.status(404).json({ error: 'Stock profile not found' });
+      }
+      
+      res.json(profile);
+    } catch (error) {
+      console.error('Error fetching stock profile:', error);
+      res.status(500).json({ error: 'Failed to fetch stock profile' });
+    }
+  }
+);
 
 // Get financial statements
 router.get('/stocks/:symbol/financials', authMiddleware.instance.authenticate(), async (req, res) => {

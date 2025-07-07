@@ -11,6 +11,9 @@ import enhancedValuationRouter from "./routes/enhanced-valuation";
 import healthRouter from "./routes/health";
 import stocksRouter from "./routes/stocks";
 import transcriptsRouter from "./routes/transcripts";
+import cacheAdminRouter from "./routes/cache-admin";
+// AGENTE 8: Import alerts router for complete notification system
+import { alertsRouter } from "./routes/alerts";
 // BROKEN IMPORTS - Modules don't exist yet
 // import pushNotificationsRouter from "./routes/push-notifications"; // TODO: Create this file
 // import circuitBreakerRouter from "./routes/circuit-breaker"; // TODO: Create this file
@@ -112,6 +115,7 @@ export async function registerRoutes(app: Express, server: Server): Promise<void
         "/api/subscriptions",
         "/api/admin",
         "/api/transcripts",
+        "/api/alerts",
         "/api/push",
         "/api/circuit-breaker"
       ]
@@ -121,11 +125,15 @@ export async function registerRoutes(app: Express, server: Server): Promise<void
   // SECURITY FIX: Register all route modules with proper authentication
   app.use("/api/auth", authRouter);
   app.use("/api/admin", adminRouter);
+  app.use("/api/admin/cache", cacheAdminRouter);
   app.use("/api/subscriptions", subscriptionsRouter);
   app.use("/api/valuation", enhancedValuationRouter);
   
   // ROADMAP V4: Public transcripts routes
   app.use("/api/transcripts", transcriptsRouter);
+  
+  // AGENTE 8: Alert system routes
+  app.use("/api/alerts", alertsRouter);
   
   // BROKEN - Push notifications routes (module doesn't exist)
   // app.use("/api/push", pushNotificationsRouter);

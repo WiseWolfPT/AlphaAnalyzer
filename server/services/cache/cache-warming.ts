@@ -58,10 +58,10 @@ export class CacheWarmingService {
   /**
    * Essential data types to warm for each symbol
    */
-  private static readonly ESSENTIAL_DATA_TYPES: CacheType[] = [
-    CacheType.REALTIME_PRICE,
-    CacheType.COMPANY_PROFILE,
-    CacheType.FUNDAMENTALS
+  private static readonly ESSENTIAL_DATA_TYPES: string[] = [
+    'REALTIME_PRICE',
+    'COMPANY_PROFILE',
+    'FUNDAMENTALS'
   ];
 
   /**

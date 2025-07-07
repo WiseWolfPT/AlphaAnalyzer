@@ -7,8 +7,8 @@
  * deployment costs to prevent unexpected charges.
  */
 
-const fs = require('fs');
-const path = require('path');
+import fs from 'fs';
+import path from 'path';
 
 const COLORS = {
   RED: '\x1b[31m',
@@ -313,7 +313,7 @@ class CostProtectionChecker {
 }
 
 // Run cost protection checks
-if (require.main === module) {
+if (import.meta.url === `file://${process.argv[1]}`) {
   const checker = new CostProtectionChecker();
   checker.run().then(exitCode => {
     process.exit(exitCode);
@@ -323,4 +323,4 @@ if (require.main === module) {
   });
 }
 
-module.exports = CostProtectionChecker;
+export default CostProtectionChecker;

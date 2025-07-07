@@ -7,9 +7,9 @@
  * by checking various aspects of the codebase and configuration.
  */
 
-const fs = require('fs');
-const path = require('path');
-const { execSync } = require('child_process');
+import fs from 'fs';
+import path from 'path';
+import { execSync } from 'child_process';
 
 const COLORS = {
   RED: '\x1b[31m',
@@ -341,7 +341,7 @@ class DeploymentChecker {
 }
 
 // Run deployment checks
-if (require.main === module) {
+if (import.meta.url === `file://${process.argv[1]}`) {
   const checker = new DeploymentChecker();
   checker.run().then(exitCode => {
     process.exit(exitCode);
@@ -351,4 +351,4 @@ if (require.main === module) {
   });
 }
 
-module.exports = DeploymentChecker;
+export default DeploymentChecker;
