@@ -1,7 +1,6 @@
-// Alpha Vantage API Service - For missing data (EPS, Revenue Segments, Expenses)
-// SECURITY: API key moved to server-side - use proxy endpoints instead
-const ALPHA_VANTAGE_API_KEY = 'DEPRECATED_USE_SERVER_PROXY';
-const ALPHA_VANTAGE_BASE_URL = 'https://www.alphavantage.co/query';
+// Alpha Vantage API Service - Wave 4 Reactivation
+// Using secure server-side proxy endpoints
+const ALPHA_VANTAGE_PROXY_URL = '/api/proxy/alphavantage';
 
 export interface CompanyOverview {
   Symbol: string;
@@ -130,25 +129,26 @@ export interface IncomeStatement {
 }
 
 class AlphaVantageService {
-  private baseURL = ALPHA_VANTAGE_BASE_URL;
-  private apiKey = ALPHA_VANTAGE_API_KEY;
+  private proxyURL = ALPHA_VANTAGE_PROXY_URL;
 
-  private async makeRequest<T>(params: Record<string, string>): Promise<T> {
-    const urlParams = new URLSearchParams({
-      ...params,
-      apikey: this.apiKey
-    });
-    
-    const url = `${this.baseURL}?${urlParams.toString()}`;
+  private async makeRequest<T>(endpoint: string): Promise<T> {
+    const url = `${this.proxyURL}${endpoint}`;
     
     try {
       const response = await fetch(url);
       
       if (!response.ok) {
-        throw new Error(`Alpha Vantage API error: ${response.status} ${response.statusText}`);
+        throw new Error(`Alpha Vantage proxy error: ${response.status} ${response.statusText}`);
       }
       
-      const data = await response.json();
+      const result = await response.json();
+      
+      // Handle proxy response format
+      if (!result.success) {
+        throw new Error(result.message || 'Alpha Vantage API request failed');
+      }
+      
+      const data = result.data;
       
       // Check for API error messages
       if (data['Error Message']) {
@@ -168,35 +168,22 @@ class AlphaVantageService {
 
   // Get company overview (includes EPS, revenue segments info)
   async getCompanyOverview(symbol: string): Promise<CompanyOverview> {
-    return this.makeRequest<CompanyOverview>({
-      function: 'OVERVIEW',
-      symbol: symbol.toUpperCase()
-    });
+    return this.makeRequest<CompanyOverview>(`/overview/${symbol.toUpperCase()}`);
   }
 
   // Get earnings data (quarterly and annual EPS)
   async getEarnings(symbol: string): Promise<EarningsData> {
-    return this.makeRequest<EarningsData>({
-      function: 'EARNINGS',
-      symbol: symbol.toUpperCase()
-    });
+    return this.makeRequest<EarningsData>(`/earnings/${symbol.toUpperCase()}`);
   }
 
   // Get income statement (detailed expenses breakdown)
   async getIncomeStatement(symbol: string): Promise<IncomeStatement> {
-    return this.makeRequest<IncomeStatement>({
-      function: 'INCOME_STATEMENT',
-      symbol: symbol.toUpperCase()
-    });
+    return this.makeRequest<IncomeStatement>(`/income-statement/${symbol.toUpperCase()}`);
   }
 
   // Get historical stock prices (fallback for Finnhub)
   async getHistoricalPrices(symbol: string, outputsize: 'compact' | 'full' = 'compact'): Promise<any> {
-    return this.makeRequest({
-      function: 'TIME_SERIES_DAILY',
-      symbol: symbol.toUpperCase(),
-      outputsize
-    });
+    return this.makeRequest(`/time-series-daily/${symbol.toUpperCase()}?outputsize=${outputsize}`);
   }
 }
 

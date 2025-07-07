@@ -109,7 +109,7 @@ export default function Landing() {
     },
     {
       question: "❓ Funciona com ações portuguesas?",
-      answer: "Sim! Suportamos todas as ações do PSI-20 (EDP, Galp, BCP, etc.) e mais de 10.000 ações internacionais (NASDAQ, NYSE, LSE, Euronext)."
+      answer: "Sim! Suportamos mais de 10.000 ações internacionais (NASDAQ, NYSE, LSE, Euronext) com foco nos mercados americano e europeu."
     }
   ];
 

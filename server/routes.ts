@@ -11,6 +11,7 @@ import enhancedValuationRouter from "./routes/enhanced-valuation";
 import healthRouter from "./routes/health";
 import stocksRouter from "./routes/stocks";
 import transcriptsRouter from "./routes/transcripts";
+import apiProxyRouter from "./routes/api-proxy";
 // REMOVED: Cache and alerts imports due to startup issues
 // import cacheAdminRouter from "./routes/cache-admin";
 // import { alertsRouter } from "./routes/alerts";
@@ -115,6 +116,7 @@ export async function registerRoutes(app: Express, server: Server): Promise<void
         "/api/subscriptions",
         "/api/admin",
         "/api/transcripts",
+        "/api/proxy",
         // "/api/alerts", // REMOVED: Due to startup issues
         "/api/push",
         "/api/circuit-breaker"
@@ -132,6 +134,9 @@ export async function registerRoutes(app: Express, server: Server): Promise<void
   
   // ROADMAP V4: Public transcripts routes
   app.use("/api/transcripts", transcriptsRouter);
+  
+  // WAVE 4: API proxy routes for secure external API access
+  app.use("/api/proxy", apiProxyRouter);
   
   // REMOVED: Alert system routes due to startup issues
   // app.use("/api/alerts", alertsRouter);

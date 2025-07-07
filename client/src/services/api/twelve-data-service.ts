@@ -74,6 +74,10 @@ export class TwelveDataService {
   private subscriptions: Set<string> = new Set();
   private reconnectTimeout: NodeJS.Timeout | null = null;
   private heartbeatInterval: NodeJS.Timeout | null = null;
+  private reconnectAttempts: number = 0;
+  private maxReconnectAttempts: number = 10;
+  private baseReconnectDelay: number = 1000; // 1 second
+  private isConnecting: boolean = false;
 
   constructor(cache?: CacheManager) {
     this.cache = cache || new CacheManager();
@@ -188,46 +192,101 @@ export class TwelveDataService {
     }
   }
 
-  // WebSocket methods for real-time data
+  // Enhanced WebSocket methods with exponential backoff reconnection
   connectWebSocket(onMessage: (data: TwelveDataWebSocketMessage) => void): void {
-    if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+    // Prevent multiple connection attempts
+    if (this.isConnecting) {
+      console.log('WebSocket connection already in progress...');
       return;
     }
+
+    if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+      console.log('WebSocket already connected');
+      return;
+    }
+
+    this.isConnecting = true;
+    const connectionAttempt = this.reconnectAttempts + 1;
+    
+    console.log(`🔌 Attempting WebSocket connection (attempt ${connectionAttempt}/${this.maxReconnectAttempts})`);
 
     try {
       this.ws = new WebSocket(`${this.wsUrl}?apikey=${this.apiKey}`);
 
       this.ws.onopen = () => {
-        console.log('Twelve Data WebSocket connected');
+        console.log('✅ Twelve Data WebSocket connected successfully');
+        this.isConnecting = false;
+        this.reconnectAttempts = 0; // Reset attempts on successful connection
         this.setupHeartbeat();
         
         // Resubscribe to all symbols
-        this.subscriptions.forEach(symbol => {
-          this.subscribe([symbol]);
-        });
+        if (this.subscriptions.size > 0) {
+          console.log(`📡 Resubscribing to ${this.subscriptions.size} symbols:`, Array.from(this.subscriptions));
+          this.subscriptions.forEach(symbol => {
+            this.subscribe([symbol]);
+          });
+        }
+
+        // Dispatch custom event for successful connection
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('websocket-connected', {
+            detail: { provider: 'twelvedata', attempt: connectionAttempt }
+          }));
+        }
       };
 
       this.ws.onmessage = (event) => {
         try {
           const data = JSON.parse(event.data);
+          
+          // Handle heartbeat responses
+          if (data.event === 'heartbeat') {
+            console.debug('💓 WebSocket heartbeat received');
+            return;
+          }
+
           onMessage(data);
         } catch (error) {
-          console.error('Error parsing WebSocket message:', error);
+          console.error('❌ Error parsing WebSocket message:', error, event.data);
         }
       };
 
       this.ws.onerror = (error) => {
-        console.error('Twelve Data WebSocket error:', error);
+        console.error('❌ Twelve Data WebSocket error:', error);
+        this.isConnecting = false;
+        
+        // Dispatch error event
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('websocket-error', {
+            detail: { provider: 'twelvedata', error, attempt: connectionAttempt }
+          }));
+        }
       };
 
-      this.ws.onclose = () => {
-        console.log('Twelve Data WebSocket disconnected');
+      this.ws.onclose = (event) => {
+        console.log(`🔌 Twelve Data WebSocket disconnected (code: ${event.code}, reason: ${event.reason})`);
+        this.isConnecting = false;
         this.cleanup();
-        this.scheduleReconnect(onMessage);
+        
+        // Only schedule reconnect if it wasn't a manual disconnect
+        if (event.code !== 1000 && this.reconnectAttempts < this.maxReconnectAttempts) {
+          this.scheduleReconnectWithBackoff(onMessage);
+        } else if (this.reconnectAttempts >= this.maxReconnectAttempts) {
+          console.error(`❌ Maximum reconnection attempts (${this.maxReconnectAttempts}) reached. Giving up.`);
+          
+          // Dispatch max attempts reached event
+          if (typeof window !== 'undefined') {
+            window.dispatchEvent(new CustomEvent('websocket-max-attempts', {
+              detail: { provider: 'twelvedata', maxAttempts: this.maxReconnectAttempts }
+            }));
+          }
+        }
       };
+
     } catch (error) {
-      console.error('Error connecting to Twelve Data WebSocket:', error);
-      this.scheduleReconnect(onMessage);
+      console.error('❌ Error creating WebSocket connection:', error);
+      this.isConnecting = false;
+      this.scheduleReconnectWithBackoff(onMessage);
     }
   }
 
@@ -239,15 +298,36 @@ export class TwelveDataService {
     }, 30000); // Send heartbeat every 30 seconds
   }
 
-  private scheduleReconnect(onMessage: (data: TwelveDataWebSocketMessage) => void): void {
+  private scheduleReconnectWithBackoff(onMessage: (data: TwelveDataWebSocketMessage) => void): void {
     if (this.reconnectTimeout) {
       clearTimeout(this.reconnectTimeout);
     }
 
+    this.reconnectAttempts++;
+    
+    // Exponential backoff: baseDelay * 2^attempts with jitter
+    const backoffDelay = Math.min(
+      this.baseReconnectDelay * Math.pow(2, this.reconnectAttempts - 1),
+      30000 // Maximum 30 seconds
+    );
+    
+    // Add jitter to prevent thundering herd (±25%)
+    const jitter = backoffDelay * 0.25 * (Math.random() - 0.5);
+    const delayWithJitter = Math.round(backoffDelay + jitter);
+
+    console.log(`⏰ Scheduling WebSocket reconnection attempt ${this.reconnectAttempts} in ${delayWithJitter}ms`);
+
     this.reconnectTimeout = setTimeout(() => {
-      console.log('Attempting to reconnect to Twelve Data WebSocket...');
-      this.connectWebSocket(onMessage);
-    }, 5000); // Reconnect after 5 seconds
+      if (this.reconnectAttempts <= this.maxReconnectAttempts) {
+        console.log(`🔄 Reconnection attempt ${this.reconnectAttempts}/${this.maxReconnectAttempts}`);
+        this.connectWebSocket(onMessage);
+      }
+    }, delayWithJitter);
+  }
+
+  // Legacy method for backward compatibility
+  private scheduleReconnect(onMessage: (data: TwelveDataWebSocketMessage) => void): void {
+    this.scheduleReconnectWithBackoff(onMessage);
   }
 
   subscribe(symbols: string[]): void {

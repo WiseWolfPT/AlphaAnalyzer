@@ -16,6 +16,10 @@ import {
 import { Moon, Sun, User, Menu, UserCircle, HelpCircle, LogOut } from "lucide-react";
 import NotificationCenter from "@/components/alerts/notification-center";
 
+// i18n and Currency imports
+import { useTranslation } from 'react-i18next';
+import { useCurrency } from '@/contexts/currency-context';
+
 interface TopBarProps {
   onMobileMenuToggle?: () => void;
 }
@@ -25,7 +29,10 @@ export function TopBar({ onMobileMenuToggle }: TopBarProps) {
   const isMobile = useIsMobile();
   const [, setLocation] = useLocation();
   const { user, signOut } = useAuth();
-  const [currency, setCurrency] = useState("USD");
+  
+  // i18n and Currency hooks
+  const { t, i18n } = useTranslation(['common', 'markets', 'currencies']);
+  const { currentCurrency, setCurrency, formatCurrency, convertCurrency } = useCurrency();
 
   // Mock data instead of API call
   const indices = {
@@ -34,8 +41,23 @@ export function TopBar({ onMobileMenuToggle }: TopBarProps) {
     nasdaq: { value: 15996.82, change: 0.17 }
   };
 
-  const formatNumber = (num: number) => {
-    return num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  // Updated formatting function using currency context
+  const formatIndexValue = (num: number) => {
+    // Convert from USD base currency to current display currency
+    const convertedValue = convertCurrency(num, 'USD', currentCurrency);
+    return formatCurrency(convertedValue);
+  };
+
+  const handleLanguageChange = (lng: string) => {
+    i18n.changeLanguage(lng);
+    // Update currency and region based on language preference
+    if (lng === 'pt') {
+      setCurrency('EUR');
+      localStorage.setItem('aa-region', 'EU');
+    } else if (lng === 'en') {
+      setCurrency('USD');
+      localStorage.setItem('aa-region', 'USA');
+    }
   };
 
   const formatChange = (change: number) => {
@@ -44,7 +66,7 @@ export function TopBar({ onMobileMenuToggle }: TopBarProps) {
   };
 
   return (
-    <header className="bg-chartreuse/20 backdrop-blur-xl border-b border-chartreuse/30 px-6 py-4 flex items-center justify-between sticky top-0 z-10">
+    <header className="bg-chartreuse/20 backdrop-blur-xl border-b border-chartreuse/30 px-6 py-4 flex items-center justify-between sticky top-0 z-10 pt-[env(safe-area-inset-top)] pl-[calc(1.5rem+env(safe-area-inset-left))] pr-[calc(1.5rem+env(safe-area-inset-right))]">
       <div className="flex items-center space-x-8">
         {/* Mobile Menu Button */}
         {isMobile && (
@@ -52,7 +74,7 @@ export function TopBar({ onMobileMenuToggle }: TopBarProps) {
             variant="ghost"
             size="sm"
             onClick={onMobileMenuToggle}
-            className="h-9 w-9 p-0 bg-secondary/50 hover:bg-secondary border border-border/50 md:hidden"
+            className="h-11 w-11 p-0 bg-secondary/50 hover:bg-secondary border border-border/50 md:hidden"
           >
             <Menu className="h-4 w-4" />
           </Button>
@@ -60,8 +82,8 @@ export function TopBar({ onMobileMenuToggle }: TopBarProps) {
         {/* Market Indices */}
         <div className="hidden lg:flex items-center space-x-6">
           <div className="flex items-center space-x-3 bg-secondary/30 px-3 py-2 rounded-lg">
-            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">DOW</span>
-            <span className="font-bold text-sm">{formatNumber(indices.dow.value)}</span>
+            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{t('indices.dow', { ns: 'markets' })}</span>
+            <span className="font-bold text-sm">{formatIndexValue(indices.dow.value)}</span>
             <span className={`text-xs font-medium px-2 py-1 rounded-full ${
               indices.dow.change >= 0 
                 ? 'bg-emerald-500/10 text-emerald-500' 
@@ -71,8 +93,8 @@ export function TopBar({ onMobileMenuToggle }: TopBarProps) {
             </span>
           </div>
           <div className="flex items-center space-x-3 bg-secondary/30 px-3 py-2 rounded-lg">
-            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">S&P</span>
-            <span className="font-bold text-sm">{formatNumber(indices.sp500.value)}</span>
+            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{t('indices.sp500', { ns: 'markets' })}</span>
+            <span className="font-bold text-sm">{formatIndexValue(indices.sp500.value)}</span>
             <span className={`text-xs font-medium px-2 py-1 rounded-full ${
               indices.sp500.change >= 0 
                 ? 'bg-emerald-500/10 text-emerald-500' 
@@ -82,8 +104,8 @@ export function TopBar({ onMobileMenuToggle }: TopBarProps) {
             </span>
           </div>
           <div className="flex items-center space-x-3 bg-secondary/30 px-3 py-2 rounded-lg">
-            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">NASDAQ</span>
-            <span className="font-bold text-sm">{formatNumber(indices.nasdaq.value)}</span>
+            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{t('indices.nasdaq', { ns: 'markets' })}</span>
+            <span className="font-bold text-sm">{formatIndexValue(indices.nasdaq.value)}</span>
             <span className={`text-xs font-medium px-2 py-1 rounded-full ${
               indices.nasdaq.change >= 0 
                 ? 'bg-emerald-500/10 text-emerald-500' 
@@ -96,20 +118,53 @@ export function TopBar({ onMobileMenuToggle }: TopBarProps) {
       </div>
 
       <div className="flex items-center space-x-3">
-        {/* Market Selector */}
-        <Select 
-          value={localStorage.getItem('aa-region') || 'USA'} 
-          onValueChange={(value) => localStorage.setItem('aa-region', value)}
-        >
-          <SelectTrigger className="w-24 h-9 bg-secondary/50 border-border/50">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="USA">USA</SelectItem>
-            <SelectItem value="EU">EU</SelectItem>
-            <SelectItem value="APAC">APAC</SelectItem>
-          </SelectContent>
-        </Select>
+        {/* Language, Currency, and Market Selectors - Hidden on mobile, available in MobileMenu */}
+        {!isMobile && (
+          <>
+            {/* Language Switcher */}
+            <Select 
+              value={i18n.language} 
+              onValueChange={handleLanguageChange}
+            >
+              <SelectTrigger className="w-24 h-11 bg-secondary/50 border-border/50">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="en">🇺🇸 EN</SelectItem>
+                <SelectItem value="pt">🇵🇹 PT</SelectItem>
+              </SelectContent>
+            </Select>
+
+            {/* Currency Selector */}
+            <Select 
+              value={currentCurrency} 
+              onValueChange={(value) => setCurrency(value as 'USD' | 'EUR')}
+            >
+              <SelectTrigger className="w-24 h-11 bg-secondary/50 border-border/50">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="USD">{t('usd', { ns: 'currencies' })}</SelectItem>
+                <SelectItem value="EUR">{t('eur', { ns: 'currencies' })}</SelectItem>
+              </SelectContent>
+            </Select>
+
+            {/* Market Selector */}
+            <Select 
+              value={localStorage.getItem('aa-region') || 'USA'} 
+              onValueChange={(value) => localStorage.setItem('aa-region', value)}
+            >
+              <SelectTrigger className="w-24 h-11 bg-secondary/50 border-border/50">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="USA">{t('regions.usa', { ns: 'markets' })}</SelectItem>
+                <SelectItem value="EU">{t('regions.eu', { ns: 'markets' })}</SelectItem>
+                <SelectItem value="APAC">{t('regions.apac', { ns: 'markets' })}</SelectItem>
+              </SelectContent>
+            </Select>
+          </>
+        )}
 
         {/* Notification Center */}
         <NotificationCenter />
@@ -119,7 +174,7 @@ export function TopBar({ onMobileMenuToggle }: TopBarProps) {
           variant="ghost"
           size="sm"
           onClick={() => setTheme(theme === "light" ? "dark" : "light")}
-          className="h-9 w-9 p-0 bg-secondary/50 hover:bg-secondary border border-border/50"
+          className="h-11 w-11 p-0 bg-secondary/50 hover:bg-secondary border border-border/50"
         >
           {theme === "light" ? (
             <Moon className="h-4 w-4" />
@@ -134,7 +189,7 @@ export function TopBar({ onMobileMenuToggle }: TopBarProps) {
             <Button 
               variant="ghost" 
               size="sm" 
-              className="h-9 w-9 p-0 bg-secondary/50 hover:bg-secondary border border-border/50 rounded-full flex items-center justify-center"
+              className="h-11 w-11 p-0 bg-secondary/50 hover:bg-secondary border border-border/50 rounded-full flex items-center justify-center"
             >
               <div className="h-9 w-9 rounded-full bg-chartreuse/20 flex items-center justify-center text-chartreuse font-medium text-sm">
                 {user?.name?.charAt(0).toUpperCase() || 'A'}
@@ -148,7 +203,7 @@ export function TopBar({ onMobileMenuToggle }: TopBarProps) {
             <DropdownMenuLabel className="font-normal">
               <div className="flex flex-col space-y-1">
                 <p className="text-sm font-medium">{user?.name || 'António Francisco'}</p>
-                <p className="text-xs text-zinc-500">Account Management</p>
+                <p className="text-xs text-zinc-500">{t('general.account_management')}</p>
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator className="bg-zinc-800" />
@@ -157,14 +212,14 @@ export function TopBar({ onMobileMenuToggle }: TopBarProps) {
               className="hover:bg-chartreuse/10 hover:text-chartreuse cursor-pointer"
             >
               <UserCircle className="mr-2 h-4 w-4" />
-              <span>My Account</span>
+              <span>{t('navigation.my_account')}</span>
             </DropdownMenuItem>
             <DropdownMenuItem 
               onClick={() => setLocation('/help')}
               className="hover:bg-zinc-800 cursor-pointer"
             >
               <HelpCircle className="mr-2 h-4 w-4" />
-              <span>Help</span>
+              <span>{t('navigation.help')}</span>
             </DropdownMenuItem>
             <DropdownMenuSeparator className="bg-zinc-800" />
             <DropdownMenuItem 
@@ -175,7 +230,7 @@ export function TopBar({ onMobileMenuToggle }: TopBarProps) {
               className="hover:bg-red-500/10 hover:text-red-500 cursor-pointer text-red-500"
             >
               <LogOut className="mr-2 h-4 w-4" />
-              <span>Log Out</span>
+              <span>{t('navigation.log_out')}</span>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

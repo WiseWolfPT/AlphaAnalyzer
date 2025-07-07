@@ -1,7 +1,6 @@
-// Finnhub API Service
-// SECURITY: API key moved to server-side - use proxy endpoints instead
-const FINNHUB_API_KEY = 'DEPRECATED_USE_SERVER_PROXY';
-const FINNHUB_BASE_URL = 'https://finnhub.io/api/v1';
+// Finnhub API Service - Wave 4 Reactivation
+// Using secure server-side proxy endpoints
+const FINNHUB_PROXY_URL = '/api/proxy/finnhub';
 
 export interface StockPrice {
   c: number; // Current price
@@ -85,20 +84,26 @@ export interface CompanyProfile {
 }
 
 class FinnhubService {
-  private baseURL = FINNHUB_BASE_URL;
-  private apiKey = FINNHUB_API_KEY;
+  private proxyURL = FINNHUB_PROXY_URL;
 
   private async makeRequest<T>(endpoint: string): Promise<T> {
-    const url = `${this.baseURL}${endpoint}&token=${this.apiKey}`;
+    const url = `${this.proxyURL}${endpoint}`;
     
     try {
       const response = await fetch(url);
       
       if (!response.ok) {
-        throw new Error(`Finnhub API error: ${response.status} ${response.statusText}`);
+        throw new Error(`Finnhub proxy error: ${response.status} ${response.statusText}`);
       }
       
-      const data = await response.json();
+      const result = await response.json();
+      
+      // Handle proxy response format
+      if (!result.success) {
+        throw new Error(result.message || 'Finnhub API request failed');
+      }
+      
+      const data = result.data;
       return data;
     } catch (error) {
       console.error('Finnhub API request failed:', error);

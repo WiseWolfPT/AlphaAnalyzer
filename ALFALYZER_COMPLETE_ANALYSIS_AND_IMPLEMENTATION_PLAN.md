@@ -1,709 +1,893 @@
-# 🎯 ALFALYZER - ANÁLISE COMPLETA E PLANO DE IMPLEMENTAÇÃO V2.0
+# 🎯 ALFALYZER - PLANO DE IMPLEMENTAÇÃO CRÍTICO V3.0
 
 **Data**: Janeiro 2025  
-**Análise**: Consenso Multi-agente (Claude Opus 4 + O3-MINI + Gemini Pro)  
-**Estado Atual**: ✅ 100% implementado (Ondas 1 e 2 COMPLETAS)
-**Última Atualização**: 07/01/2025 às 16:45 - TODAS AS TAREFAS PENDENTES CONCLUÍDAS
+**Análise**: Consenso Crítico (Claude Opus 4 + O3-mini + Gemini Pro)  
+**Estado Atual**: ⚠️ 7.8/10 - PRODUÇÃO COM RISCO ELEVADO
+**Última Atualização**: 08/01/2025 - PLANO DE AÇÃO EMERGENCIAL
 
-## ✅ ATUALIZAÇÃO CRÍTICA - ONDAS 1 E 2 COMPLETAS!
+## 🚨 AVALIAÇÃO CRÍTICA CONSENSUAL
 
-**IMPORTANTE**: O arquivo `AGENTES_STATUS_E_TAREFAS_PENDENTES.md` está OBSOLETO. Todas as tarefas foram concluídas com sucesso pelo Claude Sonnet 4 em 07/01/2025. Ver `TAREFAS_PENDENTES_COMPLETAS.md` para relatório completo.
-
----
-
-## 📊 RESUMO EXECUTIVO ATUALIZADO
-
-O Alfalyzer completou uma transformação extraordinária. TODOS os problemas críticos identificados foram resolvidos: segurança corrigida (.env removido), escala resolvida (PostgreSQL/Supabase migrado), código consolidado (UnifiedDashboard criado), performance otimizada (cache multi-camada), e CI/CD implementado. O projeto está pronto para a próxima fase de features avançadas.
-
-### Pontuação Geral: 8.5/10 (vs 5.5/10 inicial) ⬆️
-
-| Dimensão | Score Inicial | Score Atual | Status | Prioridade |
-|----------|---------------|-------------|---------|------------|
-| Segurança | 4/10 | 9/10 | ✅ .env removido, .env.example criado | COMPLETO |
-| Backend | 2.5/10 | 7/10 | ✅ APIs prontas | COMPLETO |
-| Arquitetura | 7/10 | 8/10 | ✅ PostgreSQL migrado | COMPLETO |
-| Código | 6/10 | 9/10 | ✅ 13→6 dashboards (UnifiedDashboard) | COMPLETO |
-| Performance | 5/10 | 8/10 | ✅ Cache multi-camada implementado | COMPLETO |
-| Dependências | 3/10 | 7/10 | ✅ Limpeza realizada | COMPLETO |
-| Testes | 1/10 | 1/10 | 🔴 <5% (próxima onda) | PENDENTE |
+**IMPORTANTE**: Após análise profunda com múltiplos modelos, o Alfalyzer tem excelente base técnica mas FALHA em aspectos críticos para produção. Este documento define o plano de ação para elevar o projeto de 7.8 para 10/10.
 
 ---
 
-## 🚨 ESTADO ATUAL - DESCOBERTAS RECENTES
+## 📊 RESUMO EXECUTIVO - CONSENSO FINAL
 
-### ✅ O QUE ESTÁ MELHOR QUE O ESPERADO
+### Pontuação Consolidada: 7.8/10 (Consenso: Opus 4 + O3 + Gemini)
 
-1. **Backend Funcional**
-   - APIs configuradas e prontas (não "forçadas para demo")
-   - Sistema de fallback inteligente implementado
-   - Cache LRU com proteção contra ataques
-   - Rate limiting por tier de usuário
+**DIAGNÓSTICO**: "Como um Ferrari com motor perfeito mas sem freios" - excelência técnica anulada por ausência de testes em aplicação financeira.
 
-2. **Novas Funcionalidades Implementadas**
-   - **Cost Protection System**: Limites ultra-conservativos, kill switches
-   - **Query Optimizer**: 90% mais rápido com índices compostos
-   - **Load Testing**: Identificou gargalos reais (10-15 usuários máx)
-   - **Budget Monitor**: Controle de custos em tempo real
-
-3. **Segurança Parcialmente Melhorada**
-   - Credenciais hardcoded foram removidas
-   - simple-auth.tsx não tem mais senhas fixas
-   - api-keys.ts não existe (bom)
-
-### ✅ PROBLEMAS CRÍTICOS RESOLVIDOS (07/01/2025)
-
-1. **Segurança P0**: ✅ .env REMOVIDO, .env.example criado
-2. **Escala Limitada**: ✅ PostgreSQL/Supabase migrado (AGENTE 3)
-3. **Rate Limits**: ✅ Aumentados 10x (AGENTE 4)
-4. **Duplicação**: ✅ 15→6 dashboards (54% redução com UnifiedDashboard)
-5. **Dependências**: ✅ Packages não usados removidos (AGENTE 2)
-6. **Cache**: ✅ Sistema multi-camada implementado (AGENTE 5)
-7. **CI/CD**: ✅ Pipeline completo com GitHub Actions (AGENTE 7)
+| Dimensão | Score Atual | Consenso | Status | Criticidade |
+|----------|-------------|----------|---------|-------------|
+| **Segurança** | 10/10 | Unânime: Exemplar | ✅ Padrão-ouro fintech | RESOLVIDO |
+| **Arquitetura** | 9/10 | UnifiedDashboard magistral | ✅ 54% redução código | EXCELENTE |
+| **Backend** | 8/10 | APIs robustas c/ fallback | ✅ Production-grade | SÓLIDO |
+| **i18n/PWA** | 9/10 | Mobile-first profissional | ✅ PT/EN + USD/EUR | COMPLETO |
+| **Performance** | 6/10 | Bundle 522KB problemático | ⚠️ Impacta mobile/3G | CRÍTICO |
+| **TESTES** | 2/10 | RISCO #1 UNÂNIME | 🔴 5 arquivos apenas | EMERGÊNCIA |
+| **Dívida Técnica** | 5/10 | PSI 20 + código morto | ⚠️ "Velocity drag" | ALTO |
 
 ---
 
-## 🎯 CONSENSO FINAL - PLANO DE IMPLEMENTAÇÃO
+## 🔍 ANÁLISE CRÍTICA - RISCOS PARA PRODUÇÃO
 
-### ✅ FASE 0: EMERGÊNCIA (COMPLETA)
+### 🔴 RISCO #1: AUSÊNCIA DE TESTES (Consenso Unânime)
+- **O3-mini**: "Cada deploy é uma aposta"
+- **Gemini Pro**: "Um bug em cálculo de portfolio pode destruir confiança irreparavelmente"
+- **Impacto**: Investidores portugueses não confiarão dinheiro real sem garantias
 
-```bash
-# TAREFA 1: Segurança Imediata [AGENTE 1] ✅ COMPLETO
-- ✅ .env removido do repositório (commit e5b7fc77)
-- ✅ .env.example criado com template seguro
-- ✅ Secrets configurados no provedor
-- ✅ Segurança auditada e implementada
+### ⚠️ RISCO #2: PERFORMANCE MOBILE
+- Bundle 522KB é 2.6x maior que o ideal (<200KB)
+- Impacto direto em redes 3G/4G portuguesas
+- "Utilizadores abandonarão por alternativa mais fluida" (Gemini)
 
-# TAREFA 2: Quick Wins [AGENTE 2] ✅ COMPLETO
-- ✅ Packages não usados removidos
-- ✅ npm dedupe && npm audit fix executado
-- ✅ Bundle size reduzido significativamente
-```
+### 🟡 RISCO #3: DÍVIDA TÉCNICA
+- PSI 20 ainda no código (explicitamente marcado como IRRELEVANTE)
+- APIs comentadas criando confusão
+- "Velocity drag" - desenvolvimento cada vez mais lento
 
-### 📅 FASE 1: FUNDAÇÃO (3-5 DIAS)
-
-```typescript
-// TAREFA 3: Migração Database [AGENTE 3 - BACKEND]
-// SQLite → PostgreSQL Supabase (usar conta existente)
-- Executar migrations existentes
-- Configurar connection pooling (100 conexões)
-- Manter compatibilidade com código atual
-
-// TAREFA 4: Rate Limits 10x [AGENTE 5 - DEVOPS]
-// config/rate-limits.ts
-export const RATE_LIMITS = {
-  free: { requests: 100, window: '1m' },    // Era 10
-  premium: { requests: 500, window: '1m' }, // Era 50
-  enterprise: { requests: 2000, window: '1m' }
-};
-```
-
-### 📅 FASE 2: ESCALABILIDADE (1-2 SEMANAS)
-
-```typescript
-// TAREFA 5: Cache Multi-Nível [AGENTE 3 - BACKEND]
-// Implementar Redis com estratégia do Gemini Pro
-const CACHE_STRATEGY = {
-  // Nível 1: Redis (Hot Cache)
-  redis: {
-    preços_pregão: "60-120s",      // Era 5min
-    preços_fechado: "1h",
-    fundamentals: "7-30 dias",      // Era 1h!
-    company_info: "30 dias"
-  },
-  
-  // Nível 2: PostgreSQL (Warm Cache)
-  postgres: {
-    all_data_with_timestamp: true,
-    serve_stale_on_api_failure: true
-  }
-};
-
-// TAREFA 6: Pre-warming System [AGENTE 3 - BACKEND]
-// Background worker para popular cache
-const PRE_WARM_CONFIG = {
-  top_20_stocks: "*/2 * * * *",     // A cada 2 min
-  ibov_components: "*/5 * * * *",   // A cada 5 min
-  popular_fundamentals: "0 */6 * * *" // A cada 6h
-};
-```
-
-### 📅 FASE 3: CONSOLIDAÇÃO (1 SEMANA)
-
-```typescript
-// TAREFA 7: Dashboard Unificado [AGENTE 2 - REFATORAÇÃO]
-// Consolidar 15 dashboards em 1 configurável
-interface UnifiedDashboard {
-  variant: 'basic' | 'enhanced' | 'admin';
-  features: DashboardFeature[];
-  dataSource: 'real' | 'demo';
-  layout: 'grid' | 'list' | 'cards';
-}
-
-// TAREFA 8: Remover Código Morto [AGENTE 2 - REFATORAÇÃO]
-// Deletar 14 dashboards não utilizados
-// Limpar rotas duplicadas no App.tsx
-```
+### ✅ EXCELÊNCIAS CONFIRMADAS
+1. **Segurança**: Implementação exemplar, padrão fintech
+2. **Arquitetura**: UnifiedDashboard é obra-prima de engenharia
+3. **Infraestrutura**: WebSockets, PWA, CI/CD de primeira linha
+4. **Localização**: i18n PT/EN e multi-currency profissionais
 
 ---
 
-## 📈 ESTRATÉGIA DE APIs OTIMIZADA (CONSENSO COM FMP)
+## 🚀 PLANO DE EMERGÊNCIA - 7.8 → 10/10
 
-### Hierarquia por Tipo de Dado:
+### 🔴 FASE 1: ESTABILIZAÇÃO CRÍTICA (1-2 SEMANAS) - PRIORIDADE MÁXIMA
 
-```typescript
-// TAREFA 9: API Router Inteligente [AGENTE 3 - BACKEND]
-class OptimizedAPIRouter {
-  // PREÇOS REAL-TIME (Alta frequência)
-  async getPrice(symbol: string) {
-    return this.tryInOrder([
-      () => cache.get(`price:${symbol}`),      // 90% hit rate esperado
-      () => finnhub.getQuote(symbol),          // 3600/dia
-      () => twelveData.getPrice(symbol),       // 800/dia
-      () => yahoo.getQuote(symbol)             // Último recurso
-    ]);
-  }
-
-  // DADOS FUNDAMENTAIS (Baixa frequência)
-  async getFundamentals(symbol: string) {
-    return this.tryInOrder([
-      () => cache.get(`fundamentals:${symbol}`), // TTL: 7-30 dias
-      () => fmp.getFinancials(symbol),          // 250/dia - IDEAL!
-      () => alphaVantage.getOverview(symbol),   // 25/dia - Backup
-      () => yahoo.getFinancials(symbol)         // Emergência
-    ]);
-  }
-}
-```
-
-### Capacidade Máxima com APIs Free:
-
-| API | Limite/Dia | Uso Otimizado | Cobertura |
-|-----|------------|---------------|-----------|
-| Finnhub | 3600 | Preços real-time | 3000 req/dia |
-| Twelve Data | 800 | Preços + Histórico | 600 req/dia |
-| FMP | 250 | Fundamentals | 200 empresas/dia |
-| Alpha Vantage | 25 | Backup apenas | Emergências |
-| Yahoo | Ilimitado* | Fallback final | Com cache agressivo |
-
-**Meta**: 1000 usuários com 90%+ cache hit rate
-
----
-
-## 🏗️ ARQUITETURA PARA 500 USUÁRIOS SIMULTÂNEOS
-
-```
-┌─────────────┐     ┌──────────────┐     ┌─────────────────┐
-│   Vercel    │────▶│ Load Balancer│────▶│ Node.js Cluster │
-│  (Frontend) │     │   (Nginx)    │     │   (4 workers)   │
-└─────────────┘     └──────────────┘     └────────┬────────┘
-                                                   │
-        ┌──────────────────────────────────────────┼────────┐
-        │                                          │        │
-  ┌─────▼─────┐  ┌───────────┐  ┌────────────┐  ┌▼────────┴───┐
-  │   Redis   │  │ Supabase  │  │Cost        │  │Pre-warm     │
-  │  (Cache)  │  │(PostgreSQL)│  │Protection  │  │Worker       │
-  └───────────┘  └───────────┘  └────────────┘  └─────────────┘
-```
-
----
-
-## 🚀 DISTRIBUIÇÃO PARALELA OTIMIZADA - ONDAS DE AGENTES
-
-### 📊 STATUS ATUAL DAS ONDAS (07/01/2025 - 16:45)
-
-| Onda | Agentes | Completos | Taxa | Status |
-|------|---------|-----------|------|--------|
-| ONDA 1 | 4 | 4 | 100% | ✅ COMPLETA |
-| ONDA 2 | 3 | 3 | 100% | ✅ COMPLETA |
-| **TOTAL** | **7** | **7** | **100%** | ✅ **MISSÃO CUMPRIDA** |
-
-**✅ VER ARQUIVO `TAREFAS_PENDENTES_COMPLETAS.md` PARA RELATÓRIO DETALHADO**
-
-### 🌊 ONDA 1: FUNDAÇÃO CRÍTICA (Iniciar IMEDIATAMENTE - 4 agentes paralelos)
-
-#### 🔐 AGENTE 1: SEGURANÇA [100% COMPLETO] ✅
-```bash
-# Modelo: o3-mini com thinking=high
-# Tempo: Completado em 2h
-# Status: FINALIZADO por Claude Sonnet 4
-
-TAREFAS CRÍTICAS:
-1. [x] Remover .env do repositório ✅
-2. [x] Rotacionar SUPABASE_SERVICE_ROLE_KEY ✅
-3. [x] Configurar secrets no Vercel/Railway ✅
-4. [x] Criar .env.example seguro ✅
-5. [x] Auditar outras vulnerabilidades ✅
-
-# Commits: e5b7fc77, 64de9697, 8159eb5c, ddefa1f8
-```
-
-#### 📦 AGENTE 2: LIMPEZA RÁPIDA [100% COMPLETO] ✅
-```bash
-# Modelo: gemini-2.5-flash
-# Tempo: 4-6h
-# Dependências: NENHUMA - iniciar imediatamente
-
-TAREFAS QUICK-WIN:
-1. [x] npm uninstall passport passport-local memorystore csurf ws connect-pg-simple (15min) ✅
-2. [x] npm dedupe && npm audit fix (30min) ✅
-3. [x] Analisar bundle com webpack-bundle-analyzer (1h) ✅
-4. [x] Remover imports não utilizados (2h) ✅
-5. [x] Documentar dependências críticas (1h) ✅
-
-# COMPLETO: Todas as dependências desnecessárias removidas
-```
-
-#### 🗄️ AGENTE 3: MIGRAÇÃO DATABASE [100% COMPLETO] ✅
-```typescript
-// Modelo: o3-mini com thinking=max
-// Tempo: 48-72h
-// Dependências: NENHUMA - iniciar imediatamente
-
-TAREFAS FUNDACIONAIS:
-1. [x] Configurar Supabase connection (2h) ✅
-2. [x] Migrar schema SQLite → PostgreSQL (4h) ✅
-3. [x] Adaptar queries para PostgreSQL (6h) ✅
-4. [x] Configurar connection pooling (2h) ✅
-5. [x] Testar todas as operações CRUD (4h) ✅
-
-# COMPLETO: DATABASE_MIGRATION_SUMMARY.md documenta todo o processo
-```
-
-#### ⚡ AGENTE 4: RATE LIMITS & MONITORING [100% COMPLETO] ✅
-```yaml
-# Modelo: gemini-2.5-pro
-# Tempo: 24h
-# Dependências: NENHUMA - iniciar imediatamente
-
-TAREFAS URGENTES:
-1. [x] Rate limits 10x em config (30min) ✅
-2. [x] Setup básico Prometheus (3h) ✅
-3. [x] Configurar alertas críticos (2h) ✅
-4. [x] Dashboard de monitoramento (3h) ✅
-5. [x] Documentar métricas (1h) ✅
-
-# COMPLETO: Rate limits aumentados 10x em rate-limit-middleware.ts
-```
-
-### 🌊 ONDA 2: ESCALABILIDADE (Iniciar após 48h - 3 agentes paralelos)
-
-#### 🚀 AGENTE 5: CACHE & PERFORMANCE [100% COMPLETO] ✅
-```typescript
-// Modelo: o3-mini com thinking=high
-// Tempo: 3-4 dias
-// Dependências: Aguardar AGENTE 3 (DB migrado)
-
-TAREFAS DE ESCALA:
-1. [x] Implementar Redis cache (8h) ✅
-2. [x] Cache multi-nível strategy (4h) ✅
-3. [x] Pre-warming top 20 stocks (6h) ✅
-4. [x] Otimizar API router com FMP (4h) ✅
-5. [x] Batch requests implementation (4h) ✅
-
-# COMPLETO: CACHE_SYSTEM_IMPLEMENTATION_COMPLETE.md documenta tudo
-```
-
-#### 🔧 AGENTE 6: REFATORAÇÃO DASHBOARDS [100% COMPLETO] ✅
-```typescript
-// Modelo: Claude Sonnet 4 (executado)
-// Tempo: Completado em 4h
-// Status: FINALIZADO com excelência
-
-TAREFAS DE CONSOLIDAÇÃO:
-1. [x] Análise dos 13 dashboards ✅
-2. [x] Criar UnifiedDashboard (883 linhas) ✅
-3. [x] Migrar todas as features ✅
-4. [x] Implementar 6 variantes ✅
-5. [x] Remover 8 dashboards duplicados ✅
-
-# Resultado: 13→6 arquivos (54% redução)
-# Commit: 1586470a (10 files, +883/-2175 lines)
-```
-
-#### 🔄 AGENTE 7: CI/CD & DEPLOY [100% COMPLETO] ✅
-```yaml
-# Modelo: gemini-2.5-flash
-# Tempo: 2 dias
-# Dependências: Aguardar AGENTE 1 (segurança) + AGENTE 4 (monitoring)
-
-TAREFAS DEVOPS:
-1. [x] GitHub Actions pipeline (4h) ✅
-2. [x] Staging environment (3h) ✅
-3. [x] Automated security checks (2h) ✅
-4. [x] Deploy scripts (2h) ✅
-5. [x] Rollback procedures (2h) ✅
-
-# COMPLETO: CICD_IMPLEMENTATION_COMPLETE.md documenta todo o sistema
-```
-
-### 🌊 ONDA 3: FEATURES & POLISH (Iniciar após 1 semana - 3 agentes paralelos)
-
-#### 🌍 AGENTE 8: FRONTEND FEATURES
-```typescript
-// Modelo: gemini-2.5-flash
-// Tempo: 4-5 dias
-// Dependências: Aguardar AGENTE 6 (dashboards unificados)
-
-TAREFAS UX:
-1. [ ] i18n PT/EN implementation (12h)
-2. [ ] PWA service worker (8h)
-3. [ ] Mobile responsiveness (6h)
-4. [ ] Lazy loading routes (4h)
-5. [ ] Performance optimization (6h)
-```
-
-#### ✅ AGENTE 9: TESTES & QUALIDADE
+#### AGENTE A: TESTES DE EMERGÊNCIA
 ```typescript
 // Modelo: gemini-2.5-pro
-// Tempo: 4-5 dias
-// Dependências: Aguardar ONDA 2 completa
+// Tempo: 1 semana
+// Foco: "Rede de segurança" para deploy com confiança
 
-TAREFAS QA:
-1. [ ] Vitest setup (3h)
-2. [ ] Unit tests críticos (12h)
-3. [ ] Integration tests APIs (8h)
-4. [ ] E2E happy paths (6h)
-5. [ ] Coverage report (2h)
+TAREFAS CRÍTICAS - FLUXOS FINANCEIROS:
+1. [ ] Portfolio Calculations Tests (4h)
+   - Total value calculations USD/EUR
+   - P&L calculations with currency conversion
+   - Performance percentages accuracy
+   - Edge cases: negative values, zero holdings
+
+2. [ ] Currency Conversion Tests (3h)
+   - USD→EUR and EUR→USD accuracy
+   - Exchange rate updates
+   - Fallback to static rates
+   - Format consistency ($1,234.56 vs €1.234,56)
+
+3. [ ] Authentication Flow Tests (3h)
+   - Login/logout security
+   - Session management
+   - Protected routes access
+   - Supabase RLS validation
+
+4. [ ] WebSocket Data Integrity (4h)
+   - Price update accuracy
+   - Connection resilience
+   - Data consistency during reconnects
+   - Message queue handling
+
+// META: >30% coverage nos fluxos críticos
+// ENTREGÁVEL: Suite de testes que garante zero bugs financeiros
 ```
 
-#### 🎯 AGENTE 10: FEATURES CORE
-```typescript
+#### AGENTE B: LIMPEZA URGENTE PSI 20
+```bash
+# Modelo: gemini-2.5-flash
+# Tempo: 2 dias
+# Foco: Remover COMPLETAMENTE PSI 20
+
+TAREFAS DE LIMPEZA:
+1. [ ] Grep global por "PSI" e "psi" (30min)
+   grep -r "PSI\|psi" client/src --exclude-dir=node_modules
+   
+2. [ ] Remover do mobile menu (1h)
+   - client/src/components/layout/mobile-menu.tsx
+   - Substituir por S&P 500 ou NASDAQ
+
+3. [ ] Limpar localization files (30min)
+   - client/public/locales/*/markets.json
+   
+4. [ ] Atualizar testes afetados (1h)
+   
+5. [ ] Commit: "fix: Remove PSI 20 references (irrelevant market)"
+```
+
+### ⚡ FASE 2: OTIMIZAÇÃO DE PERFORMANCE (2-3 SEMANAS) - PRIORIDADE ALTA
+
+#### AGENTE C: BUNDLE OPTIMIZATION
+```javascript
 // Modelo: o3-mini
 // Tempo: 1 semana
-// Dependências: Aguardar AGENTE 5 (cache) + AGENTE 8 (frontend base)
+// Foco: Reduzir 522KB → <250KB
 
-TAREFAS FEATURES:
-1. [ ] Sistema de Transcripts (16h)
-2. [ ] Portfolio real-time (12h)
-3. [ ] WebSocket integration (8h)
-4. [ ] Notifications system (6h)
-5. [ ] User preferences (4h)
+TAREFAS DE OTIMIZAÇÃO:
+1. [ ] Bundle Analysis (2h)
+   npm run build -- --analyze
+   // Identificar: Largest chunks, Duplicate deps, Unused exports
+
+2. [ ] Code Splitting por Rota (4h)
+   // Lazy load páginas pesadas:
+   const AdvancedCharts = lazy(() => import('./pages/AdvancedCharts'))
+   const Transcripts = lazy(() => import('./pages/transcripts'))
+   const AdminPanel = lazy(() => import('./pages/admin/*'))
+
+3. [ ] Dynamic Imports para Libraries (6h)
+   // Exemplo para chart library:
+   const loadChartLibrary = async () => {
+     const { Chart } = await import('chart.js');
+     return Chart;
+   }
+
+4. [ ] Tree Shaking Agressivo (3h)
+   // vite.config.ts optimizations
+   build: {
+     rollupOptions: {
+       output: {
+         manualChunks: {
+           'vendor': ['react', 'react-dom'],
+           'ui': ['@radix-ui/*'],
+           'utils': ['date-fns', 'zod']
+         }
+       }
+     }
+   }
+
+5. [ ] Image Optimization (2h)
+   - WebP format para logos
+   - Lazy loading para screenshots
+   - Placeholder blur para avatars
+
+// META: Initial bundle <250KB, Total <400KB
+// MÉTRICAS: Lighthouse Performance >90
 ```
 
-### 📊 MATRIZ DE PARALELIZAÇÃO
-
-| Tempo | ONDA 1 (4 agentes) | ONDA 2 (3 agentes) | ONDA 3 (3 agentes) |
-|-------|-------------------|-------------------|-------------------|
-| 0-24h | 🟢 Segurança | ⏸️ Aguardando | ⏸️ Aguardando |
-|       | 🟢 Limpeza | | |
-|       | 🟢 Database | | |
-|       | 🟢 Rate Limits | | |
-| 24-48h | 🔄 Finalizando | ⏸️ Preparando | ⏸️ Aguardando |
-| 48-72h | ✅ Completo | 🟢 Cache/Perf | ⏸️ Aguardando |
-|        |             | 🟢 Dashboards | |
-|        |             | 🟢 CI/CD | |
-| 1 sem | ✅ Completo | 🔄 Finalizando | 🟢 Frontend |
-|       |             |                | 🟢 Testes |
-|       |             |                | 🟢 Features |
-| 2 sem | ✅ Completo | ✅ Completo | 🔄 Finalizando |
-
-### 🎯 VANTAGENS DA ABORDAGEM EM ONDAS
-
-1. **Máximo Paralelismo**: 4 agentes iniciam imediatamente
-2. **Dependências Claras**: Cada onda depende da anterior
-3. **Quick Wins**: Resultados visíveis em 24h
-4. **Sem Bloqueios**: Agentes não ficam esperando
-5. **Flexibilidade**: Pode ajustar ondas baseado em progresso
-
----
-
-## 📊 MÉTRICAS DE SUCESSO ATUALIZADAS
-
-### Estado Atual (Janeiro 2025)
-- Usuários Simultâneos: 10-15 máx
-- Bundle Size: 522KB
-- node_modules: 424MB
-- Cache Hit Rate: ~60%
-- API Calls/dia: Ilimitado (demo)
-- Cobertura Testes: <5%
-- Dashboards: 15 duplicados
-
-### Meta em 4 Semanas
-- Usuários Simultâneos: 500+
-- Bundle Size: <200KB
-- node_modules: <100MB
-- Cache Hit Rate: >90%
-- API Calls/dia: <5000 total
-- Cobertura Testes: >30%
-- Dashboards: 1 unificado
-
----
-
-## 🎯 CRONOGRAMA CRÍTICO
-
-### Semana 1: Fundação
-- **24h**: Segurança resolvida
-- **48h**: Dependências limpas
-- **72h**: PostgreSQL migrado
-- **5 dias**: Rate limits 10x
-
-### Semana 2: Escala
-- Redis operacional
-- Pre-warming ativo
-- 200 usuários simultâneos
-- APIs otimizadas com FMP
-
-### Semana 3: Consolidação
-- Dashboard unificado
-- i18n implementado
-- PWA funcional
-- 400 usuários simultâneos
-
-### Semana 4: Produção
-- CI/CD completo
-- Monitoring ativo
-- Testes >30%
-- Deploy em produção
-- 500+ usuários simultâneos
-
----
-
-## 💡 INSIGHTS DO CONSENSO
-
-1. **Supabase > Self-hosted**: Pragmatismo para MVP
-2. **FMP para Fundamentals**: 250 calls/dia ideal
-3. **Cache Agressivo**: 7-30 dias para dados estáveis
-4. **Pre-warming Crítico**: 90% hit rate possível
-5. **Yahoo como Último Recurso**: Com cache rigoroso
-6. **Cost Protection Diferencial**: Expandir limites
-7. **Monitoring Antes de Features**: Visibilidade crucial
-
----
-
-## 🚀 RECOMENDAÇÕES PARA AVANÇAR (ONDA 3)
-
-### 📊 ANÁLISE DO CLAUDE OPUS 4 (07/01/2025 - 17:00)
-
-Após revisar o trabalho excepcional do Claude Sonnet 4 e o estado atual do projeto, **RECOMENDO FORTEMENTE AVANÇAR PARA A ONDA 3** pelos seguintes motivos:
-
-#### ✅ Motivos para Avançar:
-
-1. **Ondas 1 e 2 100% Completas**
-   - Todos os 7 agentes executados com sucesso
-   - Segurança, performance e arquitetura resolvidas
-   - Base sólida para novas features
-
-2. **Problemas de Config São Triviais**
-   - Erros de ambiente local (vite, tailwind)
-   - Não afetam produção
-   - Podem ser resolvidos em paralelo à Onda 3
-
-3. **Momentum do Projeto**
-   - Taxa de conclusão: 82.1% → 100% ✅
-   - Qualidade do código: 6/10 → 9/10 ⬆️
-   - Parar agora seria contraproducente
-
-4. **Valor Crítico da Onda 3**
-   - i18n PT/EN (mercado brasileiro)
-   - PWA (mobile users)
-   - Testes (qualidade)
-   - Transcripts (diferencial competitivo)
-
-### 🔧 PLANO DE AÇÃO RECOMENDADO
-
-#### Opção A: Fix Rápido + Onda 3 (RECOMENDADO)
-```bash
-# 1. Fix de ambiente local (30 min)
-cd /Users/antoniofrancisco/Documents/teste\ 1
-npm install
-cp .env.example .env
-# Editar .env com valores reais
-npm run dev
-
-# 2. Se funcionar, iniciar Onda 3 imediatamente
-# 3. Se não, ir para Opção B
-```
-
-#### Opção B: Direto para Onda 3
-- Ignorar problemas locais temporariamente
-- Focar 100% nas novas features
-- Resolver config em paralelo
-
----
-
-## ⚡ AÇÕES IMEDIATAS - ONDA 3 (INICIAR JÁ!)
-
-### 🌊 LANÇAR 3 AGENTES EM PARALELO:
-
-```bash
-# AGENTE 8: Frontend Features (gemini-2.5-flash)
-- i18n implementation (PT/EN)
-- PWA service worker
-- Mobile responsiveness
-- Performance optimizations
-
-# AGENTE 9: Testes & Qualidade (gemini-2.5-pro)
-- Vitest setup
-- Unit tests críticos
-- Integration tests
-- Coverage > 30%
-
-# AGENTE 10: Features Core (o3-mini)
-- Sistema de Transcripts
-- Portfolio real-time
-- WebSocket integration
-- Notifications
-```
-
----
-
-## 📞 COORDENAÇÃO
-
-- **Reuniões Diárias**: 15min sync entre agentes
-- **Bloqueios**: Escalar imediatamente
-- **Prioridade**: P0 > P1 > P2 > P3
-- **Comunicação**: Via PRs e issues
-
----
-
-## 🔧 INSTRUÇÕES TÉCNICAS PARA IMPLEMENTAÇÃO
-
-### 📝 COMMITS OBRIGATÓRIOS
-
-**O que são commits**: Pontos de salvamento do código (como checkpoints em um jogo).
-
-**Quando fazer commits**:
-```bash
-# Após CADA tarefa concluída com sucesso:
-git add .
-git commit -m "tipo: descrição clara da mudança"
-
-# Exemplos:
-git commit -m "security: Remove exposed .env file"
-git commit -m "chore: Remove unused dependencies" 
-git commit -m "feat: Add Redis cache implementation"
-git commit -m "refactor: Consolidate dashboards into one"
-```
-
-**Tipos de commit**:
-- `security:` - Mudanças de segurança
-- `chore:` - Manutenção/limpeza
-- `feat:` - Nova funcionalidade
-- `fix:` - Correção de bugs
-- `refactor:` - Refatoração de código
-- `perf:` - Melhorias de performance
-
-### 🧪 TESTE INCREMENTAL OBRIGATÓRIO
-
-**Após CADA mudança significativa**:
-```bash
-# 1. Teste se ainda compila
-npm run build
-
-# 2. Teste se servidor inicia
-npm run dev
-
-# 3. Se tudo OK → commit
-# 4. Se quebrou → corrigir ANTES de continuar
-```
-
-**Fluxo de trabalho seguro**:
-```
-Mudança → Teste → Funciona? → Sim → Commit → Próxima tarefa
-                           ↓
-                          Não → Corrigir → Teste novamente
-```
-
-### ⚠️ REGRAS CRÍTICAS
-
-1. **NUNCA** pule testes após mudanças
-2. **NUNCA** faça múltiplas mudanças sem testar
-3. **SEMPRE** confirme com o usuário antes de commits importantes
-4. **SEMPRE** mostre o resultado dos testes
-
-### 📊 CHECKLIST POR AGENTE
-
-Cada agente deve seguir este fluxo:
-- [ ] Ler tarefa do documento
-- [ ] Implementar mudança
-- [ ] Executar `npm run dev` para testar
-- [ ] Se funciona → fazer commit
-- [ ] Se falha → corrigir e testar novamente
-- [ ] Reportar conclusão da tarefa
-- [ ] Passar para próxima tarefa
-
-**Documento atualizado com consenso Opus 4 + O3-MINI + Gemini Pro**  
-**Data**: Janeiro 2025  
-**Versão**: 2.0 - Com descobertas recentes e tarefas paralelas
-
----
-
-## ⚠️ NOTA IMPORTANTE SOBRE MODELOS DE IA
-
-### 🎯 USE SONNET 3.5 PARA 95% DAS TAREFAS
-
-**Todos os agentes das ONDAS 1, 2 e início da 3 devem ser executados com Sonnet 3.5** por ser:
-- 3-5x mais rápido
-- 5x mais econômico  
-- Perfeitamente capaz para tarefas bem definidas
-
-### 🧠 RESERVE OPUS 4 APENAS PARA:
-
-**AGENTE 11: REVISÃO FINAL & OTIMIZAÇÃO AVANÇADA** (Último agente - após todos os outros)
+#### AGENTE D: API CLEANUP
 ```typescript
-// Modelo: OPUS 4 com thinking=max
-// Tempo: 2-3 dias
-// Dependências: TODOS os outros agentes completos
+// Modelo: gemini-2.5-flash
+// Tempo: 3 dias
+// Foco: Remover código comentado e ativar APIs
 
-TAREFAS COMPLEXAS QUE REQUEREM OPUS:
-1. [ ] Auditoria completa de segurança pós-implementação
-2. [ ] Debugging de problemas complexos não resolvidos
-3. [ ] Otimizações avançadas de performance
-4. [ ] Decisões arquiteturais não previstas
-5. [ ] Revisão holística e melhorias finais
+TAREFAS DE LIMPEZA:
+1. [ ] Remover APIs Comentadas (2h)
+   - client/src/services/finnhub.ts
+   - client/src/services/alpha-vantage.ts
+   - Mover configs para .env.example se futuras
 
-CRITÉRIOS PARA ATIVAR OPUS:
-- Sonnet completou todos os 10 agentes
-- Sistema está 95% funcional
-- Restam apenas problemas complexos
-- Mensagem do Sonnet: "Implementação base completa. Ative Opus para revisão final."
+2. [ ] Ativar API Providers (4h)
+   - Descomentar Finnhub integration
+   - Descomentar AlphaVantage
+   - Testar fallback chain
+   - Validar rate limits
+
+3. [ ] Documentar API Usage (2h)
+   // CREATE: docs/API_PROVIDERS.md
+   | Provider | Usage | Limit | Priority |
+   |----------|-------|-------|----------|
+   | Yahoo | Prices | ∞ | Fallback |
+   | Finnhub | RT | 60/min | Primary |
+   | AlphaV | Fund | 5/min | Secondary |
+
+4. [ ] Error Monitoring (3h)
+   - Sentry alerts para API failures
+   - Dashboard para quota usage
+   - Automatic provider rotation
 ```
 
-### 📋 FLUXO DE TRABALHO:
+### 🟢 FASE 3: MATURIDADE (1 mês) - CONSOLIDAÇÃO
 
-1. **Inicie com Sonnet 3.5** → Execute Agentes 1-10
-2. **Sonnet reportará** → "Todos os agentes implementados. Mude para Opus."
-3. **Troque para Opus 4** → Execute Agente 11 para refinamentos finais
-4. **Opus fará** → Revisão profunda e otimizações que Sonnet não conseguiria
+#### AGENTE E: TEST COVERAGE EXPANSION
+```typescript
+// Modelo: gemini-2.5-pro
+// Tempo: 2 semanas
+// Foco: Coverage 5% → 50%+
 
-Esta abordagem maximiza velocidade e economia, reservando Opus apenas para o que realmente precisa de inteligência superior.
+EXPANSÃO SISTEMÁTICA:
+1. [ ] Unit Tests - Business Logic (1 semana)
+   - services/* (API calls, calculations)
+   - utils/* (formatters, validators)
+   - hooks/* (custom React hooks)
+   Target: 80% coverage nestes diretórios
+
+2. [ ] Integration Tests - User Flows (1 semana)
+   - Complete user journey tests
+   - API integration scenarios
+   - Error handling paths
+   - Multi-currency scenarios
+
+3. [ ] E2E Tests - Critical Paths (3 dias)
+   // Playwright ou Cypress
+   - Login → Dashboard → Portfolio
+   - Add stock → View chart → Remove
+   - Currency switch → Verify values
+   - Mobile PWA installation flow
+
+4. [ ] Performance Tests (2 dias)
+   - Load testing com k6
+   - Memory leak detection
+   - Bundle size regression tests
+   - API response time monitoring
+```
+
+#### AGENTE F: MONITORING & OBSERVABILITY
+```yaml
+# Modelo: o3-mini
+# Tempo: 1 semana
+# Foco: Visibilidade total em produção
+
+IMPLEMENTAÇÕES:
+1. [ ] Enhanced Sentry Setup (1 dia)
+   - User context tracking
+   - Performance monitoring
+   - Release tracking
+   - Source maps upload
+
+2. [ ] Custom Metrics (2 dias)
+   - Portfolio calculation time
+   - API provider success rates
+   - Currency conversion accuracy
+   - WebSocket connection stability
+
+3. [ ] Alerting Rules (1 dia)
+   - P0: Auth failures >5/min
+   - P1: Portfolio calc errors
+   - P1: API quota >80%
+   - P2: Bundle size regression
+
+4. [ ] Dashboards (2 dias)
+   - Real User Monitoring (RUM)
+   - API Performance by provider
+   - Error rates by feature
+   - User journey funnels
+```
 
 ---
 
-## 🎯 CONCLUSÃO EXECUTIVA - ESTADO ATUAL (07/01/2025)
+## 📊 ROADMAP DE EXECUÇÃO - FASES PARALELAS
 
-### ✅ MISSÃO CUMPRIDA - ONDAS 1 E 2
+### 🚦 EXECUÇÃO SIMULTÂNEA DOS AGENTES
 
-**O projeto Alfalyzer alcançou 100% de conclusão das Ondas 1 e 2**, superando todas as expectativas:
+```mermaid
+gantt
+    title Roadmap Alfalyzer 7.8 → 10/10
+    dateFormat  YYYY-MM-DD
+    section FASE 1 - Crítica
+    AGENTE A - Testes    :crit, a1, 2025-01-08, 7d
+    AGENTE B - PSI 20    :crit, a2, 2025-01-08, 2d
+    section FASE 2 - Performance
+    AGENTE C - Bundle    :active, a3, 2025-01-10, 7d
+    AGENTE D - APIs      :active, a4, 2025-01-10, 3d
+    section FASE 3 - Maturidade
+    AGENTE E - Coverage  :a5, 2025-01-17, 14d
+    AGENTE F - Monitor   :a6, 2025-01-24, 7d
+```
 
-#### 📊 Resultados Alcançados:
-- **Segurança**: 4/10 → 9/10 (125% melhoria)
-- **Código**: 6/10 → 9/10 (50% melhoria)
-- **Dashboards**: 13 → 6 arquivos (54% redução)
-- **Performance**: Cache multi-camada implementado
-- **CI/CD**: Pipeline completo com GitHub Actions
+### 📈 MÉTRICAS DE SUCESSO POR FASE
 
-#### 🏆 Destaques do Trabalho:
-1. **Claude Sonnet 4** executou um trabalho **EXCEPCIONAL**
-2. **UnifiedDashboard**: Arquitetura modular com 6 variantes
-3. **Documentação**: Relatórios detalhados e profissionais
-4. **Segurança**: Todos os riscos críticos eliminados
-5. **Qualidade**: Código limpo e bem estruturado
+| Fase | Duração | Agentes | Entregáveis | Score Target |
+|------|---------|---------|-------------|--------------|
+| **FASE 1** | 1-2 sem | A, B | Testes críticos + PSI removido | 7.8 → 8.5 |
+| **FASE 2** | 2-3 sem | C, D | Bundle <250KB + APIs ativas | 8.5 → 9.2 |
+| **FASE 3** | 1 mês | E, F | Coverage 50% + Monitoring | 9.2 → 10.0 |
 
-### 🚀 PRÓXIMOS PASSOS - ONDA 3
+### 🎯 MILESTONES CRÍTICOS
 
-**RECOMENDAÇÃO FORTE**: Iniciar imediatamente a Onda 3 com 3 agentes paralelos:
+**Semana 1**:
+- ✓ Testes para cálculos financeiros
+- ✓ PSI 20 completamente removido
+- ✓ Bundle analysis completa
 
-1. **AGENTE 8**: Frontend Features (i18n, PWA, mobile)
-2. **AGENTE 9**: Testes & Qualidade (>30% coverage)
-3. **AGENTE 10**: Features Core (transcripts, websockets)
+**Semana 2**:
+- ✓ Code splitting implementado
+- ✓ APIs Finnhub/AlphaV ativas
+- ✓ Bundle <300KB
 
-### 💡 INSIGHTS FINAIS
+**Semana 3**:
+- ✓ Coverage >30%
+- ✓ Bundle <250KB
+- ✓ Zero bugs em produção
 
-O projeto Alfalyzer está em **estado excepcional** para avançar. A base sólida criada pelas Ondas 1 e 2 permite agora focar em features que trarão **valor direto aos usuários**. Os pequenos problemas de configuração local são triviais e não devem atrasar o progresso.
-
-**O momentum está do nosso lado - é hora de acelerar! 🚀**
+**Mês 1**:
+- ✓ Coverage >50%
+- ✓ Full monitoring dashboard
+- ✓ **Score 10/10** 🎯
 
 ---
 
-*Documento atualizado por Claude Opus 4 em 07/01/2025 às 17:15*
+## 🔧 INSTRUÇÕES DETALHADAS PARA CADA AGENTE
+
+### 📋 AGENTE A - INSTRUÇÕES ESPECÍFICAS
+
+**ARQUIVO**: `AGENTE_A_TESTES_EMERGENCIA.md`
+
+```markdown
+# AGENTE A - Testes de Emergência Financeira
+
+## OBJETIVO
+Criar suite de testes que garanta ZERO bugs em cálculos financeiros.
+
+## SETUP INICIAL
+```bash
+cd /Users/antoniofrancisco/Documents/teste\ 1
+npm install --save-dev @testing-library/react-hooks
+```
+
+## TESTES PRIORITÁRIOS
+
+### 1. Portfolio Calculations (client/src/contexts/__tests__/portfolio-context.test.tsx)
+```typescript
+describe('Portfolio Calculations', () => {
+  it('should calculate total value correctly in USD', () => {
+    const holdings = [
+      { symbol: 'AAPL', quantity: 10, currentPrice: 150, originalCurrency: 'USD' },
+      { symbol: 'MSFT', quantity: 5, currentPrice: 300, originalCurrency: 'USD' }
+    ];
+    // Expected: (10 * 150) + (5 * 300) = 3000
+    expect(calculateTotalValue(holdings, 'USD')).toBe(3000);
+  });
+
+  it('should handle EUR to USD conversion', () => {
+    const holdings = [
+      { symbol: 'SAP', quantity: 10, currentPrice: 100, originalCurrency: 'EUR' }
+    ];
+    const exchangeRate = 1.1; // 1 EUR = 1.1 USD
+    // Expected: 10 * 100 * 1.1 = 1100
+    expect(calculateTotalValue(holdings, 'USD', exchangeRate)).toBe(1100);
+  });
+
+  it('should handle zero and negative values gracefully', () => {
+    const holdings = [
+      { symbol: 'TEST', quantity: 0, currentPrice: 100 },
+      { symbol: 'NEG', quantity: -5, currentPrice: 50 }
+    ];
+    expect(() => calculateTotalValue(holdings)).not.toThrow();
+  });
+});
+```
+
+### 2. Currency Formatting (client/src/utils/__tests__/currency.test.ts)
+```typescript
+describe('Currency Formatting', () => {
+  it('should format USD correctly', () => {
+    expect(formatCurrency(1234.56, 'USD')).toBe('$1,234.56');
+    expect(formatCurrency(1234567.89, 'USD')).toBe('$1,234,567.89');
+  });
+
+  it('should format EUR correctly', () => {
+    expect(formatCurrency(1234.56, 'EUR')).toBe('€1.234,56');
+    expect(formatCurrency(1234567.89, 'EUR')).toBe('€1.234.567,89');
+  });
+});
+```
+
+## VALIDAÇÃO
+- [ ] Todos os testes passam
+- [ ] Coverage >30% em arquivos críticos
+- [ ] Nenhum cálculo financeiro sem teste
+```
+
+### 📋 AGENTE B - INSTRUÇÕES ESPECÍFICAS
+
+**ARQUIVO**: `AGENTE_B_REMOVE_PSI20.md`
+
+```markdown
+# AGENTE B - Remoção Completa PSI 20
+
+## OBJETIVO
+Remover TODAS as referências ao PSI 20 (mercado irrelevante).
+
+## BUSCA INICIAL
+```bash
+# Encontrar todas as ocorrências
+grep -r "PSI\|psi" client/src --exclude-dir=node_modules > psi_occurrences.txt
+grep -r "PSI\|psi" server/src --exclude-dir=node_modules >> psi_occurrences.txt
+```
+
+## ARQUIVOS PARA MODIFICAR
+
+### 1. client/src/components/layout/mobile-menu.tsx
+```typescript
+// REMOVER:
+marketIndices.find(index => index.symbol === 'PSI20')
+
+// SUBSTITUIR POR:
+marketIndices.find(index => index.symbol === 'SPX') // S&P 500
+```
+
+### 2. client/public/locales/pt/markets.json
+```json
+// REMOVER:
+"PSI20": "PSI 20",
+
+// NÃO ADICIONAR NADA - mercado português irrelevante
+```
+
+### 3. client/src/data/market-indices.ts
+```typescript
+// REMOVER TODO O OBJETO:
+{
+  symbol: 'PSI20',
+  name: 'PSI 20',
+  region: 'EU',
+  ...
+}
+```
+
+## VALIDAÇÃO
+- [ ] grep -r "PSI\|psi" retorna 0 resultados
+- [ ] Mobile menu mostra apenas mercados USA/EU relevantes
+- [ ] Testes atualizados sem PSI 20
+```
+
+### 📋 AGENTE C - INSTRUÇÕES ESPECÍFICAS
+
+**ARQUIVO**: `AGENTE_C_BUNDLE_OPTIMIZATION.md`
+
+```markdown
+# AGENTE C - Bundle Optimization 522KB → <250KB
+
+## OBJETIVO
+Reduzir bundle para melhorar performance mobile significativamente.
+
+## ANÁLISE INICIAL
+```bash
+npm run build -- --analyze
+# Salvar screenshot da análise
+# Identificar top 5 maiores chunks
+```
+
+## IMPLEMENTAÇÕES PRIORITÁRIAS
+
+### 1. Route-based Code Splitting
+```typescript
+// client/src/App.tsx
+// ANTES:
+import AdvancedCharts from '@/pages/AdvancedCharts';
+
+// DEPOIS:
+const AdvancedCharts = lazy(() => 
+  import(/* webpackChunkName: "charts" */ '@/pages/AdvancedCharts')
+);
+```
+
+### 2. Manual Chunks Configuration
+```typescript
+// vite.config.ts
+export default defineConfig({
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'vendor-react': ['react', 'react-dom', 'wouter'],
+          'vendor-ui': ['@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu'],
+          'vendor-utils': ['date-fns', 'zod', 'react-hook-form'],
+          'vendor-charts': ['recharts', 'd3-scale', 'd3-shape']
+        }
+      }
+    }
+  }
+});
+```
+
+### 3. Dynamic Import for Heavy Components
+```typescript
+// Para componentes de gráficos pesados
+const ChartComponent = () => {
+  const [Chart, setChart] = useState(null);
+  
+  useEffect(() => {
+    import('recharts').then(module => {
+      setChart(() => module.LineChart);
+    });
+  }, []);
+  
+  if (!Chart) return <ChartSkeleton />;
+  return <Chart {...props} />;
+};
+```
+
+## MÉTRICAS DE SUCESSO
+- [ ] Initial bundle <250KB
+- [ ] Largest chunk <100KB
+- [ ] Total size <400KB
+- [ ] Lighthouse Performance >90
+```
+
+### 📋 AGENTE D - INSTRUÇÕES ESPECÍFICAS
+
+**ARQUIVO**: `AGENTE_D_API_CLEANUP.md`
+
+```markdown
+# AGENTE D - API Cleanup e Ativação
+
+## OBJETIVO
+Limpar código comentado e ativar providers Finnhub/AlphaVantage.
+
+## TAREFAS
+
+### 1. Identificar APIs Comentadas
+```bash
+# Buscar por código comentado
+grep -r "//.*finnhub\|/\*.*finnhub" client/src/services
+grep -r "//.*alpha.*vantage\|/\*.*alpha.*vantage" client/src/services
+```
+
+### 2. Ativar Finnhub
+```typescript
+// client/src/services/finnhub.ts
+// DESCOMENTAR e TESTAR:
+export class FinnhubService {
+  private apiKey = process.env.VITE_FINNHUB_API_KEY;
+  
+  async getQuote(symbol: string) {
+    // Remover comentários
+    // Adicionar try-catch
+    // Implementar fallback
+  }
+}
+```
+
+### 3. Documentação de Providers
+```markdown
+# docs/API_PROVIDERS.md
+
+## Provider Priority Chain
+
+### Real-time Prices
+1. Finnhub (60 req/min) - Primary
+2. TwelveData (8 req/min) - Secondary  
+3. Yahoo Finance (∞) - Fallback
+
+### Fundamental Data
+1. FMP (250/day) - Primary
+2. AlphaVantage (5/min) - Secondary
+3. Yahoo Finance (∞) - Fallback
+
+## Error Handling
+- Automatic failover on 429/503
+- Exponential backoff on errors
+- Quota tracking in Redis
+```
+
+## VALIDAÇÃO
+- [ ] Zero código comentado em services/
+- [ ] Finnhub retornando dados reais
+- [ ] AlphaVantage funcionando
+- [ ] Fallback chain testado
+```
+
+### 📋 AGENTE E - INSTRUÇÕES ESPECÍFICAS
+
+**ARQUIVO**: `AGENTE_E_TEST_COVERAGE.md`
+
+```markdown
+# AGENTE E - Test Coverage Expansion 5% → 50%+
+
+## OBJETIVO
+Expandir cobertura de testes sistematicamente para garantir confiabilidade.
+
+## SETUP
+```bash
+# Configurar coverage reporting
+npm install --save-dev @vitest/coverage-v8
+
+# vitest.config.ts
+coverage: {
+  reporter: ['text', 'html', 'lcov'],
+  exclude: ['node_modules', 'tests'],
+  thresholds: {
+    lines: 50,
+    functions: 50,
+    branches: 50,
+    statements: 50
+  }
+}
+```
+
+## PRIORIDADES DE TESTE
+
+### 1. Services (Semana 1)
+```typescript
+// client/src/services/__tests__/portfolio-service.test.ts
+describe('PortfolioService', () => {
+  describe('calculatePortfolioValue', () => {
+    it('should calculate USD portfolio correctly');
+    it('should convert EUR holdings to USD');
+    it('should handle empty portfolio');
+    it('should handle API failures gracefully');
+  });
+});
+
+// Focus: 
+// - portfolio-service.ts
+// - currency-service.ts
+// - api/finnhub-service.ts
+// - api/alpha-vantage-service.ts
+```
+
+### 2. Hooks (3 dias)
+```typescript
+// client/src/hooks/__tests__/use-portfolio.test.ts
+describe('usePortfolio', () => {
+  it('should update values on price changes');
+  it('should handle currency switches');
+  it('should persist to localStorage');
+});
+```
+
+### 3. E2E Critical Paths (3 dias)
+```typescript
+// e2e/critical-paths.spec.ts
+test('user can view and update portfolio', async () => {
+  await page.goto('/login');
+  await page.fill('[name=email]', 'test@example.com');
+  await page.fill('[name=password]', 'password');
+  await page.click('button[type=submit]');
+  
+  await expect(page).toHaveURL('/dashboard');
+  await expect(page.locator('.portfolio-value')).toBeVisible();
+});
+```
+
+## MÉTRICAS
+- [ ] Services: 80% coverage
+- [ ] Hooks: 70% coverage
+- [ ] Utils: 90% coverage
+- [ ] Components: 50% coverage
+- [ ] Overall: >50%
+```
+
+### 📋 AGENTE F - INSTRUÇÕES ESPECÍFICAS  
+
+**ARQUIVO**: `AGENTE_F_MONITORING.md`
+
+```markdown
+# AGENTE F - Monitoring & Observability
+
+## OBJETIVO
+Implementar visibilidade completa para produção.
+
+## IMPLEMENTAÇÕES
+
+### 1. Enhanced Sentry Configuration
+```typescript
+// client/src/lib/monitoring.ts
+Sentry.init({
+  dsn: SENTRY_DSN,
+  environment: NODE_ENV,
+  integrations: [
+    new Sentry.BrowserTracing({
+      tracingOrigins: ['localhost', /^https:\/\/alfalyzer\.vercel\.app/],
+      routingInstrumentation: Sentry.reactRouterV6Instrumentation(
+        React.useEffect,
+        useLocation,
+        useNavigationType,
+        createRoutesFromChildren,
+        matchRoutes
+      ),
+    }),
+    new Sentry.Replay({
+      maskAllText: false,
+      blockAllMedia: false,
+    }),
+  ],
+  tracesSampleRate: NODE_ENV === 'production' ? 0.1 : 1.0,
+  replaysSessionSampleRate: 0.1,
+  replaysOnErrorSampleRate: 1.0,
+});
+```
+
+### 2. Custom Performance Metrics
+```typescript
+// Track portfolio calculation performance
+export const trackPortfolioCalculation = (duration: number, holdings: number) => {
+  Sentry.addBreadcrumb({
+    category: 'portfolio',
+    message: `Calculated ${holdings} holdings in ${duration}ms`,
+    level: duration > 100 ? 'warning' : 'info',
+  });
+  
+  // Send to analytics
+  gtag('event', 'portfolio_calculation', {
+    event_category: 'performance',
+    value: duration,
+    custom_parameter: holdings
+  });
+};
+```
+
+### 3. Alert Rules Configuration
+```yaml
+# .sentry/alerts.yml
+alerts:
+  - name: "High Error Rate"
+    conditions:
+      - id: "error_count"
+        value: 50
+        interval: "5m"
+    actions:
+      - id: "email"
+        targetType: "team"
+        
+  - name: "Portfolio Calculation Slow"
+    conditions:
+      - id: "transaction_duration"
+        value: 1000  # 1 second
+        transaction: "portfolio.calculate"
+    actions:
+      - id: "slack"
+        channel: "#alerts"
+```
+
+## DASHBOARDS
+- [ ] Real User Monitoring (Core Web Vitals)
+- [ ] API Provider Health (success rates)
+- [ ] User Journey Funnels
+- [ ] Error Rate by Feature
+```
+
+---
+
+## 🏁 CHECKLIST DE VALIDAÇÃO FINAL
+
+### ✅ FASE 1 - Estabilização (Semana 1-2)
+- [ ] **AGENTE A**: Testes financeiros implementados
+  - [ ] Portfolio calculations 100% testados
+  - [ ] Currency conversion sem bugs
+  - [ ] Auth flow seguro
+  - [ ] WebSocket data integrity
+- [ ] **AGENTE B**: PSI 20 removido completamente
+  - [ ] Zero ocorrências em grep
+  - [ ] Mobile menu atualizado
+  - [ ] Localization limpa
+
+### ✅ FASE 2 - Performance (Semana 2-3)
+- [ ] **AGENTE C**: Bundle otimizado
+  - [ ] Initial bundle <250KB
+  - [ ] Lighthouse >90
+  - [ ] Code splitting implementado
+- [ ] **AGENTE D**: APIs limpas e ativas
+  - [ ] Finnhub funcionando
+  - [ ] AlphaVantage ativo
+  - [ ] Zero código comentado
+
+### ✅ FASE 3 - Maturidade (Semana 3-4)
+- [ ] **AGENTE E**: Coverage >50%
+  - [ ] Services 80% testados
+  - [ ] E2E paths críticos
+  - [ ] CI bloqueando se <50%
+- [ ] **AGENTE F**: Monitoring completo
+  - [ ] Sentry configurado
+  - [ ] Alertas ativos
+  - [ ] Dashboards prontos
+
+---
+
+## 💰 ANÁLISE DE CUSTO-BENEFÍCIO
+
+### 🔴 Custo de NÃO Implementar (Risco)
+- **Bug financeiro em produção**: Perda de confiança IRREPARÁVEL
+- **Performance ruim mobile**: -40% taxa de conversão
+- **Sem monitoring**: Problemas descobertos pelos usuários
+- **Total**: Potencial falha do produto
+
+### 🟢 ROI da Implementação
+- **Testes**: Confiança = mais investidores
+- **Performance**: +25% retenção mobile
+- **Monitoring**: Problemas resolvidos antes de escalar
+- **Total**: Base sólida para crescimento
+
+### 📊 Effort vs Impact
+| Agente | Effort | Impact | ROI |
+|--------|--------|--------|-----|
+| A - Testes | Alto | CRÍTICO | ⭐⭐⭐⭐⭐ |
+| B - PSI 20 | Baixo | Médio | ⭐⭐⭐⭐ |
+| C - Bundle | Médio | Alto | ⭐⭐⭐⭐⭐ |
+| D - APIs | Baixo | Médio | ⭐⭐⭐ |
+| E - Coverage | Alto | Alto | ⭐⭐⭐⭐ |
+| F - Monitor | Médio | CRÍTICO | ⭐⭐⭐⭐⭐ |
+
+---
+
+## 🎯 DECISÕES ARQUITETURAIS CRÍTICAS
+
+### 1. Testes > Features Novas
+**Decisão**: Parar features até ter >30% coverage
+**Razão**: "Um bug em cálculo financeiro destrói confiança irreparavelmente"
+
+### 2. Bundle Optimization > UI Polish  
+**Decisão**: Code splitting antes de novos componentes
+**Razão**: Performance mobile crítica para PT market
+
+### 3. Remove PSI 20 Completamente
+**Decisão**: Não substituir, apenas remover
+**Razão**: Foco 100% em USA/EU markets
+
+### 4. Monitoring desde Day 1
+**Decisão**: Sentry + GA antes do primeiro usuário real
+**Razão**: "Problemas descobertos por usuários = falha"
+
+---
+
+## 🚨 AÇÃO IMEDIATA REQUERIDA
+
+### PARE! Antes de continuar com QUALQUER feature nova:
+
+1. **LEIA O CONSENSO**: Score atual 7.8/10 (não 9.2!)
+2. **ACEITE A REALIDADE**: Excelente base técnica COM riscos críticos
+3. **EXECUTE O PLANO**: Fases 1-3 em ordem, sem pular etapas
+
+### 🎯 PRIORIDADES ABSOLUTAS (Ordem Não Negociável)
+
+```
+1º) AGENTE A + B (Paralelo) → Testes críticos + Remove PSI 20
+2º) AGENTE C + D (Paralelo) → Bundle <250KB + APIs ativas  
+3º) AGENTE E + F (Paralelo) → Coverage 50% + Monitoring
+4º) SOMENTE ENTÃO → Novas features
+```
+
+### ⚠️ AVISOS FINAIS
+
+- **SEM TESTES = SEM PRODUÇÃO**
+- **Bundle 522KB = Usuários mobile perdidos**
+- **PSI 20 no código = Falta de foco**
+- **Sem monitoring = Voar às cegas**
+
+**O caminho de 7.8 para 10 não é glamouroso, mas é NECESSÁRIO.**
+
+---
+
+## 🎯 CONCLUSÃO EXECUTIVA
+
+### Estado Real: 7.8/10 - Produção com Risco Elevado
+
+**Consenso dos 3 Modelos**:
+- **Excelências**: Segurança (10/10), Arquitetura (9/10), i18n/PWA (9/10)
+- **Falhas Críticas**: Testes (2/10), Performance (6/10), Dívida Técnica (5/10)
+
+### Veredito Final
+
+> "Como um Ferrari com motor perfeito mas sem freios" 
+
+O Alfalyzer tem base técnica exemplar mas falha em aspectos fundamentais para uma fintech. A diferença entre 7.8 e 10 não está em features novas, mas em **confiabilidade e performance**.
+
+### Caminho Claro para 10/10
+
+**6 Agentes, 3 Fases, 1 Mês**:
+1. **Fase 1**: Testes de emergência + Remove PSI 20 (1-2 semanas)
+2. **Fase 2**: Bundle <250KB + APIs ativas (2-3 semanas)  
+3. **Fase 3**: Coverage 50% + Monitoring completo (1 mês)
+
+### Mensagem Final
+
+**Para investidores portugueses confiarem dinheiro real, cada cálculo deve ser testado, cada conversão EUR/USD validada, cada update de portfolio verificado.**
+
+O sucesso não virá de features glamourosas, mas de execução disciplinada do básico.
+
+---
+
+*Documento criado por Claude Opus 4 com consenso de O3-mini e Gemini Pro*  
+*08 de Janeiro de 2025 - Plano de Ação Crítico para Produção*
+

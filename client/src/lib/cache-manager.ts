@@ -48,13 +48,23 @@ export class CacheManager {
     return entry.data;
   }
 
-  set<T>(key: string, data: T, category: keyof typeof this.configs = 'stock-quote'): void {
-    const config = this.configs[category];
-    const expiry = Date.now() + config.ttl;
+  set<T>(key: string, data: T, category: keyof typeof this.configs = 'stock-quote'): void;
+  set<T>(key: string, data: T, ttl: number): void;
+  set<T>(key: string, data: T, categoryOrTtl: keyof typeof this.configs | number = 'stock-quote'): void {
+    let expiry: number;
     
-    // Clean up if at max size
-    if (this.cache.size >= config.maxSize) {
-      this.evictOldest(category);
+    if (typeof categoryOrTtl === 'number') {
+      // Direct TTL in milliseconds
+      expiry = Date.now() + categoryOrTtl;
+    } else {
+      // Category-based configuration
+      const config = this.configs[categoryOrTtl];
+      expiry = Date.now() + config.ttl;
+      
+      // Clean up if at max size
+      if (this.cache.size >= config.maxSize) {
+        this.evictOldest(categoryOrTtl);
+      }
     }
     
     this.cache.set(key, {
@@ -62,6 +72,19 @@ export class CacheManager {
       timestamp: Date.now(),
       expiry
     });
+  }
+
+  // Async versions for service layer compatibility
+  async setAsync<T>(key: string, data: T, ttl: number): Promise<void> {
+    this.set(key, data, ttl);
+  }
+
+  async getAsync<T>(key: string): Promise<T | null> {
+    return this.get<T>(key);
+  }
+
+  async deleteAsync(key: string): Promise<void> {
+    this.cache.delete(key);
   }
 
   private evictOldest(category: string): void {

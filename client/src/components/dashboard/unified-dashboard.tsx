@@ -22,6 +22,7 @@ import {
 // Enhanced hooks for real data
 import { useStocks, useMarketIndices, useApiQuota, useWarmCache } from '@/hooks/use-enhanced-stocks';
 import { useAuth } from '@/contexts/simple-auth-offline';
+import { usePullToRefresh } from '@/hooks/use-pull-to-refresh';
 import { cn } from '@/lib/utils';
 
 // Dashboard configuration interfaces
@@ -286,6 +287,13 @@ export const UnifiedDashboard: React.FC<UnifiedDashboardProps> = ({
   );
   
   const warmCacheMutation = useWarmCache();
+
+  // Initialize pull-to-refresh for mobile PWA experience
+  const { isPWA, isInitialized: pullToRefreshReady } = usePullToRefresh({
+    enabled: config.features.realTimeData && config.type === 'user',
+    hapticFeedback: true,
+    threshold: 80
+  });
 
   // Extract data from queries
   const { data: stocks, isLoading: stocksLoading, error: stocksError } = stocksQuery || { data: null, isLoading: false, error: null };
