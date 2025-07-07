@@ -283,9 +283,11 @@ export class BackgroundScheduler {
     console.log('🚨 Alert monitoring cycle starting...');
     
     try {
-      // Delegate to alert monitor worker
-      await alertMonitor.processActiveAlerts();
+      // TODO: Implement alert monitor worker in ONDA 2
+      // await alertMonitor.processActiveAlerts();
       
+      // Placeholder implementation for now
+      console.log('🚨 Alert monitoring placeholder - will be implemented in ONDA 2');
       console.log('🚨 Alert monitoring cycle completed');
     } catch (error) {
       console.error('❌ Alert monitoring cycle failed:', error);
