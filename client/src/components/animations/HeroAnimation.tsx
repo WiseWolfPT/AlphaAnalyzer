@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { FadeIn, ScaleIn, SlideIn } from "@/components/animations/css-animations";
-
-// Lazy import Lottie to reduce initial bundle size
-const Lottie = React.lazy(() => import('lottie-react'));
+import { motion } from 'framer-motion';
+import Lottie from 'lottie-react';
 
 interface HeroAnimationProps {
   className?: string;
@@ -14,8 +12,11 @@ const AnimationFallback: React.FC<{ className?: string; style?: React.CSSPropert
   className, 
   style 
 }) => (
-  <div
-    className={`relative flex items-center justify-center bg-gradient-to-br from-blue-500 via-purple-600 to-indigo-700 rounded-2xl shadow-2xl animate-fade-in ${className}`}
+  <motion.div
+    initial={{ opacity: 0, scale: 0.8 }}
+    animate={{ opacity: 1, scale: 1 }}
+    transition={{ duration: 0.8 }}
+    className={`relative flex items-center justify-center bg-gradient-to-br from-blue-500 via-purple-600 to-indigo-700 rounded-2xl shadow-2xl ${className}`}
     style={style}
   >
     {/* Animated background */}
@@ -23,9 +24,20 @@ const AnimationFallback: React.FC<{ className?: string; style?: React.CSSPropert
     
     {/* Content */}
     <div className="relative z-10 text-center text-white">
-      <div className="text-6xl mb-4 animate-spin-slow">
+      <motion.div
+        animate={{ 
+          rotate: [0, 360],
+          scale: [1, 1.1, 1]
+        }}
+        transition={{ 
+          duration: 3,
+          repeat: Infinity,
+          ease: "easeInOut"
+        }}
+        className="text-6xl mb-4"
+      >
         🚀
-      </div>
+      </motion.div>
       <div className="text-2xl font-bold tracking-wide">
         Alfalyzer
       </div>
@@ -36,7 +48,7 @@ const AnimationFallback: React.FC<{ className?: string; style?: React.CSSPropert
     
     {/* Animated border */}
     <div className="absolute inset-0 rounded-2xl border-2 border-white/20 animate-pulse" />
-  </div>
+  </motion.div>
 );
 
 
@@ -82,12 +94,14 @@ export const HeroAnimation: React.FC<HeroAnimationProps> = ({
   // If still loading, show loading state
   if (isLoading) {
     return (
-      <div
-        className={`relative flex items-center justify-center animate-fade-in ${className}`}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className={`relative flex items-center justify-center ${className}`}
         style={defaultStyle}
       >
-        <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-500"></div>
-      </div>
+        <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-chartreuse"></div>
+      </motion.div>
     );
   }
 
@@ -106,33 +120,30 @@ export const HeroAnimation: React.FC<HeroAnimationProps> = ({
   try {
     console.log('🎬 HeroAnimation: Rendering Lottie animation');
     return (
-      <div
-        className={`relative animate-fade-in ${className}`}
+      <motion.div
+        initial={{ opacity: 0, scale: 0.8 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.8 }}
+        className={`relative ${className}`}
         style={defaultStyle}
       >
-        <React.Suspense fallback={
-          <div className="flex items-center justify-center h-full">
-            <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-500"></div>
-          </div>
-        }>
-          <Lottie
-            animationData={animationData}
-            loop={true}
-            autoplay={true}
-            style={{ 
-              width: '100%', 
-              height: '100%',
-              maxWidth: '100%',
-              maxHeight: '100%'
-            }}
-            onLoadedData={() => console.log('✅ Lottie animation rendered successfully')}
-            onError={(error) => {
-              console.error('❌ Lottie animation render error:', error);
-              setHasError(true);
-            }}
-          />
-        </React.Suspense>
-      </div>
+        <Lottie
+          animationData={animationData}
+          loop={true}
+          autoplay={true}
+          style={{ 
+            width: '100%', 
+            height: '100%',
+            maxWidth: '100%',
+            maxHeight: '100%'
+          }}
+          onLoadedData={() => console.log('✅ Lottie animation rendered successfully')}
+          onError={(error) => {
+            console.error('❌ Lottie animation render error:', error);
+            setHasError(true);
+          }}
+        />
+      </motion.div>
     );
   } catch (error) {
     console.error('❌ Error rendering Lottie animation:', error);

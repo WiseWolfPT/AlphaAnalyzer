@@ -660,6 +660,56 @@ router.get('/search',
 );
 
 /**
+ * GET /api/market-data/health
+ * Health check endpoint for frontend to check if real data is available
+ */
+router.get('/health', 
+  async (req: Request, res: Response) => {
+    try {
+      // Check if any API keys are configured (not 'demo')
+      const hasValidKeys = [
+        process.env.FINNHUB_API_KEY,
+        process.env.ALPHA_VANTAGE_API_KEY,
+        process.env.FMP_API_KEY,
+        process.env.TWELVE_DATA_API_KEY
+      ].some(key => key && key !== 'demo');
+
+      // Check if market data service is initialized
+      const serviceStatus = marketDataService.getApiStatus();
+      const hasActiveProviders = serviceStatus.availableProviders?.length > 0;
+
+      const response = {
+        status: 'healthy',
+        hasRealData: hasValidKeys && hasActiveProviders,
+        message: hasValidKeys ? 
+          (hasActiveProviders ? 'Real market data available' : 'API keys configured but providers not initialized') :
+          'Using fallback data (demo keys)',
+        providers: {
+          configured: [
+            process.env.FINNHUB_API_KEY && process.env.FINNHUB_API_KEY !== 'demo' ? 'finnhub' : null,
+            process.env.ALPHA_VANTAGE_API_KEY && process.env.ALPHA_VANTAGE_API_KEY !== 'demo' ? 'alpha_vantage' : null,
+            process.env.FMP_API_KEY && process.env.FMP_API_KEY !== 'demo' ? 'fmp' : null,
+            process.env.TWELVE_DATA_API_KEY && process.env.TWELVE_DATA_API_KEY !== 'demo' ? 'twelve_data' : null
+          ].filter(Boolean),
+          active: serviceStatus.availableProviders || []
+        },
+        timestamp: new Date().toISOString()
+      };
+
+      res.json(response);
+    } catch (error) {
+      console.error('Health check error:', error);
+      res.status(500).json({
+        status: 'error',
+        hasRealData: false,
+        message: 'Health check failed',
+        timestamp: new Date().toISOString()
+      });
+    }
+  }
+);
+
+/**
  * GET /api/market-data/test
  * Test API configuration and connectivity (public endpoint for testing)
  */

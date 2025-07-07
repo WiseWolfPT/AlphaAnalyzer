@@ -26,7 +26,7 @@ import {
   Star,
   Clock
 } from "lucide-react";
-import { FadeIn, ScaleIn, SlideIn } from "@/components/animations/css-animations";
+import { motion } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 

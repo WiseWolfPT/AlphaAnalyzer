@@ -1,18 +1,6 @@
 import { createRoot } from "react-dom/client";
 import App from "./App";
 import "./index.css";
-import "./lib/i18n"; // Initialize i18n before React app
-
-// 🔒 Initialize Sentry for Production Monitoring
-import { initSentry } from "./lib/monitoring/sentry";
-
-// Initialize error monitoring as early as possible
-try {
-  initSentry();
-  console.log('🔒 Sentry monitoring initialized');
-} catch (error) {
-  console.warn('⚠️ Sentry initialization failed:', error);
-}
 
 const rootElement = document.getElementById("root");
 if (!rootElement) {

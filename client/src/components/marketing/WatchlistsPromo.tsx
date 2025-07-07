@@ -1,4 +1,4 @@
-import { FadeIn, ScaleIn, SlideIn } from "@/components/animations/css-animations";
+import { motion } from "framer-motion";
 import { Star, FileSpreadsheet, Eye, Plus } from "lucide-react";
 
 export function WatchlistsPromo() {

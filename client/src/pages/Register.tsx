@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { FadeIn, ScaleIn } from "@/components/animations/css-animations";
+import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -75,8 +75,10 @@ export default function Register() {
   };
 
   const handleGoogleSignUp = async () => {
-    // TODO: Implement Google Sign Up with Supabase
-    setError("Google Sign Up temporariamente indisponível");
+    const { error } = await auth.signInWithGoogle();
+    if (error) {
+      setError(error.message);
+    }
   };
 
   const passwordStrength = (password: string) => {
@@ -104,7 +106,12 @@ export default function Register() {
   if (success) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-background to-secondary/20 flex items-center justify-center p-4">
-        <ScaleIn duration={0.5} className="w-full max-w-md">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.5 }}
+          className="w-full max-w-md"
+        >
           <Card className="border-border/50 shadow-xl text-center">
             <CardContent className="p-8">
               <div className="w-16 h-16 bg-chartreuse/20 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -122,7 +129,7 @@ export default function Register() {
               </Button>
             </CardContent>
           </Card>
-        </ScaleIn>
+        </motion.div>
       </div>
     );
   }
@@ -131,7 +138,12 @@ export default function Register() {
     <div className="min-h-screen bg-gradient-to-br from-background to-secondary/20 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         {/* Header */}
-        <FadeIn duration={0.5} className="text-center mb-8">
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="text-center mb-8"
+        >
           <div className="flex items-center justify-center gap-3 mb-4">
             <div className="w-12 h-12 bg-gradient-to-br from-chartreuse-dark to-chartreuse rounded-xl flex items-center justify-center shadow-lg">
               <BarChart3 className="h-6 w-6 text-white" />
@@ -141,10 +153,14 @@ export default function Register() {
           <p className="text-muted-foreground">
             Crie a sua conta e comece a investir com dados.
           </p>
-        </FadeIn>
+        </motion.div>
 
         {/* Register Form */}
-        <FadeIn duration={0.5} delay={0.1}>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.1 }}
+        >
           <Card className="border-border/50 shadow-xl">
             <CardHeader>
               <CardTitle className="text-center">Criar Conta</CardTitle>
@@ -321,10 +337,15 @@ export default function Register() {
               </div>
             </CardContent>
           </Card>
-        </FadeIn>
+        </motion.div>
 
         {/* Back to Landing */}
-        <FadeIn duration={0.5} delay={0.3} className="text-center mt-6">
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5, delay: 0.3 }}
+          className="text-center mt-6"
+        >
           <Button
             variant="ghost"
             onClick={() => window.location.href = "/"}
@@ -333,7 +354,7 @@ export default function Register() {
             <ArrowLeft className="h-4 w-4 mr-2" />
             Voltar à página inicial
           </Button>
-        </FadeIn>
+        </motion.div>
       </div>
     </div>
   );

@@ -24,8 +24,8 @@ import {
   ArrowRight,
   BarChart3
 } from "lucide-react";
-import { FadeIn, ScaleIn, SlideIn } from "@/components/animations/css-animations";
-import { formatDistanceToNow } from "@/lib/date-utils";
+import { motion } from "framer-motion";
+import { formatDistanceToNow } from "date-fns";
 import { cn } from "@/lib/utils";
 
 interface NewsArticle {

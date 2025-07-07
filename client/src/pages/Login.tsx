@@ -1,6 +1,5 @@
 import { useState } from "react";
-import { useTranslation } from "react-i18next";
-import { FadeIn } from "@/components/animations/css-animations";
+import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,7 +9,6 @@ import { BarChart3, Mail, Lock, Eye, EyeOff, ArrowLeft } from "lucide-react";
 import { useAuth } from "@/contexts/simple-auth-offline";
 
 export default function Login() {
-  const { t } = useTranslation();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -53,7 +51,12 @@ export default function Login() {
     <div className="min-h-screen bg-gradient-to-br from-background to-secondary/20 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         {/* Header */}
-        <FadeIn delay={0} className="text-center mb-8">
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="text-center mb-8"
+        >
           <div className="flex items-center justify-center gap-3 mb-4">
             <div className="w-12 h-12 bg-gradient-to-br from-chartreuse-dark to-chartreuse rounded-xl flex items-center justify-center shadow-lg">
               <BarChart3 className="h-6 w-6 text-white" />
@@ -63,10 +66,14 @@ export default function Login() {
           <p className="text-muted-foreground">
             Bem-vindo de volta! Faça login na sua conta.
           </p>
-        </FadeIn>
+        </motion.div>
 
         {/* Login Form */}
-        <FadeIn delay={0.1}>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.1 }}
+        >
           <Card className="border-border/50 shadow-xl">
             <CardHeader>
               <CardTitle className="text-center">Login</CardTitle>
@@ -188,10 +195,15 @@ export default function Login() {
               </div>
             </CardContent>
           </Card>
-        </FadeIn>
+        </motion.div>
 
         {/* Back to Landing */}
-        <FadeIn delay={0.3} className="text-center mt-6">
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5, delay: 0.3 }}
+          className="text-center mt-6"
+        >
           <Button
             variant="ghost"
             onClick={() => window.location.href = "/"}
@@ -200,7 +212,7 @@ export default function Login() {
             <ArrowLeft className="h-4 w-4 mr-2" />
             Voltar à página inicial
           </Button>
-        </FadeIn>
+        </motion.div>
       </div>
     </div>
   );

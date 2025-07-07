@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { BarChart3, Menu, X, Moon, Sun, User, LogOut } from "lucide-react";
 import { useAuth } from "@/contexts/simple-auth-offline";
 import { useTheme } from "@/hooks/use-theme";
-import { FadeIn, ScaleIn, SlideIn } from "@/components/animations/css-animations";
+import { motion, AnimatePresence } from "framer-motion";
 import { useLocation } from "wouter";
 
 export function Header() {

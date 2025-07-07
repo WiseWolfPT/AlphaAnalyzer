@@ -20,7 +20,7 @@ import {
   Lightbulb,
   Sparkles
 } from "lucide-react";
-import { FadeIn, ScaleIn, SlideIn } from "@/components/animations/css-animations";
+import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 
 interface OnboardingStep {

@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CheckCircle, Star, Crown, Zap, Timer } from "lucide-react";
-import { FadeIn, ScaleIn, SlideIn } from "@/components/animations/css-animations";
+import { motion } from "framer-motion";
 import { useLocation } from "wouter";
 
 interface PricingProps {

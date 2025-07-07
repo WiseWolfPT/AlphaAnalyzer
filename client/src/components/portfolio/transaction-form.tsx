@@ -6,9 +6,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { DollarSign, Loader2, AlertCircle } from "lucide-react";
-import { format } from "@/lib/date-utils";
+import { Calendar as CalendarIcon, DollarSign, Loader2, AlertCircle } from "lucide-react";
+import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { PortfolioService, type TransactionInput } from "@/services/portfolio-service";
 import type { MockStock } from "@/lib/mock-api";
@@ -33,6 +35,7 @@ export function TransactionForm({ portfolioId, onTransactionAdded, onCancel }: T
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedStock, setSelectedStock] = useState<MockStock | null>(null);
   const [stockSearch, setStockSearch] = useState("");
+  const [showCalendar, setShowCalendar] = useState(false);
 
   const portfolioService = new PortfolioService();
 
@@ -261,16 +264,32 @@ export function TransactionForm({ portfolioId, onTransactionAdded, onCancel }: T
 
           {/* Execution Date */}
           <div className="space-y-2">
-            <Label htmlFor="executedAt">Execution Date</Label>
-            <Input
-              id="executedAt"
-              type="date"
-              value={formData.executedAt ? formData.executedAt.toISOString().split('T')[0] : ''}
-              onChange={(e) => setFormData(prev => ({ 
-                ...prev, 
-                executedAt: e.target.value ? new Date(e.target.value) : new Date() 
-              }))}
-            />
+            <Label>Execution Date</Label>
+            <Popover open={showCalendar} onOpenChange={setShowCalendar}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className={cn(
+                    "w-full justify-start text-left font-normal",
+                    !formData.executedAt && "text-muted-foreground"
+                  )}
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {formData.executedAt ? format(formData.executedAt, "PPP") : "Pick a date"}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="single"
+                  selected={formData.executedAt}
+                  onSelect={(date) => {
+                    setFormData(prev => ({ ...prev, executedAt: date || new Date() }));
+                    setShowCalendar(false);
+                  }}
+                  initialFocus
+                />
+              </PopoverContent>
+            </Popover>
           </div>
 
           {/* Notes */}

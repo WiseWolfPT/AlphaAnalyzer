@@ -3,110 +3,82 @@ import { useLocation } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Eye, Bell, AlertCircle, ArrowUp, ArrowDown, Volume2, TrendingUp, Newspaper } from "lucide-react";
+import { Eye, Bell, AlertCircle, ArrowUp, ArrowDown, Volume2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useAlerts } from "@/hooks/use-alerts";
-import { db, auth, type AlertTrigger } from "@/lib/supabase";
-import { formatDistanceToNow } from "date-fns";
 
 interface WatchlistAlert {
   symbol: string;
-  alertType: 'price_above' | 'price_below' | 'volume_spike' | 'news_sentiment' | 'technical_indicator';
+  name: string;
+  price: number;
+  alertType: 'price_target' | 'volume_spike' | 'news_impact' | 'technical_signal';
   alertMessage: string;
   severity: 'low' | 'medium' | 'high';
   timestamp: Date;
-  triggerId: string;
-  triggerValue: number;
 }
 
 export function WatchlistAlertsCard() {
   const [, setLocation] = useLocation();
   const [alerts, setAlerts] = useState<WatchlistAlert[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [userId, setUserId] = useState<string | null>(null);
 
-  // Get current user
   useEffect(() => {
-    const getCurrentUser = async () => {
-      const { data: { user } } = await auth.getCurrentUser();
-      setUserId(user?.id || null);
-    };
-    getCurrentUser();
+    // Mock data for watchlist alerts - in real implementation, fetch from API
+    const mockAlerts: WatchlistAlert[] = [
+      {
+        symbol: "AAPL",
+        name: "Apple Inc",
+        price: 175.43,
+        alertType: "price_target",
+        alertMessage: "Hit resistance at $175",
+        severity: "medium",
+        timestamp: new Date(Date.now() - 15 * 60 * 1000) // 15 minutes ago
+      },
+      {
+        symbol: "TSLA",
+        name: "Tesla Inc",
+        price: 248.73,
+        alertType: "volume_spike",
+        alertMessage: "Volume 3x above average",
+        severity: "high",
+        timestamp: new Date(Date.now() - 32 * 60 * 1000) // 32 minutes ago
+      },
+      {
+        symbol: "MSFT",
+        name: "Microsoft",
+        price: 378.85,
+        alertType: "technical_signal",
+        alertMessage: "Bullish divergence on RSI",
+        severity: "medium",
+        timestamp: new Date(Date.now() - 45 * 60 * 1000) // 45 minutes ago
+      },
+      {
+        symbol: "GOOGL",
+        name: "Alphabet",
+        price: 141.28,
+        alertType: "news_impact",
+        alertMessage: "Earnings beat estimates",
+        severity: "high",
+        timestamp: new Date(Date.now() - 62 * 60 * 1000) // 1 hour ago
+      }
+    ];
+
+    // Simulate API delay
+    setTimeout(() => {
+      setAlerts(mockAlerts);
+      setIsLoading(false);
+    }, 1000);
   }, []);
-
-  const { triggers } = useAlerts({ 
-    userId: userId || undefined,
-    subscribeToRealtime: true 
-  });
-
-  useEffect(() => {
-    const loadRecentTriggers = async () => {
-      if (!userId) {
-        setIsLoading(false);
-        return;
-      }
-
-      try {
-        setIsLoading(true);
-        
-        // Get recent alert triggers (last 24 hours)
-        const recentTriggers = await db.getRecentAlertTriggers(userId, 10);
-        
-        // Convert triggers to watchlist alerts format
-        const watchlistAlerts: WatchlistAlert[] = recentTriggers.map(trigger => {
-          const triggerData = trigger.trigger_data ? JSON.parse(trigger.trigger_data) : {};
-          
-          return {
-            symbol: (trigger as any).alerts?.symbol || 'UNKNOWN',
-            alertType: (trigger as any).alerts?.alert_type || 'price_above',
-            alertMessage: triggerData.message || 'Alert triggered',
-            severity: getSeverityFromTrigger(trigger),
-            timestamp: new Date(trigger.triggered_at),
-            triggerId: trigger.id,
-            triggerValue: trigger.trigger_value
-          };
-        });
-
-        setAlerts(watchlistAlerts);
-      } catch (error) {
-        console.error('Error loading alert triggers:', error);
-        setAlerts([]);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadRecentTriggers();
-  }, [userId, triggers]);
-
-  // Helper function to determine severity from trigger
-  const getSeverityFromTrigger = (trigger: AlertTrigger): 'low' | 'medium' | 'high' => {
-    const triggerData = trigger.trigger_data ? JSON.parse(trigger.trigger_data) : {};
-    
-    // High severity for large price movements or volume spikes
-    if (triggerData.type === 'volume_spike' && triggerData.volume_ratio > 3) return 'high';
-    if (triggerData.type === 'price_above' || triggerData.type === 'price_below') {
-      const percentChange = Math.abs((trigger.trigger_value - (triggerData.threshold || 0)) / (triggerData.threshold || 1));
-      if (percentChange > 0.05) return 'high'; // 5% move
-      if (percentChange > 0.02) return 'medium'; // 2% move
-      return 'low';
-    }
-    
-    return 'medium';
-  };
 
   const getAlertIcon = (type: string) => {
     switch (type) {
-      case 'price_above':
-        return <TrendingUp className="w-4 h-4" />;
-      case 'price_below':
-        return <ArrowDown className="w-4 h-4" />;
+      case 'price_target':
+        return <ArrowUp className="w-4 h-4" />;
       case 'volume_spike':
         return <Volume2 className="w-4 h-4" />;
-      case 'news_sentiment':
-        return <Newspaper className="w-4 h-4" />;
-      case 'technical_indicator':
+      case 'news_impact':
         return <AlertCircle className="w-4 h-4" />;
+      case 'technical_signal':
+        return <ArrowDown className="w-4 h-4" />;
       default:
         return <Bell className="w-4 h-4" />;
     }
@@ -126,7 +98,13 @@ export function WatchlistAlertsCard() {
   };
 
   const getTimeAgo = (timestamp: Date) => {
-    return formatDistanceToNow(timestamp, { addSuffix: true });
+    const now = new Date();
+    const diff = Math.floor((now.getTime() - timestamp.getTime()) / (1000 * 60));
+    
+    if (diff < 1) return 'just now';
+    if (diff < 60) return `${diff}m ago`;
+    if (diff < 1440) return `${Math.floor(diff / 60)}h ago`;
+    return `${Math.floor(diff / 1440)}d ago`;
   };
 
   const handleViewStock = (symbol: string) => {
@@ -134,7 +112,7 @@ export function WatchlistAlertsCard() {
   };
 
   const handleViewAllAlerts = () => {
-    setLocation("/alerts");
+    setLocation("/watchlists?tab=alerts");
   };
 
   if (isLoading) {
@@ -216,13 +194,10 @@ export function WatchlistAlertsCard() {
                 </div>
               </div>
               <div className="text-right">
-                <p className="text-xs font-medium">
-                  ${alert.triggerValue.toFixed(2)}
-                </p>
                 <p className="text-xs text-muted-foreground">
                   {getTimeAgo(alert.timestamp)}
                 </p>
-                <div className={cn("w-2 h-2 rounded-full mt-1", 
+                <div className={cn("w-2 h-2 rounded-full", 
                   alert.severity === 'high' ? 'bg-red-500' :
                   alert.severity === 'medium' ? 'bg-yellow-500' :
                   'bg-blue-500'

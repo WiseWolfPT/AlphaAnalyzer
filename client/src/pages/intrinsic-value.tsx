@@ -23,22 +23,9 @@ import {
   ArrowUp,
   ArrowDown,
   Info
-} from "@/utils/optimized-icons";
-
-// Lazy import recharts components to reduce bundle size
-import React, { Suspense } from "react";
-const LazyPieChart = React.lazy(() => import("recharts").then(module => ({ default: module.PieChart })));
-const LazyPie = React.lazy(() => import("recharts").then(module => ({ default: module.Pie })));
-const LazyCell = React.lazy(() => import("recharts").then(module => ({ default: module.Cell })));
-const LazyResponsiveContainer = React.lazy(() => import("recharts").then(module => ({ default: module.ResponsiveContainer })));
-const LazyBarChart = React.lazy(() => import("recharts").then(module => ({ default: module.BarChart })));
-const LazyBar = React.lazy(() => import("recharts").then(module => ({ default: module.Bar })));
-const LazyXAxis = React.lazy(() => import("recharts").then(module => ({ default: module.XAxis })));
-const LazyYAxis = React.lazy(() => import("recharts").then(module => ({ default: module.YAxis })));
-const LazyCartesianGrid = React.lazy(() => import("recharts").then(module => ({ default: module.CartesianGrid })));
-const LazyTooltip = React.lazy(() => import("recharts").then(module => ({ default: module.Tooltip })));
-const LazyLegend = React.lazy(() => import("recharts").then(module => ({ default: module.Legend })));
-import { FadeIn, ScaleIn, SlideIn } from "@/components/animations/css-animations";
+} from "lucide-react";
+import { PieChart as RechartsPieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from "recharts";
+import { motion } from "framer-motion";
 import type { Stock } from "@shared/schema";
 
 interface ValuationResult {
@@ -315,33 +302,27 @@ export default function IntrinsicValue() {
 
                     {/* Pie Chart */}
                     <div className="h-64">
-                      <Suspense fallback={
-                        <div className="flex items-center justify-center h-full">
-                          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-                        </div>
-                      }>
-                        <LazyResponsiveContainer width="100%" height="100%">
-                          <LazyPieChart>
-                            <LazyPie
-                              data={pieData}
-                              cx="50%"
-                              cy="50%"
-                              outerRadius={80}
-                              innerRadius={40}
-                              paddingAngle={5}
-                              dataKey="value"
-                            >
-                              {pieData.map((entry, index) => (
-                                <LazyCell key={`cell-${index}`} fill={entry.color} />
-                              ))}
-                            </LazyPie>
-                            <LazyTooltip 
-                              formatter={(value: any) => [`${value.toFixed(1)}%`, '']}
-                            />
-                            <LazyLegend />
-                          </LazyPieChart>
-                        </LazyResponsiveContainer>
-                      </Suspense>
+                      <ResponsiveContainer width="100%" height="100%">
+                        <RechartsPieChart>
+                          <Pie
+                            data={pieData}
+                            cx="50%"
+                            cy="50%"
+                            outerRadius={80}
+                            innerRadius={40}
+                            paddingAngle={5}
+                            dataKey="value"
+                          >
+                            {pieData.map((entry, index) => (
+                              <Cell key={`cell-${index}`} fill={entry.color} />
+                            ))}
+                          </Pie>
+                          <Tooltip 
+                            formatter={(value: any) => [`${value.toFixed(1)}%`, '']}
+                          />
+                          <Legend />
+                        </RechartsPieChart>
+                      </ResponsiveContainer>
                     </div>
                   </CardContent>
                 </Card>
@@ -379,53 +360,47 @@ export default function IntrinsicValue() {
 
                     {/* Methods Comparison Chart */}
                     <div className="h-48">
-                      <Suspense fallback={
-                        <div className="flex items-center justify-center h-full">
-                          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-                        </div>
-                      }>
-                        <LazyResponsiveContainer width="100%" height="100%">
-                          <LazyBarChart data={barData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-                            <LazyCartesianGrid strokeDasharray="3 3" stroke="#374151" opacity={0.3} />
-                            <LazyXAxis 
-                              dataKey="name" 
-                              tick={{ fontSize: 10, fill: '#9CA3AF' }}
-                              angle={-45}
-                              textAnchor="end"
-                              height={60}
-                            />
-                            <LazyYAxis 
-                              tick={{ fontSize: 10, fill: '#9CA3AF' }}
-                              tickFormatter={(value) => `$${value}`}
-                            />
-                            <LazyTooltip 
-                              formatter={(value: any, name: string) => [
-                                formatCurrency(value), 
-                                name === 'value' ? 'Intrinsic Value' : 'Current Price'
-                              ]}
-                              labelStyle={{ color: '#1F2937' }}
-                              contentStyle={{ 
-                                backgroundColor: '#1F2937', 
-                                border: '1px solid #374151',
-                                borderRadius: '8px'
-                              }}
-                            />
-                            <LazyLegend />
-                            <LazyBar 
-                              dataKey="value" 
-                              fill="#10b981" 
-                              name="Intrinsic Value"
-                              radius={[2, 2, 0, 0]}
-                            />
-                            <LazyBar 
-                              dataKey="current" 
-                              fill="#ef4444" 
-                              name="Current Price"
-                              radius={[2, 2, 0, 0]}
-                            />
-                          </LazyBarChart>
-                        </LazyResponsiveContainer>
-                      </Suspense>
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart data={barData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                          <CartesianGrid strokeDasharray="3 3" stroke="#374151" opacity={0.3} />
+                          <XAxis 
+                            dataKey="name" 
+                            tick={{ fontSize: 10, fill: '#9CA3AF' }}
+                            angle={-45}
+                            textAnchor="end"
+                            height={60}
+                          />
+                          <YAxis 
+                            tick={{ fontSize: 10, fill: '#9CA3AF' }}
+                            tickFormatter={(value) => `$${value}`}
+                          />
+                          <Tooltip 
+                            formatter={(value: any, name: string) => [
+                              formatCurrency(value), 
+                              name === 'value' ? 'Intrinsic Value' : 'Current Price'
+                            ]}
+                            labelStyle={{ color: '#1F2937' }}
+                            contentStyle={{ 
+                              backgroundColor: '#1F2937', 
+                              border: '1px solid #374151',
+                              borderRadius: '8px'
+                            }}
+                          />
+                          <Legend />
+                          <Bar 
+                            dataKey="value" 
+                            fill="#10b981" 
+                            name="Intrinsic Value"
+                            radius={[2, 2, 0, 0]}
+                          />
+                          <Bar 
+                            dataKey="current" 
+                            fill="#ef4444" 
+                            name="Current Price"
+                            radius={[2, 2, 0, 0]}
+                          />
+                        </BarChart>
+                      </ResponsiveContainer>
                     </div>
                   </CardContent>
                 </Card>

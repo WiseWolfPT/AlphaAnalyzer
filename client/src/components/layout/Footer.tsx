@@ -1,5 +1,5 @@
 import { BarChart3, Instagram, Twitter, MessageCircle, ShoppingBag } from "lucide-react";
-import { FadeIn, ScaleIn, SlideIn } from "@/components/animations/css-animations";
+import { motion } from "framer-motion";
 
 export function Footer() {
   const currentYear = new Date().getFullYear();

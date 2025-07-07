@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { FadeIn, ScaleIn, SlideIn } from "@/components/animations/css-animations";
+import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Target, X } from "lucide-react";
 

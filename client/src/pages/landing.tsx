@@ -32,16 +32,7 @@ import {
   Star,
   ChevronDown
 } from "lucide-react";
-import { useTranslation } from "react-i18next";
-import { 
-  FadeIn, 
-  ScaleIn, 
-  SlideIn, 
-  StaggerList, 
-  PageTransition,
-  hoverScale,
-  hoverBrightness 
-} from "@/components/animations/css-animations";
+import { motion } from "framer-motion";
 import { HeroAnimation } from "@/components/animations/HeroAnimation";
 
 // Optimized animation configurations
@@ -59,7 +50,6 @@ const DELAYS = {
 } as const;
 
 export default function Landing() {
-  const { t } = useTranslation();
   const [showVideoModal, setShowVideoModal] = useState(false);
   const [openFAQ, setOpenFAQ] = useState<number | null>(null);
   const { showExitIntent, closeExitIntent } = useExitIntent();
@@ -67,59 +57,59 @@ export default function Landing() {
   const benefits = [
     {
       icon: BarChart3,
-      title: t('benefits.dataVisualization.title'),
-      description: t('benefits.dataVisualization.description')
+      title: "Visualizações de dados",
+      description: "Gráficos e tabelas intuitivos que tornam a análise fundamental acessível a qualquer investidor."
     },
     {
       icon: Target,
-      title: t('benefits.intrinsicValue.title'),
-      description: t('benefits.intrinsicValue.description')
+      title: "Valor Intrínseco Instantâneo",
+      description: "Calcula automaticamente o valor justo de qualquer ação em segundos, baseado em métricas fundamentais."
     },
     {
       icon: Star,
-      title: t('benefits.watchlistsPortfolios.title'),
-      description: t('benefits.watchlistsPortfolios.description')
+      title: "Watchlists & Portfólios",
+      description: "Cria watchlists ilimitadas, segue vários portfólios e importa listas em CSV para organizar os teus investimentos."
     }
   ];
 
   const steps = [
     {
-      number: t('steps.step1.number'),
-      title: t('steps.step1.title'),
-      description: t('steps.step1.description')
+      number: "01",
+      title: "Explora gráficos e métricas fundamentais",
+      description: "Visualiza dados financeiros complexos de forma simples e intuitiva"
     },
     {
-      number: t('steps.step2.number'), 
-      title: t('steps.step2.title'),
-      description: t('steps.step2.description')
+      number: "02", 
+      title: "Descobre o valor intrínseco de ações globais",
+      description: "Obtém o valor justo calculado automaticamente em segundos"
     },
     {
-      number: t('steps.step3.number'),
-      title: t('steps.step3.title'),
-      description: t('steps.step3.description')
+      number: "03",
+      title: "Recebe alertas personalizados",
+      description: "Fica a saber quando há oportunidades de compra ou venda"
     }
   ];
 
   const faqs = [
     {
-      question: t('faq.intrinsicCalculation.question'),
-      answer: t('faq.intrinsicCalculation.answer')
+      question: "❓ Como calculam o valor intrínseco?",
+      answer: "Usamos múltiplos métodos incluindo DCF (Discounted Cash Flow), análise de múltiplos e modelos proprietários que combinam dados fundamentais e técnicos para uma avaliação precisa."
     },
     {
-      question: t('faq.dataSource.question'),
-      answer: t('faq.dataSource.answer')
+      question: "❓ Que dados utilizam?",
+      answer: "Utilizamos dados de APIs financeiras internacionais de alta qualidade, incluindo Yahoo Finance, Alpha Vantage e fontes institucionais para garantir precisão e cobertura global."
     },
     {
-      question: t('faq.trialCancellation.question'),
-      answer: t('faq.trialCancellation.answer')
+      question: "❓ Posso cancelar o trial a qualquer momento?",
+      answer: "Sim! O trial de 7 dias é completamente grátis e sem compromissos. Podes cancelar a qualquer momento sem qualquer custo ou penalização."
     },
     {
-      question: t('faq.dataSecurity.question'),
-      answer: t('faq.dataSecurity.answer')
+      question: "❓ Os meus dados são seguros?",
+      answer: "Absolutamente. Usamos encriptação SSL de nível bancário e nunca armazenamos informações sensíveis como passwords ou dados de conta. GDPR compliant."
     },
     {
-      question: t('faq.portugueseStocks.question'),
-      answer: t('faq.portugueseStocks.answer')
+      question: "❓ Funciona com ações portuguesas?",
+      answer: "Sim! Suportamos todas as ações do PSI-20 (EDP, Galp, BCP, etc.) e mais de 10.000 ações internacionais (NASDAQ, NYSE, LSE, Euronext)."
     }
   ];
 

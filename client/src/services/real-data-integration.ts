@@ -61,32 +61,25 @@ class RealDataIntegrationService {
   }
   
   private async checkApiKeys() {
-    // Check if server proxy endpoints are available and configured
+    // Check if backend server is available for real data
     try {
-      // Test server proxy availability by checking health endpoint
-      const response = await fetch('/api/health', {
+      // Test if backend market data endpoint is available
+      const response = await fetch('/api/market-data/health', {
         method: 'GET',
         headers: { 'Content-Type': 'application/json' }
       });
       
       if (response.ok) {
-        const health = await response.json();
-        // Check if market data services are available
-        this.hasValidApiKeys = health.services?.marketData || false;
-        
-        if (this.hasValidApiKeys) {
-          console.log('✅ Server proxy endpoints available - using real API data');
-        } else {
-          console.warn('⚠️ Server proxy not configured - using fallback mock data');
-        }
+        const data = await response.json();
+        this.hasValidApiKeys = data.hasRealData || false;
+        console.log(`🔧 Backend data status: ${this.hasValidApiKeys ? 'Real APIs available' : 'Fallback mode'}`);
       } else {
+        console.warn('⚠️ Backend not available - using fallback data');
         this.hasValidApiKeys = false;
-        console.warn('⚠️ Server proxy unavailable - using fallback mock data');
       }
     } catch (error) {
+      console.warn('⚠️ Could not connect to backend:', error.message);
       this.hasValidApiKeys = false;
-      console.warn('⚠️ Could not verify server proxy availability:', error);
-      console.log('📦 Falling back to mock data for reliable UX');
     }
   }
   
@@ -102,42 +95,27 @@ class RealDataIntegrationService {
       return cached;
     }
 
-    // If using demo API keys, prioritize mock data to avoid rate limiting
-    if (!this.hasValidApiKeys) {
-      console.log(`📦 Using mock data for ${symbol} (demo API keys)`);
-      const mockStock = this.getMockStock(symbol);
-      if (mockStock) {
-        const quote = this.convertMockToQuote(mockStock);
-        quote.source = 'mock';
-        // Cache mock data for 5 minutes
-        cacheManager.set(cacheKey, quote, 'quote', 300000);
-        return quote;
+    // Try backend server first if available
+    if (this.hasValidApiKeys) {
+      try {
+        const quote = await this.getQuoteFromServer(symbol);
+        if (quote) {
+          quote.source = 'server';
+          // Cache server data for 60 seconds
+          cacheManager.set(cacheKey, quote, 'quote', 60000);
+          console.log(`✅ Server data for ${symbol}`);
+          return quote;
+        }
+      } catch (error) {
+        console.warn(`⚠️ Server failed for ${symbol}:`, error.message);
+        // Continue to fallback methods
       }
     }
 
     // Load services if not already loaded
     await loadServices();
 
-    // Try real APIs in priority order (but only if we have valid keys)
-    if (this.hasValidApiKeys) {
-      for (const provider of this.apiPriority) {
-        try {
-          const quote = await this.getQuoteFromProvider(symbol, provider);
-          if (quote) {
-            quote.source = 'real';
-            // Cache for 30 seconds for real-time data
-            cacheManager.set(cacheKey, quote, 'quote', 30000);
-            console.log(`✅ Real data from ${provider} for ${symbol}`);
-            return quote;
-          }
-        } catch (error) {
-          console.warn(`⚠️ ${provider} failed for ${symbol}:`, error);
-          continue;
-        }
-      }
-    }
-
-    // Fallback to mock data
+    // Fallback to mock data when server is not available
     if (this.useMockFallback) {
       console.log(`📦 Falling back to mock data for ${symbol}`);
       const mockStock = this.getMockStock(symbol);
@@ -283,38 +261,47 @@ class RealDataIntegrationService {
     }
   }
 
-  private async getQuoteFromRealAPI(symbol: string): Promise<StockQuote | null> {
+  private async getQuoteFromServer(symbol: string): Promise<StockQuote | null> {
     try {
-      // Use server proxy for real market data
       const response = await fetch(`/api/market-data/quote/${symbol}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('alfalyzer-token') || ''}`
+          'Authorization': `Bearer ${localStorage.getItem('alfalyzer-token') || 'demo-token'}`
         }
       });
 
       if (!response.ok) {
-        throw new Error(`Server proxy error: ${response.statusText}`);
+        throw new Error(`Server responded with status: ${response.status}`);
       }
 
       const data = await response.json();
       
-      // Transform server response to our StockQuote format
       return {
-        symbol: data.symbol || symbol.toUpperCase(),
-        name: data.name || `${symbol} Corp`,
-        price: data.price?.toFixed(2) || '0.00',
+        symbol: data.symbol,
+        name: data.name || `${data.symbol} Corp`,
+        price: data.price.toFixed(2),
         change: data.change?.toFixed(2) || '0.00',
         changePercent: data.changePercent?.toFixed(2) || '0.00',
-        sector: data.sector || 'Technology',
-        marketCap: data.marketCap || 'N/A',
-        eps: data.eps?.toString() || 'N/A',
-        peRatio: data.peRatio?.toString() || 'N/A',
-        logo: data.logo || null,
-        lastUpdated: new Date(),
-        source: 'real'
+        sector: 'Technology', // Default for now
+        marketCap: data.marketCap ? `${(data.marketCap / 1000000000).toFixed(1)}B` : 'N/A',
+        eps: data.eps?.toFixed(2) || 'N/A',
+        peRatio: data.pe?.toFixed(2) || 'N/A',
+        logo: null,
+        lastUpdated: new Date()
       };
+    } catch (error) {
+      console.error(`Server API error for ${symbol}:`, error);
+      throw error;
+    }
+  }
+
+  private async getQuoteFromRealAPI(symbol: string): Promise<StockQuote | null> {
+    try {
+      const mockStock = await realAPI.getStockQuote(symbol);
+      if (!mockStock) return null;
+
+      return this.convertMockToQuote(mockStock);
     } catch (error) {
       console.error(`Real API error for ${symbol}:`, error);
       throw error;
