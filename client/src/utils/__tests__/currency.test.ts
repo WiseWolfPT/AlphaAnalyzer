@@ -4,38 +4,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-
-// Mock currency utilities for testing
-interface CurrencyFormatOptions {
-  currency: 'USD' | 'EUR';
-  minimumFractionDigits?: number;
-  maximumFractionDigits?: number;
-}
-
-function formatCurrency(amount: number, currency: 'USD' | 'EUR' = 'USD', options?: Partial<CurrencyFormatOptions>): string {
-  const formatter = new Intl.NumberFormat(currency === 'EUR' ? 'pt-PT' : 'en-US', {
-    style: 'currency',
-    currency: currency,
-    minimumFractionDigits: options?.minimumFractionDigits ?? 2,
-    maximumFractionDigits: options?.maximumFractionDigits ?? 2,
-  });
-  
-  return formatter.format(amount);
-}
-
-function convertCurrency(amount: number, fromCurrency: 'USD' | 'EUR', toCurrency: 'USD' | 'EUR', exchangeRate: number = 1.1): number {
-  if (fromCurrency === toCurrency) return amount;
-  
-  if (fromCurrency === 'EUR' && toCurrency === 'USD') {
-    return amount * exchangeRate;
-  }
-  
-  if (fromCurrency === 'USD' && toCurrency === 'EUR') {
-    return amount / exchangeRate;
-  }
-  
-  return amount;
-}
+import { formatCurrency, convertCurrency } from '../currency';
 
 describe('Currency Formatting - CRITICAL FINANCIAL TESTS', () => {
   describe('USD Formatting', () => {
@@ -111,7 +80,7 @@ describe('Currency Formatting - CRITICAL FINANCIAL TESTS', () => {
 
     it('should maintain precision in conversions', () => {
       const result = convertCurrency(123.456, 'EUR', 'USD', 1.12345);
-      expect(result).toBeCloseTo(138.678, 3);
+      expect(result).toBeCloseTo(138.69664, 3);
     });
   });
 

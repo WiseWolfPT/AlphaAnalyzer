@@ -1,5 +1,5 @@
-import { EnhancedDashboard } from "@/components/dashboard/enhanced-dashboard";
+import { UnifiedDashboard } from "@/components/dashboard/unified-dashboard";
 
 export default function Home() {
-  return <EnhancedDashboard />;
+  return <UnifiedDashboard />;
 }

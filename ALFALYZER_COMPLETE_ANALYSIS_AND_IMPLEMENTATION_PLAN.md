@@ -56,63 +56,103 @@
 
 ## 🚀 PLANO DE EMERGÊNCIA - 7.8 → 10/10
 
-### 🔴 FASE 1: ESTABILIZAÇÃO CRÍTICA (1-2 SEMANAS) - PRIORIDADE MÁXIMA
+### 🔴 FASE 1: ESTABILIZAÇÃO CRÍTICA (1-2 SEMANAS) - STATUS: 70% COMPLETO
 
-#### AGENTE A: TESTES DE EMERGÊNCIA
+#### AGENTE A: TESTES DE EMERGÊNCIA - STATUS: PARCIALMENTE COMPLETO
 ```typescript
 // Modelo: gemini-2.5-pro
 // Tempo: 1 semana
 // Foco: "Rede de segurança" para deploy com confiança
 
 TAREFAS CRÍTICAS - FLUXOS FINANCEIROS:
-1. [ ] Portfolio Calculations Tests (4h)
-   - Total value calculations USD/EUR
-   - P&L calculations with currency conversion
-   - Performance percentages accuracy
-   - Edge cases: negative values, zero holdings
+1. [✅] Portfolio Calculations Tests (4h) - IMPLEMENTADO
+   - Total value calculations USD/EUR ✅
+   - P&L calculations with currency conversion ✅
+   - Performance percentages accuracy ✅
+   - Edge cases: negative values, zero holdings ✅
 
-2. [ ] Currency Conversion Tests (3h)
-   - USD→EUR and EUR→USD accuracy
-   - Exchange rate updates
-   - Fallback to static rates
-   - Format consistency ($1,234.56 vs €1.234,56)
+2. [⚠️] Currency Conversion Tests (3h) - PARCIALMENTE COMPLETO
+   - USD→EUR and EUR→USD accuracy ✅
+   - Exchange rate updates ✅
+   - Fallback to static rates ❌ FALTA IMPLEMENTAR
+   - Format consistency ($1,234.56 vs €1.234,56) ❌ EUR FORMATTING FALHANDO
 
-3. [ ] Authentication Flow Tests (3h)
-   - Login/logout security
-   - Session management
-   - Protected routes access
-   - Supabase RLS validation
+3. [✅] Authentication Flow Tests (3h) - IMPLEMENTADO (com erros de import)
+   - Login/logout security ✅
+   - Session management ✅
+   - Protected routes access ✅
+   - Supabase RLS validation ⚠️ PRECISA AJUSTES
 
-4. [ ] WebSocket Data Integrity (4h)
-   - Price update accuracy
-   - Connection resilience
-   - Data consistency during reconnects
-   - Message queue handling
+4. [✅] WebSocket Data Integrity (4h) - 100% COMPLETO
+   - Price update accuracy ✅ (13/13 testes passando)
+   - Connection resilience ✅
+   - Data consistency during reconnects ✅
+   - Message queue handling ✅
 
-// META: >30% coverage nos fluxos críticos
-// ENTREGÁVEL: Suite de testes que garante zero bugs financeiros
+// STATUS: Testes críticos implementados mas com falhas
+// PROBLEMAS BLOQUEADORES:
+// - EUR formatting: 9/19 testes falhando
+// - TypeScript errors: api-integration.test.ts:27, monitoring.ts:356
+// - Module resolution: cache-manager não encontrado
 ```
 
-#### AGENTE B: LIMPEZA URGENTE PSI 20
+#### AGENTE B: LIMPEZA URGENTE PSI 20 - STATUS: ✅ 100% COMPLETO
 ```bash
 # Modelo: gemini-2.5-flash
 # Tempo: 2 dias
 # Foco: Remover COMPLETAMENTE PSI 20
+# STATUS: CONCLUÍDO COM SUCESSO
 
 TAREFAS DE LIMPEZA:
-1. [ ] Grep global por "PSI" e "psi" (30min)
+1. [✅] Grep global por "PSI" e "psi" (30min)
    grep -r "PSI\|psi" client/src --exclude-dir=node_modules
    
-2. [ ] Remover do mobile menu (1h)
+2. [✅] Remover do mobile menu (1h)
    - client/src/components/layout/mobile-menu.tsx
-   - Substituir por S&P 500 ou NASDAQ
+   - Substituído por FTSE 100 no índice EUR
 
-3. [ ] Limpar localization files (30min)
-   - client/public/locales/*/markets.json
+3. [✅] Limpar localization files (30min)
+   - Não havia PSI 20 nos arquivos de localização
    
-4. [ ] Atualizar testes afetados (1h)
+4. [✅] Atualizar testes afetados (1h)
+   - api-integration.test.ts: PSI 20 → DAX
+   - landing.tsx: Removida menção ao PSI-20
    
-5. [ ] Commit: "fix: Remove PSI 20 references (irrelevant market)"
+5. [✅] Commit: "fix: Remove PSI 20 references (irrelevant market)"
+   - Verificação final: grep retorna 0 referências relevantes
+```
+
+### 🚨 FASE 1.5: CORREÇÕES CRÍTICAS BLOQUEADORAS - STATUS: PENDENTE
+
+#### AGENTE A-FIX: CORREÇÃO DE TESTES FINANCEIROS
+```typescript
+// Modelo: gemini-2.5-pro ou o3-mini
+// Tempo: 4 horas
+// Foco: Corrigir todos os testes falhando
+
+TAREFAS CRÍTICAS PENDENTES:
+1. [ ] Fix EUR Currency Formatting (2h)
+   - Corrigir formatação portuguesa: '1 234,56 €' (com espaços)
+   - Atualizar Intl.NumberFormat para locale 'pt-PT'
+   - Garantir consistência USD vs EUR
+   - 9 testes falhando que DEVEM passar
+
+2. [ ] Fix TypeScript Compilation Errors (1h)
+   - api-integration.test.ts:27 - Syntax error
+   - monitoring.ts:356 - Syntax error
+   - Garantir npm run build sem erros
+
+3. [ ] Fix Module Resolution (30min)
+   - Resolver import de cache-manager nos testes
+   - Verificar paths e exports
+
+4. [ ] Validate All Tests Pass (30min)
+   - npm run test deve passar 100%
+   - Especialmente testes de currency
+   - Zero erros de TypeScript
+
+// META: 100% dos testes financeiros passando
+// BLOQUEADOR: Não podemos prosseguir sem isso
 ```
 
 ### ⚡ FASE 2: OTIMIZAÇÃO DE PERFORMANCE (2-3 SEMANAS) - PRIORIDADE ALTA
