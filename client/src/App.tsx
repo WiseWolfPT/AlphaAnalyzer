@@ -8,6 +8,17 @@ import { SimpleAuthProvider } from "@/contexts/simple-auth-offline";
 import { ErrorBoundary } from "@/components/shared/error-boundary";
 import { initializeAnalytics } from "@/lib/analytics";
 
+// Import UnifiedDashboard components
+import { 
+  UnifiedDashboard, 
+  UserDashboard, 
+  AdminDashboard as UnifiedAdminDashboard, 
+  ValuationDashboard, 
+  DebugDashboard, 
+  SimpleDashboard, 
+  TestDashboard 
+} from "@/components/dashboard/unified-dashboard";
+
 // Lazy load components for better performance
 const Landing = lazy(() => import("@/pages/landing"));
 const Login = lazy(() => import("@/pages/Login"));
@@ -15,9 +26,6 @@ const Register = lazy(() => import("@/pages/Register"));
 const NotFound = lazy(() => import("@/pages/not-found"));
 const Home = lazy(() => import("@/pages/home"));
 const FindStocks = lazy(() => import("@/pages/find-stocks"));
-const Dashboard = lazy(() => import("@/pages/insights-safe"));
-const EnhancedDashboard = lazy(() => import("@/pages/dashboard-enhanced"));
-const NewEnhancedDashboard = lazy(() => import("@/pages/enhanced-dashboard"));
 const StockDetail = lazy(() => import("@/pages/stock-detail"));
 const AdvancedCharts = lazy(() => import("@/pages/AdvancedCharts"));
 const Portfolios = lazy(() => import("@/pages/portfolios"));
@@ -30,7 +38,6 @@ const Trial = lazy(() => import("@/pages/trial"));
 const Settings = lazy(() => import("@/pages/settings"));
 const Help = lazy(() => import("@/pages/help"));
 const News = lazy(() => import("@/pages/news"));
-const AdminDashboard = lazy(() => import("@/pages/admin/admin-dashboard"));
 const ApiMonitoring = lazy(() => import("@/pages/admin/api-monitoring"));
 const Alerts = lazy(() => import("@/pages/alerts"));
 const StockHeaderTest = lazy(() => import("@/components/stock/stock-header-test"));
@@ -51,10 +58,25 @@ function Router() {
         <Route path="/register" component={Register} />
         <Route path="/trial" component={Trial} />
         <Route path="/home" component={FindStocks} />
-        <Route path="/dashboard" component={NewEnhancedDashboard} />
+        
+        {/* Unified Dashboard Routes */}
+        <Route path="/dashboard" component={UserDashboard} />
+        <Route path="/dashboard/enhanced" component={UserDashboard} />
+        <Route path="/dashboard/simple" component={SimpleDashboard} />
+        <Route path="/dashboard/test" component={TestDashboard} />
+        <Route path="/insights" component={UserDashboard} />
+        
+        {/* Admin Dashboard Routes */}
+        <Route path="/admin" component={UnifiedAdminDashboard} />
+        <Route path="/admin/dashboard" component={UnifiedAdminDashboard} />
+        <Route path="/admin/debug" component={DebugDashboard} />
+        
+        {/* Valuation Dashboard Route */}
+        <Route path="/valuation" component={ValuationDashboard} />
+        <Route path="/intrinsic-value" component={ValuationDashboard} />
+        
+        {/* Other Routes */}
         <Route path="/find-stocks" component={FindStocks} />
-        <Route path="/dashboard-safe" component={Dashboard} />
-        <Route path="/insights" component={EnhancedDashboard} />
         <Route path="/stock/:symbol" component={StockDetail} />
         <Route path="/stock/:symbol/charts" component={AdvancedCharts} />
         <Route path="/portfolios" component={Portfolios} />
@@ -65,9 +87,7 @@ function Router() {
         <Route path="/settings" component={Settings} />
         <Route path="/help" component={Help} />
         <Route path="/news" component={News} />
-        <Route path="/intrinsic-value" component={IntrinsicValue} />
         <Route path="/alerts" component={Alerts} />
-        <Route path="/admin" component={AdminDashboard} />
         <Route path="/admin/api-monitoring" component={ApiMonitoring} />
         <Route path="/test/stock-header" component={StockHeaderTest} />
         <Route component={NotFound} />
