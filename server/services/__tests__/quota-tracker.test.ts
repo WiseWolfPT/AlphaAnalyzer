@@ -1,3 +1,4 @@
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { QuotaTracker } from '../quota/quota-tracker';
 import { getCache } from '../cache';
 
@@ -10,11 +11,11 @@ describe('QuotaTracker', () => {
     await cache.clear();
     
     tracker = new QuotaTracker();
-    jest.useFakeTimers();
+    vi.useFakeTimers();
   });
 
   afterEach(async () => {
-    jest.useRealTimers();
+    vi.useRealTimers();
     // Clear cache after each test
     const cache = getCache();
     await cache.clear();
@@ -56,7 +57,7 @@ describe('QuotaTracker', () => {
       expect(usage.lastMinute).toBe(5);
       
       // Fast forward 30 seconds
-      jest.advanceTimersByTime(30000);
+      vi.advanceTimersByTime(30000);
       
       // Record 3 more calls
       for (let i = 0; i < 3; i++) {
@@ -67,7 +68,7 @@ describe('QuotaTracker', () => {
       expect(usage.lastMinute).toBe(8); // All 8 calls still within 1 minute
       
       // Fast forward another 35 seconds (total 65 seconds)
-      jest.advanceTimersByTime(35000);
+      vi.advanceTimersByTime(35000);
       
       usage = await tracker.getUsage('finnhub');
       expect(usage.lastMinute).toBe(3); // Only last 3 calls within 1 minute
@@ -83,7 +84,7 @@ describe('QuotaTracker', () => {
       expect(canUse).toBe(false);
       
       // Fast forward 61 seconds
-      jest.advanceTimersByTime(61000);
+      vi.advanceTimersByTime(61000);
       
       const canUseAfter = await tracker.canUseProvider('finnhub');
       expect(canUseAfter).toBe(true);
@@ -97,7 +98,7 @@ describe('QuotaTracker', () => {
         await tracker.recordCall('twelveData', 'price');
         // Advance time to avoid minute limits
         if (i % 10 === 0) {
-          jest.advanceTimersByTime(60000);
+          vi.advanceTimersByTime(60000);
         }
       }
       
@@ -113,7 +114,7 @@ describe('QuotaTracker', () => {
       for (let i = 0; i < 125; i++) {
         await tracker.recordCall('fmp', 'fundamentals');
         if (i % 5 === 0) {
-          jest.advanceTimersByTime(60000);
+          vi.advanceTimersByTime(60000);
         }
       }
       
@@ -155,7 +156,7 @@ describe('QuotaTracker', () => {
       // Use 85% of Alpha Vantage quota (21 out of 25)
       for (let i = 0; i < 21; i++) {
         await tracker.recordCall('alphaVantage', 'fundamentals');
-        jest.advanceTimersByTime(60000); // Avoid minute limits
+        vi.advanceTimersByTime(60000); // Avoid minute limits
       }
       
       const alerts = await tracker.checkQuotaAlerts();

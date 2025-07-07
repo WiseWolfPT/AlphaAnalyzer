@@ -188,27 +188,22 @@ export const portfolios = pgTable("portfolios", {
   };
 });
 
-export const portfolioHoldings = pgTable("portfolio_holdings", {
+export const holdings = pgTable("holdings", {
   id: uuid("id").primaryKey().defaultRandom(),
   portfolioId: uuid("portfolio_id").notNull().references(() => portfolios.id, { onDelete: "cascade" }),
   symbol: varchar("symbol", { length: 10 }).notNull(),
   
-  // Position details
-  quantity: decimal("quantity", { precision: 15, scale: 6 }).notNull(),
-  averageCostCents: bigint("average_cost_cents", { mode: "number" }).notNull(),
-  currentPriceCents: bigint("current_price_cents", { mode: "number" }),
-  marketValueCents: bigint("market_value_cents", { mode: "number" }),
-  unrealizedPnlCents: bigint("unrealized_pnl_cents", { mode: "number" }).default(0),
-  realizedPnlCents: bigint("realized_pnl_cents", { mode: "number" }).default(0),
+  // Position details (matching migration structure)
+  quantity: decimal("quantity", { precision: 12, scale: 4 }).notNull().default("0"),
+  averagePrice: decimal("average_price", { precision: 10, scale: 2 }).notNull().default("0"),
+  totalCost: decimal("total_cost", { precision: 12, scale: 2 }).notNull().default("0"),
+  currentPrice: decimal("current_price", { precision: 10, scale: 2 }),
+  currentValue: decimal("current_value", { precision: 12, scale: 2 }),
+  unrealizedPnl: decimal("unrealized_pnl", { precision: 12, scale: 2 }),
+  unrealizedPnlPercent: decimal("unrealized_pnl_percent", { precision: 5, scale: 2 }),
   
-  // Position metrics
-  weightPercent: decimal("weight_percent", { precision: 5, scale: 2 }),
-  dayChangeCents: bigint("day_change_cents", { mode: "number" }).default(0),
-  dayChangePercent: decimal("day_change_percent", { precision: 10, scale: 4 }).default("0"),
-  
-  // Dates
-  firstPurchaseDate: date("first_purchase_date"),
-  lastTransactionDate: date("last_transaction_date"),
+  // Timestamps
+  lastUpdated: timestamp("last_updated").defaultNow().notNull(),
   
   // Audit fields
   createdAt: timestamp("created_at").defaultNow(),
@@ -218,28 +213,25 @@ export const portfolioHoldings = pgTable("portfolio_holdings", {
     portfolioSymbolUnique: unique("unique_portfolio_symbol").on(table.portfolioId, table.symbol),
     portfolioIdx: index("idx_holdings_portfolio").on(table.portfolioId),
     symbolIdx: index("idx_holdings_symbol").on(table.symbol),
+    pnlIdx: index("idx_holdings_pnl").on(table.portfolioId, table.unrealizedPnl),
     updatedIdx: index("idx_holdings_updated").on(table.updatedAt),
   };
 });
 
-export const portfolioTransactions = pgTable("portfolio_transactions", {
+export const transactions = pgTable("transactions", {
   id: uuid("id").primaryKey().defaultRandom(),
   portfolioId: uuid("portfolio_id").notNull().references(() => portfolios.id, { onDelete: "cascade" }),
   symbol: varchar("symbol", { length: 10 }).notNull(),
   
-  // Transaction details
-  transactionType: transactionTypeEnum("transaction_type").notNull(),
+  // Transaction details (matching migration structure)
+  type: transactionTypeEnum("type").notNull(),
   quantity: decimal("quantity", { precision: 15, scale: 6 }).notNull(),
-  priceCents: bigint("price_cents", { mode: "number" }).notNull(),
-  feesCents: bigint("fees_cents", { mode: "number" }).default(0),
-  totalAmountCents: bigint("total_amount_cents", { mode: "number" }).notNull(),
+  price: decimal("price", { precision: 10, scale: 2 }).notNull(),
+  fees: decimal("fees", { precision: 10, scale: 2 }).default("0"),
   
   // Transaction metadata
-  transactionDate: date("transaction_date").notNull(),
+  date: date("date").notNull(),
   notes: text("notes"),
-  broker: varchar("broker", { length: 50 }),
-  accountId: varchar("account_id", { length: 100 }),
-  referenceId: varchar("reference_id", { length: 100 }),
   
   // Audit fields
   createdAt: timestamp("created_at").defaultNow(),
@@ -248,8 +240,68 @@ export const portfolioTransactions = pgTable("portfolio_transactions", {
   return {
     portfolioIdx: index("idx_transactions_portfolio").on(table.portfolioId),
     symbolIdx: index("idx_transactions_symbol").on(table.symbol),
-    dateIdx: index("idx_transactions_date").on(table.transactionDate),
-    typeIdx: index("idx_transactions_type").on(table.transactionType),
+    dateIdx: index("idx_transactions_date").on(table.date),
+    typeIdx: index("idx_transactions_type").on(table.type),
+  };
+});
+
+// ========================================
+// DIVIDENDS & PERFORMANCE TRACKING
+// ========================================
+
+export const dividends = pgTable("dividends", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  portfolioId: uuid("portfolio_id").notNull().references(() => portfolios.id, { onDelete: "cascade" }),
+  symbol: varchar("symbol", { length: 10 }).notNull(),
+  amount: decimal("amount", { precision: 10, scale: 2 }).notNull(),
+  paymentDate: date("payment_date").notNull(),
+  exDividendDate: date("ex_dividend_date"),
+  sharesOwned: decimal("shares_owned", { precision: 12, scale: 4 }),
+  amountPerShare: decimal("amount_per_share", { precision: 6, scale: 4 }),
+  currency: varchar("currency", { length: 3 }).default("USD").notNull(),
+  notes: text("notes"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+}, (table) => {
+  return {
+    portfolioDateUnique: unique("unique_dividend_entry").on(table.portfolioId, table.symbol, table.paymentDate),
+    portfolioDateIdx: index("idx_dividends_portfolio_date").on(table.portfolioId, table.paymentDate),
+    symbolIdx: index("idx_dividends_symbol").on(table.symbol),
+    yearIdx: index("idx_dividends_year").on(table.portfolioId),
+  };
+});
+
+export const portfolioPerformance = pgTable("portfolio_performance", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  portfolioId: uuid("portfolio_id").notNull().references(() => portfolios.id, { onDelete: "cascade" }),
+  date: date("date").notNull(),
+  totalValue: decimal("total_value", { precision: 12, scale: 2 }).notNull(),
+  totalCost: decimal("total_cost", { precision: 12, scale: 2 }).notNull(),
+  cashBalance: decimal("cash_balance", { precision: 12, scale: 2 }).default("0"),
+  totalPnl: decimal("total_pnl", { precision: 12, scale: 2 }),
+  totalPnlPercent: decimal("total_pnl_percent", { precision: 8, scale: 2 }),
+  dailyPnl: decimal("daily_pnl", { precision: 12, scale: 2 }),
+  dailyPnlPercent: decimal("daily_pnl_percent", { precision: 6, scale: 2 }),
+}, (table) => {
+  return {
+    portfolioDateUnique: unique("unique_performance_snapshot").on(table.portfolioId, table.date),
+    portfolioDateIdx: index("idx_portfolio_performance_date").on(table.portfolioId, table.date),
+    yearIdx: index("idx_portfolio_performance_year").on(table.portfolioId),
+  };
+});
+
+export const cashTransactions = pgTable("cash_transactions", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  portfolioId: uuid("portfolio_id").notNull().references(() => portfolios.id, { onDelete: "cascade" }),
+  type: varchar("type", { length: 20 }).notNull(),
+  amount: decimal("amount", { precision: 12, scale: 2 }).notNull(),
+  date: date("date").notNull(),
+  description: text("description"),
+  referenceId: uuid("reference_id"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+}, (table) => {
+  return {
+    portfolioIdx: index("idx_cash_transactions_portfolio").on(table.portfolioId, table.date),
+    typeIdx: index("idx_cash_transactions_type").on(table.portfolioId, table.type),
   };
 });
 
@@ -558,20 +610,44 @@ export const portfoliosRelations = relations(portfolios, ({ one, many }) => ({
     fields: [portfolios.userId],
     references: [users.id],
   }),
-  holdings: many(portfolioHoldings),
-  transactions: many(portfolioTransactions),
+  holdings: many(holdings),
+  transactions: many(transactions),
+  dividends: many(dividends),
+  performance: many(portfolioPerformance),
+  cashTransactions: many(cashTransactions),
 }));
 
-export const portfolioHoldingsRelations = relations(portfolioHoldings, ({ one }) => ({
+export const holdingsRelations = relations(holdings, ({ one }) => ({
   portfolio: one(portfolios, {
-    fields: [portfolioHoldings.portfolioId],
+    fields: [holdings.portfolioId],
     references: [portfolios.id],
   }),
 }));
 
-export const portfolioTransactionsRelations = relations(portfolioTransactions, ({ one }) => ({
+export const transactionsRelations = relations(transactions, ({ one }) => ({
   portfolio: one(portfolios, {
-    fields: [portfolioTransactions.portfolioId],
+    fields: [transactions.portfolioId],
+    references: [portfolios.id],
+  }),
+}));
+
+export const dividendsRelations = relations(dividends, ({ one }) => ({
+  portfolio: one(portfolios, {
+    fields: [dividends.portfolioId],
+    references: [portfolios.id],
+  }),
+}));
+
+export const portfolioPerformanceRelations = relations(portfolioPerformance, ({ one }) => ({
+  portfolio: one(portfolios, {
+    fields: [portfolioPerformance.portfolioId],
+    references: [portfolios.id],
+  }),
+}));
+
+export const cashTransactionsRelations = relations(cashTransactions, ({ one }) => ({
+  portfolio: one(portfolios, {
+    fields: [cashTransactions.portfolioId],
     references: [portfolios.id],
   }),
 }));
@@ -592,16 +668,30 @@ export const insertPortfolioSchema = createInsertSchema(portfolios).omit({
   updatedAt: true,
 });
 
-export const insertPortfolioHoldingSchema = createInsertSchema(portfolioHoldings).omit({
+export const insertHoldingSchema = createInsertSchema(holdings).omit({
   id: true,
   createdAt: true,
   updatedAt: true,
 });
 
-export const insertPortfolioTransactionSchema = createInsertSchema(portfolioTransactions).omit({
+export const insertTransactionSchema = createInsertSchema(transactions).omit({
   id: true,
   createdAt: true,
   updatedAt: true,
+});
+
+export const insertDividendSchema = createInsertSchema(dividends).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertPortfolioPerformanceSchema = createInsertSchema(portfolioPerformance).omit({
+  id: true,
+});
+
+export const insertCashTransactionSchema = createInsertSchema(cashTransactions).omit({
+  id: true,
+  createdAt: true,
 });
 
 export const insertStockFundamentalsSchema = createInsertSchema(stockFundamentals).omit({
@@ -624,11 +714,26 @@ export type InsertUser = z.infer<typeof insertUserSchema>;
 export type Portfolio = typeof portfolios.$inferSelect;
 export type InsertPortfolio = z.infer<typeof insertPortfolioSchema>;
 
-export type PortfolioHolding = typeof portfolioHoldings.$inferSelect;
-export type InsertPortfolioHolding = z.infer<typeof insertPortfolioHoldingSchema>;
+export type Holding = typeof holdings.$inferSelect;
+export type InsertHolding = z.infer<typeof insertHoldingSchema>;
 
-export type PortfolioTransaction = typeof portfolioTransactions.$inferSelect;
-export type InsertPortfolioTransaction = z.infer<typeof insertPortfolioTransactionSchema>;
+export type Transaction = typeof transactions.$inferSelect;
+export type InsertTransaction = z.infer<typeof insertTransactionSchema>;
+
+export type Dividend = typeof dividends.$inferSelect;
+export type InsertDividend = z.infer<typeof insertDividendSchema>;
+
+export type PortfolioPerformance = typeof portfolioPerformance.$inferSelect;
+export type InsertPortfolioPerformance = z.infer<typeof insertPortfolioPerformanceSchema>;
+
+export type CashTransaction = typeof cashTransactions.$inferSelect;
+export type InsertCashTransaction = z.infer<typeof insertCashTransactionSchema>;
+
+// Legacy aliases for backward compatibility
+export type PortfolioHolding = Holding;
+export type InsertPortfolioHolding = InsertHolding;
+export type PortfolioTransaction = Transaction;
+export type InsertPortfolioTransaction = InsertTransaction;
 
 export type StockFundamentals = typeof stockFundamentals.$inferSelect;
 export type InsertStockFundamentals = z.infer<typeof insertStockFundamentalsSchema>;

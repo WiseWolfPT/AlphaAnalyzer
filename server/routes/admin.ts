@@ -2,6 +2,11 @@ import { Router } from 'express';
 import { z } from 'zod';
 import { authMiddleware } from '../middleware/auth-middleware';
 import transcriptsRouter from './admin/transcripts';
+// Import Alert Monitor for AGENTE 3: Alert Engine Backend admin endpoints
+import { alertMonitor } from '../workers/alert-monitor';
+import { backgroundScheduler } from '../services/background-scheduler';
+// Import Push Notification Service for AGENTE 4: PWA Push Notifications admin endpoints
+import { pushNotificationService } from '../services/push-notification-service';
 
 const router = Router();
 
@@ -629,6 +634,458 @@ router.get('/export', (req, res) => {
     res.status(500).json({
       success: false,
       error: 'Failed to export metrics'
+    });
+  }
+});
+
+// ===== AGENTE 3: ALERT ENGINE BACKEND ADMIN ENDPOINTS =====
+
+// GET /api/admin/alert-monitor/status - Get Alert Monitor status
+router.get('/alert-monitor/status', (req, res) => {
+  try {
+    const status = alertMonitor.getStatus();
+    const schedulerStats = backgroundScheduler.getStats();
+    const schedulerJobs = backgroundScheduler.getJobs();
+    
+    const alertJob = schedulerJobs.find(job => job.id === 'alert-monitoring');
+    
+    res.json({
+      success: true,
+      data: {
+        alertMonitor: status,
+        schedulerJob: alertJob,
+        schedulerStats,
+        systemTime: new Date().toISOString(),
+        uptimeSeconds: Math.floor(process.uptime())
+      }
+    });
+  } catch (error) {
+    console.error('Error fetching alert monitor status:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch alert monitor status'
+    });
+  }
+});
+
+// POST /api/admin/alert-monitor/refresh-cache - Force refresh alert cache
+router.post('/alert-monitor/refresh-cache', async (req, res) => {
+  try {
+    await alertMonitor.forceRefreshCache();
+    
+    res.json({
+      success: true,
+      message: 'Alert cache refreshed successfully',
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('Error refreshing alert cache:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to refresh alert cache'
+    });
+  }
+});
+
+// PUT /api/admin/alert-monitor/config - Update Alert Monitor configuration
+router.put('/alert-monitor/config', (req, res) => {
+  try {
+    const configSchema = z.object({
+      enabled: z.boolean().optional(),
+      checkInterval: z.number().min(5000).max(300000).optional(), // 5s to 5min
+      batchSize: z.number().min(1).max(100).optional(),
+      maxSymbolsPerRequest: z.number().min(1).max(50).optional(),
+      cacheTimeout: z.number().min(10000).max(600000).optional() // 10s to 10min
+    });
+    
+    const newConfig = configSchema.parse(req.body);
+    alertMonitor.updateConfig(newConfig);
+    
+    res.json({
+      success: true,
+      message: 'Alert monitor configuration updated',
+      config: newConfig,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return res.status(400).json({ 
+        success: false,
+        error: 'Invalid configuration', 
+        details: error.errors 
+      });
+    }
+    
+    console.error('Error updating alert monitor config:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to update alert monitor configuration'
+    });
+  }
+});
+
+// POST /api/admin/alert-monitor/start - Start Alert Monitor
+router.post('/alert-monitor/start', (req, res) => {
+  try {
+    alertMonitor.start();
+    backgroundScheduler.enableJob('alert-monitoring');
+    
+    res.json({
+      success: true,
+      message: 'Alert monitor started successfully',
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('Error starting alert monitor:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to start alert monitor'
+    });
+  }
+});
+
+// POST /api/admin/alert-monitor/stop - Stop Alert Monitor
+router.post('/alert-monitor/stop', (req, res) => {
+  try {
+    alertMonitor.stop();
+    backgroundScheduler.disableJob('alert-monitoring');
+    
+    res.json({
+      success: true,
+      message: 'Alert monitor stopped successfully',
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('Error stopping alert monitor:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to stop alert monitor'
+    });
+  }
+});
+
+// POST /api/admin/alert-monitor/run-now - Force run alert monitoring cycle
+router.post('/alert-monitor/run-now', async (req, res) => {
+  try {
+    await backgroundScheduler.runJobNow('alert-monitoring');
+    
+    res.json({
+      success: true,
+      message: 'Alert monitoring cycle executed successfully',
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('Error running alert monitoring cycle:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to run alert monitoring cycle'
+    });
+  }
+});
+
+// GET /api/admin/alert-monitor/metrics - Get detailed Alert Monitor metrics
+router.get('/alert-monitor/metrics', (req, res) => {
+  try {
+    const status = alertMonitor.getStatus();
+    
+    // Enhanced metrics with performance calculations
+    const metrics = {
+      ...status.metrics,
+      performance: {
+        alertsPerMinute: status.metrics.cyclesCompleted > 0 
+          ? (status.metrics.alertsProcessed / (status.metrics.cyclesCompleted * 0.5)) // 30s cycles
+          : 0,
+        triggerSuccessRate: status.metrics.alertsProcessed > 0 
+          ? (status.metrics.triggersCreated / status.metrics.alertsProcessed) * 100 
+          : 0,
+        errorRate: status.metrics.alertsProcessed > 0 
+          ? (status.metrics.errorsEncountered / status.metrics.alertsProcessed) * 100 
+          : 0,
+        efficiency: status.metrics.averageProcessingTime > 0 
+          ? (1000 / status.metrics.averageProcessingTime) * 100 // alerts per second * 100
+          : 0
+      },
+      cache: status.cacheStatus,
+      config: status.config,
+      lastUpdate: new Date().toISOString()
+    };
+    
+    res.json({
+      success: true,
+      data: metrics
+    });
+  } catch (error) {
+    console.error('Error fetching alert monitor metrics:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch alert monitor metrics'
+    });
+  }
+});
+
+// ===== AGENTE 4: PWA PUSH NOTIFICATIONS ADMIN ENDPOINTS =====
+
+// GET /api/admin/push-notifications/status - Get push notification system status
+router.get('/push-notifications/status', async (req, res) => {
+  try {
+    const stats = await pushNotificationService.getSystemStats();
+    
+    res.json({
+      success: true,
+      data: {
+        ...stats,
+        vapidConfigured: !!process.env.VAPID_PUBLIC_KEY && !!process.env.VAPID_PRIVATE_KEY,
+        systemTime: new Date().toISOString(),
+        uptimeSeconds: Math.floor(process.uptime())
+      }
+    });
+  } catch (error) {
+    console.error('Error fetching push notification status:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch push notification system status'
+    });
+  }
+});
+
+// GET /api/admin/push-notifications/subscriptions - Get all push subscriptions
+router.get('/push-notifications/subscriptions', async (req, res) => {
+  try {
+    const query = paginationSchema.parse(req.query);
+    const { page, limit } = query;
+    
+    const subscriptions = await pushNotificationService.getAllSubscriptions(page, limit);
+    
+    res.json({
+      success: true,
+      data: subscriptions
+    });
+  } catch (error) {
+    console.error('Error fetching push subscriptions:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch push subscriptions'
+    });
+  }
+});
+
+// POST /api/admin/push-notifications/broadcast - Send broadcast notification to all users
+router.post('/push-notifications/broadcast', async (req, res) => {
+  try {
+    const broadcastSchema = z.object({
+      title: z.string().min(1).max(100),
+      body: z.string().min(1).max(200),
+      url: z.string().optional(),
+      icon: z.string().optional(),
+      badge: z.string().optional(),
+      tag: z.string().optional(),
+      targetAudience: z.enum(['all', 'subscribed', 'active']).default('subscribed')
+    });
+    
+    const notificationData = broadcastSchema.parse(req.body);
+    
+    const result = await pushNotificationService.sendBroadcastNotification(
+      notificationData.title,
+      notificationData.body,
+      {
+        url: notificationData.url,
+        icon: notificationData.icon,
+        badge: notificationData.badge,
+        tag: notificationData.tag
+      },
+      notificationData.targetAudience
+    );
+    
+    res.json({
+      success: true,
+      message: 'Broadcast notification sent successfully',
+      data: result,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return res.status(400).json({ 
+        success: false,
+        error: 'Invalid notification data', 
+        details: error.errors 
+      });
+    }
+    
+    console.error('Error sending broadcast notification:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to send broadcast notification'
+    });
+  }
+});
+
+// DELETE /api/admin/push-notifications/subscriptions/:subscriptionId - Remove specific subscription
+router.delete('/push-notifications/subscriptions/:subscriptionId', async (req, res) => {
+  try {
+    const subscriptionId = parseInt(req.params.subscriptionId);
+    
+    if (isNaN(subscriptionId)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid subscription ID'
+      });
+    }
+    
+    const result = await pushNotificationService.removeSubscription(subscriptionId);
+    
+    if (!result.success) {
+      return res.status(404).json({
+        success: false,
+        error: 'Subscription not found'
+      });
+    }
+    
+    res.json({
+      success: true,
+      message: 'Subscription removed successfully',
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('Error removing push subscription:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to remove push subscription'
+    });
+  }
+});
+
+// POST /api/admin/push-notifications/test-user - Send test notification to specific user
+router.post('/push-notifications/test-user', async (req, res) => {
+  try {
+    const testSchema = z.object({
+      userId: z.string().min(1),
+      title: z.string().min(1).max(100).default('Test Notification'),
+      body: z.string().min(1).max(200).default('This is a test notification from the admin panel'),
+      url: z.string().optional()
+    });
+    
+    const testData = testSchema.parse(req.body);
+    
+    const result = await pushNotificationService.sendPushToUser(
+      testData.userId,
+      {
+        title: testData.title,
+        body: testData.body,
+        icon: '/favicon.ico',
+        badge: '/favicon.ico',
+        data: {
+          type: 'admin-test',
+          url: testData.url || '/dashboard'
+        },
+        tag: 'admin-test'
+      }
+    );
+    
+    res.json({
+      success: true,
+      message: `Test notification sent to user ${testData.userId}`,
+      data: result,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return res.status(400).json({ 
+        success: false,
+        error: 'Invalid test data', 
+        details: error.errors 
+      });
+    }
+    
+    console.error('Error sending test notification:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to send test notification'
+    });
+  }
+});
+
+// GET /api/admin/push-notifications/analytics - Get push notification analytics
+router.get('/push-notifications/analytics', async (req, res) => {
+  try {
+    const timeRangeQuery = timeRangeSchema.parse(req.query);
+    const { start, end } = timeRangeQuery.start && timeRangeQuery.end 
+      ? { start: timeRangeQuery.start, end: timeRangeQuery.end }
+      : getTimeWindow(timeRangeQuery.window);
+    
+    const analytics = await pushNotificationService.getAnalytics(start, end);
+    
+    res.json({
+      success: true,
+      data: {
+        timeRange: { start, end },
+        analytics
+      }
+    });
+  } catch (error) {
+    console.error('Error fetching push notification analytics:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch push notification analytics'
+    });
+  }
+});
+
+// PUT /api/admin/push-notifications/config - Update push notification system configuration
+router.put('/push-notifications/config', async (req, res) => {
+  try {
+    const configSchema = z.object({
+      enabled: z.boolean().optional(),
+      defaultIcon: z.string().optional(),
+      defaultBadge: z.string().optional(),
+      ttl: z.number().min(0).max(86400).optional(), // Max 24 hours
+      urgency: z.enum(['very-low', 'low', 'normal', 'high']).optional(),
+      maxDailyNotifications: z.number().min(1).max(100).optional()
+    });
+    
+    const newConfig = configSchema.parse(req.body);
+    
+    // Update the push notification service configuration
+    await pushNotificationService.updateConfig(newConfig);
+    
+    res.json({
+      success: true,
+      message: 'Push notification configuration updated',
+      config: newConfig,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return res.status(400).json({ 
+        success: false,
+        error: 'Invalid configuration', 
+        details: error.errors 
+      });
+    }
+    
+    console.error('Error updating push notification config:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to update push notification configuration'
+    });
+  }
+});
+
+// POST /api/admin/push-notifications/cleanup - Cleanup expired subscriptions
+router.post('/push-notifications/cleanup', async (req, res) => {
+  try {
+    const result = await pushNotificationService.cleanupExpiredSubscriptions();
+    
+    res.json({
+      success: true,
+      message: 'Expired subscriptions cleaned up successfully',
+      data: result,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('Error cleaning up push subscriptions:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to cleanup expired subscriptions'
     });
   }
 });

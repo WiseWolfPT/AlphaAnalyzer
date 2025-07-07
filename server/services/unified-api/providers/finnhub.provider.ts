@@ -32,7 +32,7 @@ export class FinnhubProvider extends BaseMarketDataProvider {
 
   constructor() {
     super();
-    // Set API key after name is defined
+    // Set API key after name is defined and super() is called
     this.apiKey = this.getApiKey();
     this.isDemo = this.apiKey === 'demo';
     this.client = axios.create({
@@ -65,6 +65,11 @@ export class FinnhubProvider extends BaseMarketDataProvider {
 
   async isHealthy(): Promise<boolean> {
     try {
+      // Return true in demo mode (always healthy)
+      if (this.isDemo) {
+        return true;
+      }
+
       const response = await this.client.get('/stock/profile2', {
         params: { symbol: 'AAPL' }
       });

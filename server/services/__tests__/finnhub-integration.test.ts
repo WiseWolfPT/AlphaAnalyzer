@@ -20,7 +20,12 @@ describe('Finnhub Integration Tests', () => {
       return;
     }
     
-    await provider.initialize();
+    try {
+      await provider.initialize();
+    } catch (error) {
+      console.warn('Failed to initialize Finnhub provider:', error instanceof Error ? error.message : 'Unknown error');
+      // Don't throw here - let individual tests handle this
+    }
   });
 
   afterAll(async () => {

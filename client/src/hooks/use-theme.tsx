@@ -33,6 +33,9 @@ export function ThemeProvider({
   useEffect(() => {
     const root = window.document.documentElement;
 
+    // Add transition class before changing theme
+    root.classList.add('theme-transitioning');
+
     root.classList.remove("light", "dark");
 
     if (theme === "system") {
@@ -42,10 +45,19 @@ export function ThemeProvider({
         : "light";
 
       root.classList.add(systemTheme);
-      return;
+    } else {
+      root.classList.add(theme);
     }
 
-    root.classList.add(theme);
+    // Remove transition class after theme change completes
+    const timer = setTimeout(() => {
+      root.classList.remove('theme-transitioning');
+    }, 300);
+
+    return () => {
+      clearTimeout(timer);
+      root.classList.remove('theme-transitioning');
+    };
   }, [theme]);
 
   const value = {

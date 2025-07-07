@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { FileText, Search, Calendar, TrendingUp, ExternalLink, Play, Clock, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { format } from "date-fns";
+import { format } from "@/lib/date-utils";
 
 // Mock transcripts data - in real app, this would come from API
 const mockTranscripts = [

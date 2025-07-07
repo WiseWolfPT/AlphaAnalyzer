@@ -6,6 +6,8 @@
 
 import { globalCache, DataType } from '../cache/intelligent-cache-manager';
 import { ServerMarketDataService } from './market-data-service';
+// Import alert monitor for AGENTE 3: Alert Engine Backend
+import { alertMonitor } from '../workers/alert-monitor';
 
 interface ScheduledJob {
   id: string;
@@ -121,6 +123,18 @@ export class BackgroundScheduler {
       priority: 'medium'
     });
 
+    // Job 6: Alert Monitoring Engine (AGENTE 3) - OPTIMIZED
+    this.addJob({
+      id: 'alert-monitoring',
+      name: 'Real-time Alert Monitoring (Server-Only)',
+      interval: 60 * 1000, // OPTIMIZED: 60 seconds (vs 30s) - still real-time but more efficient
+      lastRun: null,
+      nextRun: new Date(Date.now() + 60 * 1000),
+      isRunning: false,
+      enabled: true,
+      priority: 'high'
+    });
+
     this.stats.totalJobs = this.jobs.size;
     console.log(`📅 Background Scheduler initialized with ${this.jobs.size} jobs`);
   }
@@ -173,6 +187,9 @@ export class BackgroundScheduler {
           break;
         case 'weekly-deep-warm':
           await this.executeWeeklyDeepWarm();
+          break;
+        case 'alert-monitoring':
+          await this.executeAlertMonitoring();
           break;
         default:
           console.warn(`Unknown job: ${jobId}`);
@@ -260,6 +277,20 @@ export class BackgroundScheduler {
     
     this.stats.apiCallsSaved += this.EXTENDED_WATCHLIST.length;
     console.log('🔥 Weekly deep warming completed');
+  }
+
+  private async executeAlertMonitoring(): Promise<void> {
+    console.log('🚨 Alert monitoring cycle starting...');
+    
+    try {
+      // Delegate to alert monitor worker
+      await alertMonitor.processActiveAlerts();
+      
+      console.log('🚨 Alert monitoring cycle completed');
+    } catch (error) {
+      console.error('❌ Alert monitoring cycle failed:', error);
+      throw error;
+    }
   }
 
   private isMarketOpen(): boolean {

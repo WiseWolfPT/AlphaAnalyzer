@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
+import { FadeIn, ScaleIn, SlideIn } from "@/components/animations/css-animations";
 
 export function ScrollProgress() {
   const [scrollProgress, setScrollProgress] = useState(0);

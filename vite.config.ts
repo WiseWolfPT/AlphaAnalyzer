@@ -2,6 +2,7 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import path from "path";
 import { fileURLToPath } from "url";
+import { visualizer } from "rollup-plugin-visualizer";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -22,6 +23,13 @@ export default defineConfig({
       jsxRuntime: 'automatic',
       // Optimize for development
       fastRefresh: true,
+    }),
+    // Bundle analyzer for optimization
+    visualizer({
+      filename: 'dist/bundle-analysis.html',
+      open: false,
+      gzipSize: true,
+      brotliSize: true,
     }),
   ],
   server: {
@@ -136,15 +144,13 @@ export default defineConfig({
   optimizeDeps: {
     // Force pre-bundling of these dependencies for faster dev startup
     include: [
-      '@lottiefiles/dotlottie-react', 
-      '@lottiefiles/react-lottie-player',
+      'lottie-react',
       'react',
       'react-dom',
       'wouter',
       'react/jsx-runtime',
       '@tanstack/react-query',
       'recharts',
-      'framer-motion',
       'date-fns',
       'clsx',
       'tailwind-merge',
@@ -199,57 +205,151 @@ export default defineConfig({
     emptyOutDir: true,
     rollupOptions: {
       output: {
-        manualChunks: {
-          // Vendor libraries
-          vendor: ['react', 'react-dom'],
+        manualChunks: (id) => {
+          // Core vendor libraries (keep small and essential)
+          if (id.includes('node_modules/react/') || id.includes('node_modules/react-dom/')) {
+            return 'vendor';
+          }
           
-          // Charts and visualization (split into smaller chunks)
-          recharts: ['recharts'],
-          lottie: [
-            '@lottiefiles/dotlottie-react',
-            '@lottiefiles/react-lottie-player'
-          ],
-          animations: ['framer-motion'],
+          // Charts and visualization - separate lazy chunks
+          if (id.includes('recharts') || id.includes('d3-')) {
+            return 'charts';
+          }
           
-          // UI components
-          ui: [
-            '@radix-ui/react-dialog',
-            '@radix-ui/react-dropdown-menu',
-            '@radix-ui/react-tabs',
-            '@radix-ui/react-select',
-            '@radix-ui/react-accordion',
-            '@radix-ui/react-alert-dialog'
-          ],
+          // Lottie - separate lazy chunk (only loaded on landing)
+          if (id.includes('lottie-react') || id.includes('lottie-web')) {
+            return 'lottie';
+          }
           
-          // Utils and hooks
-          utils: [
-            '@tanstack/react-query',
-            'wouter',
-            'date-fns',
-            'clsx',
-            'tailwind-merge'
-          ],
+          // Lucide icons - separate chunk for better caching
+          if (id.includes('lucide-react')) {
+            return 'icons';
+          }
           
-          // Authentication and data
-          auth: [
-            '@supabase/supabase-js'
-          ]
+          // Radix UI components - split into smaller, focused chunks
+          if (id.includes('@radix-ui/react-dialog') || 
+              id.includes('@radix-ui/react-alert-dialog') ||
+              id.includes('@radix-ui/react-popover') ||
+              id.includes('@radix-ui/react-toast')) {
+            return 'ui-overlays';
+          }
+          
+          if (id.includes('@radix-ui/react-dropdown-menu') ||
+              id.includes('@radix-ui/react-select') ||
+              id.includes('@radix-ui/react-navigation-menu') ||
+              id.includes('@radix-ui/react-menubar')) {
+            return 'ui-navigation';
+          }
+          
+          if (id.includes('@radix-ui/react-tabs') ||
+              id.includes('@radix-ui/react-accordion') ||
+              id.includes('@radix-ui/react-collapsible')) {
+            return 'ui-layout';
+          }
+          
+          if (id.includes('@radix-ui')) {
+            return 'ui-base';
+          }
+          
+          // React Query and state management
+          if (id.includes('@tanstack/react-query')) {
+            return 'state';
+          }
+          
+          // Routing and navigation
+          if (id.includes('wouter')) {
+            return 'routing';
+          }
+          
+          // Date and utility libraries
+          if (id.includes('date-fns') || 
+              id.includes('clsx') ||
+              id.includes('tailwind-merge') ||
+              id.includes('class-variance-authority')) {
+            return 'utils';
+          }
+          
+          // Authentication and data services
+          if (id.includes('@supabase/supabase-js')) {
+            return 'supabase';
+          }
+          
+          // Form handling
+          if (id.includes('react-hook-form') || 
+              id.includes('@hookform/resolvers') ||
+              id.includes('zod')) {
+            return 'forms';
+          }
+          
+          // Animation libraries (except lottie)
+          if (id.includes('framer-motion')) {
+            return 'animations';
+          }
+          
+          // Smaller utility libraries
+          if (id.includes('node_modules') && (
+            id.includes('nanoid') ||
+            id.includes('eventemitter3') ||
+            id.includes('axios') ||
+            id.includes('idb')
+          )) {
+            return 'libs-small';
+          }
+          
+          // Large utility libraries get their own chunks
+          if (id.includes('node_modules') && (
+            id.includes('stripe') ||
+            id.includes('express') ||
+            id.includes('better-sqlite3') ||
+            id.includes('drizzle-orm')
+          )) {
+            return 'libs-heavy';
+          }
+          
+          // Default catch-all for remaining node_modules (should be minimal now)
+          if (id.includes('node_modules')) {
+            return 'vendor-misc';
+          }
         }
       }
     },
+    
+    // Aggressive tree shaking configuration
+    treeshake: true,
+    
     // Chunk size warnings (reduced for better performance)
-    chunkSizeWarningLimit: 500,
+    chunkSizeWarningLimit: 300,
     
     // Disable source maps in production for security and performance
     sourcemap: process.env.NODE_ENV === 'development',
     
-    // Minification settings
+    // Enhanced minification settings
     minify: 'terser',
     terserOptions: {
       compress: {
         drop_console: true,
-        drop_debugger: true
+        drop_debugger: true,
+        pure_funcs: ['console.log', 'console.warn'],
+        unused: true,
+        dead_code: true,
+        side_effects: false
+      },
+      mangle: {
+        safari10: true
+      },
+      format: {
+        comments: false
       }
-    }
+    },
+    
+    // Additional optimization settings
+    target: 'es2020',
+    assetsInlineLimit: 8192, // Inline assets smaller than 8kb (increased)
+    
+    // CSS code splitting
+    cssCodeSplit: true,
+    
+    // Reduce imports overhead
+    reportCompressedSize: false
   },
 });

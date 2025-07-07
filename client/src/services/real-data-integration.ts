@@ -61,17 +61,32 @@ class RealDataIntegrationService {
   }
   
   private async checkApiKeys() {
-    // Check if we have valid API keys (not 'demo')
+    // Check if server proxy endpoints are available and configured
     try {
-      const { env } = await import('@/lib/env');
-      // SECURITY: API keys moved to server-side - always use server proxy
-      this.hasValidApiKeys = false; // Force use of server proxy endpoints
+      // Test server proxy availability by checking health endpoint
+      const response = await fetch('/api/health', {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' }
+      });
       
-      if (!this.hasValidApiKeys) {
-        console.warn('⚠️ Using demo API keys - real data may be limited');
+      if (response.ok) {
+        const health = await response.json();
+        // Check if market data services are available
+        this.hasValidApiKeys = health.services?.marketData || false;
+        
+        if (this.hasValidApiKeys) {
+          console.log('✅ Server proxy endpoints available - using real API data');
+        } else {
+          console.warn('⚠️ Server proxy not configured - using fallback mock data');
+        }
+      } else {
+        this.hasValidApiKeys = false;
+        console.warn('⚠️ Server proxy unavailable - using fallback mock data');
       }
     } catch (error) {
-      console.warn('⚠️ Could not check API keys:', error);
+      this.hasValidApiKeys = false;
+      console.warn('⚠️ Could not verify server proxy availability:', error);
+      console.log('📦 Falling back to mock data for reliable UX');
     }
   }
   
@@ -270,10 +285,36 @@ class RealDataIntegrationService {
 
   private async getQuoteFromRealAPI(symbol: string): Promise<StockQuote | null> {
     try {
-      const mockStock = await realAPI.getStockQuote(symbol);
-      if (!mockStock) return null;
+      // Use server proxy for real market data
+      const response = await fetch(`/api/market-data/quote/${symbol}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('alfalyzer-token') || ''}`
+        }
+      });
 
-      return this.convertMockToQuote(mockStock);
+      if (!response.ok) {
+        throw new Error(`Server proxy error: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      
+      // Transform server response to our StockQuote format
+      return {
+        symbol: data.symbol || symbol.toUpperCase(),
+        name: data.name || `${symbol} Corp`,
+        price: data.price?.toFixed(2) || '0.00',
+        change: data.change?.toFixed(2) || '0.00',
+        changePercent: data.changePercent?.toFixed(2) || '0.00',
+        sector: data.sector || 'Technology',
+        marketCap: data.marketCap || 'N/A',
+        eps: data.eps?.toString() || 'N/A',
+        peRatio: data.peRatio?.toString() || 'N/A',
+        logo: data.logo || null,
+        lastUpdated: new Date(),
+        source: 'real'
+      };
     } catch (error) {
       console.error(`Real API error for ${symbol}:`, error);
       throw error;

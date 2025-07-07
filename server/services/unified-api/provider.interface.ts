@@ -119,10 +119,11 @@ export abstract class BaseMarketDataProvider implements IMarketDataProvider {
   abstract priority: number;
   abstract capabilities: ProviderCapabilities;
 
-  protected apiKey: string;
+  protected apiKey: string = '';
 
   constructor() {
-    this.apiKey = this.getApiKey();
+    // Don't call getApiKey() here as name might not be initialized yet
+    // Child classes should call this.apiKey = this.getApiKey() after name is set
   }
 
   abstract initialize(): Promise<void>;

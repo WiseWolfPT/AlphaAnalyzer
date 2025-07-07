@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { motion } from "framer-motion";
+import { FadeIn, ScaleIn, SlideIn } from "@/components/animations/css-animations";
 import { Card, CardContent } from "@/components/ui/card";
 import { X } from "lucide-react";
 

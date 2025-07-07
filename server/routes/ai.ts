@@ -95,4 +95,41 @@ router.post('/generate-transcript-summary', async (req, res) => {
   }
 });
 
+router.post('/chat', async (req, res) => {
+  try {
+    const { message, context } = req.body;
+
+    if (!message || typeof message !== 'string') {
+      return res.status(400).json({
+        error: 'Message is required and must be a string',
+      });
+    }
+
+    const tokenCount = await anthropicService.countTextTokens(message);
+    
+    if (tokenCount > 4000) {
+      return res.status(400).json({
+        error: 'Message too long. Maximum 4,000 tokens allowed.',
+        currentTokens: tokenCount,
+      });
+    }
+
+    const response = await anthropicService.chatWithStockAssistant(
+      message,
+      context
+    );
+
+    res.json({
+      response: response.content,
+      inputTokens: tokenCount,
+      outputTokens: response.outputTokens,
+    });
+  } catch (error) {
+    console.error('Chat error:', error);
+    res.status(500).json({
+      error: error instanceof Error ? error.message : 'Chat failed',
+    });
+  }
+});
+
 export default router;

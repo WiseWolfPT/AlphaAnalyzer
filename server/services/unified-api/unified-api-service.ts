@@ -10,6 +10,11 @@ import {
 import { DataType, DATA_TYPE_PROVIDERS, ProviderName } from '../quota/quota-limits';
 import { getCache, CACHE_TTL } from '../cache';
 import { getQuotaTracker } from '../quota';
+import { 
+  circuitBreakerManager, 
+  CircuitBreaker, 
+  CircuitBreakerState 
+} from './circuit-breaker';
 
 export class UnifiedAPIService {
   private providers: Map<ProviderName, IMarketDataProvider> = new Map();
@@ -79,17 +84,27 @@ export class UnifiedAPIService {
       
       if (batchProvider && batchProvider.getBatchPrices) {
         try {
-          const batchResults = await batchProvider.getBatchPrices(uncachedSymbols);
+          // Use circuit breaker for batch requests too
+          const circuitBreaker = circuitBreakerManager.getCircuitBreaker(batchProvider.name);
           
-          // Cache individual results
-          for (const result of batchResults) {
-            await this.cache.set(`price:${result.symbol}`, result, CACHE_TTL.PRICE);
-            results.push(result);
+          if (circuitBreaker.isAvailable()) {
+            const batchResults = await circuitBreaker.execute(async () => {
+              return await batchProvider.getBatchPrices!(uncachedSymbols);
+            });
+            
+            // Cache individual results
+            for (const result of batchResults) {
+              await this.cache.set(`price:${result.symbol}`, result, CACHE_TTL.PRICE);
+              results.push(result);
+            }
+            
+            await this.quotaTracker.recordCall(batchProvider.name, 'batch-prices');
+          } else {
+            console.warn(`[UnifiedAPIService] Batch provider ${batchProvider.name} circuit breaker not available`);
+            throw new Error('Circuit breaker not available for batch provider');
           }
-          
-          await this.quotaTracker.recordCall(batchProvider.name, 'batch-prices');
         } catch (error) {
-          console.error('[UnifiedAPIService] Batch request failed, falling back to individual requests');
+          console.error('[UnifiedAPIService] Batch request failed, falling back to individual requests:', (error as Error).message);
           // Fall back to individual requests
           for (const symbol of uncachedSymbols) {
             try {
@@ -220,6 +235,21 @@ export class UnifiedAPIService {
         continue;
       }
 
+      // Get circuit breaker for this provider
+      const circuitBreaker = circuitBreakerManager.getCircuitBreaker(providerName, {
+        failureThreshold: 5,        // Open after 5 failures
+        successThreshold: 3,        // Close after 3 successes in half-open
+        timeout: 60000,            // 1 minute timeout
+        halfOpenMaxCalls: 3        // Allow 3 calls in half-open state
+      });
+
+      // Skip if circuit breaker is open
+      if (!circuitBreaker.isAvailable()) {
+        const state = circuitBreaker.getState();
+        console.log(`[UnifiedAPIService] Skipping ${providerName} - circuit breaker is ${state}`);
+        continue;
+      }
+
       // Check quota
       const canUse = await this.quotaTracker.canUseProvider(providerName as ProviderName);
       if (!canUse) {
@@ -228,26 +258,44 @@ export class UnifiedAPIService {
       }
 
       try {
-        console.log(`[UnifiedAPIService] Trying ${providerName} for ${dataType}`);
-        const result = await operation(provider);
+        console.log(`[UnifiedAPIService] Trying ${providerName} for ${dataType} (Circuit: ${circuitBreaker.getState()})`);
+        
+        // Execute operation with circuit breaker protection
+        const result = await circuitBreaker.execute(async () => {
+          return await operation(provider);
+        });
         
         // Record successful call
         await this.quotaTracker.recordCall(providerName as ProviderName, dataType);
         
+        console.log(`[UnifiedAPIService] ✅ Success with ${providerName} for ${dataType}`);
         return result;
       } catch (error: any) {
-        console.error(`[UnifiedAPIService] ${providerName} failed:`, error.message);
+        console.error(`[UnifiedAPIService] ❌ ${providerName} failed:`, error.message);
         errors.push(error);
+        
+        // Handle specific error types
+        if (error.name === 'CircuitBreakerOpenError') {
+          console.warn(`[UnifiedAPIService] Circuit breaker blocked request to ${providerName}`);
+          continue;
+        }
+        
+        if (error.name === 'CircuitBreakerHalfOpenMaxCallsError') {
+          console.warn(`[UnifiedAPIService] Circuit breaker half-open max calls reached for ${providerName}`);
+          continue;
+        }
         
         // If rate limited, don't try again
         if (error.message.includes('Rate limit')) {
+          console.warn(`[UnifiedAPIService] Rate limit hit for ${providerName}`);
           continue;
         }
       }
     }
 
     // All providers failed
-    throw new Error(`All providers failed for ${dataType}. Errors: ${errors.map(e => e.message).join(', ')}`);
+    const errorSummary = errors.map(e => `${e.name}: ${e.message}`).join(', ');
+    throw new Error(`All providers failed for ${dataType}. Errors: ${errorSummary}`);
   }
 
   private async findProviderWithCapability(
@@ -260,6 +308,14 @@ export class UnifiedAPIService {
       const provider = this.providers.get(providerName as ProviderName);
       
       if (provider && provider.canHandle(dataType) && capabilityCheck(provider)) {
+        // Check circuit breaker availability
+        const circuitBreaker = circuitBreakerManager.getCircuitBreaker(providerName);
+        if (!circuitBreaker.isAvailable()) {
+          console.log(`[UnifiedAPIService] Skipping ${providerName} - circuit breaker not available (${circuitBreaker.getState()})`);
+          continue;
+        }
+        
+        // Check quota
         const canUse = await this.quotaTracker.canUseProvider(providerName as ProviderName);
         if (canUse) {
           return provider;
@@ -278,19 +334,61 @@ export class UnifiedAPIService {
       const healthy = await provider.isHealthy();
       const usage = await this.quotaTracker.getUsage(name);
       
+      // Get circuit breaker status
+      const circuitBreaker = circuitBreakerManager.getCircuitBreaker(name);
+      const circuitStatus = circuitBreaker.getHealthStatus();
+      const circuitMetrics = circuitBreaker.getMetrics();
+      
       providersStatus.push({
         name,
         healthy,
-        usage
+        usage,
+        circuitBreaker: {
+          state: circuitStatus.state,
+          isHealthy: circuitStatus.isHealthy,
+          failureRate: circuitStatus.failureRate,
+          uptime: circuitStatus.uptime,
+          totalRequests: circuitMetrics.totalRequests,
+          totalFailures: circuitMetrics.totalFailures,
+          totalSuccesses: circuitMetrics.totalSuccesses,
+          consecutiveFailures: circuitMetrics.consecutiveFailures,
+          lastFailureTime: circuitMetrics.lastFailureTime,
+          lastSuccessTime: circuitMetrics.lastSuccessTime
+        }
       });
     }
 
     const cacheStats = (this.cache as any).getCacheStats ? (this.cache as any).getCacheStats() : null;
+    const allCircuitBreakerStatuses = circuitBreakerManager.getAllStatuses();
 
     return {
       initialized: this.initialized,
       providers: providersStatus,
-      cache: cacheStats
+      cache: cacheStats,
+      circuitBreakers: allCircuitBreakerStatuses,
+      availableProviders: circuitBreakerManager.getAvailableProviders()
+    };
+  }
+
+  // Circuit breaker management methods
+  resetCircuitBreaker(providerName: ProviderName): void {
+    const circuitBreaker = circuitBreakerManager.getCircuitBreaker(providerName);
+    circuitBreaker.reset();
+    console.log(`[UnifiedAPIService] Circuit breaker reset for ${providerName}`);
+  }
+
+  resetAllCircuitBreakers(): void {
+    circuitBreakerManager.resetAll();
+    console.log('[UnifiedAPIService] All circuit breakers reset');
+  }
+
+  getCircuitBreakerStatus(providerName: ProviderName) {
+    const circuitBreaker = circuitBreakerManager.getCircuitBreaker(providerName);
+    return {
+      state: circuitBreaker.getState(),
+      metrics: circuitBreaker.getMetrics(),
+      health: circuitBreaker.getHealthStatus(),
+      isAvailable: circuitBreaker.isAvailable()
     };
   }
 }

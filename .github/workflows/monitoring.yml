@@ -1,0 +1,506 @@
+name: 📊 Production Monitoring
+
+on:
+  # Scheduled monitoring checks
+  schedule:
+    - cron: '*/15 * * * *'  # Every 15 minutes
+  
+  # Manual trigger for immediate checks
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to monitor'
+        required: true
+        default: 'production'
+        type: choice
+        options:
+          - production
+          - staging
+          - both
+      check_type:
+        description: 'Type of monitoring check'
+        required: true
+        default: 'full'
+        type: choice
+        options:
+          - health
+          - performance
+          - security
+          - backup
+          - full
+
+# Only run on main branch for scheduled runs
+# Allow manual runs on any branch for testing
+# Restrict permissions for security
+permissions:
+  contents: read
+  issues: write
+  actions: read
+
+env:
+  NODE_VERSION: 18
+  MONITORING_TIMEOUT: 30
+
+jobs:
+  # 🏥 Health Check Monitoring
+  health-monitoring:
+    name: 🏥 Health Check (${{ matrix.environment }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    if: github.event_name == 'schedule' || github.event.inputs.check_type == 'health' || github.event.inputs.check_type == 'full'
+
+    strategy:
+      matrix:
+        environment: 
+          - ${{ github.event_name == 'schedule' && 'production' || (github.event.inputs.environment == 'both' && 'production') || github.event.inputs.environment }}
+          - ${{ github.event.inputs.environment == 'both' && 'staging' || '' }}
+        exclude:
+          - environment: ''
+
+    steps:
+      - name: 🔍 Health Check - ${{ matrix.environment }}
+        id: health-check
+        run: |
+          echo "## 🏥 Health Check: ${{ matrix.environment }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          # Determine URLs based on environment
+          if [ "${{ matrix.environment }}" = "production" ]; then
+            FRONTEND_URL="https://alfalyzer.com"
+            API_URL="https://alfalyzer.com/api"
+          else
+            FRONTEND_URL="https://staging.alfalyzer.com"
+            API_URL="https://staging.alfalyzer.com/api"
+          fi
+          
+          echo "Testing URLs:" >> $GITHUB_STEP_SUMMARY
+          echo "- Frontend: $FRONTEND_URL" >> $GITHUB_STEP_SUMMARY
+          echo "- API: $API_URL" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          # Initialize status tracking
+          OVERALL_STATUS="healthy"
+          ISSUES_FOUND=""
+          
+          # Test frontend availability
+          echo "### Frontend Health" >> $GITHUB_STEP_SUMMARY
+          frontend_status=$(curl -s -o /dev/null -w "%{http_code}" --max-time $MONITORING_TIMEOUT "$FRONTEND_URL" || echo "000")
+          frontend_time=$(curl -s -o /dev/null -w "%{time_total}" --max-time $MONITORING_TIMEOUT "$FRONTEND_URL" || echo "0")
+          
+          if [ "$frontend_status" = "200" ]; then
+            echo "- ✅ Frontend: Online (${frontend_time}s)" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "- ❌ Frontend: Down (HTTP $frontend_status)" >> $GITHUB_STEP_SUMMARY
+            OVERALL_STATUS="unhealthy"
+            ISSUES_FOUND="$ISSUES_FOUND Frontend down (HTTP $frontend_status);"
+          fi
+          
+          # Test API health endpoint
+          echo "### API Health" >> $GITHUB_STEP_SUMMARY
+          api_health_status=$(curl -s -o /dev/null -w "%{http_code}" --max-time $MONITORING_TIMEOUT "$API_URL/health" || echo "000")
+          api_health_time=$(curl -s -o /dev/null -w "%{time_total}" --max-time $MONITORING_TIMEOUT "$API_URL/health" || echo "0")
+          
+          if [ "$api_health_status" = "200" ]; then
+            echo "- ✅ API Health: Online (${api_health_time}s)" >> $GITHUB_STEP_SUMMARY
+            
+            # Get detailed health information
+            health_details=$(curl -s --max-time $MONITORING_TIMEOUT "$API_URL/health" || echo "{}")
+            echo "- 📊 Health Details: \`$health_details\`" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "- ❌ API Health: Down (HTTP $api_health_status)" >> $GITHUB_STEP_SUMMARY
+            OVERALL_STATUS="unhealthy"
+            ISSUES_FOUND="$ISSUES_FOUND API health check failed (HTTP $api_health_status);"
+          fi
+          
+          # Test additional API endpoints
+          echo "### API Endpoints" >> $GITHUB_STEP_SUMMARY
+          
+          # Test stocks endpoint
+          stocks_status=$(curl -s -o /dev/null -w "%{http_code}" --max-time $MONITORING_TIMEOUT "$API_URL/stocks" || echo "000")
+          if [ "$stocks_status" = "200" ] || [ "$stocks_status" = "401" ]; then
+            echo "- ✅ Stocks API: Responding (HTTP $stocks_status)" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "- ⚠️ Stocks API: Issue (HTTP $stocks_status)" >> $GITHUB_STEP_SUMMARY
+            if [ "$OVERALL_STATUS" = "healthy" ]; then
+              OVERALL_STATUS="degraded"
+            fi
+          fi
+          
+          # Test market data endpoint
+          market_status=$(curl -s -o /dev/null -w "%{http_code}" --max-time $MONITORING_TIMEOUT "$API_URL/market-data" || echo "000")
+          if [ "$market_status" = "200" ] || [ "$market_status" = "401" ]; then
+            echo "- ✅ Market Data API: Responding (HTTP $market_status)" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "- ⚠️ Market Data API: Issue (HTTP $market_status)" >> $GITHUB_STEP_SUMMARY
+            if [ "$OVERALL_STATUS" = "healthy" ]; then
+              OVERALL_STATUS="degraded"
+            fi
+          fi
+          
+          # Performance thresholds
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Performance Analysis" >> $GITHUB_STEP_SUMMARY
+          
+          frontend_ms=$(echo "$frontend_time * 1000" | bc -l 2>/dev/null | cut -d. -f1 || echo "0")
+          api_ms=$(echo "$api_health_time * 1000" | bc -l 2>/dev/null | cut -d. -f1 || echo "0")
+          
+          if [ "$frontend_ms" -gt 5000 ]; then
+            echo "- ⚠️ Frontend response time slow: ${frontend_ms}ms" >> $GITHUB_STEP_SUMMARY
+            if [ "$OVERALL_STATUS" = "healthy" ]; then
+              OVERALL_STATUS="degraded"
+            fi
+          else
+            echo "- ✅ Frontend response time: ${frontend_ms}ms" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          if [ "$api_ms" -gt 3000 ]; then
+            echo "- ⚠️ API response time slow: ${api_ms}ms" >> $GITHUB_STEP_SUMMARY
+            if [ "$OVERALL_STATUS" = "healthy" ]; then
+              OVERALL_STATUS="degraded"
+            fi
+          else
+            echo "- ✅ API response time: ${api_ms}ms" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          # Set outputs for next steps
+          echo "status=$OVERALL_STATUS" >> $GITHUB_OUTPUT
+          echo "issues=$ISSUES_FOUND" >> $GITHUB_OUTPUT
+          echo "environment=${{ matrix.environment }}" >> $GITHUB_OUTPUT
+          
+          # Final summary
+          echo "" >> $GITHUB_STEP_SUMMARY
+          if [ "$OVERALL_STATUS" = "healthy" ]; then
+            echo "## ✅ Overall Status: HEALTHY" >> $GITHUB_STEP_SUMMARY
+          elif [ "$OVERALL_STATUS" = "degraded" ]; then
+            echo "## ⚠️ Overall Status: DEGRADED" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "## ❌ Overall Status: UNHEALTHY" >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: 🚨 Alert on Critical Issues
+        if: steps.health-check.outputs.status == 'unhealthy'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const environment = '${{ steps.health-check.outputs.environment }}';
+            const issues = '${{ steps.health-check.outputs.issues }}';
+            
+            // Create an issue for critical health failures
+            const title = `🚨 Critical Health Alert: ${environment} Environment Down`;
+            const body = `## 🚨 Critical Health Alert
+            
+            **Environment:** ${environment}
+            **Status:** UNHEALTHY
+            **Detected:** ${new Date().toISOString()}
+            **Issues Found:** ${issues}
+            
+            ### Immediate Actions Required
+            - [ ] Check server status and logs
+            - [ ] Verify DNS and SSL configuration
+            - [ ] Check database connectivity
+            - [ ] Review recent deployments
+            
+            ### Monitoring Details
+            - **Workflow:** [View Run](${context.payload.repository.html_url}/actions/runs/${context.runId})
+            - **Branch:** ${context.ref}
+            - **Commit:** ${context.sha.substring(0, 7)}
+            
+            This issue was automatically created by the monitoring system.
+            `;
+            
+            // Check if a similar issue already exists (open)
+            const { data: existingIssues } = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'monitoring,critical'
+            });
+            
+            const hasExistingAlert = existingIssues.find(issue => 
+              issue.title.includes(`${environment} Environment Down`)
+            );
+            
+            if (!hasExistingAlert) {
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: title,
+                body: body,
+                labels: ['monitoring', 'critical', 'health-check', environment]
+              });
+              console.log('Critical health alert issue created');
+            } else {
+              console.log('Existing critical alert found, not creating duplicate');
+            }
+
+  # 📈 Performance Monitoring
+  performance-monitoring:
+    name: 📈 Performance Check
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    if: github.event.inputs.check_type == 'performance' || github.event.inputs.check_type == 'full'
+
+    steps:
+      - name: 📈 Performance Analysis
+        run: |
+          echo "## 📈 Performance Monitoring" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          ENVIRONMENT="${{ github.event.inputs.environment || 'production' }}"
+          
+          if [ "$ENVIRONMENT" = "production" ] || [ "$ENVIRONMENT" = "both" ]; then
+            URL="https://alfalyzer.com"
+          else
+            URL="https://staging.alfalyzer.com"
+          fi
+          
+          echo "Testing performance for: $URL" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          # Detailed performance metrics
+          echo "### Response Time Analysis" >> $GITHUB_STEP_SUMMARY
+          
+          # Multiple samples for accuracy
+          total_time=0
+          samples=5
+          
+          for i in $(seq 1 $samples); do
+            response_time=$(curl -s -o /dev/null -w "%{time_total}" --max-time 30 "$URL" || echo "30.0")
+            response_ms=$(echo "$response_time * 1000" | bc -l | cut -d. -f1)
+            total_time=$((total_time + response_ms))
+            echo "- Sample $i: ${response_ms}ms" >> $GITHUB_STEP_SUMMARY
+          done
+          
+          avg_time=$((total_time / samples))
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Average Response Time: ${avg_time}ms**" >> $GITHUB_STEP_SUMMARY
+          
+          # Performance thresholds
+          if [ $avg_time -lt 1000 ]; then
+            echo "- 🚀 Excellent performance" >> $GITHUB_STEP_SUMMARY
+          elif [ $avg_time -lt 2000 ]; then
+            echo "- ✅ Good performance" >> $GITHUB_STEP_SUMMARY
+          elif [ $avg_time -lt 5000 ]; then
+            echo "- ⚠️ Moderate performance" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "- ❌ Poor performance - investigation needed" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Performance Recommendations" >> $GITHUB_STEP_SUMMARY
+          
+          if [ $avg_time -gt 3000 ]; then
+            echo "- Consider CDN optimization" >> $GITHUB_STEP_SUMMARY
+            echo "- Review server resources" >> $GITHUB_STEP_SUMMARY
+            echo "- Check database performance" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "- Performance within acceptable limits" >> $GITHUB_STEP_SUMMARY
+          fi
+
+  # 🔒 Security Monitoring
+  security-monitoring:
+    name: 🔒 Security Check
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    if: github.event.inputs.check_type == 'security' || github.event.inputs.check_type == 'full'
+
+    steps:
+      - name: 🔒 Security Headers Check
+        run: |
+          echo "## 🔒 Security Monitoring" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          ENVIRONMENT="${{ github.event.inputs.environment || 'production' }}"
+          
+          if [ "$ENVIRONMENT" = "production" ] || [ "$ENVIRONMENT" = "both" ]; then
+            URL="https://alfalyzer.com"
+          else
+            URL="https://staging.alfalyzer.com"
+          fi
+          
+          echo "Checking security headers for: $URL" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          # Get headers
+          HEADERS=$(curl -s -I --max-time 30 "$URL" || echo "")
+          
+          echo "### Security Headers Analysis" >> $GITHUB_STEP_SUMMARY
+          echo "| Header | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|--------|--------|" >> $GITHUB_STEP_SUMMARY
+          
+          # Check important security headers
+          if echo "$HEADERS" | grep -i "strict-transport-security" > /dev/null; then
+            echo "| HSTS | ✅ Present |" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "| HSTS | ❌ Missing |" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          if echo "$HEADERS" | grep -i "content-security-policy" > /dev/null; then
+            echo "| CSP | ✅ Present |" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "| CSP | ❌ Missing |" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          if echo "$HEADERS" | grep -i "x-frame-options" > /dev/null; then
+            echo "| X-Frame-Options | ✅ Present |" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "| X-Frame-Options | ❌ Missing |" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          if echo "$HEADERS" | grep -i "x-content-type-options" > /dev/null; then
+            echo "| X-Content-Type-Options | ✅ Present |" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "| X-Content-Type-Options | ❌ Missing |" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          # SSL/TLS check
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### SSL/TLS Configuration" >> $GITHUB_STEP_SUMMARY
+          
+          ssl_info=$(openssl s_client -connect $(echo $URL | sed 's|https://||'):443 -servername $(echo $URL | sed 's|https://||') </dev/null 2>/dev/null | openssl x509 -noout -dates 2>/dev/null || echo "")
+          
+          if [ -n "$ssl_info" ]; then
+            echo "- ✅ SSL certificate is valid" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "- ❌ SSL certificate issues detected" >> $GITHUB_STEP_SUMMARY
+          fi
+
+  # 💾 Backup Monitoring
+  backup-monitoring:
+    name: 💾 Backup Status
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    if: github.event.inputs.check_type == 'backup' || github.event.inputs.check_type == 'full'
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 💾 Check Backup Status
+        run: |
+          echo "## 💾 Backup Monitoring" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          # Check if backup script exists
+          if [ -f "scripts/backup-restore.sh" ]; then
+            echo "- ✅ Backup script available" >> $GITHUB_STEP_SUMMARY
+            
+            # Check backup directory if it exists
+            if [ -d "backups" ]; then
+              backup_count=$(find backups -name "alfalyzer_backup_*.tar.gz" -type f | wc -l)
+              latest_backup=$(find backups -name "alfalyzer_backup_*.tar.gz" -type f -printf '%T@ %p\n' 2>/dev/null | sort -n | tail -1 | cut -d' ' -f2- || echo "")
+              
+              echo "- 📊 Total backups: $backup_count" >> $GITHUB_STEP_SUMMARY
+              
+              if [ -n "$latest_backup" ]; then
+                backup_age=$(find backups -name "alfalyzer_backup_*.tar.gz" -type f -mtime +1 | wc -l)
+                if [ $backup_age -eq 0 ]; then
+                  echo "- ✅ Recent backup available (< 24h)" >> $GITHUB_STEP_SUMMARY
+                else
+                  echo "- ⚠️ Latest backup is older than 24h" >> $GITHUB_STEP_SUMMARY
+                fi
+              else
+                echo "- ❌ No backups found" >> $GITHUB_STEP_SUMMARY
+              fi
+            else
+              echo "- ⚠️ Backup directory not found (backups may be external)" >> $GITHUB_STEP_SUMMARY
+            fi
+          else
+            echo "- ❌ Backup script not found" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Backup Recommendations" >> $GITHUB_STEP_SUMMARY
+          echo "- Ensure automated backup schedule is active" >> $GITHUB_STEP_SUMMARY
+          echo "- Test backup restoration periodically" >> $GITHUB_STEP_SUMMARY
+          echo "- Monitor backup storage usage" >> $GITHUB_STEP_SUMMARY
+
+  # 📋 Monitoring Summary
+  monitoring-summary:
+    name: 📋 Monitoring Summary
+    runs-on: ubuntu-latest
+    needs: [health-monitoring, performance-monitoring, security-monitoring, backup-monitoring]
+    if: always()
+
+    steps:
+      - name: 📊 Generate Monitoring Report
+        run: |
+          echo "# 📊 Production Monitoring Report" >> $GITHUB_STEP_SUMMARY
+          echo "*Generated: $(date)*" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          # Check job statuses
+          health_status="${{ needs.health-monitoring.result }}"
+          performance_status="${{ needs.performance-monitoring.result }}"
+          security_status="${{ needs.security-monitoring.result }}"
+          backup_status="${{ needs.backup-monitoring.result }}"
+          
+          echo "## 📋 Monitoring Status" >> $GITHUB_STEP_SUMMARY
+          echo "| Check | Status | Next Run |" >> $GITHUB_STEP_SUMMARY
+          echo "|-------|--------|----------|" >> $GITHUB_STEP_SUMMARY
+          
+          get_icon() {
+            case $1 in
+              "success") echo "✅" ;;
+              "failure") echo "❌" ;;
+              "cancelled") echo "⏹️" ;;
+              "skipped") echo "⏭️" ;;
+              *) echo "❓" ;;
+            esac
+          }
+          
+          echo "| Health Monitoring | $(get_icon $health_status) $health_status | Every 15 minutes |" >> $GITHUB_STEP_SUMMARY
+          echo "| Performance Check | $(get_icon $performance_status) $performance_status | On demand |" >> $GITHUB_STEP_SUMMARY
+          echo "| Security Check | $(get_icon $security_status) $security_status | On demand |" >> $GITHUB_STEP_SUMMARY
+          echo "| Backup Status | $(get_icon $backup_status) $backup_status | On demand |" >> $GITHUB_STEP_SUMMARY
+          
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## 🔗 Quick Actions" >> $GITHUB_STEP_SUMMARY
+          echo "- [Run Manual Check](${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/workflows/monitoring.yml)" >> $GITHUB_STEP_SUMMARY
+          echo "- [View Health Issues](${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/issues?q=is%3Aopen+label%3Amonitoring)" >> $GITHUB_STEP_SUMMARY
+          echo "- [Check Deployment Status](${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/workflows/deploy.yml)" >> $GITHUB_STEP_SUMMARY
+          
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## 📈 System Status" >> $GITHUB_STEP_SUMMARY
+          
+          if [[ "$health_status" == "success" && "$performance_status" != "failure" && "$security_status" != "failure" ]]; then
+            echo "🟢 **All systems operational**" >> $GITHUB_STEP_SUMMARY
+          elif [[ "$health_status" == "failure" ]]; then
+            echo "🔴 **Critical issues detected**" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "🟡 **Some issues detected**" >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: 💬 Auto-close resolved issues
+        if: needs.health-monitoring.result == 'success'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            // Auto-close health monitoring issues if the system is now healthy
+            const { data: issues } = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'monitoring,health-check'
+            });
+            
+            for (const issue of issues) {
+              if (issue.title.includes('Health Alert') || issue.title.includes('Environment Down')) {
+                await github.rest.issues.createComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: issue.number,
+                  body: '✅ **Resolved:** Health checks are now passing. Auto-closing this monitoring alert.\n\n*Resolved by monitoring workflow at ' + new Date().toISOString() + '*'
+                });
+                
+                await github.rest.issues.update({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: issue.number,
+                  state: 'closed',
+                  labels: [...issue.labels.map(l => l.name), 'resolved']
+                });
+                
+                console.log(`Closed resolved health alert issue #${issue.number}`);
+              }
+            }

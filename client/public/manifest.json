@@ -1,0 +1,106 @@
+{
+  "name": "Alfalyzer - Professional Financial Analytics",
+  "short_name": "Alfalyzer",
+  "description": "Análise fundamental de ações com cálculo de valor intrínseco em tempo real",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#D1F934",
+  "orientation": "portrait",
+  "categories": ["finance", "business", "productivity"],
+  "lang": "pt-BR",
+  "dir": "ltr",
+  "icons": [
+    {
+      "src": "/icon-72.png",
+      "sizes": "72x72",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-96.png",
+      "sizes": "96x96",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-128.png",
+      "sizes": "128x128",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-144.png",
+      "sizes": "144x144",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-152.png",
+      "sizes": "152x152",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-384.png",
+      "sizes": "384x384",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/screenshot-mobile.png",
+      "sizes": "360x800",
+      "type": "image/png",
+      "label": "Dashboard móvel"
+    },
+    {
+      "src": "/screenshot-desktop.png",
+      "sizes": "1920x1080",
+      "type": "image/png",
+      "label": "Dashboard desktop"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Watchlists",
+      "short_name": "Watchlists",
+      "description": "Ver as suas watchlists",
+      "url": "/watchlists",
+      "icons": [{ "src": "/icon-96.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "Valor Intrínseco",
+      "short_name": "Valor Int.",
+      "description": "Calcular valor intrínseco",
+      "url": "/intrinsic-value",
+      "icons": [{ "src": "/icon-96.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "Portfólios",
+      "short_name": "Portfólios",
+      "description": "Gerir portfólios",
+      "url": "/portfolios",
+      "icons": [{ "src": "/icon-96.png", "sizes": "96x96" }]
+    }
+  ],
+  "prefer_related_applications": false,
+  "related_applications": [],
+  "permissions": [
+    "notifications"
+  ],
+  "gcm_sender_id": "103953800507"
+}

@@ -14,6 +14,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Moon, Sun, User, Menu, UserCircle, HelpCircle, LogOut } from "lucide-react";
+import { NotificationCenter } from "@/components/alerts/notification-center";
+import { LanguageSelector } from "@/components/ui/language-selector";
 
 interface TopBarProps {
   onMobileMenuToggle?: () => void;
@@ -109,6 +111,14 @@ export function TopBar({ onMobileMenuToggle }: TopBarProps) {
             <SelectItem value="APAC">APAC</SelectItem>
           </SelectContent>
         </Select>
+
+        {/* Language Selector */}
+        <LanguageSelector />
+
+        {/* Notification Center */}
+        {user && (
+          <NotificationCenter className="h-9 w-9 p-0 bg-secondary/50 hover:bg-secondary border border-border/50" />
+        )}
 
         {/* Theme Toggle */}
         <Button

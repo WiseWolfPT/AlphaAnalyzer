@@ -49,8 +49,8 @@ export function Sidebar() {
         </div>
 
         {/* Navigation Links */}
-        <nav className="space-y-1 flex-1">
-          {navigation.map((item) => {
+        <nav className="space-y-2 flex-1">
+          {navigation.map((item, index) => {
             const isActive = location === item.href;
             
             return (
@@ -62,20 +62,32 @@ export function Sidebar() {
                   window.location.href = item.href;
                 }}
                 className="w-full text-left"
+                style={{
+                  '--stagger-delay': `${index * 50}ms`
+                } as React.CSSProperties}
               >
                 <div
                   className={cn(
-                    "flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 group cursor-pointer",
+                    "flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 group cursor-pointer sidebar-nav-item relative",
+                    "hover:scale-[1.02] active:scale-[0.98]",
+                    "slide-in-stagger",
                     isActive
-                      ? "bg-chartreuse/10 text-chartreuse border border-chartreuse/20"
-                      : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
+                      ? "bg-gradient-to-r from-chartreuse/15 to-chartreuse/10 text-chartreuse border border-chartreuse/30 shadow-sm active"
+                      : "text-muted-foreground hover:text-foreground hover:bg-secondary/60 hover:shadow-sm"
                   )}
                 >
                   <item.icon className={cn(
-                    "h-5 w-5 transition-transform group-hover:scale-110",
-                    isActive ? "text-chartreuse" : "text-muted-foreground"
+                    "h-5 w-5 transition-all duration-200 group-hover:scale-110 group-hover:rotate-3",
+                    isActive ? "text-chartreuse" : "text-muted-foreground group-hover:text-chartreuse"
                   )} />
-                  <span>{item.name}</span>
+                  <span className="transition-all duration-200 group-hover:translate-x-0.5">
+                    {item.name}
+                  </span>
+                  {isActive && (
+                    <div className="ml-auto">
+                      <div className="w-2 h-2 bg-chartreuse rounded-full animate-pulse" />
+                    </div>
+                  )}
                 </div>
               </button>
             );

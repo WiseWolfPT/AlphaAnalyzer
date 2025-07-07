@@ -345,6 +345,88 @@ export interface Database {
           updated_at?: string;
         };
       };
+      alerts: {
+        Row: {
+          id: string;
+          user_id: string;
+          symbol: string;
+          alert_type: 'price_above' | 'price_below' | 'volume_spike' | 'news_sentiment' | 'technical_indicator';
+          threshold_value: number | null;
+          threshold_operator: '>' | '<' | '>=' | '<=' | '=' | null;
+          condition_data: string | null;
+          is_active: boolean;
+          triggered_count: number;
+          last_triggered_at: string | null;
+          created_at: string;
+          updated_at: string;
+          snooze_until: string | null;
+          notification_methods: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          symbol: string;
+          alert_type: 'price_above' | 'price_below' | 'volume_spike' | 'news_sentiment' | 'technical_indicator';
+          threshold_value?: number | null;
+          threshold_operator?: '>' | '<' | '>=' | '<=' | '=' | null;
+          condition_data?: string | null;
+          is_active?: boolean;
+          triggered_count?: number;
+          last_triggered_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+          snooze_until?: string | null;
+          notification_methods?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          symbol?: string;
+          alert_type?: 'price_above' | 'price_below' | 'volume_spike' | 'news_sentiment' | 'technical_indicator';
+          threshold_value?: number | null;
+          threshold_operator?: '>' | '<' | '>=' | '<=' | '=' | null;
+          condition_data?: string | null;
+          is_active?: boolean;
+          triggered_count?: number;
+          last_triggered_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+          snooze_until?: string | null;
+          notification_methods?: string;
+        };
+      };
+      alert_triggers: {
+        Row: {
+          id: string;
+          alert_id: string;
+          triggered_at: string;
+          trigger_value: number;
+          trigger_data: string | null;
+          notification_sent: boolean;
+          notification_sent_at: string | null;
+          status: 'pending' | 'sent' | 'failed' | 'dismissed';
+        };
+        Insert: {
+          id?: string;
+          alert_id: string;
+          triggered_at?: string;
+          trigger_value: number;
+          trigger_data?: string | null;
+          notification_sent?: boolean;
+          notification_sent_at?: string | null;
+          status?: 'pending' | 'sent' | 'failed' | 'dismissed';
+        };
+        Update: {
+          id?: string;
+          alert_id?: string;
+          triggered_at?: string;
+          trigger_value?: number;
+          trigger_data?: string | null;
+          notification_sent?: boolean;
+          notification_sent_at?: string | null;
+          status?: 'pending' | 'sent' | 'failed' | 'dismissed';
+        };
+      };
     };
     Views: {
       portfolio_summary: {
@@ -403,6 +485,8 @@ export type Dividend = Tables<'dividends'>;
 export type PortfolioPerformance = Tables<'portfolio_performance'>;
 export type CashTransaction = Tables<'cash_transactions'>;
 export type Subscription = Tables<'subscriptions'>;
+export type Alert = Tables<'alerts'>;
+export type AlertTrigger = Tables<'alert_triggers'>;
 
 // Insert types
 export type InsertUser = Database['public']['Tables']['users']['Insert'];
@@ -412,6 +496,8 @@ export type InsertPortfolio = Database['public']['Tables']['portfolios']['Insert
 export type InsertTransaction = Database['public']['Tables']['transactions']['Insert'];
 export type InsertDividend = Database['public']['Tables']['dividends']['Insert'];
 export type InsertCashTransaction = Database['public']['Tables']['cash_transactions']['Insert'];
+export type InsertAlert = Database['public']['Tables']['alerts']['Insert'];
+export type InsertAlertTrigger = Database['public']['Tables']['alert_triggers']['Insert'];
 
 // Update types
 export type UpdateUser = Database['public']['Tables']['users']['Update'];
@@ -421,6 +507,8 @@ export type UpdatePortfolio = Database['public']['Tables']['portfolios']['Update
 export type UpdateTransaction = Database['public']['Tables']['transactions']['Update'];
 export type UpdateHolding = Database['public']['Tables']['holdings']['Update'];
 export type UpdateSubscription = Database['public']['Tables']['subscriptions']['Update'];
+export type UpdateAlert = Database['public']['Tables']['alerts']['Update'];
+export type UpdateAlertTrigger = Database['public']['Tables']['alert_triggers']['Update'];
 
 // View types
 export type PortfolioSummary = Database['public']['Views']['portfolio_summary']['Row'];

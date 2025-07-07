@@ -12,3 +12,6 @@ export function getUnifiedAPIService(): UnifiedAPIService {
   }
   return unifiedAPIInstance;
 }
+
+// Export instance for backward compatibility
+export const unifiedApiService = getUnifiedAPIService();

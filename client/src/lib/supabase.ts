@@ -11,15 +11,21 @@ import type {
   PortfolioPerformance,
   CashTransaction,
   Subscription,
+  Alert,
+  AlertTrigger,
   InsertWatchlist,
   InsertWatchlistItem,
   InsertPortfolio,
   InsertTransaction,
   InsertDividend,
   InsertCashTransaction,
+  InsertAlert,
+  InsertAlertTrigger,
   UpdateWatchlist,
   UpdatePortfolio,
-  UpdateTransaction
+  UpdateTransaction,
+  UpdateAlert,
+  UpdateAlertTrigger
 } from '../../../shared/types/database';
 
 // Supabase configuration - using environment variables
@@ -528,6 +534,211 @@ export const db = {
     }
     
     return data;
+  },
+
+  // Alert operations
+  async getUserAlerts(userId: string): Promise<Alert[]> {
+    const { data, error } = await supabase
+      .from('alerts')
+      .select('*')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false });
+    
+    if (error) {
+      console.error('Error fetching alerts:', error);
+      return [];
+    }
+    
+    return data || [];
+  },
+
+  async getActiveAlerts(): Promise<Alert[]> {
+    const { data, error } = await supabase
+      .from('alerts')
+      .select('*')
+      .eq('is_active', true)
+      .is('snooze_until', null)
+      .order('created_at', { ascending: false });
+    
+    if (error) {
+      console.error('Error fetching active alerts:', error);
+      return [];
+    }
+    
+    return data || [];
+  },
+
+  async getAlertsBySymbol(symbol: string): Promise<Alert[]> {
+    const { data, error } = await supabase
+      .from('alerts')
+      .select('*')
+      .eq('symbol', symbol.toUpperCase())
+      .eq('is_active', true)
+      .is('snooze_until', null);
+    
+    if (error) {
+      console.error('Error fetching alerts by symbol:', error);
+      return [];
+    }
+    
+    return data || [];
+  },
+
+  async createAlert(alert: InsertAlert): Promise<Alert | null> {
+    const { data, error } = await supabase
+      .from('alerts')
+      .insert({
+        ...alert,
+        symbol: alert.symbol.toUpperCase()
+      })
+      .select()
+      .single();
+    
+    if (error) {
+      console.error('Error creating alert:', error);
+      return null;
+    }
+    
+    return data;
+  },
+
+  async updateAlert(alertId: string, updates: UpdateAlert): Promise<Alert | null> {
+    const { data, error } = await supabase
+      .from('alerts')
+      .update({
+        ...updates,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', alertId)
+      .select()
+      .single();
+    
+    if (error) {
+      console.error('Error updating alert:', error);
+      return null;
+    }
+    
+    return data;
+  },
+
+  async deleteAlert(alertId: string): Promise<boolean> {
+    const { error } = await supabase
+      .from('alerts')
+      .delete()
+      .eq('id', alertId);
+    
+    if (error) {
+      console.error('Error deleting alert:', error);
+      return false;
+    }
+    
+    return true;
+  },
+
+  async snoozeAlert(alertId: string, snoozeUntil: Date): Promise<boolean> {
+    const { error } = await supabase
+      .from('alerts')
+      .update({ snooze_until: snoozeUntil.toISOString() })
+      .eq('id', alertId);
+    
+    if (error) {
+      console.error('Error snoozing alert:', error);
+      return false;
+    }
+    
+    return true;
+  },
+
+  async toggleAlert(alertId: string, isActive: boolean): Promise<boolean> {
+    const { error } = await supabase
+      .from('alerts')
+      .update({ 
+        is_active: isActive,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', alertId);
+    
+    if (error) {
+      console.error('Error toggling alert:', error);
+      return false;
+    }
+    
+    return true;
+  },
+
+  // Alert trigger operations
+  async createAlertTrigger(trigger: InsertAlertTrigger): Promise<AlertTrigger | null> {
+    const { data, error } = await supabase
+      .from('alert_triggers')
+      .insert(trigger)
+      .select()
+      .single();
+    
+    if (error) {
+      console.error('Error creating alert trigger:', error);
+      return null;
+    }
+    
+    return data;
+  },
+
+  async getAlertTriggers(alertId: string): Promise<AlertTrigger[]> {
+    const { data, error } = await supabase
+      .from('alert_triggers')
+      .select('*')
+      .eq('alert_id', alertId)
+      .order('triggered_at', { ascending: false });
+    
+    if (error) {
+      console.error('Error fetching alert triggers:', error);
+      return [];
+    }
+    
+    return data || [];
+  },
+
+  async getRecentAlertTriggers(userId: string, limit: number = 20): Promise<AlertTrigger[]> {
+    const { data, error } = await supabase
+      .from('alert_triggers')
+      .select(`
+        *,
+        alerts!inner(
+          user_id,
+          symbol,
+          alert_type
+        )
+      `)
+      .eq('alerts.user_id', userId)
+      .order('triggered_at', { ascending: false })
+      .limit(limit);
+    
+    if (error) {
+      console.error('Error fetching recent alert triggers:', error);
+      return [];
+    }
+    
+    return data || [];
+  },
+
+  async updateAlertTriggerStatus(triggerId: string, status: 'pending' | 'sent' | 'failed' | 'dismissed'): Promise<boolean> {
+    const updates: any = { status };
+    
+    if (status === 'sent') {
+      updates.notification_sent = true;
+      updates.notification_sent_at = new Date().toISOString();
+    }
+    
+    const { error } = await supabase
+      .from('alert_triggers')
+      .update(updates)
+      .eq('id', triggerId);
+    
+    if (error) {
+      console.error('Error updating alert trigger status:', error);
+      return false;
+    }
+    
+    return true;
   }
 };
 
@@ -604,6 +815,39 @@ export const realtime = {
           filter: `portfolio_id=eq.${portfolioId}`
         }, 
         callback
+      )
+      .subscribe();
+  },
+
+  subscribeToAlerts(userId: string, callback: (payload: any) => void) {
+    return supabase
+      .channel(`alerts:${userId}`)
+      .on('postgres_changes', 
+        { 
+          event: '*', 
+          schema: 'public', 
+          table: 'alerts',
+          filter: `user_id=eq.${userId}`
+        }, 
+        callback
+      )
+      .subscribe();
+  },
+
+  subscribeToAlertTriggers(userId: string, callback: (payload: any) => void) {
+    return supabase
+      .channel(`alert_triggers:${userId}`)
+      .on('postgres_changes', 
+        { 
+          event: 'INSERT', 
+          schema: 'public', 
+          table: 'alert_triggers'
+        }, 
+        (payload) => {
+          // Filter for user's alerts by checking if the alert belongs to the user
+          // This requires a join, so we'll handle filtering in the callback
+          callback(payload);
+        }
       )
       .subscribe();
   },
@@ -711,5 +955,7 @@ export type {
   Dividend, 
   PortfolioPerformance,
   CashTransaction,
-  Subscription 
+  Subscription,
+  Alert,
+  AlertTrigger
 };

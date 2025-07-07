@@ -7,6 +7,8 @@ import { Router, Request, Response } from 'express';
 import HealthMonitor from '../services/health-monitor';
 import kvRouter from './health/kv';
 import { getTTFBStats, getTTFBRecommendations } from '../middleware/ttfb-middleware';
+import { getUnifiedAPIService } from '../services/unified-api';
+import { circuitBreakerManager } from '../services/unified-api/circuit-breaker';
 
 const router = Router();
 const healthMonitor = HealthMonitor.getInstance();
@@ -307,12 +309,52 @@ router.get('/', async (req: Request, res: Response) => {
     // Simple health check for backwards compatibility
     const result = await healthMonitor.quickHealthCheck();
     
+    // Check market data services availability
+    let marketDataStatus = false;
+    let services: any = {};
+    
+    try {
+      const unifiedAPI = getUnifiedAPIService();
+      const apiStatus = await unifiedAPI.getStatus();
+      
+      // Consider market data available if at least one provider is healthy and initialized
+      marketDataStatus = apiStatus.initialized && 
+                        apiStatus.providers.some(p => p.healthy);
+      
+      // Get circuit breaker information
+      const circuitBreakerStatuses = circuitBreakerManager.getAllStatuses();
+      const availableProviders = circuitBreakerManager.getAvailableProviders();
+      
+      services.marketData = marketDataStatus;
+      services.marketDataProviders = apiStatus.providers.map(p => ({
+        name: p.name,
+        healthy: p.healthy,
+        usage: p.usage?.today || 0,
+        circuitBreaker: {
+          state: p.circuitBreaker?.state || 'UNKNOWN',
+          isHealthy: p.circuitBreaker?.isHealthy || false,
+          failureRate: p.circuitBreaker?.failureRate || 0
+        }
+      }));
+      
+      services.circuitBreakers = {
+        total: Object.keys(circuitBreakerStatuses).length,
+        available: availableProviders.length,
+        statuses: circuitBreakerStatuses
+      };
+    } catch (error) {
+      console.warn('Unable to check market data services:', error);
+      services.marketData = false;
+      services.marketDataError = 'Service unavailable';
+    }
+    
     res.status(200).json({
       status: "healthy",
       timestamp: result.timestamp,
       version: "1.0.0",
       uptime: Math.floor(result.uptime / 1000),
-      env: process.env.NODE_ENV || "development"
+      env: process.env.NODE_ENV || "development",
+      services
     });
   } catch (error) {
     healthMonitor.recordError('health_legacy');

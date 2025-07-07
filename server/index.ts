@@ -44,6 +44,12 @@ import csrf from 'csurf';
 import crypto from 'crypto';
 // SECURITY FIX: Import log retention policy
 import logRetention from './security/log-retention-policy';
+// PRIORITY 1: Import market data services for API activation
+import { getUnifiedAPIService } from './services/unified-api';
+import { FinnhubProvider } from './services/unified-api/providers/finnhub.provider';
+import { AlphaVantageProvider } from './services/unified-api/providers/alpha-vantage.provider';
+import { FMPProvider } from './services/unified-api/providers/fmp.provider';
+import { TwelveDataProvider } from './services/unified-api/providers/twelve-data.provider';
 import * as schema from '@shared/schema';
 // ROADMAP V4: Import global back-off middleware for 429 responses
 import { globalBackoffMiddleware } from './middleware/global-backoff';
@@ -266,6 +272,76 @@ if (process.env.NODE_ENV === 'production' && csrfProtection) {
   });
 }
 
+// PRIORITY 1: Initialize Market Data Services with all providers
+async function initializeMarketDataServices() {
+  console.log('🔧 Initializing Market Data Services...');
+  
+  try {
+    const unifiedAPI = getUnifiedAPIService();
+    
+    // Initialize providers based on available API keys
+    const providers = [];
+    
+    // Check and initialize each provider
+    if (process.env.FINNHUB_API_KEY && process.env.FINNHUB_API_KEY !== 'demo') {
+      try {
+        const finnhub = new FinnhubProvider();
+        await finnhub.initialize();
+        providers.push(finnhub);
+        console.log('✅ Finnhub provider initialized');
+      } catch (error) {
+        console.warn('⚠️ Finnhub provider failed to initialize:', error);
+      }
+    }
+    
+    if (process.env.ALPHA_VANTAGE_API_KEY && process.env.ALPHA_VANTAGE_API_KEY !== 'demo') {
+      try {
+        const alphaVantage = new AlphaVantageProvider();
+        await alphaVantage.initialize();
+        providers.push(alphaVantage);
+        console.log('✅ Alpha Vantage provider initialized');
+      } catch (error) {
+        console.warn('⚠️ Alpha Vantage provider failed to initialize:', error);
+      }
+    }
+    
+    if (process.env.FMP_API_KEY && process.env.FMP_API_KEY !== 'demo') {
+      try {
+        const fmp = new FMPProvider();
+        await fmp.initialize();
+        providers.push(fmp);
+        console.log('✅ FMP provider initialized');
+      } catch (error) {
+        console.warn('⚠️ FMP provider failed to initialize:', error);
+      }
+    }
+    
+    if (process.env.TWELVE_DATA_API_KEY && process.env.TWELVE_DATA_API_KEY !== 'demo') {
+      try {
+        const twelveData = new TwelveDataProvider();
+        await twelveData.initialize();
+        providers.push(twelveData);
+        console.log('✅ Twelve Data provider initialized');
+      } catch (error) {
+        console.warn('⚠️ Twelve Data provider failed to initialize:', error);
+      }
+    }
+    
+    // Initialize the unified API service with available providers
+    if (providers.length > 0) {
+      await unifiedAPI.initialize(providers);
+      console.log(`🚀 Market Data Services active with ${providers.length} provider(s)`);
+      console.log(`📊 Available providers: ${providers.map(p => p.name).join(', ')}`);
+    } else {
+      console.warn('⚠️ No API providers available - market data will use fallback mode');
+    }
+    
+  } catch (error) {
+    console.error('❌ Failed to initialize market data services:', error);
+    throw error;
+  }
+}
+
 // (Request logging is now handled by the request ID middleware above)
 
 (async () => {
@@ -442,6 +518,11 @@ if (process.env.NODE_ENV === 'production' && csrfProtection) {
       
       // SECURITY FIX: Initialize log retention policy
       logRetention.initializeLogRetention();
+      
+      // Initialize Market Data APIs
+      initializeMarketDataServices().catch(error => {
+        console.warn('⚠️ Market data services initialization failed:', error);
+      });
       
       // Debug: Check if server is really listening
       const address = serverInstance.address();

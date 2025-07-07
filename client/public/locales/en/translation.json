@@ -1,0 +1,308 @@
+{
+  "common": {
+    "appName": "Alfalyzer",
+    "tagline": "Professional Analytics",
+    "login": "Login",
+    "logout": "Logout",
+    "register": "Register",
+    "dashboard": "Dashboard",
+    "loading": "Loading...",
+    "error": "Error",
+    "save": "Save",
+    "cancel": "Cancel",
+    "edit": "Edit",
+    "delete": "Delete",
+    "close": "Close",
+    "search": "Search",
+    "settings": "Settings",
+    "profile": "Profile",
+    "help": "Help",
+    "home": "Home",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous",
+    "confirm": "Confirm",
+    "yes": "Yes",
+    "no": "No",
+    "upgrade": "Upgrade",
+    "plan": "Plan",
+    "freePlan": "Free Plan"
+  },
+  "auth": {
+    "signIn": "Sign In",
+    "signUp": "Sign Up",
+    "betaLogin": "Beta Login",
+    "email": "Email",
+    "password": "Password",
+    "forgotPassword": "Forgot password",
+    "rememberMe": "Remember me",
+    "noAccount": "Don't have an account?",
+    "hasAccount": "Already have an account?",
+    "welcomeBack": "Welcome back",
+    "createAccount": "Create an account",
+    "orContinueWith": "Or continue with"
+  },
+  "navigation": {
+    "inicio": "Home",
+    "valorIntrinseco": "Intrinsic Value",
+    "porque": "Why",
+    "preco": "Pricing",
+    "findStocks": "Find Stocks",
+    "intrinsicValue": "Intrinsic Value",
+    "myPortfolios": "My Portfolios",
+    "watchlists": "Watchlists",
+    "transcripts": "Transcripts",
+    "earnings": "Earnings",
+    "news": "News"
+  },
+  "theme": {
+    "darkMode": "Dark mode",
+    "lightMode": "Light mode"
+  },
+  "hero": {
+    "trialBadge": "Free trial • 7 days",
+    "headline1": "Avoid Losses of",
+    "headline2": "-30% with 94% Accuracy",
+    "subtitle": "The algorithm that predicted the fall of Tesla (-33%), Zoom (-85%) and PayPal (-78%). Avoid the pitfalls that cost investors $2.3B in 2023 alone.",
+    "stats": {
+      "markets": "S&P 500 + NASDAQ",
+      "realTime": "Real-time",
+      "accuracy": "94%+ Accuracy"
+    },
+    "cta": {
+      "startTrial": "Start 7-day free trial",
+      "noCard": "No credit card required",
+      "instantAccess": "Instant access",
+      "viewDemo": "View demo"
+    }
+  },
+  "benefits": {
+    "dataVisualization": {
+      "title": "Data Visualizations",
+      "description": "Intuitive charts and tables that make fundamental analysis accessible to any investor."
+    },
+    "intrinsicValue": {
+      "title": "Instant Intrinsic Value",
+      "description": "Automatically calculates the fair value of any stock in seconds, based on fundamental metrics."
+    },
+    "watchlistsPortfolios": {
+      "title": "Watchlists & Portfolios",
+      "description": "Create unlimited watchlists, track multiple portfolios and import CSV lists to organize your investments."
+    }
+  },
+  "steps": {
+    "title": "How It Works",
+    "step1": {
+      "number": "01",
+      "title": "Explore charts and fundamental metrics",
+      "description": "Visualize complex financial data in a simple and intuitive way"
+    },
+    "step2": {
+      "number": "02",
+      "title": "Discover the intrinsic value of global stocks",
+      "description": "Get the fair value calculated automatically in seconds"
+    },
+    "step3": {
+      "number": "03",
+      "title": "Receive personalized alerts",
+      "description": "Know when there are buying or selling opportunities"
+    }
+  },
+  "education": {
+    "title": "What is Intrinsic Value?",
+    "subtitle": "Our calculator tells you if the stock is cheap or expensive",
+    "description": "Intrinsic value is the real value of a company based on its financial fundamentals. When a stock is below intrinsic value, it may be a buying opportunity. When it's above, it may be overvalued.",
+    "features": {
+      "calculation": {
+        "title": "Automatic calculation",
+        "description": "Advanced algorithms analyze multiple metrics"
+      },
+      "realTime": {
+        "title": "Real-time data",
+        "description": "Constantly updated prices and metrics"
+      },
+      "alerts": {
+        "title": "Smart alerts",
+        "description": "Notifications when opportunities arise"
+      }
+    },
+    "videoTitle": "See how it works",
+    "videoDuration": "2 min demo"
+  },
+  "faq": {
+    "title": "Frequently Asked Questions",
+    "intrinsicCalculation": {
+      "question": "❓ How do you calculate intrinsic value?",
+      "answer": "We use multiple methods including DCF (Discounted Cash Flow), multiple analysis and proprietary models that combine fundamental and technical data for accurate valuation."
+    },
+    "dataSource": {
+      "question": "❓ What data do you use?",
+      "answer": "We use data from high-quality international financial APIs, including Yahoo Finance, Alpha Vantage and institutional sources to ensure accuracy and global coverage."
+    },
+    "trialCancellation": {
+      "question": "❓ Can I cancel the trial anytime?",
+      "answer": "Yes! The 7-day trial is completely free with no commitments. You can cancel anytime without any cost or penalty."
+    },
+    "dataSecurity": {
+      "question": "❓ Is my data secure?",
+      "answer": "Absolutely. We use bank-level SSL encryption and never store sensitive information like passwords or account data. GDPR compliant."
+    },
+    "portugueseStocks": {
+      "question": "❓ Does it work with Portuguese stocks?",
+      "answer": "Yes! We support all PSI-20 stocks (EDP, Galp, BCP, etc.) and over 10,000 international stocks (NASDAQ, NYSE, LSE, Euronext)."
+    }
+  },
+  "testimonials": {
+    "title": "What investors say",
+    "trusted": "Trusted by 1000+ investors in Portugal"
+  },
+  "pricing": {
+    "title": "Invest with Confidence",
+    "subtitle": "Choose the ideal plan for you",
+    "monthly": "Monthly",
+    "annual": "Annual",
+    "savePercent": "Save {{percent}}%"
+  },
+  "footer": {
+    "copyright": "© {{year}} Alfalyzer. All rights reserved.",
+    "madeWith": "Made with",
+    "inPortugal": "in Portugal",
+    "links": {
+      "privacy": "Privacy",
+      "terms": "Terms",
+      "contact": "Contact"
+    }
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "subtitle": "Market overview",
+    "marketOverview": "Market Overview",
+    "topGainers": "Top Gainers",
+    "topLosers": "Top Losers",
+    "sectorPerformance": "Sector Performance",
+    "watchlistAlerts": "Watchlist Alerts",
+    "portfolioPerformance": "Portfolio Performance",
+    "recentNews": "Recent News",
+    "upcomingEarnings": "Upcoming Earnings",
+    "noData": "No data available"
+  },
+  "stock": {
+    "price": "Price",
+    "change": "Change",
+    "volume": "Volume",
+    "marketCap": "Market Cap",
+    "peRatio": "P/E Ratio",
+    "dividend": "Dividend",
+    "eps": "EPS",
+    "beta": "Beta",
+    "week52High": "52w High",
+    "week52Low": "52w Low",
+    "shares": "Shares",
+    "revenue": "Revenue",
+    "profit": "Profit",
+    "employees": "Employees"
+  },
+  "pwa": {
+    "install": "Install App",
+    "installPrompt": "Install Alfalyzer on your device for quick access and offline functionality.",
+    "offline": "You're offline - Showing cached data",
+    "newVersion": "New version available",
+    "update": "Update now"
+  },
+  "watchlists": {
+    "title": "Watchlists",
+    "subtitle": "Track your favorite stocks",
+    "createNew": "Create New Watchlist",
+    "addStock": "Add Stock",
+    "removeStock": "Remove Stock",
+    "empty": "No stocks in this watchlist",
+    "defaultName": "My Watchlist",
+    "rename": "Rename Watchlist",
+    "delete": "Delete Watchlist",
+    "deleteConfirm": "Are you sure you want to delete this watchlist?"
+  },
+  "portfolios": {
+    "title": "Portfolios",
+    "subtitle": "Manage your investments",
+    "createNew": "Create New Portfolio",
+    "totalValue": "Total Value",
+    "todayChange": "Today's Change",
+    "totalReturn": "Total Return",
+    "holdings": "Holdings",
+    "transactions": "Transactions",
+    "addTransaction": "Add Transaction",
+    "buy": "Buy",
+    "sell": "Sell",
+    "quantity": "Quantity",
+    "pricePerShare": "Price per Share",
+    "totalAmount": "Total Amount",
+    "date": "Date",
+    "empty": "No transactions yet"
+  },
+  "admin": {
+    "title": "Admin Dashboard",
+    "users": "Users",
+    "apiUsage": "API Usage",
+    "transcripts": "Transcripts",
+    "analytics": "Analytics",
+    "settings": "Settings",
+    "totalUsers": "Total Users",
+    "activeToday": "Active Today",
+    "apiCalls": "API Calls",
+    "quotaUsed": "Quota Used",
+    "uploadTranscript": "Upload Transcript",
+    "publishTranscript": "Publish Transcript",
+    "moderateContent": "Moderate Content"
+  },
+  "alerts": {
+    "title": "Smart Alerts",
+    "subtitle": "Get notified about important changes",
+    "createAlert": "Create Alert",
+    "priceAlert": "Price Alert",
+    "volumeAlert": "Volume Alert",
+    "newsAlert": "News Alert",
+    "threshold": "Threshold",
+    "condition": "Condition",
+    "above": "Above",
+    "below": "Below",
+    "enabled": "Enabled",
+    "disabled": "Disabled",
+    "triggered": "Triggered",
+    "noAlerts": "No alerts configured"
+  },
+  "charts": {
+    "price": "Price Chart",
+    "volume": "Volume",
+    "indicators": "Indicators",
+    "timeframes": "Timeframes",
+    "1d": "1D",
+    "1w": "1W",
+    "1m": "1M",
+    "3m": "3M",
+    "6m": "6M",
+    "1y": "1Y",
+    "5y": "5Y",
+    "max": "MAX",
+    "technicalAnalysis": "Technical Analysis",
+    "fundamentalAnalysis": "Fundamental Analysis"
+  },
+  "errors": {
+    "generic": "Something went wrong",
+    "networkError": "Network error - please check your connection",
+    "apiError": "API error - please try again later",
+    "unauthorized": "Please log in to continue",
+    "forbidden": "Access denied",
+    "notFound": "Page not found",
+    "validation": "Please check your input"
+  },
+  "messages": {
+    "success": "Operation completed successfully",
+    "saved": "Changes saved",
+    "deleted": "Item deleted",
+    "updated": "Item updated",
+    "created": "Item created",
+    "loading": "Loading...",
+    "noData": "No data available",
+    "tryAgain": "Try again"
+  }
+}
