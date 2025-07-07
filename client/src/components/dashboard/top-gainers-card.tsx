@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { TrendingUp, ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useMarketQuotes } from "@/hooks/use-market-data";
+import { useRealTimeDashboard } from "@/hooks/use-real-time-dashboard";
 
 interface Stock {
   symbol: string;
@@ -36,20 +37,37 @@ function getCompanyName(symbol: string): string {
   return companyNames[symbol] || symbol;
 }
 
-export function TopGainersCard() {
+interface TopGainersCardProps {
+  gainersData?: Stock[];
+  isLoading?: boolean;
+}
+
+export function TopGainersCard({ gainersData, isLoading: propsLoading }: TopGainersCardProps = {}) {
   const [, setLocation] = useLocation();
   const [topGainers, setTopGainers] = useState<Stock[]>([]);
   
-  // ROADMAP V4: Enhanced stock tracking for better real data integration
+  // Use props data if available, otherwise fallback to local hook
   const trackedSymbols = ['NVDA', 'AMD', 'TSLA', 'META', 'AMZN', 'AAPL', 'MSFT', 'GOOGL', 'NFLX', 'JPM'];
-  const { data: quotesData, isLoading, error } = useMarketQuotes(trackedSymbols);
+  const { data: quotesData, isLoading: hookLoading, error } = useMarketQuotes(trackedSymbols);
+  
+  // Determine loading state and data source
+  const isLoading = propsLoading !== undefined ? propsLoading : hookLoading;
+  const dataSource = gainersData || quotesData;
 
   useEffect(() => {
-    if (quotesData?.quotes && quotesData.quotes.length > 0) {
-      console.log('📈 Using real market data for Top Gainers:', quotesData.quotes.length, 'quotes');
+    // If we have gainersData from props, use it directly
+    if (gainersData && gainersData.length > 0) {
+      console.log('📈 Using real-time gainers data from dashboard:', gainersData.length, 'stocks');
+      setTopGainers(gainersData.slice(0, 5));
+      return;
+    }
+    
+    // Otherwise, process quotes data from hook
+    if (dataSource?.quotes && dataSource.quotes.length > 0) {
+      console.log('📈 Using market data for Top Gainers:', dataSource.quotes.length, 'quotes');
       
       // Convert market quotes to our Stock format and sort by gain percentage
-      const stocks = quotesData.quotes
+      const stocks = dataSource.quotes
         .map(quote => ({
           symbol: quote.symbol,
           name: getCompanyName(quote.symbol),
@@ -111,7 +129,7 @@ export function TopGainersCard() {
       
       setTopGainers(mockGainers);
     }
-  }, [quotesData, isLoading, error]);
+  }, [gainersData, dataSource, isLoading, error]);
 
   const handleViewStock = (symbol: string) => {
     setLocation(`/stock/${symbol}/charts`);

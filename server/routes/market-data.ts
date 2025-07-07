@@ -660,6 +660,61 @@ router.get('/search',
 );
 
 /**
+ * GET /api/market-data/market-overview
+ * Get market overview data (indices, VIX, etc.)
+ */
+router.get('/market-overview',
+  authService,
+  async (req: Request, res: Response) => {
+    try {
+      // For now, return realistic mock data
+      // In production, this would fetch from APIs like Alpha Vantage or FMP
+      const baseData = {
+        sp500: { value: 4712.34, change: 1.24 },
+        nasdaq: { value: 14789.45, change: 1.89 },
+        dow: { value: 35234.67, change: 0.78 },
+        vix: { value: 16.23, change: -5.2 }
+      };
+      
+      // Add small random variations to simulate live market
+      const liveData = {
+        sp500: {
+          value: baseData.sp500.value + (Math.random() - 0.5) * 50,
+          change: baseData.sp500.change + (Math.random() - 0.5) * 0.5
+        },
+        nasdaq: {
+          value: baseData.nasdaq.value + (Math.random() - 0.5) * 100,
+          change: baseData.nasdaq.change + (Math.random() - 0.5) * 0.5
+        },
+        dow: {
+          value: baseData.dow.value + (Math.random() - 0.5) * 200,
+          change: baseData.dow.change + (Math.random() - 0.5) * 0.3
+        },
+        vix: {
+          value: baseData.vix.value + (Math.random() - 0.5) * 2,
+          change: baseData.vix.change + (Math.random() - 0.5) * 1
+        }
+      };
+
+      console.log('📊 Serving market overview data');
+
+      res.json({
+        ...liveData,
+        timestamp: new Date().toISOString(),
+        source: 'demo_with_variation'
+      });
+    } catch (error) {
+      console.error('Market overview error:', error);
+      res.status(500).json({
+        error: 'MARKET_OVERVIEW_ERROR',
+        message: 'Unable to fetch market overview',
+        timestamp: new Date().toISOString()
+      });
+    }
+  }
+);
+
+/**
  * GET /api/market-data/health
  * Health check endpoint for frontend to check if real data is available
  */

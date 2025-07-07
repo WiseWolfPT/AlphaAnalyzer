@@ -110,7 +110,20 @@
     "cost-protection:emergency-off": "curl -X POST http://localhost:3001/api/admin/cost-protection/admin/emergency-mode -H 'Content-Type: application/json' -d '{\"activate\": false}'",
     "cost-protection:reset-circuit": "curl -X POST http://localhost:3001/api/admin/cost-protection/admin/reset-circuit-breaker -H 'Content-Type: application/json' -d '{\"provider\": \"PROVIDER_NAME\", \"reason\": \"Manual reset\"}'",
     "monitor:costs": "watch -n 30 'npm run cost-protection:status'",
-    "validate:before-deploy": "npm run cost-protection:validate && echo '✅ Safe to deploy!'"
+    "validate:before-deploy": "npm run cost-protection:validate && echo '✅ Safe to deploy!'",
+    "ci:cost-check": "node scripts/cost-protection-check.js",
+    "ci:deploy-check": "node scripts/deploy-checks.js",
+    "ci:security-audit": "npm audit --audit-level=moderate",
+    "ci:lint": "echo 'Linting not configured yet'",
+    "ci:test": "npm test",
+    "ci:build": "npm run build",
+    "build:client": "vite build --outDir client/dist",
+    "build:server": "echo 'Server build not configured yet'",
+    "type-check": "tsc --noEmit",
+    "lint": "echo 'ESLint not configured yet'",
+    "test:unit": "echo 'Unit tests not configured yet'",
+    "test:integration": "echo 'Integration tests not configured yet'",
+    "test:smoke": "echo 'Smoke tests not configured yet'"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

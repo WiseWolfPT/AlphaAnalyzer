@@ -71,51 +71,83 @@ class MarketDataClient {
   }
 
   async getBatchQuotes(symbols: string[]): Promise<BatchQuotesResponse> {
+    console.log(`📊 Fetching batch quotes for ${symbols.length} symbols:`, symbols.join(', '));
+    
     // Use invisible fallback service for seamless user experience
     const fallbackResponse = await invisibleFallbackService.getQuotesWithFallback(
       symbols,
       async () => {
-        // Try to fetch real data
-        const quotePromises = symbols.map(symbol => this.getQuote(symbol));
+        console.log('🚀 Attempting to fetch real data from API...');
+        
+        // Try to fetch real data with better error handling
+        const quotePromises = symbols.map(async (symbol) => {
+          try {
+            const quote = await this.getQuote(symbol);
+            return { symbol, quote, success: true };
+          } catch (error) {
+            console.warn(`Failed to fetch ${symbol}:`, error.message);
+            return { symbol, quote: null, success: false, error: error.message };
+          }
+        });
+        
         const results = await Promise.allSettled(quotePromises);
         
         const quotes: MarketQuote[] = [];
         const failed: string[] = [];
         
-        results.forEach((result, index) => {
-          if (result.status === 'fulfilled' && result.value) {
-            quotes.push(result.value);
+        results.forEach((result) => {
+          if (result.status === 'fulfilled') {
+            const { symbol, quote, success } = result.value;
+            if (success && quote) {
+              quotes.push(quote);
+            } else {
+              failed.push(symbol);
+            }
           } else {
-            failed.push(symbols[index]);
+            console.error('Promise rejected:', result.reason);
           }
         });
 
         if (quotes.length === 0) {
-          throw new Error('No real data available');
+          throw new Error('No real data available from any provider');
         }
 
+        console.log(`✅ Successfully fetched ${quotes.length} real quotes, ${failed.length} failed`);
         return { quotes, failed, timestamp: Date.now() };
       }
     );
 
-    // Convert fallback response to expected format
+    // Convert fallback response to expected format with better error handling
+    const processedQuotes = fallbackResponse.quotes.map(quote => {
+      try {
+        return {
+          symbol: quote.symbol,
+          price: quote.price,
+          change: quote.change,
+          changePercent: quote.changePercent,
+          high: quote.high,
+          low: quote.low,
+          open: quote.open,
+          volume: quote.volume,
+          marketCap: typeof quote.marketCap === 'string' 
+            ? parseInt(quote.marketCap.replace(/[$B,]/g, '')) * 1000000000 
+            : quote.marketCap || 0,
+          eps: typeof quote.eps === 'string' ? parseFloat(quote.eps) : quote.eps || 0,
+          pe: typeof quote.peRatio === 'string' ? parseFloat(quote.peRatio) : quote.pe || 0,
+          provider: fallbackResponse.source === 'fallback' ? 'alfalyzer' : 'api',
+          timestamp: Date.now(),
+          _cached: fallbackResponse.source === 'cache'
+        };
+      } catch (error) {
+        console.error('Error processing quote:', quote, error);
+        return null;
+      }
+    }).filter(Boolean) as MarketQuote[];
+
+    console.log(`📈 Returning ${processedQuotes.length} processed quotes (source: ${fallbackResponse.source})`);
+
     return {
-      quotes: fallbackResponse.quotes.map(quote => ({
-        symbol: quote.symbol,
-        price: quote.price,
-        change: quote.change,
-        changePercent: quote.changePercent,
-        high: quote.high,
-        low: quote.low,
-        open: quote.open,
-        volume: quote.volume,
-        marketCap: parseInt(quote.marketCap.replace(/[$B,]/g, '')) * 1000000000,
-        eps: parseFloat(quote.eps),
-        pe: parseFloat(quote.peRatio),
-        provider: fallbackResponse.source === 'fallback' ? 'alfalyzer' : 'api',
-        timestamp: Date.now(),
-        _cached: fallbackResponse.source === 'cache'
-      })),
+      quotes: processedQuotes,
       failed: [],
       timestamp: Date.now()
     };

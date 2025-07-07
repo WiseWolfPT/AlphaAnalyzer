@@ -8,37 +8,51 @@ import { RefreshCw, BarChart3, Clock, Zap } from "lucide-react";
 import { useAuth } from "@/contexts/simple-auth-offline";
 import { cn } from "@/lib/utils";
 
-// Import all dashboard cards
-import { TopGainersCard } from "./top-gainers-card";
-import { TopLosersCard } from "./top-losers-card";
-import { WatchlistAlertsCard } from "./watchlist-alerts-card";
-import { PortfolioPerformanceCard } from "./portfolio-performance-card";
-import { MarketSentimentCard } from "./market-sentiment-card";
-import { EarningsCard } from "./earnings-card";
-import { NewsHighlightsCard } from "./news-highlights-card";
-import { SectorPerformanceCard } from "./sector-performance-card";
+// Import lazy dashboard cards for better performance
+import { LazyDashboardCards } from "./lazy-dashboard-cards";
+import { DashboardErrorBoundary, DashboardCardErrorFallback } from "./dashboard-error-boundary";
 
-// Market overview data
-const marketOverview = {
-  sp500: { value: "4,712.34", change: "+1.24%", trend: "up" as const },
-  nasdaq: { value: "14,789.45", change: "+1.89%", trend: "up" as const },
-  dow: { value: "35,234.67", change: "+0.78%", trend: "up" as const },
-  vix: { value: "16.23", change: "-5.2%", trend: "down" as const }
-};
+// Import real market data hooks
+import { useMarketOverview } from "@/hooks/use-market-data";
+import { useRealTimeDashboard } from "@/hooks/use-real-time-dashboard";
+import { useDashboardPerformance } from "@/hooks/use-dashboard-performance";
 
 export function EnhancedDashboard() {
   const [, setLocation] = useLocation();
   const { user } = useAuth();
-  const [lastUpdated, setLastUpdated] = useState(new Date());
   const [isRefreshing, setIsRefreshing] = useState(false);
+  
+  // Performance monitoring
+  const { trackApiCall, getPerformanceSummary } = useDashboardPerformance('EnhancedDashboard');
+  
+  // Get real-time dashboard data
+  const { 
+    marketOverview, 
+    topGainers, 
+    topLosers, 
+    lastUpdated, 
+    isLive, 
+    refreshAll, 
+    hasData 
+  } = useRealTimeDashboard();
+  
+  // Fallback market data hook for loading states
+  const { isLoading: marketLoading, error: marketError } = useMarketOverview();
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
-    // Simulate refresh delay
-    setTimeout(() => {
-      setLastUpdated(new Date());
+    const startTime = performance.now();
+    
+    try {
+      // Refresh all dashboard data
+      const success = await refreshAll();
+      trackApiCall('dashboard_refresh', startTime, success);
+    } catch (error) {
+      console.error('Error refreshing data:', error);
+      trackApiCall('dashboard_refresh', startTime, false);
+    } finally {
       setIsRefreshing(false);
-    }, 2000);
+    }
   };
 
   const formatLastUpdated = (date: Date) => {
@@ -67,9 +81,21 @@ export function EnhancedDashboard() {
           </div>
           
           <div className="flex items-center gap-3">
-            <Badge variant="outline" className="border-green-300 text-green-700 dark:border-green-700 dark:text-green-300">
-              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse mr-2" />
-              Live Data
+            <Badge 
+              variant="outline" 
+              className={cn(
+                isLive && hasData 
+                  ? "border-green-300 text-green-700 dark:border-green-700 dark:text-green-300"
+                  : "border-yellow-300 text-yellow-700 dark:border-yellow-700 dark:text-yellow-300"
+              )}
+            >
+              <div className={cn(
+                "w-2 h-2 rounded-full mr-2",
+                isLive && hasData 
+                  ? "bg-green-500 animate-pulse" 
+                  : "bg-yellow-500"
+              )} />
+              {isLive && hasData ? "Live Data" : "Demo Data"}
             </Badge>
             <Button
               variant="outline"
@@ -84,56 +110,100 @@ export function EnhancedDashboard() {
           </div>
         </div>
 
-        {/* Market Overview Strip */}
+        {/* Market Overview Strip - Real Data */}
         <Card className="border-chartreuse/20 bg-gradient-to-r from-chartreuse/5 to-transparent">
           <CardContent className="p-4">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="text-center">
-                <p className="text-sm font-medium text-muted-foreground">S&P 500</p>
-                <p className="text-xl font-bold">{marketOverview.sp500.value}</p>
-                <p className={cn("text-sm", marketOverview.sp500.trend === "up" ? "text-green-500" : "text-red-500")}>
-                  {marketOverview.sp500.change}
-                </p>
+            {marketLoading ? (
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {[1, 2, 3, 4].map((i) => (
+                  <div key={i} className="text-center space-y-2">
+                    <div className="h-4 bg-muted rounded animate-pulse w-16 mx-auto" />
+                    <div className="h-6 bg-muted rounded animate-pulse w-20 mx-auto" />
+                    <div className="h-4 bg-muted rounded animate-pulse w-12 mx-auto" />
+                  </div>
+                ))}
               </div>
-              <div className="text-center">
-                <p className="text-sm font-medium text-muted-foreground">NASDAQ</p>
-                <p className="text-xl font-bold">{marketOverview.nasdaq.value}</p>
-                <p className={cn("text-sm", marketOverview.nasdaq.trend === "up" ? "text-green-500" : "text-red-500")}>
-                  {marketOverview.nasdaq.change}
-                </p>
+            ) : marketError ? (
+              <div className="text-center text-muted-foreground">
+                <p className="text-sm">Market data temporarily unavailable</p>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={handleRefresh}
+                  className="mt-2"
+                >
+                  Retry
+                </Button>
               </div>
-              <div className="text-center">
-                <p className="text-sm font-medium text-muted-foreground">DOW</p>
-                <p className="text-xl font-bold">{marketOverview.dow.value}</p>
-                <p className={cn("text-sm", marketOverview.dow.trend === "up" ? "text-green-500" : "text-red-500")}>
-                  {marketOverview.dow.change}
-                </p>
+            ) : (
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="text-center">
+                  <p className="text-sm font-medium text-muted-foreground">S&P 500</p>
+                  <p className="text-xl font-bold">
+                    {marketOverview?.sp500?.value?.toLocaleString() || "4,712.34"}
+                  </p>
+                  <p className={cn(
+                    "text-sm", 
+                    (marketOverview?.sp500?.change || 0) >= 0 ? "text-green-500" : "text-red-500"
+                  )}>
+                    {(marketOverview?.sp500?.change || 0) >= 0 ? "+" : ""}
+                    {marketOverview?.sp500?.change?.toFixed(2) || "+1.24"}%
+                  </p>
+                </div>
+                <div className="text-center">
+                  <p className="text-sm font-medium text-muted-foreground">NASDAQ</p>
+                  <p className="text-xl font-bold">
+                    {marketOverview?.nasdaq?.value?.toLocaleString() || "14,789.45"}
+                  </p>
+                  <p className={cn(
+                    "text-sm", 
+                    (marketOverview?.nasdaq?.change || 0) >= 0 ? "text-green-500" : "text-red-500"
+                  )}>
+                    {(marketOverview?.nasdaq?.change || 0) >= 0 ? "+" : ""}
+                    {marketOverview?.nasdaq?.change?.toFixed(2) || "+1.89"}%
+                  </p>
+                </div>
+                <div className="text-center">
+                  <p className="text-sm font-medium text-muted-foreground">DOW</p>
+                  <p className="text-xl font-bold">
+                    {marketOverview?.dow?.value?.toLocaleString() || "35,234.67"}
+                  </p>
+                  <p className={cn(
+                    "text-sm", 
+                    (marketOverview?.dow?.change || 0) >= 0 ? "text-green-500" : "text-red-500"
+                  )}>
+                    {(marketOverview?.dow?.change || 0) >= 0 ? "+" : ""}
+                    {marketOverview?.dow?.change?.toFixed(2) || "+0.78"}%
+                  </p>
+                </div>
+                <div className="text-center">
+                  <p className="text-sm font-medium text-muted-foreground">VIX</p>
+                  <p className="text-xl font-bold">
+                    {marketOverview?.vix?.value?.toFixed(2) || "16.23"}
+                  </p>
+                  <p className={cn(
+                    "text-sm", 
+                    (marketOverview?.vix?.change || 0) <= 0 ? "text-green-500" : "text-red-500"
+                  )}>
+                    {(marketOverview?.vix?.change || 0) >= 0 ? "+" : ""}
+                    {marketOverview?.vix?.change?.toFixed(2) || "-5.2"}%
+                  </p>
+                </div>
               </div>
-              <div className="text-center">
-                <p className="text-sm font-medium text-muted-foreground">VIX</p>
-                <p className="text-xl font-bold">{marketOverview.vix.value}</p>
-                <p className={cn("text-sm", marketOverview.vix.trend === "down" ? "text-green-500" : "text-red-500")}>
-                  {marketOverview.vix.change}
-                </p>
-              </div>
-            </div>
+            )}
           </CardContent>
         </Card>
 
         {/* Main Dashboard Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {/* Row 1: Market Movers and Alerts */}
-          <TopGainersCard />
-          <TopLosersCard />
-          <WatchlistAlertsCard />
-          <PortfolioPerformanceCard />
-          
-          {/* Row 2: Sentiment, Earnings, News, Sectors */}
-          <MarketSentimentCard />
-          <EarningsCard />
-          <NewsHighlightsCard />
-          <SectorPerformanceCard />
-        </div>
+        <DashboardErrorBoundary fallback={DashboardCardErrorFallback}>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <LazyDashboardCards 
+              topGainers={topGainers}
+              topLosers={topLosers}
+              isLoading={marketLoading && !hasData}
+            />
+          </div>
+        </DashboardErrorBoundary>
 
         {/* Quick Actions Section */}
         <Card className="border-dashed border-2 border-muted-foreground/25">

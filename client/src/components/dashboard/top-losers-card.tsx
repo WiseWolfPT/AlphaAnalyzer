@@ -36,20 +36,37 @@ function getCompanyName(symbol: string): string {
   return companyNames[symbol] || symbol;
 }
 
-export function TopLosersCard() {
+interface TopLosersCardProps {
+  losersData?: Stock[];
+  isLoading?: boolean;
+}
+
+export function TopLosersCard({ losersData, isLoading: propsLoading }: TopLosersCardProps = {}) {
   const [, setLocation] = useLocation();
   const [topLosers, setTopLosers] = useState<Stock[]>([]);
   
-  // Stocks often volatile
+  // Use props data if available, otherwise fallback to local hook
   const trackedSymbols = ['COIN', 'RIOT', 'MARA', 'PINS', 'ROKU', 'SNAP', 'PYPL', 'SQ', 'HOOD', 'DKNG', 'PTON', 'ZM'];
-  const { data: quotesData, isLoading, error } = useMarketQuotes(trackedSymbols);
+  const { data: quotesData, isLoading: hookLoading, error } = useMarketQuotes(trackedSymbols);
+  
+  // Determine loading state and data source
+  const isLoading = propsLoading !== undefined ? propsLoading : hookLoading;
+  const dataSource = losersData || quotesData;
 
   useEffect(() => {
-    if (quotesData?.quotes && quotesData.quotes.length > 0) {
-      console.log('📉 Using real market data for Top Losers:', quotesData.quotes.length, 'quotes');
+    // If we have losersData from props, use it directly
+    if (losersData && losersData.length > 0) {
+      console.log('📉 Using real-time losers data from dashboard:', losersData.length, 'stocks');
+      setTopLosers(losersData.slice(0, 5));
+      return;
+    }
+    
+    // Otherwise, process quotes data from hook
+    if (dataSource?.quotes && dataSource.quotes.length > 0) {
+      console.log('📉 Using market data for Top Losers:', dataSource.quotes.length, 'quotes');
       
       // Convert market quotes to our Stock format and sort by loss percentage
-      const stocks = quotesData.quotes
+      const stocks = dataSource.quotes
         .map(quote => ({
           symbol: quote.symbol,
           name: getCompanyName(quote.symbol),
@@ -111,7 +128,7 @@ export function TopLosersCard() {
       
       setTopLosers(mockLosers);
     }
-  }, [quotesData, isLoading, error]);
+  }, [losersData, dataSource, isLoading, error]);
 
   const handleViewStock = (symbol: string) => {
     setLocation(`/stock/${symbol}/charts`);
