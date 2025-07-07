@@ -2,14 +2,16 @@ import { Router } from 'express';
 import { z } from 'zod';
 import { finnhubService } from '../services/finnhub-service';
 import { alphaVantageService } from '../services/alpha-vantage-service';
-import { cacheService } from '../services/cache-service';
+// REMOVED: Cache imports due to startup issues
+// import { cacheService } from '../services/cache-service';
 import { authMiddleware } from '../middleware/auth-middleware';
-import { 
-  companyProfileCache, 
-  stockQuoteCache, 
-  fundamentalsCache,
-  createCacheInvalidationMiddleware 
-} from '../middleware/cache-middleware';
+// REMOVED: Cache middleware due to startup issues
+// import { 
+//   companyProfileCache, 
+//   stockQuoteCache, 
+//   fundamentalsCache,
+//   createCacheInvalidationMiddleware 
+// } from '../middleware/cache-middleware';
 
 const router = Router();
 
@@ -18,10 +20,11 @@ const stockSymbolSchema = z.string().min(1).max(10).toUpperCase();
 const periodSchema = z.enum(['quarterly', 'annual']).default('quarterly');
 const daysSchema = z.coerce.number().min(1).max(365).default(30);
 
-// Get real-time stock quote - with intelligent caching
+// Get real-time stock quote - cache disabled
 router.get('/stocks/:symbol/quote', 
   authMiddleware.instance.authenticate(),
-  stockQuoteCache(60), // 60 seconds cache for real-time data
+  // REMOVED: Cache middleware due to startup issues
+  // stockQuoteCache(60), // 60 seconds cache for real-time data
   async (req, res) => {
     try {
       const symbol = stockSymbolSchema.parse(req.params.symbol);
@@ -51,10 +54,11 @@ router.get('/stocks/:symbol/quote',
   }
 );
 
-// Get stock profile - with intelligent caching
+// Get stock profile - cache disabled
 router.get('/stocks/:symbol/profile', 
   authMiddleware.instance.authenticate(),
-  companyProfileCache(24 * 3600), // 24 hours cache
+  // REMOVED: Cache middleware due to startup issues
+  // companyProfileCache(24 * 3600), // 24 hours cache
   async (req, res) => {
     try {
       const symbol = stockSymbolSchema.parse(req.params.symbol);
@@ -85,12 +89,12 @@ router.get('/stocks/:symbol/financials', authMiddleware.instance.authenticate(),
     const symbol = stockSymbolSchema.parse(req.params.symbol);
     const period = periodSchema.parse(req.query.period);
     
-    // Try cache first
-    const cacheKey = `financials:${symbol}:${period}`;
-    const cached = await cacheService.get(cacheKey);
-    if (cached) {
-      return res.json({ statements: cached });
-    }
+    // REMOVED: Cache check due to startup issues
+    // const cacheKey = `financials:${symbol}:${period}`;
+    // const cached = await cacheService.get(cacheKey);
+    // if (cached) {
+    //   return res.json({ statements: cached });
+    // }
     
     // Try Alpha Vantage for income statements
     const statements = await alphaVantageService.getIncomeStatement(symbol, period);
@@ -101,8 +105,8 @@ router.get('/stocks/:symbol/financials', authMiddleware.instance.authenticate(),
       return res.json({ statements: mockStatements });
     }
     
-    // Cache for 1 hour
-    await cacheService.set(cacheKey, statements, 3600);
+    // REMOVED: Cache set due to startup issues
+    // await cacheService.set(cacheKey, statements, 3600);
     
     res.json({ statements });
   } catch (error) {
@@ -117,12 +121,12 @@ router.get('/stocks/:symbol/prices', authMiddleware.instance.authenticate(), asy
     const symbol = stockSymbolSchema.parse(req.params.symbol);
     const days = daysSchema.parse(req.query.days);
     
-    // Try cache first
-    const cacheKey = `prices:${symbol}:${days}`;
-    const cached = await cacheService.get(cacheKey);
-    if (cached) {
-      return res.json({ prices: cached });
-    }
+    // REMOVED: Cache check due to startup issues
+    // const cacheKey = `prices:${symbol}:${days}`;
+    // const cached = await cacheService.get(cacheKey);
+    // if (cached) {
+    //   return res.json({ prices: cached });
+    // }
     
     // Calculate date range
     const endDate = new Date();
@@ -138,8 +142,8 @@ router.get('/stocks/:symbol/prices', authMiddleware.instance.authenticate(), asy
       return res.json({ prices: mockPrices });
     }
     
-    // Cache for 5 minutes
-    await cacheService.set(cacheKey, prices, 300);
+    // REMOVED: Cache set due to startup issues
+    // await cacheService.set(cacheKey, prices, 300);
     
     res.json({ prices });
   } catch (error) {

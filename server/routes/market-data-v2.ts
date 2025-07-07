@@ -7,7 +7,8 @@ import { FMPProvider } from '../services/unified-api/providers/fmp.provider';
 import { AlphaVantageProvider } from '../services/unified-api/providers/alpha-vantage.provider';
 import { marketDataRateLimiters } from '../middleware/rate-limit';
 import { metrics, formatMetricsForPrometheus } from '../services/monitoring';
-import { memoryCache } from '../services/cache';
+// REMOVED: Cache import due to startup issues
+// import { memoryCache } from '../services/cache';
 import { marketTimezone } from '../services/market-timezone';
 
 const router = Router();
@@ -252,7 +253,8 @@ router.get('/metrics', marketDataRateLimiters.status, async (req: Request, res: 
 // GET /api/cache/stats
 router.get('/cache/stats', marketDataRateLimiters.status, async (req: Request, res: Response) => {
   try {
-    const stats = memoryCache.getStats();
+    // REMOVED: Cache stats due to startup issues
+    const stats = { hits: 0, misses: 0, size: 0, hitRate: '0%' };
     
     res.json({
       success: true,

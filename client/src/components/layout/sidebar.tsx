@@ -17,7 +17,8 @@ import {
   User,
   Crown,
   Newspaper,
-  Search
+  Search,
+  Bell
 } from "lucide-react";
 
 const navigation = [
@@ -25,6 +26,7 @@ const navigation = [
   { name: "Intrinsic Value", href: "/intrinsic-value", icon: Calculator },
   { name: "My Portfolios", href: "/portfolios", icon: Briefcase },
   { name: "Watchlists", href: "/watchlists", icon: Heart },
+  { name: "Alerts", href: "/alerts", icon: Bell },
   { name: "Transcripts", href: "/transcripts", icon: FileText },
   { name: "Earnings", href: "/earnings", icon: Calendar },
 ];

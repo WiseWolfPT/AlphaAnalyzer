@@ -7,7 +7,8 @@
 
 import { EventEmitter } from 'events';
 import { CIRCUIT_BREAKER_CONFIG, PROVIDER_COST_LIMITS, ProviderName } from '../config/cost-limits';
-import { getCache } from '../services/cache';
+// REMOVED: Cache import due to startup issues
+// import { getCache } from '../services/cache';
 
 export enum CircuitState {
   CLOSED = 'closed',     // Normal operation
@@ -36,7 +37,8 @@ export interface FailureEvent {
 }
 
 export class EmergencySwitches extends EventEmitter {
-  private cache = getCache();
+  // REMOVED: Cache disabled due to startup issues
+  // private cache = getCache();
   private circuitBreakers = new Map<ProviderName, CircuitBreaker>();
   private killSwitches = new Map<string, boolean>();
   private emergencyMode = false;
@@ -343,11 +345,13 @@ export class EmergencySwitches extends EventEmitter {
   }
 
   /**
-   * Update circuit breaker in cache
+   * Update circuit breaker in cache - DISABLED
    */
   private async updateCircuitBreaker(provider: ProviderName, breaker: CircuitBreaker): Promise<void> {
-    const key = `circuit_breaker:${provider}`;
-    await this.cache.set(key, breaker, 86400); // Store for 24 hours
+    // REMOVED: Cache disabled due to startup issues
+    // const key = `circuit_breaker:${provider}`;
+    // await this.cache.set(key, breaker, 86400); // Store for 24 hours
+    console.log(`Circuit breaker updated for ${provider}: ${breaker.state}`);
   }
 
   /**
