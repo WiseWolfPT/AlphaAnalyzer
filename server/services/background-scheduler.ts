@@ -7,7 +7,7 @@
 import { globalCache, DataType } from '../cache/intelligent-cache-manager';
 import { ServerMarketDataService } from './market-data-service';
 // Import alert monitor for AGENTE 3: Alert Engine Backend
-import { alertMonitor } from '../workers/alert-monitor';
+// import { alertMonitor } from '../workers/alert-monitor'; // TODO: Create alert-monitor module
 
 interface ScheduledJob {
   id: string;

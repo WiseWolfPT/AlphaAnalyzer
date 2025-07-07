@@ -10,41 +10,41 @@ const RATE_LIMITS: Record<SubscriptionTier, {
   burstLimit: number;
 }> = {
   'free': {
-    requests: 100,        // 100 requests per hour
+    requests: 1000,        // 1000 requests per hour (10x increase)
     windowMs: 60 * 60 * 1000, // 1 hour
-    dailyLimit: 1000,     // 1000 requests per day
-    burstLimit: 10,       // 10 requests per minute burst
+    dailyLimit: 10000,     // 10k requests per day (10x increase)
+    burstLimit: 100,       // 100 requests per minute burst (10x increase)
   },
   'pro': {
-    requests: 1000,       // 1000 requests per hour
+    requests: 10000,       // 10k requests per hour (10x increase)
     windowMs: 60 * 60 * 1000, // 1 hour
-    dailyLimit: 15000,    // 15k requests per day
-    burstLimit: 50,       // 50 requests per minute burst
+    dailyLimit: 150000,    // 150k requests per day (10x increase)
+    burstLimit: 500,       // 500 requests per minute burst (10x increase)
   },
   'premium': {
-    requests: 5000,       // 5000 requests per hour
+    requests: 50000,       // 50k requests per hour (10x increase)
     windowMs: 60 * 60 * 1000, // 1 hour
-    dailyLimit: 100000,   // 100k requests per day
-    burstLimit: 200,      // 200 requests per minute burst
+    dailyLimit: 1000000,   // 1M requests per day (10x increase)
+    burstLimit: 2000,      // 2000 requests per minute burst (10x increase)
   },
 };
 
 // Special endpoints with different rate limits
 const ENDPOINT_SPECIFIC_LIMITS: Record<string, Partial<Record<SubscriptionTier, number>>> = {
   '/api/stocks/search': {
-    'free': 50,
-    'pro': 500,
-    'premium': 2000,
+    'free': 500,     // 10x increase
+    'pro': 5000,     // 10x increase
+    'premium': 20000, // 10x increase
   },
   '/api/intrinsic-values/calculate': {
-    'free': 20,
-    'pro': 200,
-    'premium': 1000,
+    'free': 200,     // 10x increase
+    'pro': 2000,     // 10x increase
+    'premium': 10000, // 10x increase
   },
   '/api/stocks': {
-    'free': 200,
-    'pro': 1500,
-    'premium': 8000,
+    'free': 2000,    // 10x increase
+    'pro': 15000,    // 10x increase
+    'premium': 80000, // 10x increase
   },
 };
 

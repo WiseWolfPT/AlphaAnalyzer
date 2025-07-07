@@ -10,11 +10,11 @@ import {
 import { DataType, DATA_TYPE_PROVIDERS, ProviderName } from '../quota/quota-limits';
 import { getCache, CACHE_TTL } from '../cache';
 import { getQuotaTracker } from '../quota';
-import { 
-  circuitBreakerManager, 
-  CircuitBreaker, 
-  CircuitBreakerState 
-} from './circuit-breaker';
+// import { 
+//   circuitBreakerManager, 
+//   CircuitBreaker, 
+//   CircuitBreakerState 
+// } from './circuit-breaker';
 
 export class UnifiedAPIService {
   private providers: Map<ProviderName, IMarketDataProvider> = new Map();

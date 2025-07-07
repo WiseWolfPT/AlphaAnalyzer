@@ -8,7 +8,7 @@ import HealthMonitor from '../services/health-monitor';
 import kvRouter from './health/kv';
 import { getTTFBStats, getTTFBRecommendations } from '../middleware/ttfb-middleware';
 import { getUnifiedAPIService } from '../services/unified-api';
-import { circuitBreakerManager } from '../services/unified-api/circuit-breaker';
+// import { circuitBreakerManager } from '../services/unified-api/circuit-breaker'; // TODO: Create circuit-breaker module
 
 const router = Router();
 const healthMonitor = HealthMonitor.getInstance();

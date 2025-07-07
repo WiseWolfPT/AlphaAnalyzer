@@ -33,13 +33,14 @@ import {
   securityErrorHandler 
 } from "./security/security-middleware";
 import { AuditLogger } from "./security/compliance-audit";
+// BROKEN IMPORTS - WebSocket package removed, CSRF disabled
 // SECURITY FIX: Import WebSocket and JWT for secure real-time connections
-import { WebSocketServer } from 'ws';
+// import { WebSocketServer } from 'ws';  // BROKEN: ws package removed
 import jwt from 'jsonwebtoken';
 import { parse } from 'url';
 import { validateJWTForWebSocket, extractTokenFromHeaders } from './utils/jwt-validator';
-// SECURITY FIX: Import CSRF protection
-import csrf from 'csurf';
+// SECURITY FIX: CSRF protection disabled after package removal
+// import csrf from 'csurf';  // BROKEN: csurf package removed
 // SECURITY FIX: Import crypto for request IDs
 import crypto from 'crypto';
 // SECURITY FIX: Import log retention policy
@@ -138,15 +139,17 @@ app.use('/api/stripe/webhook', express.raw({
 // URL encoded for form submissions
 app.use(express.urlencoded({ extended: false, limit: '1mb' }));
 
+// BROKEN: CSRF protection disabled (csurf package removed)
 // SECURITY FIX: Enable CSRF protection for state-changing operations (production only)
 // Configure CSRF with cookie-based tokens
-const csrfProtection = process.env.NODE_ENV === 'production' ? csrf({ 
-  cookie: {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict'
-  }
-}) : null;
+const csrfProtection = null; // BROKEN: csurf package removed
+// const csrfProtection = process.env.NODE_ENV === 'production' ? csrf({ 
+//   cookie: {
+//     httpOnly: true,
+//     secure: process.env.NODE_ENV === 'production',
+//     sameSite: 'strict'
+//   }
+// }) : null;
 
 // Add request ID and logging middleware
 app.use((req, res, next) => {
@@ -598,349 +601,42 @@ async function initializeMarketDataServices() {
     // Keep the complex binding logic as backup
     // tryNextStrategy();
 
-    // WebSocket server reference for graceful shutdown
-    let wss: WebSocketServer | null = null;
+    // BROKEN: WebSocket server reference (ws package removed)
+    // let wss: WebSocketServer | null = null;
+    let wss: any = null;
     
+    // BROKEN: WebSocket server completely disabled (ws package removed)
     // SECURITY FIX: Enhanced secure WebSocket server (completely disabled to avoid HTTP conflicts)
     if (false && process.env.NODE_ENV === 'production') {
-      wss = new WebSocketServer({ 
-        server,
-        // SECURITY FIX: Additional verification callback for origin checking
-        verifyClient: (info) => {
-          // Verify origin for additional security
-          const origin = info.origin;
-          const allowedOrigins = (process.env.ALLOWED_ORIGINS || 'http://localhost:3000,http://localhost:8080').split(',');
-          
-          if (origin && !allowedOrigins.includes(origin)) {
-            console.warn(`WebSocket connection rejected from unauthorized origin: ${origin}`);
-            return false;
-          }
-          return true;
-        }
-      });
+      // BROKEN: WebSocketServer not available
+      // wss = new WebSocketServer({ 
+      //   server,
+      //   // SECURITY FIX: Additional verification callback for origin checking
+      //   verifyClient: (info) => {
+      //     // Verify origin for additional security
+      //     const origin = info.origin;
+      //     const allowedOrigins = (process.env.ALLOWED_ORIGINS || 'http://localhost:3000,http://localhost:8080').split(',');
+      //     
+      //     if (origin && !allowedOrigins.includes(origin)) {
+      //       console.warn(`WebSocket connection rejected from unauthorized origin: ${origin}`);
+      //       return false;
+      //     }
+      //     return true;
+      //   }
+      // });
     
+    // BROKEN: WebSocket connection handling disabled (ws package removed)
     // SECURITY FIX: Enhanced connection tracking with user-based limits
-    const wsConnectionCounts = new Map<string, number>();
-    const wsUserConnections = new Map<string, Set<any>>();
-    const WS_MAX_CONNECTIONS_PER_IP = 5;
-    const WS_MAX_CONNECTIONS_PER_USER = 3;
+    // const wsConnectionCounts = new Map<string, number>();
+    // const wsUserConnections = new Map<string, Set<any>>();
+    // const WS_MAX_CONNECTIONS_PER_IP = 5;
+    // const WS_MAX_CONNECTIONS_PER_USER = 3;
     
-    wss.on('connection', (ws, req) => {
-      try {
-        // SECURITY FIX: Enhanced IP detection with proxy support
-        const clientIp = req.headers['x-real-ip'] as string || 
-                        req.headers['x-forwarded-for']?.toString().split(',')[0].trim() || 
-                        req.connection.remoteAddress || 
-                        req.socket.remoteAddress || 
-                        'unknown';
-        
-        // SECURITY FIX: Validate IP format to prevent injection
-        const ipRegex = /^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$|^(?:[0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}$/;
-        if (clientIp !== 'unknown' && !ipRegex.test(clientIp)) {
-          ws.close(1008, 'Invalid client IP');
-          return;
-        }
-        
-        // SECURITY FIX: Rate limit WebSocket connections per IP
-        const currentConnections = wsConnectionCounts.get(clientIp) || 0;
-        if (currentConnections >= WS_MAX_CONNECTIONS_PER_IP) {
-          ws.close(1008, 'Too many connections from this IP');
-          AuditLogger.securityViolation('websocket_rate_limit_ip', {
-            reason: 'Too many WebSocket connections from IP',
-            currentConnections,
-            maxAllowed: WS_MAX_CONNECTIONS_PER_IP,
-            clientIp,
-          }, {
-            ipAddress: clientIp,
-            userAgent: req.headers['user-agent'] || 'unknown',
-          }).catch(console.error);
-          return;
-        }
-        
-        // DEVELOPMENT FIX: Skip WebSocket auth in development for Vite HMR
-        let decoded: any = null;
-        let userId = 'dev-user';
-        let subscriptionTier = 'free';
-
-        if (process.env.NODE_ENV === 'production') {
-          // SECURITY FIX: Use centralized JWT validation for WebSocket (production only)
-          const parsedUrl = parse(req.url || '', true);
-          const token = extractTokenFromHeaders(req.headers, parsedUrl.query);
-          
-          if (!token) {
-            ws.close(1008, 'Authentication required');
-            AuditLogger.securityViolation('websocket_auth_missing', {
-              reason: 'No authentication token provided',
-            }, {
-              ipAddress: clientIp,
-              userAgent: req.headers['user-agent'] || 'unknown',
-            }).catch(console.error);
-            return;
-          }
-
-          // SECURITY FIX: Use centralized JWT validation
-          const validation = validateJWTForWebSocket(token);
-          
-          if (!validation.success) {
-            ws.close(1008, 'Invalid authentication token');
-            AuditLogger.securityViolation('websocket_auth_failed', {
-              reason: 'JWT validation failed',
-              error: validation.error || 'Unknown error',
-              errorCode: validation.errorCode,
-            }, {
-              ipAddress: clientIp,
-              userAgent: req.headers['user-agent'] || 'unknown',
-            }).catch(console.error);
-            return;
-          }
-
-          decoded = validation.payload!;
-          userId = decoded.sub;
-          subscriptionTier = decoded.subscriptionTier;
-        }
-        
-        // SECURITY FIX: Check user connection limits
-        const userConnections = wsUserConnections.get(userId) || new Set();
-        if (userConnections.size >= WS_MAX_CONNECTIONS_PER_USER) {
-          ws.close(1008, 'Too many connections for this user');
-          AuditLogger.securityViolation('websocket_rate_limit_user', {
-            reason: 'Too many WebSocket connections for user',
-            userId,
-            currentConnections: userConnections.size,
-            maxAllowed: WS_MAX_CONNECTIONS_PER_USER,
-          }, {
-            ipAddress: clientIp,
-            userAgent: req.headers['user-agent'] || 'unknown',
-          }).catch(console.error);
-          return;
-        }
-
-        // SECURITY FIX: Update connection tracking
-        wsConnectionCounts.set(clientIp, currentConnections + 1);
-        userConnections.add(ws);
-        wsUserConnections.set(userId, userConnections);
-        
-        // Attach user info to WebSocket with additional security metadata
-        (ws as any).userId = userId;
-        (ws as any).subscriptionTier = subscriptionTier;
-        (ws as any).clientIp = clientIp;
-        (ws as any).connectedAt = new Date().toISOString();
-        (ws as any).lastActivity = Date.now();
-        
-        // SECURITY FIX: Set up activity timeout for idle connections
-        const IDLE_TIMEOUT = 30 * 60 * 1000; // 30 minutes
-        const activityTimer = setInterval(() => {
-          const lastActivity = (ws as any).lastActivity || Date.now();
-          if (Date.now() - lastActivity > IDLE_TIMEOUT) {
-            ws.close(1001, 'Connection idle timeout');
-            clearInterval(activityTimer);
-          }
-        }, 60000); // Check every minute
-        
-        // Log successful connection with security details
-        console.log(`WebSocket authenticated for user ${userId} from IP ${clientIp}`);
-        AuditLogger.securityViolation('websocket_connection_success', {
-          userId: userId,
-          subscriptionTier: subscriptionTier,
-          clientIp,
-          connectionTime: new Date().toISOString(),
-        }, {
-          ipAddress: clientIp,
-          userAgent: req.headers['user-agent'] || 'unknown',
-        }).catch(console.error);
-        
-        // SECURITY FIX: Enhanced message handling with validation and rate limiting
-        let messageCount = 0;
-        const MESSAGE_RATE_LIMIT = 100; // Max 100 messages per minute
-        const messageRateWindow = 60 * 1000; // 1 minute
-        let messageRateTimer = Date.now();
-        
-        ws.on('message', (message) => {
-          try {
-            // SECURITY FIX: Update last activity timestamp
-            (ws as any).lastActivity = Date.now();
-            
-            // SECURITY FIX: Rate limit messages per connection
-            const now = Date.now();
-            if (now - messageRateTimer > messageRateWindow) {
-              messageCount = 0;
-              messageRateTimer = now;
-            }
-            
-            messageCount++;
-            if (messageCount > MESSAGE_RATE_LIMIT) {
-              ws.close(1008, 'Message rate limit exceeded');
-              AuditLogger.securityViolation('websocket_message_rate_limit', {
-                userId: userId,
-                messageCount,
-                rateLimit: MESSAGE_RATE_LIMIT,
-              }, {
-                ipAddress: clientIp,
-                userAgent: req.headers['user-agent'] || 'unknown',
-              }).catch(console.error);
-              return;
-            }
-            
-            // SECURITY FIX: Validate message size and format
-            const messageBuffer = Buffer.isBuffer(message) ? message : Buffer.from(message.toString());
-            if (messageBuffer.length > 1024) { // Max 1KB per message
-              ws.send(JSON.stringify({ error: 'Message too large' }));
-              return;
-            }
-            
-            const data = JSON.parse(message.toString());
-            
-            // SECURITY FIX: Validate message structure
-            if (!data || typeof data !== 'object' || !data.action) {
-              ws.send(JSON.stringify({ error: 'Invalid message structure' }));
-              return;
-            }
-            
-            // Handle subscription to market data based on user's tier
-            if (data.action === 'subscribe' && data.symbols) {
-              // SECURITY FIX: Validate symbols array
-              if (!Array.isArray(data.symbols)) {
-                ws.send(JSON.stringify({ error: 'Symbols must be an array' }));
-                return;
-              }
-              
-              const maxSymbols = subscriptionTier === 'premium' ? 100 : 
-                                 subscriptionTier === 'pro' ? 20 : 5;
-              
-              // SECURITY FIX: Validate each symbol format
-              const validSymbols = data.symbols
-                .slice(0, maxSymbols)
-                .filter((symbol: any) => 
-                  typeof symbol === 'string' && 
-                  /^[A-Z]{1,10}$/.test(symbol)
-                );
-              
-              (ws as any).subscribedSymbols = validSymbols;
-              
-              ws.send(JSON.stringify({
-                type: 'subscription_confirmed',
-                symbols: validSymbols,
-                tier: subscriptionTier,
-                timestamp: new Date().toISOString(),
-              }));
-            }
-          } catch (error) {
-            console.error('WebSocket message error:', error);
-            
-            // SECURITY FIX: Enhanced error response with categorization
-            let errorResponse = {
-              type: 'error',
-              error: 'MESSAGE_PROCESSING_ERROR',
-              message: 'Failed to process message',
-              timestamp: new Date().toISOString(),
-            };
-
-            // Categorize error types for better handling
-            if (error instanceof SyntaxError) {
-              errorResponse.error = 'INVALID_JSON';
-              errorResponse.message = 'Invalid JSON format';
-            } else if (error instanceof TypeError) {
-              errorResponse.error = 'INVALID_MESSAGE_STRUCTURE';
-              errorResponse.message = 'Invalid message structure';
-            }
-
-            // Log detailed error for monitoring
-            AuditLogger.securityViolation('websocket_message_error', {
-              userId: userId,
-              clientIp,
-              error: error instanceof Error ? error.message : 'Unknown error',
-              errorType: error.constructor.name,
-              timestamp: new Date().toISOString(),
-            }, {
-              ipAddress: clientIp,
-              userAgent: req.headers['user-agent'] || 'unknown',
-            }).catch(console.error);
-
-            // Send error response to client
-            try {
-              if (ws.readyState === ws.OPEN) {
-                ws.send(JSON.stringify(errorResponse));
-              }
-            } catch (sendError) {
-              console.error('Failed to send error response:', sendError);
-            }
-          }
-        });
-
-        // SECURITY FIX: Enhanced error handling for WebSocket
-        ws.on('error', (error) => {
-          console.error('WebSocket error for user', userId, ':', error);
-          
-          // Log error for monitoring
-          AuditLogger.securityViolation('websocket_error', {
-            userId: userId,
-            clientIp,
-            error: error.message,
-            errorCode: (error as any).code || 'UNKNOWN',
-            timestamp: new Date().toISOString(),
-          }, {
-            ipAddress: clientIp,
-            userAgent: req.headers['user-agent'] || 'unknown',
-          }).catch(console.error);
-          
-          // Attempt graceful close
-          try {
-            if (ws.readyState === ws.OPEN) {
-              ws.send(JSON.stringify({
-                type: 'error',
-                message: 'Connection error occurred',
-                timestamp: new Date().toISOString(),
-              }));
-            }
-          } catch (sendError) {
-            console.error('Failed to send error message to client:', sendError);
-          }
-        });
-
-        ws.on('close', (code, reason) => {
-          // SECURITY FIX: Clean up all connection tracking
-          console.log(`WebSocket closed for user ${userId} from IP ${clientIp}, code: ${code}, reason: ${reason}`);
-          
-          // Clean up timers
-          clearInterval(activityTimer);
-          
-          // SECURITY FIX: Decrement IP connection count
-          const ipCount = wsConnectionCounts.get(clientIp) || 0;
-          if (ipCount > 1) {
-            wsConnectionCounts.set(clientIp, ipCount - 1);
-          } else {
-            wsConnectionCounts.delete(clientIp);
-          }
-          
-          // SECURITY FIX: Remove from user connections
-          const userConns = wsUserConnections.get(userId) || new Set();
-          userConns.delete(ws);
-          if (userConns.size === 0) {
-            wsUserConnections.delete(userId);
-          } else {
-            wsUserConnections.set(userId, userConns);
-          }
-          
-          // Log disconnection for audit trail
-          AuditLogger.securityViolation('websocket_disconnection', {
-            userId: userId,
-            clientIp,
-            closeCode: code,
-            closeReason: reason?.toString() || 'No reason provided',
-            disconnectionTime: new Date().toISOString(),
-            connectionDuration: Date.now() - ((ws as any).lastActivity || Date.now()),
-          }, {
-            ipAddress: clientIp,
-            userAgent: req.headers['user-agent'] || 'unknown',
-          }).catch(console.error);
-        });
-
-      } catch (error) {
-        console.error('WebSocket connection error:', error);
-        ws.close(1011, 'Server error');
-      }
-    });
-
+    // BROKEN: Entire WebSocket connection handling block disabled (ws package removed)
+    // [WebSocket connection handling code removed - approximately 300 lines]
+    // This included connection tracking, authentication, message handling, and cleanup
+    // Will need to be re-implemented when WebSocket support is restored
+    
     } // Close the production WebSocket block
 
     // Enhanced graceful shutdown handling

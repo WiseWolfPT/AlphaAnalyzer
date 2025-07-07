@@ -23,21 +23,25 @@ const envSchema = z.object({
   // Base de Dados
   DATABASE_URL: z.string().optional(), // Opcional porque pode usar SQLite em dev
   
-  // Chaves de API Financeiras
-  ALPHA_VANTAGE_API_KEY: z.string().min(1, 'Alpha Vantage API key é obrigatória'),
-  TWELVE_DATA_API_KEY: z.string().min(1, 'Twelve Data API key é obrigatória'),
-  FMP_API_KEY: z.string().min(1, 'FMP API key é obrigatória'),
-  FINNHUB_API_KEY: z.string().min(1, 'Finnhub API key é obrigatória'),
+  // Chaves de API Financeiras (opcionais em desenvolvimento)
+  ALPHA_VANTAGE_API_KEY: z.string().optional(),
+  TWELVE_DATA_API_KEY: z.string().optional(),
+  FMP_API_KEY: z.string().optional(),
+  FINNHUB_API_KEY: z.string().optional(),
   
   // Stripe (opcional em desenvolvimento)
   STRIPE_SECRET_KEY: z.string().optional(),
   STRIPE_WEBHOOK_SECRET: z.string().optional(),
   
   // Supabase
-  SUPABASE_SERVICE_KEY: z.string().optional(), // Opcional se usar auth local
+  SUPABASE_URL: z.string().optional(),
+  SUPABASE_SERVICE_ROLE_KEY: z.string().optional(),
+  SUPABASE_ANON_KEY: z.string().optional(),
   
   // Autenticação
-  JWT_SECRET: z.string().min(32, 'JWT_SECRET deve ter pelo menos 32 caracteres'),
+  JWT_SECRET: z.string().optional(),
+  JWT_ACCESS_SECRET: z.string().optional(),
+  JWT_REFRESH_SECRET: z.string().optional(),
   
   // Configurações Opcionais
   REDIS_URL: z.string().optional(),

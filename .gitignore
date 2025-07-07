@@ -40,3 +40,4 @@ workspace/
 
 # Vercel
 .vercel
+.env

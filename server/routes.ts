@@ -11,8 +11,9 @@ import enhancedValuationRouter from "./routes/enhanced-valuation";
 import healthRouter from "./routes/health";
 import stocksRouter from "./routes/stocks";
 import transcriptsRouter from "./routes/transcripts";
-import pushNotificationsRouter from "./routes/push-notifications";
-import circuitBreakerRouter from "./routes/circuit-breaker";
+// BROKEN IMPORTS - Modules don't exist yet
+// import pushNotificationsRouter from "./routes/push-notifications"; // TODO: Create this file
+// import circuitBreakerRouter from "./routes/circuit-breaker"; // TODO: Create this file
 import { authMiddleware } from "./middleware/auth-middleware";
 import { validateRequest, validationSchemas } from "./security/security-middleware";
 
@@ -126,11 +127,11 @@ export async function registerRoutes(app: Express, server: Server): Promise<void
   // ROADMAP V4: Public transcripts routes
   app.use("/api/transcripts", transcriptsRouter);
   
-  // Push notifications routes
-  app.use("/api/push", pushNotificationsRouter);
+  // BROKEN - Push notifications routes (module doesn't exist)
+  // app.use("/api/push", pushNotificationsRouter);
   
-  // Circuit breaker management routes (admin only)
-  app.use("/api/circuit-breaker", circuitBreakerRouter);
+  // BROKEN - Circuit breaker management routes (module doesn't exist)
+  // app.use("/api/circuit-breaker", circuitBreakerRouter);
   
   // SECURITY FIX: Register versioned routes first
   app.use(`/api/${API_VERSION}/market-data`, marketDataRouter);
