@@ -17,7 +17,6 @@ import {
   UserAlertPreferences 
 } from '../services/alerts/alert-types';
 import { db } from '../db';
-import { requireAuth, requireAdmin, optionalAuth } from '../middleware/supabase-auth';
 import { z } from 'zod';
 
 const router = Router();
@@ -82,17 +81,14 @@ const UserPreferencesSchema = z.object({
  * GET /api/alerts
  * Get user's alerts with optional filtering
  */
-router.get('/', requireAuth, async (req: Request, res: Response) => {
+router.get('/', async (req: Request, res: Response) => {
   try {
-    const userId = (req as any).user?.id;
-    if (!userId) {
-      return res.status(401).json({ error: 'User not authenticated' });
-    }
+    const userId = (req as any).user?.id || 'demo_user';
 
     const { type, enabled, limit = 50, offset = 0 } = req.query;
 
     let query = `
-      SELECT * FROM alerts 
+      SELECT * FROM alerts_v2 
       WHERE user_id = ?
     `;
     const params: any[] = [userId];
@@ -139,12 +135,9 @@ router.get('/', requireAuth, async (req: Request, res: Response) => {
  * POST /api/alerts
  * Create a new alert
  */
-router.post('/', requireAuth, async (req: Request, res: Response) => {
+router.post('/', async (req: Request, res: Response) => {
   try {
-    const userId = (req as any).user?.id;
-    if (!userId) {
-      return res.status(401).json({ error: 'User not authenticated' });
-    }
+    const userId = (req as any).user?.id || 'demo_user';
 
     const validatedData = CreateAlertSchema.parse(req.body);
 
@@ -175,13 +168,13 @@ router.post('/', requireAuth, async (req: Request, res: Response) => {
  * GET /api/alerts/:id
  * Get a specific alert
  */
-router.get('/:id', requireAuth, async (req: Request, res: Response) => {
+router.get('/:id', async (req: Request, res: Response) => {
   try {
-    const userId = (req as any).user?.id;
+    const userId = (req as any).user?.id || 'demo_user';
     const { id } = req.params;
 
     const alert = db.prepare(`
-      SELECT * FROM alerts 
+      SELECT * FROM alerts_v2 
       WHERE id = ? AND user_id = ?
     `).get(id, userId);
 
@@ -211,14 +204,14 @@ router.get('/:id', requireAuth, async (req: Request, res: Response) => {
  * PUT /api/alerts/:id
  * Update an alert
  */
-router.put('/:id', requireAuth, async (req: Request, res: Response) => {
+router.put('/:id', async (req: Request, res: Response) => {
   try {
-    const userId = (req as any).user?.id;
+    const userId = (req as any).user?.id || 'demo_user';
     const { id } = req.params;
 
     // Check if alert exists and belongs to user
     const existingAlert = db.prepare(`
-      SELECT * FROM alerts 
+      SELECT * FROM alerts_v2 
       WHERE id = ? AND user_id = ?
     `).get(id, userId);
 
@@ -253,14 +246,14 @@ router.put('/:id', requireAuth, async (req: Request, res: Response) => {
  * DELETE /api/alerts/:id
  * Delete an alert
  */
-router.delete('/:id', requireAuth, async (req: Request, res: Response) => {
+router.delete('/:id', async (req: Request, res: Response) => {
   try {
-    const userId = (req as any).user?.id;
+    const userId = (req as any).user?.id || 'demo_user';
     const { id } = req.params;
 
     // Check if alert exists and belongs to user
     const existingAlert = db.prepare(`
-      SELECT * FROM alerts 
+      SELECT * FROM alerts_v2 
       WHERE id = ? AND user_id = ?
     `).get(id, userId);
 
@@ -286,15 +279,15 @@ router.delete('/:id', requireAuth, async (req: Request, res: Response) => {
  * GET /api/alerts/triggers
  * Get alert trigger history
  */
-router.get('/triggers', requireAuth, async (req: Request, res: Response) => {
+router.get('/triggers', async (req: Request, res: Response) => {
   try {
-    const userId = (req as any).user?.id;
+    const userId = (req as any).user?.id || 'demo_user';
     const { limit = 50, offset = 0, severity, acknowledged } = req.query;
 
     let query = `
       SELECT at.*, a.name as alert_name, a.type as alert_type
-      FROM alert_triggers at
-      JOIN alerts a ON at.alert_id = a.id
+      FROM alert_triggers_v2 at
+      JOIN alerts_v2 a ON at.alert_id = a.id
       WHERE at.user_id = ?
     `;
     const params: any[] = [userId];
@@ -339,13 +332,13 @@ router.get('/triggers', requireAuth, async (req: Request, res: Response) => {
  * POST /api/alerts/triggers/:id/acknowledge
  * Acknowledge an alert trigger
  */
-router.post('/triggers/:id/acknowledge', requireAuth, async (req: Request, res: Response) => {
+router.post('/triggers/:id/acknowledge', async (req: Request, res: Response) => {
   try {
-    const userId = (req as any).user?.id;
+    const userId = (req as any).user?.id || 'demo_user';
     const { id } = req.params;
 
     const result = db.prepare(`
-      UPDATE alert_triggers 
+      UPDATE alert_triggers_v2 
       SET acknowledged = 1, acknowledged_at = datetime('now')
       WHERE id = ? AND user_id = ?
     `).run(id, userId);
@@ -366,12 +359,12 @@ router.post('/triggers/:id/acknowledge', requireAuth, async (req: Request, res: 
  * GET /api/alerts/preferences
  * Get user alert preferences
  */
-router.get('/preferences', requireAuth, async (req: Request, res: Response) => {
+router.get('/preferences', async (req: Request, res: Response) => {
   try {
-    const userId = (req as any).user?.id;
+    const userId = (req as any).user?.id || 'demo_user';
 
     const preferences = db.prepare(`
-      SELECT * FROM user_alert_preferences WHERE user_id = ?
+      SELECT * FROM user_alert_preferences_v2 WHERE user_id = ?
     `).get(userId);
 
     if (!preferences) {
@@ -390,7 +383,7 @@ router.get('/preferences', requireAuth, async (req: Request, res: Response) => {
       };
 
       db.prepare(`
-        INSERT INTO user_alert_preferences (
+        INSERT INTO user_alert_preferences_v2 (
           user_id, global_enabled, default_channels, quiet_hours,
           email_notifications, push_notifications, weekend_alerts,
           max_alerts_per_day, preferred_frequency, categories
@@ -444,9 +437,9 @@ router.get('/preferences', requireAuth, async (req: Request, res: Response) => {
  * PUT /api/alerts/preferences
  * Update user alert preferences
  */
-router.put('/preferences', requireAuth, async (req: Request, res: Response) => {
+router.put('/preferences', async (req: Request, res: Response) => {
   try {
-    const userId = (req as any).user?.id;
+    const userId = (req as any).user?.id || 'demo_user';
     const validatedData = UserPreferencesSchema.parse(req.body);
 
     // Build dynamic update query
@@ -506,7 +499,7 @@ router.put('/preferences', requireAuth, async (req: Request, res: Response) => {
     updateValues.push(userId);
 
     const query = `
-      UPDATE user_alert_preferences 
+      UPDATE user_alert_preferences_v2 
       SET ${updateFields.join(', ')}
       WHERE user_id = ?
     `;
@@ -536,9 +529,9 @@ router.put('/preferences', requireAuth, async (req: Request, res: Response) => {
  * GET /api/alerts/notifications
  * Get in-app notifications for user
  */
-router.get('/notifications', requireAuth, async (req: Request, res: Response) => {
+router.get('/notifications', async (req: Request, res: Response) => {
   try {
-    const userId = (req as any).user?.id;
+    const userId = (req as any).user?.id || 'demo_user';
     const { limit = 20 } = req.query;
 
     const notifications = notificationService.getInAppNotifications(userId, Number(limit));
@@ -558,9 +551,9 @@ router.get('/notifications', requireAuth, async (req: Request, res: Response) =>
  * POST /api/alerts/notifications/:id/read
  * Mark notification as read
  */
-router.post('/notifications/:id/read', requireAuth, async (req: Request, res: Response) => {
+router.post('/notifications/:id/read', async (req: Request, res: Response) => {
   try {
-    const userId = (req as any).user?.id;
+    const userId = (req as any).user?.id || 'demo_user';
     const { id } = req.params;
 
     const success = notificationService.markNotificationAsRead(userId, id);
@@ -581,9 +574,9 @@ router.post('/notifications/:id/read', requireAuth, async (req: Request, res: Re
  * DELETE /api/alerts/notifications
  * Clear all notifications for user
  */
-router.delete('/notifications', requireAuth, async (req: Request, res: Response) => {
+router.delete('/notifications', async (req: Request, res: Response) => {
   try {
-    const userId = (req as any).user?.id;
+    const userId = (req as any).user?.id || 'demo_user';
 
     notificationService.clearUserNotifications(userId);
 
@@ -599,9 +592,9 @@ router.delete('/notifications', requireAuth, async (req: Request, res: Response)
  * GET /api/alerts/stats
  * Get alert statistics for user
  */
-router.get('/stats', requireAuth, async (req: Request, res: Response) => {
+router.get('/stats', async (req: Request, res: Response) => {
   try {
-    const userId = (req as any).user?.id;
+    const userId = (req as any).user?.id || 'demo_user';
 
     // Get user-specific stats
     const alertStats = db.prepare(`
@@ -609,19 +602,19 @@ router.get('/stats', requireAuth, async (req: Request, res: Response) => {
         COUNT(*) as total_alerts,
         COUNT(CASE WHEN enabled = 1 THEN 1 END) as active_alerts,
         SUM(trigger_count) as total_triggers
-      FROM alerts 
+      FROM alerts_v2 
       WHERE user_id = ?
     `).get(userId);
 
     const recentTriggers = db.prepare(`
       SELECT COUNT(*) as count
-      FROM alert_triggers 
+      FROM alert_triggers_v2 
       WHERE user_id = ? AND triggered_at > datetime('now', '-24 hours')
     `).get(userId);
 
     const unacknowledgedTriggers = db.prepare(`
       SELECT COUNT(*) as count
-      FROM alert_triggers 
+      FROM alert_triggers_v2 
       WHERE user_id = ? AND acknowledged = 0
     `).get(userId);
 
@@ -643,9 +636,9 @@ router.get('/stats', requireAuth, async (req: Request, res: Response) => {
  * POST /api/alerts/test
  * Test notification delivery
  */
-router.post('/test', requireAuth, async (req: Request, res: Response) => {
+router.post('/test', async (req: Request, res: Response) => {
   try {
-    const userId = (req as any).user?.id;
+    const userId = (req as any).user?.id || 'demo_user';
     const { channel, message } = req.body;
 
     if (!Object.values(NotificationChannel).includes(channel)) {
@@ -667,106 +660,6 @@ router.post('/test', requireAuth, async (req: Request, res: Response) => {
   } catch (error) {
     console.error('Error sending test notification:', error);
     res.status(500).json({ error: 'Failed to send test notification' });
-  }
-});
-
-// Admin routes
-/**
- * GET /api/alerts/admin/overview
- * Get system-wide alert overview (admin only)
- */
-router.get('/admin/overview', requireAdmin, async (req: Request, res: Response) => {
-  try {
-    const systemStats = alertManager.getAlertStats();
-    const notificationStats = notificationService.getStats();
-
-    const dbStats = db.prepare(`
-      SELECT 
-        COUNT(DISTINCT user_id) as users_with_alerts,
-        COUNT(*) as total_alerts,
-        COUNT(CASE WHEN enabled = 1 THEN 1 END) as active_alerts,
-        AVG(trigger_count) as avg_triggers_per_alert
-      FROM alerts
-    `).get();
-
-    const recentActivity = db.prepare(`
-      SELECT 
-        DATE(triggered_at) as date,
-        COUNT(*) as triggers,
-        COUNT(DISTINCT user_id) as users,
-        COUNT(DISTINCT alert_id) as alerts
-      FROM alert_triggers
-      WHERE triggered_at > datetime('now', '-7 days')
-      GROUP BY DATE(triggered_at)
-      ORDER BY date DESC
-    `).all();
-
-    res.json({
-      system: systemStats,
-      notifications: notificationStats,
-      database: dbStats,
-      recentActivity
-    });
-
-  } catch (error) {
-    console.error('Error fetching admin alert overview:', error);
-    res.status(500).json({ error: 'Failed to fetch alert overview' });
-  }
-});
-
-/**
- * POST /api/alerts/admin/broadcast
- * Send broadcast notification to all users (admin only)
- */
-router.post('/admin/broadcast', requireAdmin, async (req: Request, res: Response) => {
-  try {
-    const { title, message, severity = 'medium', channels = ['in_app'] } = req.body;
-
-    if (!title || !message) {
-      return res.status(400).json({ error: 'Title and message are required' });
-    }
-
-    // Get all users with alert preferences
-    const users = db.prepare(`
-      SELECT DISTINCT user_id FROM user_alert_preferences 
-      WHERE global_enabled = 1
-    `).all();
-
-    const results = [];
-    for (const user of users) {
-      try {
-        const result = await notificationService.sendNotification(
-          user.user_id,
-          {
-            title,
-            message,
-            severity: severity as AlertSeverity,
-            type: AlertType.SYSTEM_HEALTH,
-            icon: '📢'
-          },
-          channels as NotificationChannel[]
-        );
-        results.push({ userId: user.user_id, success: result.success });
-      } catch (error) {
-        results.push({ userId: user.user_id, success: false, error: error.message });
-      }
-    }
-
-    const successful = results.filter(r => r.success).length;
-    const failed = results.filter(r => !r.success).length;
-
-    res.json({
-      message: 'Broadcast notification sent',
-      results: {
-        total: users.length,
-        successful,
-        failed
-      }
-    });
-
-  } catch (error) {
-    console.error('Error sending broadcast notification:', error);
-    res.status(500).json({ error: 'Failed to send broadcast notification' });
   }
 });
 

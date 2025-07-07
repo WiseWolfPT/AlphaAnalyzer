@@ -14,6 +14,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Moon, Sun, User, Menu, UserCircle, HelpCircle, LogOut } from "lucide-react";
+import NotificationCenter from "@/components/alerts/notification-center";
 
 interface TopBarProps {
   onMobileMenuToggle?: () => void;
@@ -109,6 +110,9 @@ export function TopBar({ onMobileMenuToggle }: TopBarProps) {
             <SelectItem value="APAC">APAC</SelectItem>
           </SelectContent>
         </Select>
+
+        {/* Notification Center */}
+        <NotificationCenter />
 
         {/* Theme Toggle */}
         <Button

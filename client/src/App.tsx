@@ -32,6 +32,7 @@ const Help = lazy(() => import("@/pages/help"));
 const News = lazy(() => import("@/pages/news"));
 const AdminDashboard = lazy(() => import("@/pages/admin/admin-dashboard"));
 const ApiMonitoring = lazy(() => import("@/pages/admin/api-monitoring"));
+const Alerts = lazy(() => import("@/pages/alerts"));
 const StockHeaderTest = lazy(() => import("@/components/stock/stock-header-test"));
 
 // Loading component for Suspense
@@ -65,6 +66,7 @@ function Router() {
         <Route path="/help" component={Help} />
         <Route path="/news" component={News} />
         <Route path="/intrinsic-value" component={IntrinsicValue} />
+        <Route path="/alerts" component={Alerts} />
         <Route path="/admin" component={AdminDashboard} />
         <Route path="/admin/api-monitoring" component={ApiMonitoring} />
         <Route path="/test/stock-header" component={StockHeaderTest} />

@@ -1,24 +1,12 @@
 /**
- * MULTI-LAYER CACHE MANAGER
+ * ENHANCED MULTI-LAYER CACHE MANAGER
  * Intelligent caching system with Redis fallback to in-memory storage
  * Implements cache warming, invalidation strategies, and monitoring
  */
 
-import { createClient, RedisClientType } from 'redis';
-import { LRUCache } from 'lru-cache';
 import { env } from '../../config/env';
 import { RedisCacheProvider } from './providers/redis-cache';
 import { MemoryCacheProvider } from './providers/memory-cache';
-
-export interface CacheEntry<T> {
-  data: T;
-  timestamp: number;
-  expiresAt: number;
-  type: CacheType;
-  provider?: string;
-  hitCount: number;
-  metadata?: Record<string, any>;
-}
 
 export enum CacheType {
   // API Data Layers
@@ -92,7 +80,6 @@ export class CacheManager {
   private memoryProvider: MemoryCacheProvider;
   private stats: CacheStats;
   private cleanupInterval: NodeJS.Timeout;
-  private readonly isProduction = env.NODE_ENV === 'production';
 
   constructor() {
     this.initializeProviders();
@@ -109,7 +96,6 @@ export class CacheManager {
     });
     console.log('✅ Cache providers initialized (Redis + Memory)');
   }
-
 
   private initializeStats() {
     this.stats = {
@@ -133,7 +119,6 @@ export class CacheManager {
       this.stats.byType[type] = { count: 0, hits: 0, misses: 0, size: 0 };
     });
   }
-
 
   /**
    * Get data from cache with automatic fallback to memory cache
@@ -359,7 +344,6 @@ export class CacheManager {
     return parts.join(':');
   }
 
-
   private startCleanupTask(): void {
     // Cleanup is now handled by individual providers
     // This interval is kept for global cache statistics updates
@@ -430,6 +414,3 @@ setTimeout(async () => {
     console.error('❌ Initial cache warming failed:', error);
   }
 }, 2000); // Wait 2 seconds for server startup
-
-// Export cache warming service
-export { cacheWarmingService } from './cache-warming';
