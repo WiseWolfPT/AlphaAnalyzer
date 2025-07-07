@@ -84,7 +84,7 @@ export default defineConfig({
     proxy: {
       // API proxy with enhanced configuration
       '/api': {
-        target: 'http://localhost:3003',
+        target: 'http://localhost:3001',
         changeOrigin: true,
         secure: false,
         ws: false, // Disable WebSocket proxying to avoid conflicts

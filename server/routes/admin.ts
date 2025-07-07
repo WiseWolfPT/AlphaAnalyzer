@@ -2,11 +2,12 @@ import { Router } from 'express';
 import { z } from 'zod';
 import { authMiddleware } from '../middleware/auth-middleware';
 import transcriptsRouter from './admin/transcripts';
+// BROKEN IMPORTS - These modules don't exist
 // Import Alert Monitor for AGENTE 3: Alert Engine Backend admin endpoints
-import { alertMonitor } from '../workers/alert-monitor';
+// import { alertMonitor } from '../workers/alert-monitor';
 import { backgroundScheduler } from '../services/background-scheduler';
 // Import Push Notification Service for AGENTE 4: PWA Push Notifications admin endpoints
-import { pushNotificationService } from '../services/push-notification-service';
+// import { pushNotificationService } from '../services/push-notification-service';
 
 const router = Router();
 
@@ -640,10 +641,12 @@ router.get('/export', (req, res) => {
 
 // ===== AGENTE 3: ALERT ENGINE BACKEND ADMIN ENDPOINTS =====
 
+// BROKEN - Alert monitor service doesn't exist
 // GET /api/admin/alert-monitor/status - Get Alert Monitor status
 router.get('/alert-monitor/status', (req, res) => {
   try {
-    const status = alertMonitor.getStatus();
+    // BROKEN: alertMonitor service doesn't exist
+    // const status = alertMonitor.getStatus();
     const schedulerStats = backgroundScheduler.getStats();
     const schedulerJobs = backgroundScheduler.getJobs();
     
@@ -652,7 +655,8 @@ router.get('/alert-monitor/status', (req, res) => {
     res.json({
       success: true,
       data: {
-        alertMonitor: status,
+        // alertMonitor: status,
+        alertMonitor: { status: 'service_not_available', message: 'Alert monitor service not implemented' },
         schedulerJob: alertJob,
         schedulerStats,
         systemTime: new Date().toISOString(),
@@ -668,14 +672,15 @@ router.get('/alert-monitor/status', (req, res) => {
   }
 });
 
-// POST /api/admin/alert-monitor/refresh-cache - Force refresh alert cache
+// BROKEN - POST /api/admin/alert-monitor/refresh-cache - Force refresh alert cache
 router.post('/alert-monitor/refresh-cache', async (req, res) => {
   try {
-    await alertMonitor.forceRefreshCache();
+    // BROKEN: alertMonitor service doesn't exist
+    // await alertMonitor.forceRefreshCache();
     
     res.json({
-      success: true,
-      message: 'Alert cache refreshed successfully',
+      success: false,
+      message: 'Alert monitor service not available',
       timestamp: new Date().toISOString()
     });
   } catch (error) {
@@ -699,7 +704,8 @@ router.put('/alert-monitor/config', (req, res) => {
     });
     
     const newConfig = configSchema.parse(req.body);
-    alertMonitor.updateConfig(newConfig);
+    // BROKEN: alertMonitor service doesn't exist
+    // alertMonitor.updateConfig(newConfig);
     
     res.json({
       success: true,
@@ -724,10 +730,11 @@ router.put('/alert-monitor/config', (req, res) => {
   }
 });
 
-// POST /api/admin/alert-monitor/start - Start Alert Monitor
+// BROKEN - POST /api/admin/alert-monitor/start - Start Alert Monitor
 router.post('/alert-monitor/start', (req, res) => {
   try {
-    alertMonitor.start();
+    // BROKEN: alertMonitor service doesn't exist
+    // alertMonitor.start();
     backgroundScheduler.enableJob('alert-monitoring');
     
     res.json({
@@ -744,10 +751,11 @@ router.post('/alert-monitor/start', (req, res) => {
   }
 });
 
-// POST /api/admin/alert-monitor/stop - Stop Alert Monitor
+// BROKEN - POST /api/admin/alert-monitor/stop - Stop Alert Monitor
 router.post('/alert-monitor/stop', (req, res) => {
   try {
-    alertMonitor.stop();
+    // BROKEN: alertMonitor service doesn't exist
+    // alertMonitor.stop();
     backgroundScheduler.disableJob('alert-monitoring');
     
     res.json({
@@ -783,10 +791,12 @@ router.post('/alert-monitor/run-now', async (req, res) => {
   }
 });
 
-// GET /api/admin/alert-monitor/metrics - Get detailed Alert Monitor metrics
+// BROKEN - GET /api/admin/alert-monitor/metrics - Get detailed Alert Monitor metrics
 router.get('/alert-monitor/metrics', (req, res) => {
   try {
-    const status = alertMonitor.getStatus();
+    // BROKEN: alertMonitor service doesn't exist
+    // const status = alertMonitor.getStatus();
+    const status = { metrics: {}, cacheStatus: {}, config: {} };
     
     // Enhanced metrics with performance calculations
     const metrics = {
@@ -825,10 +835,12 @@ router.get('/alert-monitor/metrics', (req, res) => {
 
 // ===== AGENTE 4: PWA PUSH NOTIFICATIONS ADMIN ENDPOINTS =====
 
-// GET /api/admin/push-notifications/status - Get push notification system status
+// BROKEN - GET /api/admin/push-notifications/status - Get push notification system status
 router.get('/push-notifications/status', async (req, res) => {
   try {
-    const stats = await pushNotificationService.getSystemStats();
+    // BROKEN: pushNotificationService doesn't exist
+    // const stats = await pushNotificationService.getSystemStats();
+    const stats = { totalSubscriptions: 0, activeSubscriptions: 0, notificationsSent: 0 };
     
     res.json({
       success: true,
@@ -854,7 +866,9 @@ router.get('/push-notifications/subscriptions', async (req, res) => {
     const query = paginationSchema.parse(req.query);
     const { page, limit } = query;
     
-    const subscriptions = await pushNotificationService.getAllSubscriptions(page, limit);
+    // BROKEN: pushNotificationService doesn't exist
+    // const subscriptions = await pushNotificationService.getAllSubscriptions(page, limit);
+    const subscriptions = { subscriptions: [], pagination: { page, limit, total: 0, pages: 0 } };
     
     res.json({
       success: true,
@@ -884,17 +898,19 @@ router.post('/push-notifications/broadcast', async (req, res) => {
     
     const notificationData = broadcastSchema.parse(req.body);
     
-    const result = await pushNotificationService.sendBroadcastNotification(
-      notificationData.title,
-      notificationData.body,
-      {
-        url: notificationData.url,
-        icon: notificationData.icon,
-        badge: notificationData.badge,
-        tag: notificationData.tag
-      },
-      notificationData.targetAudience
-    );
+    // BROKEN: pushNotificationService doesn't exist
+    // const result = await pushNotificationService.sendBroadcastNotification(
+    //   notificationData.title,
+    //   notificationData.body,
+    //   {
+    //     url: notificationData.url,
+    //     icon: notificationData.icon,
+    //     badge: notificationData.badge,
+    //     tag: notificationData.tag
+    //   },
+    //   notificationData.targetAudience
+    // );
+    const result = { sent: 0, failed: 0, message: 'Push notification service not available' };
     
     res.json({
       success: true,
@@ -931,7 +947,9 @@ router.delete('/push-notifications/subscriptions/:subscriptionId', async (req, r
       });
     }
     
-    const result = await pushNotificationService.removeSubscription(subscriptionId);
+    // BROKEN: pushNotificationService doesn't exist
+    // const result = await pushNotificationService.removeSubscription(subscriptionId);
+    const result = { success: false, message: 'Push notification service not available' };
     
     if (!result.success) {
       return res.status(404).json({
@@ -966,20 +984,22 @@ router.post('/push-notifications/test-user', async (req, res) => {
     
     const testData = testSchema.parse(req.body);
     
-    const result = await pushNotificationService.sendPushToUser(
-      testData.userId,
-      {
-        title: testData.title,
-        body: testData.body,
-        icon: '/favicon.ico',
-        badge: '/favicon.ico',
-        data: {
-          type: 'admin-test',
-          url: testData.url || '/dashboard'
-        },
-        tag: 'admin-test'
-      }
-    );
+    // BROKEN: pushNotificationService doesn't exist
+    // const result = await pushNotificationService.sendPushToUser(
+    //   testData.userId,
+    //   {
+    //     title: testData.title,
+    //     body: testData.body,
+    //     icon: '/favicon.ico',
+    //     badge: '/favicon.ico',
+    //     data: {
+    //       type: 'admin-test',
+    //       url: testData.url || '/dashboard'
+    //     },
+    //     tag: 'admin-test'
+    //   }
+    // );
+    const result = { sent: 0, failed: 1, message: 'Push notification service not available' };
     
     res.json({
       success: true,
@@ -1012,7 +1032,9 @@ router.get('/push-notifications/analytics', async (req, res) => {
       ? { start: timeRangeQuery.start, end: timeRangeQuery.end }
       : getTimeWindow(timeRangeQuery.window);
     
-    const analytics = await pushNotificationService.getAnalytics(start, end);
+    // BROKEN: pushNotificationService doesn't exist
+    // const analytics = await pushNotificationService.getAnalytics(start, end);
+    const analytics = { totalSent: 0, totalDelivered: 0, clickRate: 0, conversionRate: 0 };
     
     res.json({
       success: true,
@@ -1044,8 +1066,9 @@ router.put('/push-notifications/config', async (req, res) => {
     
     const newConfig = configSchema.parse(req.body);
     
+    // BROKEN: pushNotificationService doesn't exist
     // Update the push notification service configuration
-    await pushNotificationService.updateConfig(newConfig);
+    // await pushNotificationService.updateConfig(newConfig);
     
     res.json({
       success: true,
@@ -1073,7 +1096,9 @@ router.put('/push-notifications/config', async (req, res) => {
 // POST /api/admin/push-notifications/cleanup - Cleanup expired subscriptions
 router.post('/push-notifications/cleanup', async (req, res) => {
   try {
-    const result = await pushNotificationService.cleanupExpiredSubscriptions();
+    // BROKEN: pushNotificationService doesn't exist
+    // const result = await pushNotificationService.cleanupExpiredSubscriptions();
+    const result = { cleaned: 0, remaining: 0, message: 'Push notification service not available' };
     
     res.json({
       success: true,

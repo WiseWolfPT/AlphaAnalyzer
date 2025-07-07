@@ -1,0 +1,194 @@
+# ALFALYZER ADVANCED LOAD TESTING WITH ARTILLERY
+# Complementary to k6 tests - focuses on specific bottleneck scenarios
+
+config:
+  target: 'http://localhost:3001'
+  phases:
+    # Warm-up phase
+    - duration: 60
+      arrivalRate: 1
+      name: "Warm-up"
+    
+    # Database stress test - concurrent writes
+    - duration: 300
+      arrivalRate: 5
+      name: "Database write stress"
+    
+    # Rate limit exploration 
+    - duration: 180
+      arrivalRate: 10
+      name: "Rate limit boundary test"
+    
+    # Memory pressure test
+    - duration: 600
+      arrivalRate: 8
+      name: "Memory pressure test"
+
+  defaults:
+    headers:
+      User-Agent: 'Alfalyzer-LoadTest/1.0'
+      Accept: 'application/json'
+      
+  # Performance expectations based on analysis
+  ensure:
+    p95: 2000  # 95th percentile under 2s
+    p99: 5000  # 99th percentile under 5s
+    maxErrorRate: 10  # Max 10% errors (due to expected rate limiting)
+
+  # Custom metrics for bottleneck tracking
+  engines:
+    http:
+      timeout: 10
+      pool: 50
+      maxSockets: 100
+      keepAlive: true
+
+# Test scenarios targeting specific bottlenecks
+scenarios:
+  # Scenario 1: SQLite Database Stress Test
+  - name: "Database bottleneck test"
+    weight: 30
+    flow:
+      - get:
+          url: "/health"
+          capture:
+            - json: "$.timestamp"
+              as: "healthTimestamp"
+      
+      # Search operations stress the database
+      - get:
+          url: "/api/stocks/search"
+          qs:
+            q: "{{ $randomString() }}"
+            limit: 20
+          expect:
+            - statusCode: [200, 429]  # Expect rate limiting
+            
+      - think: 1
+      
+      # Multiple stock lookups to stress database
+      - loop:
+          - get:
+              url: "/api/stocks/{{ $randomPick(['AAPL', 'MSFT', 'GOOGL', 'AMZN', 'TSLA']) }}"
+              expect:
+                - statusCode: [200, 429, 500]
+          over: ['AAPL', 'MSFT', 'GOOGL', 'AMZN', 'TSLA', 'NVDA', 'META']
+          
+      - think: 2
+
+  # Scenario 2: Rate Limit Boundary Testing
+  - name: "Rate limit boundary test"
+    weight: 25
+    flow:
+      # Rapid-fire requests to trigger rate limiting
+      - loop:
+          - get:
+              url: "/api/stocks"
+              qs:
+                limit: 10
+              expect:
+                - statusCode: [200, 429]
+                
+          - get:
+              url: "/api/market-indices"
+              expect:
+                - statusCode: [200, 429]
+                
+        count: 20  # 20 requests in quick succession
+        
+      - think: 30  # Wait for rate limit window to reset
+
+  # Scenario 3: Memory Pressure Test
+  - name: "Memory leak detection"
+    weight: 20
+    flow:
+      # Large response payload requests
+      - get:
+          url: "/api/stocks"
+          qs:
+            limit: 100  # Maximum allowed
+          expect:
+            - statusCode: [200, 429]
+            
+      # Multiple earnings requests (potential memory accumulation)
+      - get:
+          url: "/api/earnings"
+          qs:
+            limit: 50
+          expect:
+            - statusCode: [200, 429]
+            
+      - think: 3
+      
+      # Market data that might accumulate in cache
+      - get:
+          url: "/api/market-indices"
+          
+      - think: 5
+
+  # Scenario 4: Complex Search Operations
+  - name: "Complex database queries"
+    weight: 15
+    flow:
+      # Search with various patterns to stress LIKE queries
+      - get:
+          url: "/api/stocks/search"
+          qs:
+            q: "tech"
+            limit: 10
+            
+      - get:
+          url: "/api/stocks/search"
+          qs:
+            q: "{{ $randomString() }}"
+            limit: 5
+            
+      - think: 2
+      
+      # Multiple specific stock lookups
+      - get:
+          url: "/api/stocks/AAPL"
+      - get:
+          url: "/api/stocks/MSFT"
+      - get:
+          url: "/api/stocks/GOOGL"
+          
+      - think: 1
+
+  # Scenario 5: API Provider Stress Test
+  - name: "API provider rotation test"
+    weight: 10
+    flow:
+      # Requests that might trigger external API calls
+      - get:
+          url: "/api/market-data/AAPL/price"
+          expect:
+            - statusCode: [200, 429, 503]  # Expect circuit breaker responses
+            
+      - get:
+          url: "/api/market-data/MSFT/fundamentals"
+          expect:
+            - statusCode: [200, 429, 503]
+            
+      - think: 5
+
+# Custom functions for realistic test data
+functions:
+  randomString:
+    - "apple"
+    - "microsoft" 
+    - "google"
+    - "amazon"
+    - "tesla"
+    - "nvidia"
+    - "meta"
+    - "berkshire"
+    - "tech"
+    - "finance"
+    - "energy"
+    - "healthcare"
+
+# Error handling and monitoring
+after:
+  flow:
+    - log: "Load test completed. Check for rate limiting and database errors."
