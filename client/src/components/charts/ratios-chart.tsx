@@ -1,5 +1,5 @@
 // Ratios Chart - Blue bars showing financial ratios (P/E, ROE, etc.)
-import { BarChart, Bar, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { BarChart, Bar, ResponsiveContainer, Tooltip, XAxis, YAxis } from "@/components/ui/lightweight-chart";
 import { ChartContainer } from "./chart-container";
 
 interface RatiosChartProps {

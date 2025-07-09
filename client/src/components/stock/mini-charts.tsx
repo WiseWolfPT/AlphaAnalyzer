@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { AreaChart, Area, BarChart, Bar, ResponsiveContainer, Tooltip } from "recharts";
+import { LightweightMiniChart } from "@/components/ui/lightweight-chart";
 import { realAPI } from "@/lib/real-api";
 import { cn } from "@/lib/utils";
 import type { MockStock } from "@/lib/mock-api";
@@ -87,66 +87,16 @@ export function MiniChart({ stock, type, height = 40, className }: MiniChartProp
     }
   };
 
-  const ChartComponent = type === 'volume' || type === 'revenue' || type === 'earnings' ? BarChart : AreaChart;
+  const chartType = type === 'price' ? 'area' : 'line';
 
   return (
     <div className={cn("relative", className)} style={{ height }}>
-      <ResponsiveContainer width="100%" height="100%">
-        <ChartComponent data={data} margin={{ top: 2, right: 2, left: 2, bottom: 2 }}>
-          {type === 'price' ? (
-            <>
-              <defs>
-                <linearGradient id={`gradient-${stock.symbol}-${type}`} x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor={getChartColor()} stopOpacity={0.3}/>
-                  <stop offset="95%" stopColor={getChartColor()} stopOpacity={0}/>
-                </linearGradient>
-              </defs>
-              <Area 
-                type="monotone" 
-                dataKey="value" 
-                stroke={getChartColor()} 
-                strokeWidth={1.5}
-                fill={`url(#gradient-${stock.symbol}-${type})`}
-                dot={false}
-              />
-            </>
-          ) : (
-            <Bar 
-              dataKey="value" 
-              fill={getChartColor()}
-              radius={[1, 1, 0, 0]}
-            />
-          )}
-          <Tooltip 
-            content={({ active, payload, label }) => {
-              if (active && payload && payload.length) {
-                const value = payload[0].value as number;
-                const formatValue = () => {
-                  switch (type) {
-                    case 'price':
-                      return `$${value.toFixed(2)}`;
-                    case 'revenue':
-                    case 'earnings':
-                      return `$${(value / 1000).toFixed(1)}B`;
-                    case 'volume':
-                      return `${(value / 1000000).toFixed(1)}M`;
-                    default:
-                      return value.toString();
-                  }
-                };
-                
-                return (
-                  <div className="bg-background border border-border rounded-lg p-2 shadow-lg">
-                    <p className="text-sm font-medium">{formatValue()}</p>
-                    <p className="text-xs text-muted-foreground">{label}</p>
-                  </div>
-                );
-              }
-              return null;
-            }}
-          />
-        </ChartComponent>
-      </ResponsiveContainer>
+      <LightweightMiniChart
+        data={data}
+        type={chartType as 'line' | 'area'}
+        color={getChartColor()}
+        height={height}
+      />
       
       {/* Trend indicator */}
       <div className={cn(

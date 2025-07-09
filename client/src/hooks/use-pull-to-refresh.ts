@@ -9,7 +9,6 @@ import { useEffect, useRef, useCallback } from 'react';
 import PullToRefresh from 'pulltorefreshjs';
 import { useQueryClient } from '@tanstack/react-query';
 import { usePortfolio } from '@/contexts/portfolio-context';
-import { useTranslation } from 'react-i18next';
 
 interface PullToRefreshOptions {
   enabled?: boolean;

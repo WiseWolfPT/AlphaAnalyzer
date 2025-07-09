@@ -55,6 +55,43 @@
     
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    
+    <!-- CDN React for production (with fallback) -->
+    <script>
+      // Check if we should use CDN (production mode)
+      const shouldUseCDN = !location.hostname.includes('localhost') && 
+                          !location.hostname.includes('127.0.0.1') &&
+                          !location.hostname.includes('dev');
+      
+      if (shouldUseCDN) {
+        // React and ReactDOM from CDN
+        window.reactCDNFailed = false;
+        
+        const script1 = document.createElement('script');
+        script1.src = 'https://unpkg.com/react@18.2.0/umd/react.production.min.js';
+        script1.onerror = () => { window.reactCDNFailed = true; };
+        document.head.appendChild(script1);
+        
+        const script2 = document.createElement('script');
+        script2.src = 'https://unpkg.com/react-dom@18.2.0/umd/react-dom.production.min.js';
+        script2.onerror = () => { window.reactCDNFailed = true; };
+        document.head.appendChild(script2);
+        
+        // Backup CDN sources
+        script1.addEventListener('error', () => {
+          const backup1 = document.createElement('script');
+          backup1.src = 'https://cdn.jsdelivr.net/npm/react@18.2.0/umd/react.production.min.js';
+          document.head.appendChild(backup1);
+        });
+        
+        script2.addEventListener('error', () => {
+          const backup2 = document.createElement('script');
+          backup2.src = 'https://cdn.jsdelivr.net/npm/react-dom@18.2.0/umd/react-dom.production.min.js';
+          document.head.appendChild(backup2);
+        });
+      }
+    </script>
+    
     <script type="module" crossorigin src="/assets/index-NEW-1750114023.js"></script>
     <link rel="stylesheet" crossorigin href="/assets/index-NEW-1750114023.css">
   </head>

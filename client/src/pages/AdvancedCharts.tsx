@@ -17,21 +17,8 @@ import { StockHeaderV2 } from "@/components/stock/stock-header-v2";
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, rectSortingStrategy } from '@dnd-kit/sortable';
 
-// Chart Components
-import { PriceChart } from "@/components/charts/price-chart";
-import { RevenueChart } from "@/components/charts/revenue-chart";
-import { RevenueSegmentChart } from "@/components/charts/revenue-segment-chart";
-import { EbitdaChart } from "@/components/charts/ebitda-chart";
-import { FreeCashFlowChart } from "@/components/charts/free-cash-flow-chart";
-import { NetIncomeChart } from "@/components/charts/net-income-chart";
-import { EpsChart } from "@/components/charts/eps-chart";
-import { CashDebtChart } from "@/components/charts/cash-debt-chart";
-import { DividendsChart } from "@/components/charts/dividends-chart";
-import { ReturnCapitalChart } from "@/components/charts/return-capital-chart";
-import { SharesChart } from "@/components/charts/shares-chart";
-import { RatiosChart } from "@/components/charts/ratios-chart";
-import { ValuationChart } from "@/components/charts/valuation-chart";
-import { ExpensesChart } from "@/components/charts/expenses-chart";
+// Dynamic Chart Components (lazy loaded for better performance)
+import { getDynamicChartComponent, preloadCriticalCharts } from "@/components/charts/dynamic-chart-loader";
 
 export default function AdvancedCharts() {
   const params = useParams();
@@ -62,42 +49,9 @@ export default function AdvancedCharts() {
     })
   );
 
-  // Chart component mapping
+  // Dynamic chart component mapping with lazy loading
   const getChartComponent = (chartId: string) => {
-    if (!stockData) return null;
-    
-    switch (chartId) {
-      case 'price-chart':
-        return <PriceChart data={stockData.charts.price} />;
-      case 'revenue-chart':
-        return <RevenueChart data={stockData.charts.revenue} />;
-      case 'revenue-segment-chart':
-        return <RevenueSegmentChart data={stockData.charts.revenueBySegment} />;
-      case 'ebitda-chart':
-        return <EbitdaChart data={stockData.charts.ebitda} />;
-      case 'fcf-chart':
-        return <FreeCashFlowChart data={stockData.charts.freeCashFlow} />;
-      case 'net-income-chart':
-        return <NetIncomeChart data={stockData.charts.netIncome} />;
-      case 'eps-chart':
-        return <EpsChart data={stockData.charts.eps} />;
-      case 'cash-debt-chart':
-        return <CashDebtChart data={stockData.charts.cashAndDebt} />;
-      case 'dividends-chart':
-        return <DividendsChart data={stockData.charts.dividends} />;
-      case 'return-capital-chart':
-        return <ReturnCapitalChart data={stockData.charts.returnOfCapital} />;
-      case 'shares-chart':
-        return <SharesChart data={stockData.charts.sharesOutstanding} />;
-      case 'ratios-chart':
-        return <RatiosChart data={stockData.charts.ratios} />;
-      case 'valuation-chart':
-        return <ValuationChart data={stockData.charts.valuation} />;
-      case 'expenses-chart':
-        return <ExpensesChart data={stockData.charts.expenses} />;
-      default:
-        return null;
-    }
+    return getDynamicChartComponent(chartId, stockData);
   };
 
   // Handle drag end
@@ -118,6 +72,11 @@ export default function AdvancedCharts() {
       fetchStockData(symbol);
     }
   }, [symbol, chartPeriod]);
+
+  // Preload critical charts for better performance
+  useEffect(() => {
+    preloadCriticalCharts();
+  }, []);
 
   // Generate quarterly data (16 quarters rolling)
   const generateQuarterlyData = () => {

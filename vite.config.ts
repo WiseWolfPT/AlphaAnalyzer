@@ -150,7 +150,8 @@ export default defineConfig({
       'wouter',
       'react/jsx-runtime',
       '@tanstack/react-query',
-      'recharts',
+      'chart.js',
+      'react-chartjs-2',
       'date-fns',
       'clsx',
       'tailwind-merge',
@@ -204,121 +205,643 @@ export default defineConfig({
     outDir: path.resolve(__dirname, "dist/public"),
     emptyOutDir: true,
     rollupOptions: {
+      // External dependencies to load from CDN in production
+      external: process.env.NODE_ENV === 'production' ? [
+        'react', 
+        'react-dom',
+        // Exclude test libraries from production builds
+        'vitest',
+        'jsdom',
+        '@testing-library/react',
+        '@testing-library/jest-dom',
+        '@testing-library/user-event',
+        'jest',
+        'test',
+        'spec'
+      ] : [],
       output: {
+        // Aggressive chunk splitting with micro-bundles
         manualChunks: (id) => {
-          // Core vendor libraries (keep small and essential)
-          if (id.includes('node_modules/react/') || id.includes('node_modules/react-dom/')) {
-            return 'vendor';
+          // Critical vendors (tiny bundle for first paint)
+          if (id.includes('node_modules/wouter') ||
+              id.includes('node_modules/react/jsx-runtime')) {
+            return 'critical-vendor';
           }
           
-          // Charts and visualization - separate lazy chunks
-          if (id.includes('recharts') || id.includes('d3-')) {
-            return 'charts';
+          // React ecosystem (separate from core)
+          if (id.includes('node_modules/react/') || 
+              id.includes('node_modules/react-dom/')) {
+            return 'react-core';
           }
           
-          // Lottie - separate lazy chunk (only loaded on landing)
-          if (id.includes('lottie-react') || id.includes('lottie-web')) {
-            return 'lottie';
+          // Route-specific micro-bundles
+          if (id.includes('/pages/landing') || id.includes('lottie')) {
+            return 'route-landing';
           }
           
-          // Lucide icons - separate chunk for better caching
-          if (id.includes('lucide-react')) {
-            return 'icons';
+          // AGGRESSIVE CHARTS SPLITTING (Previously 289KB)
+          // Chart.js core - very granular splitting
+          if (id.includes('chart.js/dist/chart.esm.js') ||
+              id.includes('chart.js/dist/core/core.') ||
+              id.includes('chart.js/dist/core/core.registry.js')) {
+            return 'charts-core-registry';
           }
           
-          // Radix UI components - split into smaller, focused chunks
+          if (id.includes('chart.js/dist/core/') ||
+              id.includes('chart.js/dist/helpers/')) {
+            return 'charts-core-helpers';
+          }
+          
+          if (id.includes('chart.js/dist/scales/scale.linear.js') ||
+              id.includes('chart.js/dist/scales/scale.category.js')) {
+            return 'charts-scales-basic';
+          }
+          
+          if (id.includes('chart.js/dist/scales/')) {
+            return 'charts-scales-extended';
+          }
+          
+          if (id.includes('chart.js/dist/controllers/controller.bar.js') ||
+              id.includes('chart.js/dist/controllers/controller.line.js')) {
+            return 'charts-controllers-basic';
+          }
+          
+          if (id.includes('chart.js/dist/controllers/')) {
+            return 'charts-controllers-extended';
+          }
+          
+          if (id.includes('chart.js/dist/elements/element.bar.js') ||
+              id.includes('chart.js/dist/elements/element.line.js') ||
+              id.includes('chart.js/dist/elements/element.point.js')) {
+            return 'charts-elements-basic';
+          }
+          
+          if (id.includes('chart.js/dist/elements/')) {
+            return 'charts-elements-extended';
+          }
+          
+          if (id.includes('chart.js/dist/plugins/plugin.tooltip.js') ||
+              id.includes('chart.js/dist/plugins/plugin.legend.js')) {
+            return 'charts-plugins-basic';
+          }
+          
+          if (id.includes('chart.js/dist/plugins/')) {
+            return 'charts-plugins-extended';
+          }
+          
+          if (id.includes('chart.js/auto') ||
+              id.includes('chart.js/dist/chart.js')) {
+            return 'charts-auto';
+          }
+          
+          if (id.includes('chart.js')) {
+            return 'charts-misc';
+          }
+          
+          if (id.includes('react-chartjs-2/dist/') ||
+              id.includes('react-chartjs-2/src/')) {
+            return 'charts-react-adapter';
+          }
+          
+          // Chart component bundles (by chart type)
+          if (id.includes('/components/charts/price-chart') ||
+              id.includes('/components/charts/chart-container') ||
+              id.includes('/components/ui/lightweight-chart')) {
+            return 'charts-components-basic';
+          }
+          
+          if (id.includes('/components/charts/revenue-chart') ||
+              id.includes('/components/charts/revenue-segment-chart') ||
+              id.includes('/components/charts/ebitda-chart')) {
+            return 'charts-components-financial';
+          }
+          
+          if (id.includes('/components/charts/free-cash-flow-chart') ||
+              id.includes('/components/charts/net-income-chart') ||
+              id.includes('/components/charts/eps-chart')) {
+            return 'charts-components-cash';
+          }
+          
+          if (id.includes('/components/charts/cash-debt-chart') ||
+              id.includes('/components/charts/dividends-chart') ||
+              id.includes('/components/charts/return-capital-chart')) {
+            return 'charts-components-debt';
+          }
+          
+          if (id.includes('/components/charts/shares-chart') ||
+              id.includes('/components/charts/ratios-chart') ||
+              id.includes('/components/charts/valuation-chart') ||
+              id.includes('/components/charts/expenses-chart')) {
+            return 'charts-components-analysis';
+          }
+          
+          if (id.includes('/components/charts/draggable-chart') ||
+              id.includes('/hooks/use-chart-layout')) {
+            return 'charts-components-layout';
+          }
+          
+          // DnD Kit splitting (for charts dragging)
+          if (id.includes('@dnd-kit/core/dist/') ||
+              id.includes('@dnd-kit/utilities/dist/')) {
+            return 'dnd-core';
+          }
+          
+          if (id.includes('@dnd-kit/sortable/dist/')) {
+            return 'dnd-sortable';
+          }
+          
+          if (id.includes('@dnd-kit/') && !id.includes('core') && !id.includes('sortable')) {
+            return 'dnd-extras';
+          }
+          
+          // AdvancedCharts page split
+          if (id.includes('/pages/AdvancedCharts')) {
+            return 'route-charts-page';
+          }
+          
+          // Other routes
+          if (id.includes('/pages/portfolios') ||
+              id.includes('/components/portfolio')) {
+            return 'route-portfolios';
+          }
+          
+          if (id.includes('/pages/earnings') ||
+              id.includes('/components/earnings')) {
+            return 'route-earnings';
+          }
+          
+          if (id.includes('/pages/transcripts') ||
+              id.includes('/components/transcripts')) {
+            return 'route-transcripts';
+          }
+          
+          if (id.includes('/pages/watchlists') ||
+              id.includes('/components/watchlist')) {
+            return 'route-watchlists';
+          }
+          
+          if (id.includes('/pages/auth') ||
+              id.includes('/pages/Login') ||
+              id.includes('/pages/Register')) {
+            return 'route-auth';
+          }
+          
+          if (id.includes('/pages/admin') ||
+              id.includes('/components/admin')) {
+            return 'route-admin';
+          }
+          
+          if (id.includes('/pages/intrinsic-value') ||
+              id.includes('/components/valuation')) {
+            return 'route-valuation';
+          }
+          
+          // AGGRESSIVE VENDOR SPLITTING (Previously 237KB)
+          // Radix UI - Split by component type
           if (id.includes('@radix-ui/react-dialog') || 
-              id.includes('@radix-ui/react-alert-dialog') ||
-              id.includes('@radix-ui/react-popover') ||
-              id.includes('@radix-ui/react-toast')) {
-            return 'ui-overlays';
+              id.includes('@radix-ui/react-alert-dialog')) {
+            return 'vendor-ui-dialogs';
+          }
+          
+          if (id.includes('@radix-ui/react-popover') ||
+              id.includes('@radix-ui/react-tooltip') ||
+              id.includes('@radix-ui/react-hover-card')) {
+            return 'vendor-ui-floating';
           }
           
           if (id.includes('@radix-ui/react-dropdown-menu') ||
-              id.includes('@radix-ui/react-select') ||
-              id.includes('@radix-ui/react-navigation-menu') ||
-              id.includes('@radix-ui/react-menubar')) {
-            return 'ui-navigation';
+              id.includes('@radix-ui/react-context-menu')) {
+            return 'vendor-ui-menus';
+          }
+          
+          if (id.includes('@radix-ui/react-select') ||
+              id.includes('@radix-ui/react-combobox')) {
+            return 'vendor-ui-inputs';
           }
           
           if (id.includes('@radix-ui/react-tabs') ||
               id.includes('@radix-ui/react-accordion') ||
               id.includes('@radix-ui/react-collapsible')) {
-            return 'ui-layout';
+            return 'vendor-ui-layout';
+          }
+          
+          if (id.includes('@radix-ui/react-toast') ||
+              id.includes('@radix-ui/react-alert')) {
+            return 'vendor-ui-feedback';
+          }
+          
+          if (id.includes('@radix-ui/react-navigation-menu') ||
+              id.includes('@radix-ui/react-menubar')) {
+            return 'vendor-ui-navigation';
+          }
+          
+          if (id.includes('@radix-ui/react-primitive') ||
+              id.includes('@radix-ui/react-slot') ||
+              id.includes('@radix-ui/react-compose-refs')) {
+            return 'vendor-ui-primitives';
           }
           
           if (id.includes('@radix-ui')) {
-            return 'ui-base';
+            return 'vendor-ui-base';
           }
           
-          // React Query and state management
-          if (id.includes('@tanstack/react-query')) {
-            return 'state';
+          // Forms - Split by functionality
+          if (id.includes('react-hook-form/dist/index.esm') && 
+              id.includes('useForm')) {
+            return 'vendor-forms-core';
           }
           
-          // Routing and navigation
-          if (id.includes('wouter')) {
-            return 'routing';
+          if (id.includes('react-hook-form/dist/') && 
+              (id.includes('useController') || id.includes('useWatch'))) {
+            return 'vendor-forms-controllers';
           }
           
-          // Date and utility libraries
-          if (id.includes('date-fns') || 
-              id.includes('clsx') ||
-              id.includes('tailwind-merge') ||
-              id.includes('class-variance-authority')) {
-            return 'utils';
-          }
-          
-          // Authentication and data services
-          if (id.includes('@supabase/supabase-js')) {
-            return 'supabase';
-          }
-          
-          // Form handling
           if (id.includes('react-hook-form') || 
-              id.includes('@hookform/resolvers') ||
-              id.includes('zod')) {
-            return 'forms';
+              id.includes('@hookform/resolvers')) {
+            return 'vendor-forms-extended';
           }
           
-          // Animation libraries (except lottie)
+          // Validation - Split by size
+          if (id.includes('zod/lib/types') ||
+              id.includes('zod/lib/ZodSchema')) {
+            return 'vendor-validation-core';
+          }
+          
+          if (id.includes('zod/lib/') && 
+              (id.includes('string') || id.includes('number') || id.includes('boolean'))) {
+            return 'vendor-validation-primitives';
+          }
+          
+          if (id.includes('zod')) {
+            return 'vendor-validation-extended';
+          }
+          
+          // Animation micro-bundles
+          if (id.includes('lottie-react') || id.includes('lottie-web')) {
+            return 'vendor-anim-lottie';
+          }
+          
+          if (id.includes('framer-motion/dist/es/render') ||
+              id.includes('framer-motion/dist/es/animation')) {
+            return 'vendor-anim-framer-core';
+          }
+          
+          if (id.includes('framer-motion/dist/es/gestures') ||
+              id.includes('framer-motion/dist/es/components')) {
+            return 'vendor-anim-framer-gestures';
+          }
+          
           if (id.includes('framer-motion')) {
-            return 'animations';
+            return 'vendor-anim-framer';
           }
           
-          // Smaller utility libraries
+          // Icon micro-bundles (split by usage)
+          if (id.includes('lucide-react') && 
+              (id.includes('ChevronDown') || id.includes('Menu') || id.includes('X'))) {
+            return 'vendor-icons-ui';
+          }
+          
+          if (id.includes('lucide-react') && 
+              (id.includes('TrendingUp') || id.includes('Activity') || id.includes('BarChart'))) {
+            return 'vendor-icons-charts';
+          }
+          
+          if (id.includes('lucide-react') && 
+              (id.includes('Home') || id.includes('Settings') || id.includes('User'))) {
+            return 'vendor-icons-navigation';
+          }
+          
+          if (id.includes('lucide-react')) {
+            return 'vendor-icons-general';
+          }
+          
+          // State management micro-bundles
+          if (id.includes('@tanstack/react-query/build/lib/QueryClient') ||
+              id.includes('@tanstack/react-query/build/lib/QueryCache')) {
+            return 'vendor-state-core';
+          }
+          
+          if (id.includes('@tanstack/react-query/build/lib/') && 
+              (id.includes('mutations') || id.includes('hydration'))) {
+            return 'vendor-state-mutations';
+          }
+          
+          if (id.includes('@tanstack/react-query')) {
+            return 'vendor-state-query';
+          }
+          
+          // Utility micro-bundles
+          if (id.includes('clsx') || id.includes('tailwind-merge')) {
+            return 'vendor-utils-css';
+          }
+          
+          if (id.includes('class-variance-authority')) {
+            return 'vendor-utils-variants';
+          }
+          
+          if (id.includes('date-fns/format') ||
+              id.includes('date-fns/parse')) {
+            return 'vendor-utils-date-format';
+          }
+          
+          if (id.includes('date-fns/') && 
+              (id.includes('add') || id.includes('sub') || id.includes('difference'))) {
+            return 'vendor-utils-date-math';
+          }
+          
+          if (id.includes('date-fns')) {
+            return 'vendor-utils-date';
+          }
+          
+          // Service micro-bundles
+          if (id.includes('@supabase/supabase-js/dist/main/SupabaseClient') ||
+              id.includes('@supabase/supabase-js/dist/main/SupabaseAuthClient')) {
+            return 'vendor-service-supabase-core';
+          }
+          
+          if (id.includes('@supabase/supabase-js/dist/main/') && 
+              (id.includes('realtime') || id.includes('storage'))) {
+            return 'vendor-service-supabase-realtime';
+          }
+          
+          if (id.includes('@supabase/supabase-js')) {
+            return 'vendor-service-supabase';
+          }
+          
+          // Payment micro-bundles
+          if (id.includes('@stripe/stripe-js')) {
+            return 'vendor-payment-stripe';
+          }
+          
+          if (id.includes('@stripe/') || id.includes('stripe')) {
+            return 'vendor-payment-extended';
+          }
+          
+          // I18n micro-bundles
+          if (id.includes('i18next/dist/esm/i18next') ||
+              id.includes('react-i18next/dist/es/useTranslation')) {
+            return 'vendor-i18n-core';
+          }
+          
+          if (id.includes('i18next') || id.includes('react-i18next')) {
+            return 'vendor-i18n-extended';
+          }
+          
+          // Performance libraries
+          if (id.includes('react-window') || 
+              id.includes('react-virtuoso')) {
+            return 'vendor-perf-virtualization';
+          }
+          
+          if (id.includes('react-resizable-panels')) {
+            return 'vendor-perf-resizable';
+          }
+          
+          // Small utilities (group by size)
           if (id.includes('node_modules') && (
             id.includes('nanoid') ||
-            id.includes('eventemitter3') ||
+            id.includes('eventemitter3')
+          )) {
+            return 'vendor-utils-tiny';
+          }
+          
+          if (id.includes('node_modules') && (
             id.includes('axios') ||
             id.includes('idb')
           )) {
-            return 'libs-small';
+            return 'vendor-utils-medium';
           }
           
-          // Large utility libraries get their own chunks
           if (id.includes('node_modules') && (
-            id.includes('stripe') ||
-            id.includes('express') ||
-            id.includes('better-sqlite3') ||
-            id.includes('drizzle-orm')
+            id.includes('web-vitals')
           )) {
-            return 'libs-heavy';
+            return 'vendor-utils-monitoring';
+          }
+          
+          // Security libraries
+          if (id.includes('node_modules') && (
+            id.includes('bcryptjs') ||
+            id.includes('jsonwebtoken')
+          )) {
+            return 'vendor-security';
+          }
+          
+          // Development and error handling
+          if (id.includes('node_modules') && (
+            id.includes('react-error-boundary') ||
+            id.includes('pulltorefreshjs')
+          )) {
+            return 'vendor-dev-support';
+          }
+          
+          // Polyfills and compatibility
+          if (id.includes('node_modules') && (
+            id.includes('core-js') ||
+            id.includes('regenerator-runtime')
+          )) {
+            return 'vendor-polyfills';
+          }
+          
+          // Additional vendor splitting to reduce vendor-misc
+          if (id.includes('node_modules') && (
+            id.includes('tslib') ||
+            id.includes('object-assign') ||
+            id.includes('prop-types')
+          )) {
+            return 'vendor-utils-react';
+          }
+          
+          if (id.includes('node_modules') && (
+            id.includes('scheduler') ||
+            id.includes('react-reconciler')
+          )) {
+            return 'vendor-react-internals';
+          }
+          
+          if (id.includes('node_modules') && (
+            id.includes('mitt') ||
+            id.includes('uuid') ||
+            id.includes('js-cookie')
+          )) {
+            return 'vendor-utils-browser';
+          }
+          
+          if (id.includes('node_modules') && (
+            id.includes('lodash') ||
+            id.includes('ramda') ||
+            id.includes('underscore')
+          )) {
+            return 'vendor-utils-functional';
+          }
+          
+          if (id.includes('node_modules') && (
+            id.includes('moment') ||
+            id.includes('dayjs')
+          )) {
+            return 'vendor-utils-datetime';
+          }
+          
+          if (id.includes('node_modules') && (
+            id.includes('rxjs') ||
+            id.includes('observable')
+          )) {
+            return 'vendor-utils-reactive';
+          }
+          
+          if (id.includes('node_modules') && (
+            id.includes('buffer') ||
+            id.includes('process') ||
+            id.includes('util')
+          )) {
+            return 'vendor-polyfills-node';
+          }
+          
+          if (id.includes('node_modules') && (
+            id.includes('crypto') ||
+            id.includes('hash') ||
+            id.includes('md5') ||
+            id.includes('sha')
+          )) {
+            return 'vendor-utils-crypto';
+          }
+          
+          if (id.includes('node_modules') && (
+            id.includes('async') ||
+            id.includes('promise') ||
+            id.includes('bluebird')
+          )) {
+            return 'vendor-utils-async';
+          }
+          
+          if (id.includes('node_modules') && (
+            id.includes('path') ||
+            id.includes('querystring') ||
+            id.includes('url')
+          )) {
+            return 'vendor-utils-url';
+          }
+          
+          if (id.includes('node_modules') && (
+            id.includes('immutable') ||
+            id.includes('immer')
+          )) {
+            return 'vendor-utils-immutable';
+          }
+          
+          if (id.includes('node_modules') && (
+            id.includes('validator') ||
+            id.includes('escape-html') ||
+            id.includes('sanitize')
+          )) {
+            return 'vendor-utils-validation';
+          }
+          
+          if (id.includes('node_modules') && (
+            id.includes('compression') ||
+            id.includes('gzip') ||
+            id.includes('deflate')
+          )) {
+            return 'vendor-utils-compression';
+          }
+          
+          if (id.includes('node_modules') && (
+            id.includes('stream') ||
+            id.includes('events') ||
+            id.includes('buffer')
+          )) {
+            return 'vendor-utils-streams';
+          }
+          
+          if (id.includes('node_modules') && (
+            id.includes('debug') ||
+            id.includes('console') ||
+            id.includes('log')
+          )) {
+            return 'vendor-utils-debug';
+          }
+          
+          if (id.includes('node_modules') && (
+            id.includes('color') ||
+            id.includes('chalk') ||
+            id.includes('ansi')
+          )) {
+            return 'vendor-utils-colors';
+          }
+          
+          if (id.includes('node_modules') && (
+            id.includes('babel') ||
+            id.includes('transform') ||
+            id.includes('preset')
+          )) {
+            return 'vendor-build-tools';
+          }
+          
+          if (id.includes('node_modules') && (
+            id.includes('webpack') ||
+            id.includes('rollup') ||
+            id.includes('vite')
+          )) {
+            return 'vendor-bundlers';
+          }
+          
+          if (id.includes('node_modules') && (
+            id.includes('postcss') ||
+            id.includes('autoprefixer') ||
+            id.includes('csstype')
+          )) {
+            return 'vendor-css-tools';
+          }
+          
+          if (id.includes('node_modules') && (
+            id.includes('typescript') ||
+            id.includes('ts-') ||
+            id.includes('@types')
+          )) {
+            return 'vendor-typescript';
+          }
+          
+          if (id.includes('node_modules') && (
+            id.includes('eslint') ||
+            id.includes('prettier') ||
+            id.includes('lint')
+          )) {
+            return 'vendor-linting';
+          }
+          
+          if (id.includes('node_modules') && (
+            id.includes('test') ||
+            id.includes('jest') ||
+            id.includes('vitest') ||
+            id.includes('spec') ||
+            id.includes('@testing-library') ||
+            id.includes('jsdom')
+          )) {
+            // Exclude testing libraries from production builds entirely
+            if (process.env.NODE_ENV === 'production') {
+              return null;
+            }
+            return 'vendor-testing';
           }
           
           // Default catch-all for remaining node_modules (should be minimal now)
           if (id.includes('node_modules')) {
             return 'vendor-misc';
           }
-        }
+        },
+        
+        // CDN imports for React in production
+        globals: process.env.NODE_ENV === 'production' ? {
+          'react': 'React',
+          'react-dom': 'ReactDOM'
+        } : {}
       }
     },
     
     // Aggressive tree shaking configuration
     treeshake: true,
     
-    // Chunk size warnings (reduced for better performance)
-    chunkSizeWarningLimit: 300,
+    // Chunk size warnings (aggressive splitting target)
+    chunkSizeWarningLimit: 150,
     
     // Disable source maps in production for security and performance
     sourcemap: process.env.NODE_ENV === 'development',

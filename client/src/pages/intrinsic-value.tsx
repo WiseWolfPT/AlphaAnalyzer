@@ -24,7 +24,7 @@ import {
   ArrowDown,
   Info
 } from "lucide-react";
-import { PieChart as RechartsPieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from "recharts";
+import { PieChart as RechartsPieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from "@/components/ui/lightweight-chart";
 import { motion } from "framer-motion";
 import type { Stock } from "@shared/schema";
 

@@ -1,5 +1,4 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback, useRef } from 'react';
-import { useTranslation } from 'react-i18next';
 import { ExchangeRateService } from '@/services/exchange-rate-service';
 
 type Currency = 'USD' | 'EUR';
@@ -20,7 +19,6 @@ interface CurrencyProviderProps {
 }
 
 export const CurrencyProvider = ({ children }: CurrencyProviderProps) => {
-  const { i18n } = useTranslation();
   const [currentCurrency, setCurrentCurrency] = useState<Currency>(() => {
     // Initialize from localStorage or based on region
     const storedCurrency = localStorage.getItem('alfalyzer-currency') as Currency;

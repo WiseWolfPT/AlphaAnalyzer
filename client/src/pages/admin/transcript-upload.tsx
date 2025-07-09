@@ -34,7 +34,7 @@ import {
   Globe
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { format } from 'date-fns';
+
 
 // US S&P 500 companies for transcript upload (focused list)
 const US_COMPANIES = [
@@ -494,7 +494,7 @@ export default function TranscriptUpload() {
                             {transcript.company_name}
                           </div>
                           <div className="text-xs text-muted-foreground">
-                            Criado em {format(new Date(transcript.created_at), 'dd/MM/yyyy')}
+                            Criado em {new Date(transcript.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: '2-digit' })}
                           </div>
                         </div>
                         <div className="flex items-center gap-2">

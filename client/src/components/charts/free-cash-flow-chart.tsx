@@ -1,5 +1,5 @@
 // Free Cash Flow Chart - Orange bars showing quarterly free cash flow
-import { BarChart, Bar, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { BarChart, Bar, ResponsiveContainer, Tooltip, XAxis, YAxis } from "@/components/ui/lightweight-chart";
 import { ChartContainer } from "./chart-container";
 
 interface FreeCashFlowChartProps {

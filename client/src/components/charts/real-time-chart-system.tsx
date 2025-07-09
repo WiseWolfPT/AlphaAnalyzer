@@ -1,24 +1,11 @@
 import React, { memo, useMemo, useCallback, useRef, useEffect, useState } from 'react';
 import { 
-  ResponsiveContainer, 
-  LineChart, 
-  Line, 
-  AreaChart, 
-  Area, 
-  BarChart, 
-  Bar,
-  ComposedChart,
-  XAxis, 
-  YAxis, 
-  Tooltip, 
-  CartesianGrid, 
-  Legend,
-  PieChart,
-  Pie,
-  Cell,
-  RadialBarChart,
-  RadialBar
-} from 'recharts';
+  LightweightLineChart, 
+  LightweightPriceChart, 
+  LightweightBarChart, 
+  LightweightPieChart,
+  LightweightChartContainer 
+} from '@/components/ui/lightweight-chart';
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartConfig } from '@/components/ui/chart';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -135,7 +122,7 @@ interface RealTimeChartProps {
   dataKey: string;
   title: string;
   subtitle?: string;
-  type: 'line' | 'area' | 'bar' | 'composed';
+  type: 'line' | 'area' | 'bar' | 'pie';
   height?: number;
   maxDataPoints?: number;
   updateInterval?: number;
@@ -273,132 +260,72 @@ export const RealTimeChart = memo(({
     URL.revokeObjectURL(url);
   }, [data, dataKey, formatTime]);
 
-  const renderChart = () => {
-    const commonProps = {
-      data,
-      margin: { top: 5, right: 30, left: 20, bottom: 5 },
-    };
+  // Transform data for Chart.js components
+  const transformedData = useMemo(() => {
+    switch (type) {
+      case 'area':
+        return data.map(d => ({
+          date: new Date(d.timestamp).toISOString(),
+          price: d.value
+        }));
+      case 'line':
+        return data.map(d => ({
+          label: formatTime(d.timestamp),
+          value: d.value
+        }));
+      case 'bar':
+        return data.map(d => ({
+          label: formatTime(d.timestamp),
+          value: d.value
+        }));
+      case 'pie':
+        return data.map(d => ({
+          label: d.label || formatTime(d.timestamp),
+          value: d.value
+        }));
+      default:
+        return data.map(d => ({
+          label: formatTime(d.timestamp),
+          value: d.value
+        }));
+    }
+  }, [data, type, formatTime]);
 
-    const gradientId = `gradient-${dataKey}`;
-    const [startColor, endColor] = gradientColors || [color, color];
+  const renderChart = () => {
+    const chartProps = {
+      data: transformedData,
+      color,
+      className: "w-full h-full"
+    };
 
     switch (type) {
       case 'area':
         return (
-          <AreaChart {...commonProps}>
-            <defs>
-              <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor={startColor} stopOpacity={0.8} />
-                <stop offset="95%" stopColor={endColor} stopOpacity={0.1} />
-              </linearGradient>
-            </defs>
-            {showGrid && <CartesianGrid strokeDasharray="3 3" opacity={0.3} />}
-            <XAxis 
-              dataKey="timestamp" 
-              tickFormatter={formatTime}
-              axisLine={false}
-              tickLine={false}
-              tick={{ fontSize: 10 }}
-            />
-            <YAxis 
-              axisLine={false}
-              tickLine={false}
-              tick={{ fontSize: 10 }}
-              domain={autoScale ? ['auto', 'auto'] : undefined}
-            />
-            <ChartTooltip 
-              content={
-                <ChartTooltipContent 
-                  labelFormatter={(value) => formatTime(Number(value))}
-                  formatter={(value) => [formatValue(Number(value)), 'Value']}
-                />
-              }
-            />
-            {showLegend && <Legend />}
-            <Area
-              type="monotone"
-              dataKey="value"
-              stroke={color}
-              strokeWidth={2}
-              fill={`url(#${gradientId})`}
-              animationDuration={animated ? 750 : 0}
-              connectNulls={false}
-            />
-          </AreaChart>
+          <LightweightPriceChart
+            {...chartProps}
+            data={transformedData as any}
+          />
         );
-
       case 'bar':
         return (
-          <BarChart {...commonProps}>
-            {showGrid && <CartesianGrid strokeDasharray="3 3" opacity={0.3} />}
-            <XAxis 
-              dataKey="timestamp" 
-              tickFormatter={formatTime}
-              axisLine={false}
-              tickLine={false}
-              tick={{ fontSize: 10 }}
-            />
-            <YAxis 
-              axisLine={false}
-              tickLine={false}
-              tick={{ fontSize: 10 }}
-              domain={autoScale ? ['auto', 'auto'] : undefined}
-            />
-            <ChartTooltip 
-              content={
-                <ChartTooltipContent 
-                  labelFormatter={(value) => formatTime(Number(value))}
-                  formatter={(value) => [formatValue(Number(value)), 'Value']}
-                />
-              }
-            />
-            {showLegend && <Legend />}
-            <Bar
-              dataKey="value"
-              fill={color}
-              animationDuration={animated ? 750 : 0}
-              radius={[2, 2, 0, 0]}
-            />
-          </BarChart>
+          <LightweightBarChart
+            {...chartProps}
+            data={transformedData as any}
+          />
         );
-
+      case 'pie':
+        return (
+          <LightweightPieChart
+            {...chartProps}
+            data={transformedData as any}
+          />
+        );
       default: // line
         return (
-          <LineChart {...commonProps}>
-            {showGrid && <CartesianGrid strokeDasharray="3 3" opacity={0.3} />}
-            <XAxis 
-              dataKey="timestamp" 
-              tickFormatter={formatTime}
-              axisLine={false}
-              tickLine={false}
-              tick={{ fontSize: 10 }}
-            />
-            <YAxis 
-              axisLine={false}
-              tickLine={false}
-              tick={{ fontSize: 10 }}
-              domain={autoScale ? ['auto', 'auto'] : undefined}
-            />
-            <ChartTooltip 
-              content={
-                <ChartTooltipContent 
-                  labelFormatter={(value) => formatTime(Number(value))}
-                  formatter={(value) => [formatValue(Number(value)), 'Value']}
-                />
-              }
-            />
-            {showLegend && <Legend />}
-            <Line
-              type="monotone"
-              dataKey="value"
-              stroke={color}
-              strokeWidth={2}
-              dot={false}
-              activeDot={{ r: 4, stroke: color, strokeWidth: 2 }}
-              animationDuration={animated ? 750 : 0}
-              connectNulls={false}
-            />
-          </LineChart>
+          <LightweightLineChart
+            {...chartProps}
+            data={transformedData as any}
+          />
         );
     }
   };
@@ -472,11 +399,12 @@ export const RealTimeChart = memo(({
       </CardHeader>
       <CardContent>
         <div ref={chartRef} style={{ height: `${height}px` }}>
-          <ChartContainer config={chartConfig}>
-            <ResponsiveContainer width="100%" height="100%">
-              {renderChart()}
-            </ResponsiveContainer>
-          </ChartContainer>
+          <LightweightChartContainer
+            config={chartConfig}
+            className="w-full h-full"
+          >
+            {renderChart()}
+          </LightweightChartContainer>
         </div>
         <div className="flex items-center justify-between mt-2 text-xs text-muted-foreground">
           <span>Last update: {formatTime(lastUpdate)}</span>

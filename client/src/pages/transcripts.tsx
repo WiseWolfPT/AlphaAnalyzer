@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { FileText, Search, Calendar, TrendingUp, ExternalLink, Play, Clock, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { format } from "date-fns";
+// Removed date-fns import - using native Date methods
 
 // Mock transcripts data - in real app, this would come from API
 const mockTranscripts = [
@@ -160,7 +160,7 @@ function TranscriptCard({ transcript }: TranscriptCardProps) {
           <div className="flex items-center space-x-4 text-xs text-muted-foreground">
             <div className="flex items-center space-x-1">
               <Calendar className="h-3 w-3" />
-              <span>{format(new Date(transcript.callDate), 'MMM dd, yyyy')}</span>
+              <span>{new Date(transcript.callDate).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: '2-digit' })}</span>
             </div>
             <div className="flex items-center space-x-1">
               <Clock className="h-3 w-3" />

@@ -6,6 +6,7 @@ import { BarChart3, Target, TrendingUp, TrendingDown, ChartLine, LineChart, Info
 import { cn } from "@/lib/utils";
 import { MiniChart } from "./mini-charts";
 import { FeatureLimiter } from "@/components/beta/feature-limiter";
+import { OptimizedImage } from "@/components/ui/optimized-image";
 import type { MockStock } from "@/lib/mock-api";
 
 interface StockCardProps {
@@ -64,11 +65,13 @@ export function StockCard({ stock, onPerformanceClick, onQuickInfoClick, showMin
           {/* Company Logo */}
           <div className="w-12 h-12 rounded-xl bg-secondary/50 flex-shrink-0 flex items-center justify-center overflow-hidden border border-border/30">
             {stock.logo && !imageError ? (
-              <img
+              <OptimizedImage
                 src={stock.logo}
                 alt={`${stock.name} logo`}
                 className="w-full h-full object-cover rounded-xl"
                 onError={() => setImageError(true)}
+                priority="low"
+                lazy
               />
             ) : (
               <span className="text-sm font-bold text-primary">

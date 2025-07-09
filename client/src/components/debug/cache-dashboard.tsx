@@ -4,7 +4,12 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell } from 'recharts';
+import { 
+  LightweightLineChart, 
+  LightweightBarChart, 
+  LightweightPieChart,
+  LightweightChartContainer
+} from '@/components/ui/lightweight-chart';
 import { RefreshCw, TrendingUp, Database, Zap, Activity, AlertTriangle } from 'lucide-react';
 
 interface CacheStats {
@@ -264,27 +269,24 @@ export function CacheDashboard() {
                 <CardDescription>Last 30 data points</CardDescription>
               </CardHeader>
               <CardContent>
-                <ResponsiveContainer width="100%" height={300}>
-                  <LineChart data={performanceHistory}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis 
-                      dataKey="timestamp" 
-                      tickFormatter={(value) => new Date(value).toLocaleTimeString()} 
-                    />
-                    <YAxis domain={[0, 100]} />
-                    <Tooltip 
-                      labelFormatter={(value) => new Date(value).toLocaleString()}
-                      formatter={(value: number) => [`${value.toFixed(1)}%`, 'Hit Rate']}
-                    />
-                    <Line 
-                      type="monotone" 
-                      dataKey="hitRate" 
-                      stroke="#8884d8" 
-                      strokeWidth={2}
-                      dot={false}
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
+                <LightweightChartContainer
+                  config={{
+                    hitRate: {
+                      label: "Hit Rate",
+                      color: "#8884d8",
+                    }
+                  }}
+                  className="w-full h-[300px]"
+                >
+                  <LightweightLineChart
+                    data={performanceHistory.map(item => ({
+                      label: new Date(item.timestamp).toLocaleTimeString(),
+                      value: item.hitRate
+                    }))}
+                    color="#8884d8"
+                    className="w-full h-full"
+                  />
+                </LightweightChartContainer>
               </CardContent>
             </Card>
 
@@ -294,27 +296,24 @@ export function CacheDashboard() {
                 <CardDescription>Average response time in milliseconds</CardDescription>
               </CardHeader>
               <CardContent>
-                <ResponsiveContainer width="100%" height={300}>
-                  <LineChart data={performanceHistory}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis 
-                      dataKey="timestamp" 
-                      tickFormatter={(value) => new Date(value).toLocaleTimeString()} 
-                    />
-                    <YAxis />
-                    <Tooltip 
-                      labelFormatter={(value) => new Date(value).toLocaleString()}
-                      formatter={(value: number) => [`${value}ms`, 'Response Time']}
-                    />
-                    <Line 
-                      type="monotone" 
-                      dataKey="responseTime" 
-                      stroke="#82ca9d" 
-                      strokeWidth={2}
-                      dot={false}
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
+                <LightweightChartContainer
+                  config={{
+                    responseTime: {
+                      label: "Response Time",
+                      color: "#82ca9d",
+                    }
+                  }}
+                  className="w-full h-[300px]"
+                >
+                  <LightweightLineChart
+                    data={performanceHistory.map(item => ({
+                      label: new Date(item.timestamp).toLocaleTimeString(),
+                      value: item.responseTime
+                    }))}
+                    color="#82ca9d"
+                    className="w-full h-full"
+                  />
+                </LightweightChartContainer>
               </CardContent>
             </Card>
           </div>

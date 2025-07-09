@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ChevronLeft, ChevronRight, Calendar, ExternalLink, TrendingUp } from "lucide-react";
-import { format, addWeeks, subWeeks, startOfWeek, endOfWeek, addDays } from "date-fns";
+
 import { useStock } from "@/hooks/use-enhanced-stocks";
 import { cn } from "@/lib/utils";
 import type { Earnings } from "@shared/schema";

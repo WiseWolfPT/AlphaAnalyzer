@@ -7,6 +7,7 @@ import { ArrowLeft, TrendingUp, TrendingDown, ExternalLink, Home, Calendar, Doll
 import { Link } from "wouter";
 import { cn } from "@/lib/utils";
 import { MetricTooltip } from "@/components/ui/metric-tooltip";
+import { OptimizedImage } from "@/components/ui/optimized-image";
 import { dataAggregatorService, type AggregatedStockData } from "@/services/data-aggregator";
 
 // Chart Components
@@ -287,13 +288,15 @@ export default function AdvancedCharts() {
               <div className="flex items-center gap-4 mb-4">
                 {stockData.logo && (
                   <div className="w-12 h-12 rounded-lg overflow-hidden bg-muted flex-shrink-0">
-                    <img
+                    <OptimizedImage
                       src={stockData.logo}
                       alt={`${stockData.name} logo`}
                       className="w-full h-full object-cover"
                       onError={(e) => {
                         e.currentTarget.style.display = 'none';
                       }}
+                      priority="high"
+                      lazy={false}
                     />
                   </div>
                 )}

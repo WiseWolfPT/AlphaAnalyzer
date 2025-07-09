@@ -7,7 +7,6 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render, screen, act } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { CurrencyProvider, useCurrency } from './currency-context';
-import { useTranslation } from 'react-i18next';
 
 // Test component to access currency context
 function TestCurrencyComponent() {

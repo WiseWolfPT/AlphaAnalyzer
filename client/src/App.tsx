@@ -1,73 +1,338 @@
 import { Switch, Route } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
-import { useEffect, Suspense, lazy } from "react";
+import React, { useEffect, Suspense, lazy } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { ThemeProvider } from "@/hooks/use-theme";
 import { SupabaseAuthProvider } from "@/contexts/supabase-auth-context";
 import { ErrorBoundary } from "@/components/shared/error-boundary";
 import { initializeMonitoring } from "@/lib/monitoring";
+import { createLazyComponent, getLoadingMetrics } from "@/lib/lazy-loader";
 
-// i18n and Currency Context imports
-import { I18nextProvider } from 'react-i18next';
-import i18n from './i18n';
+// Currency Context imports
 import { CurrencyProvider } from './contexts/currency-context';
 
-// Lazy load UnifiedDashboard components for better performance
-const UnifiedDashboard = lazy(() => import("@/components/dashboard/unified-dashboard").then(module => ({ default: module.UnifiedDashboard })));
-const UserDashboard = lazy(() => import("@/components/dashboard/unified-dashboard").then(module => ({ default: module.UserDashboard })));
-const UnifiedAdminDashboard = lazy(() => import("@/components/dashboard/unified-dashboard").then(module => ({ default: module.AdminDashboard })));
-const ValuationDashboard = lazy(() => import("@/components/dashboard/unified-dashboard").then(module => ({ default: module.ValuationDashboard })));
-const DebugDashboard = lazy(() => import("@/components/dashboard/unified-dashboard").then(module => ({ default: module.DebugDashboard })));
-const SimpleDashboard = lazy(() => import("@/components/dashboard/unified-dashboard").then(module => ({ default: module.SimpleDashboard })));
-const TestDashboard = lazy(() => import("@/components/dashboard/unified-dashboard").then(module => ({ default: module.TestDashboard })));
+// AGGRESSIVE DYNAMIC IMPORTS - Load everything lazily with micro-bundles
 
-// Lazy load components for better performance
-const Landing = lazy(() => import("@/pages/landing"));
-const Login = lazy(() => import("@/pages/auth/login"));
-const Register = lazy(() => import("@/pages/auth/register"));
-const NotFound = lazy(() => import("@/pages/not-found"));
-const Home = lazy(() => import("@/pages/home"));
-const FindStocks = lazy(() => import("@/pages/find-stocks"));
-const StockDetail = lazy(() => import("@/pages/stock-detail"));
-const AdvancedCharts = lazy(() => import("@/pages/AdvancedCharts"));
-const Portfolios = lazy(() => import("@/pages/portfolios"));
-const Watchlists = lazy(() => import("@/pages/watchlists"));
-const Earnings = lazy(() => import("@/pages/earnings"));
-const Transcripts = lazy(() => import("@/pages/transcripts"));
-const Profile = lazy(() => import("@/pages/profile"));
-const IntrinsicValue = lazy(() => import("@/pages/intrinsic-value"));
-const Trial = lazy(() => import("@/pages/trial"));
-const Settings = lazy(() => import("@/pages/settings"));
-const Help = lazy(() => import("@/pages/help"));
-const News = lazy(() => import("@/pages/news"));
-const ApiMonitoring = lazy(() => import("@/pages/admin/api-monitoring"));
-const Alerts = lazy(() => import("@/pages/alerts"));
-const StockHeaderTest = lazy(() => import("@/components/stock/stock-header-test"));
+// Import fallback dashboard for better error handling
+const FallbackDashboard = lazy(() => import("@/components/dashboard/fallback-dashboard"));
 
-// Enhanced loading component for Suspense with progress indication
-const PageLoader = () => (
-  <div className="min-h-screen flex items-center justify-center bg-background">
-    <div className="flex flex-col items-center space-y-4">
-      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-chartreuse"></div>
-      <div className="text-muted-foreground text-sm animate-pulse">
-        Loading Alfalyzer...
-      </div>
-      <div className="w-32 h-1 bg-muted rounded-full overflow-hidden">
-        <div className="h-full bg-chartreuse rounded-full animate-pulse" style={{
-          animation: 'loader-progress 2s ease-in-out infinite'
-        }}></div>
+// Dashboard micro-bundles with enhanced error handling and preloading
+const UserDashboard = createLazyComponent(
+  () => import("@/components/dashboard/unified-dashboard")
+    .then(module => ({ default: module.UserDashboard })),
+  {
+    name: 'UserDashboard',
+    fallback: FallbackDashboard,
+    preload: [
+      () => import("@/components/stock/enhanced-stock-card"),
+      () => import("@/components/stock/stock-search")
+    ]
+  }
+);
+
+const AdminDashboard = createLazyComponent(
+  () => import("@/components/dashboard/unified-dashboard")
+    .then(module => ({ default: module.AdminDashboard })),
+  {
+    name: 'AdminDashboard',
+    fallback: FallbackDashboard
+  }
+);
+
+const ValuationDashboard = createLazyComponent(
+  () => import("@/components/dashboard/unified-dashboard")
+    .then(module => ({ default: module.ValuationDashboard })),
+  {
+    name: 'ValuationDashboard',
+    fallback: FallbackDashboard
+  }
+);
+
+const DebugDashboard = createLazyComponent(
+  () => import("@/components/dashboard/unified-dashboard")
+    .then(module => ({ default: module.DebugDashboard })),
+  {
+    name: 'DebugDashboard',
+    fallback: FallbackDashboard
+  }
+);
+
+const SimpleDashboard = createLazyComponent(
+  () => import("@/components/dashboard/unified-dashboard")
+    .then(module => ({ default: module.SimpleDashboard })),
+  {
+    name: 'SimpleDashboard',
+    fallback: FallbackDashboard
+  }
+);
+
+const TestDashboard = createLazyComponent(
+  () => import("@/components/dashboard/unified-dashboard")
+    .then(module => ({ default: module.TestDashboard })),
+  {
+    name: 'TestDashboard',
+    fallback: FallbackDashboard
+  }
+);
+
+// Critical route micro-bundles (high priority)
+const Landing = createLazyComponent(
+  () => import("@/pages/landing"),
+  {
+    name: 'Landing',
+    preload: [
+      () => import("@/pages/auth/login")
+    ]
+  }
+);
+
+const FindStocks = createLazyComponent(
+  () => import("@/pages/find-stocks"),
+  {
+    name: 'FindStocks',
+    preload: [
+      () => import("@/pages/stock-detail"),
+      () => import("@/components/stock/stock-search")
+    ]
+  }
+);
+
+// Authentication micro-bundles (group related functionality)
+const Login = createLazyComponent(
+  () => import("@/pages/auth/login"),
+  {
+    name: 'Login',
+    preload: [
+      () => import("@/pages/auth/register"),
+      () => import("@/components/ui/form")
+    ]
+  }
+);
+
+const Register = createLazyComponent(
+  () => import("@/pages/auth/register"),
+  {
+    name: 'Register',
+    preload: [
+      () => import("@/pages/trial"),
+      () => import("@/components/ui/form")
+    ]
+  }
+);
+
+// Stock analysis micro-bundles (heavy components)
+const StockDetail = createLazyComponent(
+  () => import("@/pages/stock-detail"),
+  {
+    name: 'StockDetail'
+  }
+);
+
+const AdvancedCharts = createLazyComponent(
+  () => import("@/pages/AdvancedCharts"),
+  {
+    name: 'AdvancedCharts',
+    retries: 3 // Charts are heavy, allow more retries
+  }
+);
+
+// Portfolio management micro-bundles
+const Portfolios = createLazyComponent(
+  () => import("@/pages/portfolios"),
+  {
+    name: 'Portfolios'
+  }
+);
+
+const Watchlists = createLazyComponent(
+  () => import("@/pages/watchlists"),
+  {
+    name: 'Watchlists'
+  }
+);
+
+// Market data micro-bundles
+const Earnings = createLazyComponent(
+  () => import("@/pages/earnings"),
+  {
+    name: 'Earnings'
+  }
+);
+
+const Transcripts = createLazyComponent(
+  () => import("@/pages/transcripts"),
+  {
+    name: 'Transcripts'
+  }
+);
+
+const News = createLazyComponent(
+  () => import("@/pages/news"),
+  {
+    name: 'News'
+  }
+);
+
+const Alerts = createLazyComponent(
+  () => import("@/pages/alerts"),
+  {
+    name: 'Alerts'
+  }
+);
+
+// Valuation tools micro-bundle
+const IntrinsicValue = createLazyComponent(
+  () => import("@/pages/intrinsic-value"),
+  {
+    name: 'IntrinsicValue'
+  }
+);
+
+// User management micro-bundles
+const Profile = createLazyComponent(
+  () => import("@/pages/profile"),
+  {
+    name: 'Profile'
+  }
+);
+
+const Settings = createLazyComponent(
+  () => import("@/pages/settings"),
+  {
+    name: 'Settings'
+  }
+);
+
+// Support and onboarding micro-bundles
+const Help = createLazyComponent(
+  () => import("@/pages/help"),
+  {
+    name: 'Help'
+  }
+);
+
+const Trial = createLazyComponent(
+  () => import("@/pages/trial"),
+  {
+    name: 'Trial'
+  }
+);
+
+// Admin micro-bundles (isolated for security)
+const ApiMonitoring = createLazyComponent(
+  () => import("@/pages/admin/api-monitoring"),
+  {
+    name: 'ApiMonitoring'
+  }
+);
+
+// Utility and fallback micro-bundles
+const NotFound = createLazyComponent(
+  () => import("@/pages/not-found"),
+  { name: 'NotFound' }
+);
+
+const Home = createLazyComponent(
+  () => import("@/pages/home"),
+  { name: 'Home' }
+);
+
+const StockHeaderTest = createLazyComponent(
+  () => import("@/components/stock/stock-header-test"),
+  { name: 'StockHeaderTest' }
+);
+
+// Enhanced loading component with micro-bundle awareness
+const PageLoader = () => {
+  const [loadingTime, setLoadingTime] = React.useState(0);
+  const [loadingMessage, setLoadingMessage] = React.useState('Carregando Alfalyzer...');
+  
+  React.useEffect(() => {
+    const startTime = Date.now();
+    const interval = setInterval(() => {
+      const elapsed = Date.now() - startTime;
+      setLoadingTime(elapsed);
+      
+      // Progressive loading messages
+      if (elapsed > 3000) {
+        setLoadingMessage('Carregando componentes avançados...');
+      } else if (elapsed > 1500) {
+        setLoadingMessage('Preparando interface...');
+      } else if (elapsed > 500) {
+        setLoadingMessage('Conectando aos serviços...');
+      }
+    }, 100);
+    
+    return () => clearInterval(interval);
+  }, []);
+
+  const getProgressWidth = () => {
+    const baseProgress = Math.min((loadingTime / 2000) * 60, 60);
+    const randomFactor = Math.sin(loadingTime / 300) * 10;
+    return Math.max(10, Math.min(85, baseProgress + randomFactor));
+  };
+
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="flex flex-col items-center space-y-6 max-w-md w-full px-6">
+        {/* Main spinner */}
+        <div className="relative">
+          <div className="animate-spin rounded-full h-16 w-16 border-4 border-muted border-t-primary"></div>
+          <div className="absolute inset-0 rounded-full h-16 w-16 border-4 border-transparent border-t-chartreuse animate-spin" 
+               style={{ animationDirection: 'reverse', animationDuration: '1.5s' }}>
+          </div>
+        </div>
+        
+        {/* Loading message */}
+        <div className="text-center space-y-2">
+          <div className="text-lg font-medium text-foreground">
+            {loadingMessage}
+          </div>
+          <div className="text-sm text-muted-foreground">
+            Optimizando para a melhor experiência
+          </div>
+        </div>
+        
+        {/* Progress bar */}
+        <div className="w-full max-w-xs">
+          <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
+            <div 
+              className="h-full bg-gradient-to-r from-primary to-chartreuse rounded-full transition-all duration-300 ease-out"
+              style={{ width: `${getProgressWidth()}%` }}
+            />
+          </div>
+          <div className="flex justify-between text-xs text-muted-foreground mt-2">
+            <span>Carregando micro-bundles</span>
+            <span>{(loadingTime / 1000).toFixed(1)}s</span>
+          </div>
+        </div>
+        
+        {/* Micro-loading indicators */}
+        <div className="flex space-x-2">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <div
+              key={i}
+              className="w-2 h-2 bg-primary rounded-full animate-pulse"
+              style={{ 
+                animationDelay: `${i * 200}ms`,
+                animationDuration: '1s'
+              }}
+            />
+          ))}
+        </div>
+        
+        {/* Performance hint for slow connections */}
+        {loadingTime > 5000 && (
+          <div className="text-xs text-amber-600 dark:text-amber-400 text-center bg-amber-50 dark:bg-amber-900/20 p-3 rounded-lg border border-amber-200 dark:border-amber-800">
+            <p className="font-medium">Conexão lenta detectada</p>
+            <p>Os componentes estão a ser carregados de forma otimizada para sua conexão</p>
+          </div>
+        )}
       </div>
     </div>
-    <style jsx>{`
-      @keyframes loader-progress {
-        0% { width: 0%; }
-        50% { width: 70%; }
-        100% { width: 100%; }
-      }
-    `}</style>
-  </div>
-);
+  );
+};
 
 function Router() {
   return (
@@ -89,8 +354,8 @@ function Router() {
         <Route path="/insights" component={UserDashboard} />
         
         {/* Admin Dashboard Routes */}
-        <Route path="/admin" component={UnifiedAdminDashboard} />
-        <Route path="/admin/dashboard" component={UnifiedAdminDashboard} />
+        <Route path="/admin" component={AdminDashboard} />
+        <Route path="/admin/dashboard" component={AdminDashboard} />
         <Route path="/admin/debug" component={DebugDashboard} />
         
         {/* Valuation Dashboard Route */}
@@ -120,24 +385,63 @@ function Router() {
 
 function App() {
   useEffect(() => {
+    // Initialize monitoring and performance tracking
     initializeMonitoring();
+    
+    // Log loading metrics after initial render
+    const logMetrics = () => {
+      const metrics = getLoadingMetrics();
+      if (metrics.totalComponents > 0) {
+        console.group('🚀 Alfalyzer Performance Metrics');
+        console.log('📊 Average Load Time:', `${metrics.averageLoadTime.toFixed(2)}ms`);
+        console.log('📦 Total Components Loaded:', metrics.totalComponents);
+        
+        if (metrics.slowComponents.length > 0) {
+          console.warn('🐌 Slow Components:', metrics.slowComponents);
+        }
+        
+        console.table(metrics.components);
+        console.groupEnd();
+      }
+    };
+    
+    // Log metrics after components have had time to load
+    setTimeout(logMetrics, 5000);
+    
+    // Monitor bundle sizes in development
+    if (process.env.NODE_ENV === 'development') {
+      const observer = new PerformanceObserver((list) => {
+        list.getEntries().forEach((entry) => {
+          if (entry.entryType === 'navigation') {
+            console.log('📈 Navigation Performance:', {
+              domContentLoaded: entry.domContentLoadedEventEnd - entry.domContentLoadedEventStart,
+              loadComplete: entry.loadEventEnd - entry.loadEventStart,
+              totalTime: entry.loadEventEnd - entry.fetchStart
+            });
+          }
+        });
+      });
+      
+      observer.observe({ entryTypes: ['navigation'] });
+      
+      // Clean up observer
+      return () => observer.disconnect();
+    }
   }, []);
 
   return (
-    <I18nextProvider i18n={i18n}>
-      <CurrencyProvider>
-        <ErrorBoundary>
-          <QueryClientProvider client={queryClient}>
-            <ThemeProvider defaultTheme="dark" storageKey="alfalyzer-theme">
-              <SupabaseAuthProvider>
-                <Toaster />
-                <Router />
-              </SupabaseAuthProvider>
-            </ThemeProvider>
-          </QueryClientProvider>
-        </ErrorBoundary>
-      </CurrencyProvider>
-    </I18nextProvider>
+    <CurrencyProvider>
+      <ErrorBoundary>
+        <QueryClientProvider client={queryClient}>
+          <ThemeProvider defaultTheme="dark" storageKey="alfalyzer-theme">
+            <SupabaseAuthProvider>
+              <Toaster />
+              <Router />
+            </SupabaseAuthProvider>
+          </ThemeProvider>
+        </QueryClientProvider>
+      </ErrorBoundary>
+    </CurrencyProvider>
   );
 }
 

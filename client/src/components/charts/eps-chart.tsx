@@ -1,5 +1,5 @@
 // EPS Chart - Yellow bars showing quarterly earnings per share
-import { BarChart, Bar, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { BarChart, Bar, ResponsiveContainer, Tooltip, XAxis, YAxis } from "@/components/ui/lightweight-chart";
 import { ChartContainer } from "./chart-container";
 
 interface EpsChartProps {

@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BarChart3, PieChart, Activity, TrendingUp, TrendingDown, Target, DollarSign, Percent, Plus, ExternalLink } from "lucide-react";
 import { SectorPerformance } from "@/components/stock/sector-performance";
-import { LineChart, Line, ResponsiveContainer, Tooltip, XAxis, YAxis, CartesianGrid, AreaChart, Area } from "recharts";
+import { LightweightLineChart, LightweightPriceChart, LightweightChartContainer } from "@/components/ui/lightweight-chart";
 import { useStock } from "@/hooks/use-enhanced-stocks";
 import { cn } from "@/lib/utils";
 import type { MockStock } from "@/lib/mock-api";

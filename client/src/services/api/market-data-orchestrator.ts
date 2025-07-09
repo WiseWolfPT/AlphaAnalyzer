@@ -1,15 +1,15 @@
 import { FMPService } from './fmp-service';
 import { TwelveDataService } from './twelve-data-service';
-import { FinnhubService } from '@/services/finnhub-enhanced';
-import { AlphaVantageService } from '@/services/alpha-vantage-enhanced';
+import { finnhubEnhanced as FinnhubService } from '@/services/finnhub-enhanced';
+import { alphaVantageEnhanced as AlphaVantageService } from '@/services/alpha-vantage-enhanced';
 import { CacheManager } from '@/lib/cache-manager';
 import type { Stock, IntrinsicValue } from '@shared/schema';
 
 export interface MarketDataProvider {
   realtime: TwelveDataService;
   fundamentals: FMPService;
-  backup: any; // FinnhubService;
-  deep: any; // AlphaVantageService;
+  backup: typeof FinnhubService;
+  deep: typeof AlphaVantageService;
 }
 
 export interface QuotaStatus {
@@ -31,8 +31,8 @@ export class MarketDataOrchestrator {
     this.providers = {
       realtime: new TwelveDataService(this.cache),
       fundamentals: new FMPService(this.cache),
-      backup: {} as any, // placeholder for finnhub
-      deep: {} as any // placeholder for alpha vantage
+      backup: FinnhubService,
+      deep: AlphaVantageService
     };
 
     this.initializeQuotaTracking();
@@ -113,27 +113,44 @@ export class MarketDataOrchestrator {
         }
       }
 
-      // Fallback to Finnhub (currently disabled)
-      // const finnhubQuota = this.quotaTracker.get('finnhub');
-      // if (finnhubQuota && finnhubQuota.remaining > 0) {
-      //   const quote = await this.providers.backup.getQuote(symbol);
-      //   if (quote) {
-      //     this.incrementQuota('finnhub');
-      //     await this.cache.set(cacheKey, quote, 60 * 1000);
-      //     return quote;
-      //   }
-      // }
+      // Fallback to Finnhub
+      const finnhubQuota = this.quotaTracker.get('finnhub');
+      if (finnhubQuota && finnhubQuota.remaining > 0) {
+        const quote = await this.providers.backup.getStockQuoteWithRateLimit(symbol);
+        if (quote) {
+          this.incrementQuota('finnhub');
+          // Convert quote to Stock format (simplified)
+          const stock = {
+            symbol: symbol,
+            price: quote.c || quote.price || 0,
+            change: quote.d || 0,
+            changePercent: quote.dp || 0,
+            currency: 'USD'
+          };
+          await this.cache.set(cacheKey, stock, 60 * 1000);
+          return stock as Stock;
+        }
+      }
 
-      // Last resort: Alpha Vantage (currently disabled)
-      // const alphaQuota = this.quotaTracker.get('alphavantage');
-      // if (alphaQuota && alphaQuota.remaining > 0) {
-      //   const quote = await this.providers.deep.getGlobalQuote(symbol);
-      //   if (quote) {
-      //     this.incrementQuota('alphavantage');
-      //     await this.cache.set(cacheKey, quote, 60 * 1000);
-      //     return quote;
-      //   }
-      // }
+      // Last resort: Alpha Vantage
+      const alphaQuota = this.quotaTracker.get('alphavantage');
+      if (alphaQuota && alphaQuota.remaining > 0) {
+        // AlphaVantage enhanced doesn't have getGlobalQuote - use fundamentals for basic stock info
+        const overview = await this.providers.deep.getCompanyOverviewOptimized(symbol);
+        if (overview) {
+          this.incrementQuota('alphavantage');
+          // Convert to basic Stock format
+          const stock = {
+            symbol: symbol,
+            price: parseFloat(overview['50DayMovingAverage'] || '0'),
+            change: 0, // Overview doesn't have change data
+            changePercent: 0,
+            currency: 'USD'
+          };
+          await this.cache.set(cacheKey, stock, 60 * 1000);
+          return stock as Stock;
+        }
+      }
 
       return null;
     } catch (error) {
@@ -159,41 +176,41 @@ export class MarketDataOrchestrator {
         }
       }
 
-      // Fallback to Alpha Vantage for deep fundamentals (currently disabled)
-      // const alphaQuota = this.quotaTracker.get('alphavantage');
-      // if (alphaQuota && alphaQuota.remaining > 0) {
-      //   const overview = await this.providers.deep.getCompanyOverview(symbol);
-      //   if (overview) {
-      //     this.incrementQuota('alphavantage');
-      //     
-      //     // Convert to IntrinsicValue format
-      //     const fundamentals: Partial<IntrinsicValue> = {
-      //       stockSymbol: symbol,
-      //       currentPrice: parseFloat(overview['50DayMovingAverage'] || '0'),
-      //       eps: parseFloat(overview.EPS || '0'),
-      //       peMultiple: parseFloat(overview.PERatio || '0'),
-      //       bookValue: parseFloat(overview.BookValue || '0'),
-      //       roe: parseFloat(overview.ReturnOnEquityTTM || '0') * 100,
-      //       debtToEquity: parseFloat(overview.DebtToEquityRatio || '0'),
-      //       revenue: parseFloat(overview.RevenueTTM || '0'),
-      //       marketCap: parseFloat(overview.MarketCapitalization || '0'),
-      //     };
-      //     
-      //     await this.cache.set(cacheKey, fundamentals, 24 * 60 * 60 * 1000);
-      //     return fundamentals;
-      //   }
-      // }
+      // Fallback to Alpha Vantage for deep fundamentals
+      const alphaQuota = this.quotaTracker.get('alphavantage');
+      if (alphaQuota && alphaQuota.remaining > 0) {
+        const overview = await this.providers.deep.getCompanyOverviewOptimized(symbol);
+        if (overview) {
+          this.incrementQuota('alphavantage');
+          
+          // Convert to IntrinsicValue format
+          const fundamentals: Partial<IntrinsicValue> = {
+            stockSymbol: symbol,
+            currentPrice: parseFloat(overview['50DayMovingAverage'] || '0'),
+            eps: parseFloat(overview.EPS || '0'),
+            peMultiple: parseFloat(overview.PERatio || '0'),
+            bookValue: parseFloat(overview.BookValue || '0'),
+            roe: parseFloat(overview.ReturnOnEquityTTM || '0') * 100,
+            debtToEquity: parseFloat(overview.DebtToEquityRatio || '0'),
+            revenue: parseFloat(overview.RevenueTTM || '0'),
+            marketCap: parseFloat(overview.MarketCapitalization || '0'),
+          };
+          
+          await this.cache.set(cacheKey, fundamentals, 24 * 60 * 60 * 1000);
+          return fundamentals;
+        }
+      }
 
-      // Last resort: Finnhub basic fundamentals (currently disabled)
-      // const finnhubQuota = this.quotaTracker.get('finnhub');
-      // if (finnhubQuota && finnhubQuota.remaining > 0) {
-      //   const metrics = await this.providers.backup.getBasicFinancials(symbol);
-      //   if (metrics) {
-      //     this.incrementQuota('finnhub');
-      //     await this.cache.set(cacheKey, metrics, 24 * 60 * 60 * 1000);
-      //     return metrics;
-      //   }
-      // }
+      // Last resort: Finnhub basic fundamentals
+      const finnhubQuota = this.quotaTracker.get('finnhub');
+      if (finnhubQuota && finnhubQuota.remaining > 0) {
+        const metrics = await this.providers.backup.getBasicFinancialsWithRateLimit(symbol);
+        if (metrics) {
+          this.incrementQuota('finnhub');
+          await this.cache.set(cacheKey, metrics, 24 * 60 * 60 * 1000);
+          return metrics;
+        }
+      }
 
       return null;
     } catch (error) {
@@ -272,7 +289,7 @@ export class MarketDataOrchestrator {
         }
       }
 
-      // Fallback to Alpha Vantage for daily data (currently disabled)
+      // Fallback to Alpha Vantage for daily data (method not available in enhanced service)
       // if (interval === '1day') {
       //   const alphaQuota = this.quotaTracker.get('alphavantage');
       //   if (alphaQuota && alphaQuota.remaining > 0) {

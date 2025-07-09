@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import { cn } from "@/lib/utils";
+import { OptimizedImage } from "@/components/ui/optimized-image";
 import type { Stock } from "@shared/schema";
 
 interface StockSearchProps {
@@ -129,13 +130,15 @@ export function StockSearch({
               >
                 <div className="w-10 h-10 rounded-xl bg-secondary/50 flex-shrink-0 flex items-center justify-center overflow-hidden border border-border/30">
                   {stock.logo ? (
-                    <img
+                    <OptimizedImage
                       src={stock.logo}
                       alt={`${stock.name} logo`}
                       className="w-full h-full object-cover rounded-xl"
                       onError={(e) => {
                         e.currentTarget.style.display = 'none';
                       }}
+                      priority="low"
+                      lazy
                     />
                   ) : (
                     <span className="text-sm font-bold text-primary">

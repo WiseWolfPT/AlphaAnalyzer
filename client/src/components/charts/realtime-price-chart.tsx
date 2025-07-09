@@ -1,6 +1,6 @@
 // Real-time Price Chart Component with WebSocket integration
 import React, { useState, useEffect, useRef } from 'react';
-import { LineChart, Line, Area, AreaChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import { LightweightPriceChart, LightweightChartContainer } from '@/components/ui/lightweight-chart';
 import { ChartContainer } from './chart-container';
 import { useSymbolStream } from '@/hooks/use-financial-stream';
 import { Badge } from '@/components/ui/badge';
@@ -17,7 +17,7 @@ interface RealtimePriceChartProps {
 
 interface ChartDataPoint {
   timestamp: number;
-  time: string;
+  date: string;
   price: number;
   volume?: number;
   change?: number;
@@ -57,7 +57,7 @@ export function RealtimePriceChart({
 
     const newDataPoint: ChartDataPoint = {
       timestamp: currentData.timestamp,
-      time: new Date(currentData.timestamp).toLocaleTimeString(),
+      date: new Date(currentData.timestamp).toISOString(),
       price: currentData.price,
       volume: currentData.volume,
       change: currentData.change
@@ -92,7 +92,7 @@ export function RealtimePriceChart({
         .slice(-maxDataPoints)
         .map(point => ({
           timestamp: point.timestamp,
-          time: new Date(point.timestamp).toLocaleTimeString(),
+          date: new Date(point.timestamp).toISOString(),
           price: point.price,
           volume: point.volume,
           change: point.change
@@ -129,37 +129,8 @@ export function RealtimePriceChart({
     return `${connectedCount}/${totalCount} sources`;
   };
 
-  // Custom tooltip for real-time data
-  const CustomTooltip = ({ active, payload, label }: any) => {
-    if (active && payload && payload.length) {
-      const data = payload[0].payload;
-      return (
-        <div className="bg-background border border-border rounded-lg p-3 shadow-lg">
-          <p className="text-sm font-medium">{data.time}</p>
-          <p className="text-sm text-muted-foreground">
-            Price: <span className="font-semibold text-foreground">${data.price.toFixed(2)}</span>
-          </p>
-          {data.change !== undefined && (
-            <p className="text-sm text-muted-foreground">
-              Change: <span className={`font-semibold ${data.change >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-                {data.change >= 0 ? '+' : ''}${data.change.toFixed(2)}
-              </span>
-            </p>
-          )}
-          {enableVolumeChart && data.volume && (
-            <p className="text-sm text-muted-foreground">
-              Volume: <span className="font-semibold text-foreground">{data.volume.toLocaleString()}</span>
-            </p>
-          )}
-        </div>
-      );
-    }
-    return null;
-  };
-
   // Chart color based on trend
   const chartColor = trend === 'up' ? '#10b981' : '#ef4444'; // green or red
-  const gradientId = `gradient-${symbol.replace(/[^a-zA-Z0-9]/g, '')}`;
 
   return (
     <div className="relative">
@@ -189,46 +160,11 @@ export function RealtimePriceChart({
             <div className="absolute inset-0 bg-gradient-to-r from-transparent via-blue-500/10 to-transparent animate-pulse pointer-events-none" />
           )}
           
-          <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={chartData}>
-              <defs>
-                <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor={chartColor} stopOpacity={0.3}/>
-                  <stop offset="95%" stopColor={chartColor} stopOpacity={0}/>
-                </linearGradient>
-              </defs>
-              <XAxis 
-                dataKey="time" 
-                axisLine={false}
-                tickLine={false}
-                tick={{ fontSize: 10, fill: 'currentColor' }}
-                interval="preserveStartEnd"
-              />
-              <YAxis 
-                axisLine={false}
-                tickLine={false}
-                tick={{ fontSize: 10, fill: 'currentColor' }}
-                tickFormatter={(value) => `$${value.toFixed(2)}`}
-                domain={['dataMin', 'dataMax']}
-              />
-              <Tooltip content={<CustomTooltip />} />
-              <Area
-                type="monotone"
-                dataKey="price"
-                stroke={chartColor}
-                strokeWidth={2}
-                fill={`url(#${gradientId})`}
-                dot={false}
-                activeDot={{ 
-                  r: 4, 
-                  fill: chartColor,
-                  stroke: '#fff',
-                  strokeWidth: 2
-                }}
-                connectNulls={true}
-              />
-            </AreaChart>
-          </ResponsiveContainer>
+          <LightweightPriceChart
+            data={chartData}
+            color={chartColor}
+            className="w-full h-full"
+          />
         </div>
       </ChartContainer>
 

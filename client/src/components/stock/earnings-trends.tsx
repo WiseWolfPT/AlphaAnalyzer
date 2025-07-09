@@ -2,7 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { TrendingUp, TrendingDown, Calendar, DollarSign, Target, AlertCircle } from "lucide-react";
-import { LineChart, Line, ResponsiveContainer, Tooltip, XAxis, YAxis, CartesianGrid, BarChart, Bar, ComposedChart, Area, AreaChart } from "recharts";
+import { LineChart, Line, ResponsiveContainer, Tooltip, XAxis, YAxis, CartesianGrid, BarChart, Bar, ComposedChart, Area, AreaChart } from "@/components/ui/lightweight-chart";
 import { cn } from "@/lib/utils";
 import type { MockStock } from "@/lib/mock-api";
 

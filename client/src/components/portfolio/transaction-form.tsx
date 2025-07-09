@@ -10,7 +10,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Calendar as CalendarIcon, DollarSign, Loader2, AlertCircle } from "lucide-react";
-import { format } from "date-fns";
+
 import { cn } from "@/lib/utils";
 import { PortfolioService, type TransactionInput } from "@/services/portfolio-service";
 import type { MockStock } from "@/lib/mock-api";

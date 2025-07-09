@@ -25,7 +25,7 @@ import {
   BarChart3
 } from "lucide-react";
 import { motion } from "framer-motion";
-import { formatDistanceToNow } from "date-fns";
+
 import { cn } from "@/lib/utils";
 
 interface NewsArticle {

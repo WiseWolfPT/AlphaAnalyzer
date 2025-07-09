@@ -5,24 +5,99 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, viewport-fit=cover" />
     <title>Alfalyzer - Portuguese Investors International Markets Platform</title>
     
-    <!-- Performance Optimization: Preload critical resources -->
+    <!-- CDN React for Production (primary strategy) -->
+    <script>
+      // Check if we're in production
+      const isProduction = window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1';
+      
+      if (isProduction) {
+        // Load React from CDN immediately in production
+        const loadReactFromCDN = () => {
+          // Load React
+          const reactScript = document.createElement('script');
+          reactScript.src = 'https://unpkg.com/react@18.2.0/umd/react.production.min.js';
+          reactScript.crossOrigin = 'anonymous';
+          reactScript.integrity = 'sha384-VHApT1DAo6pbaDdg0sY6GQhKzTQ4+FKL/VsJGVqYwCVHkWE5wZlvUJ3p+V3pEqZN';
+          
+          reactScript.onload = () => {
+            // Load ReactDOM after React is loaded
+            const reactDomScript = document.createElement('script');
+            reactDomScript.src = 'https://unpkg.com/react-dom@18.2.0/umd/react-dom.production.min.js';
+            reactDomScript.crossOrigin = 'anonymous';
+            reactDomScript.integrity = 'sha384-6ZZtDXhzPzWv7rOx8O2D7K9WzrUPWEaO6/jOJfnhQCHrScEKB3tOmCvYAJyfqUl0';
+            
+            reactDomScript.onload = () => {
+              console.log('✅ React loaded from CDN successfully');
+              window.REACT_CDN_LOADED = true;
+            };
+            
+            document.head.appendChild(reactDomScript);
+          };
+          
+          document.head.appendChild(reactScript);
+        };
+        
+        // Load immediately for production
+        loadReactFromCDN();
+      }
+    </script>
+    
+    <!-- Performance Optimization: Aggressive preloading -->
     <link rel="preload" href="/src/index.css" as="style" />
     <link rel="preload" href="/src/main.tsx" as="script" />
     
-    <!-- DNS Prefetch for external services -->
+    <!-- DNS Prefetch for external services (extended) -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link rel="dns-prefetch" href="https://api.finnhub.io" />
     <link rel="dns-prefetch" href="https://www.alphavantage.co" />
+    <link rel="dns-prefetch" href="https://unpkg.com" />
+    <link rel="dns-prefetch" href="https://cdn.jsdelivr.net" />
     
-    <!-- Resource Hints for better performance -->
+    <!-- Preconnect to CDNs for faster fallback -->
+    <link rel="preconnect" href="https://unpkg.com" crossorigin />
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+    
+    <!-- Critical resource hints for micro-bundles -->
     <link rel="modulepreload" href="/src/lib/queryClient.ts" />
     <link rel="modulepreload" href="/src/contexts/simple-auth-offline.tsx" />
+    <link rel="modulepreload" href="/src/lib/lazy-loader.ts" />
+    
+    <!-- Preload critical UI components -->
+    <link rel="modulepreload" href="/src/components/ui/button.tsx" />
+    <link rel="modulepreload" href="/src/components/ui/card.tsx" />
+    <link rel="modulepreload" href="/src/components/shared/error-boundary.tsx" />
     
     <!-- Meta tags for PWA -->
     <meta name="theme-color" content="#84cc16" />
     <meta name="description" content="Professional stock analytics platform for Portuguese investors accessing USA and EU markets" />
     <meta name="keywords" content="stocks, investment, portugal, usa markets, eu markets, portfolio, analysis" />
+    
+    <!-- Performance monitoring (production only) -->
+    <script>
+      if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+        // Web Vitals tracking
+        window.webVitalsData = [];
+        
+        // Track bundle loading performance
+        window.bundleLoadTimes = {};
+        const originalCreateElement = document.createElement;
+        document.createElement = function(tagName) {
+          const element = originalCreateElement.call(this, tagName);
+          if (tagName.toLowerCase() === 'script' && element.src) {
+            const startTime = performance.now();
+            element.onload = () => {
+              const loadTime = performance.now() - startTime;
+              window.bundleLoadTimes[element.src] = loadTime;
+              if (loadTime > 2000) {
+                console.warn('Slow bundle load:', element.src, loadTime + 'ms');
+              }
+            };
+          }
+          return element;
+        };
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>

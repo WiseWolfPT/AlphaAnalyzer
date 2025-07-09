@@ -1,17 +1,10 @@
 import React, { memo, useMemo, useCallback, useRef, useEffect } from 'react';
 import { 
-  ResponsiveContainer, 
-  LineChart, 
-  Line, 
-  AreaChart, 
-  Area, 
-  BarChart, 
-  Bar,
-  XAxis, 
-  YAxis, 
-  Tooltip, 
-  CartesianGrid 
-} from 'recharts';
+  LightweightLineChart, 
+  LightweightPriceChart, 
+  LightweightBarChart, 
+  LightweightChartContainer
+} from '@/components/ui/lightweight-chart';
 import { ChartContainer } from './chart-container';
 
 interface OptimizedChartProps {
@@ -27,27 +20,6 @@ interface OptimizedChartProps {
   maxDataPoints?: number;
   animationDuration?: number;
 }
-
-// Memoized tooltip component to prevent re-renders
-const OptimizedTooltip = memo(({ active, payload, label, formatter }: any) => {
-  if (!active || !payload || !payload.length) {
-    return null;
-  }
-
-  const value = payload[0].value;
-  const formattedValue = formatter ? formatter(value) : value;
-
-  return (
-    <div className="bg-background border border-border rounded-lg p-3 shadow-lg">
-      <p className="text-sm font-medium">{label}</p>
-      <p className="text-sm text-muted-foreground">
-        Value: <span className="font-semibold text-foreground">{formattedValue}</span>
-      </p>
-    </div>
-  );
-});
-
-OptimizedTooltip.displayName = 'OptimizedTooltip';
 
 // Optimized chart component with performance enhancements
 export const OptimizedChart = memo(({
@@ -91,38 +63,46 @@ export const OptimizedChart = memo(({
     };
   }, [optimizedData, trend]);
 
-  // Memoized formatter functions
-  const tooltipFormatter = useCallback((value: number) => {
-    if (type === 'bar' && dataKey.includes('volume')) {
-      return `${(value / 1000000).toFixed(1)}M`;
+  // Transform data for Chart.js components
+  const transformedData = useMemo(() => {
+    switch (type) {
+      case 'area':
+        return optimizedData.map(item => ({
+          date: item.date,
+          price: item.value
+        }));
+      case 'line':
+        return optimizedData.map(item => ({
+          label: new Date(item.date).toLocaleDateString('en-US', { 
+            month: 'short', 
+            day: 'numeric' 
+          }),
+          value: item.value
+        }));
+      case 'bar':
+        return optimizedData.map(item => ({
+          label: new Date(item.date).toLocaleDateString('en-US', { 
+            month: 'short', 
+            day: 'numeric' 
+          }),
+          value: item.value
+        }));
+      default:
+        return optimizedData.map(item => ({
+          label: new Date(item.date).toLocaleDateString('en-US', { 
+            month: 'short', 
+            day: 'numeric' 
+          }),
+          value: item.value
+        }));
     }
-    if (dataKey.includes('price') || dataKey.includes('revenue')) {
-      return `$${value.toFixed(2)}`;
-    }
-    return value.toFixed(2);
-  }, [type, dataKey]);
-
-  const tickFormatter = useCallback((value: string) => {
-    const date = new Date(value);
-    return `${date.getMonth() + 1}/${date.getDate()}`;
-  }, []);
+  }, [optimizedData, type]);
 
   // Performance optimization: Only re-render when data actually changes
   const dataFingerprint = useMemo(() => 
     JSON.stringify(optimizedData.slice(-10)), // Only check last 10 points for real-time
     [optimizedData]
   );
-
-  const ChartComponent = useMemo(() => {
-    switch (type) {
-      case 'area':
-        return AreaChart;
-      case 'bar':
-        return BarChart;
-      default:
-        return LineChart;
-    }
-  }, [type]);
 
   if (!optimizedData || optimizedData.length === 0) {
     return (
@@ -135,77 +115,33 @@ export const OptimizedChart = memo(({
   }
 
   const renderChart = () => {
-    const commonProps = {
-      data: optimizedData,
-      margin: { top: 5, right: 30, left: 20, bottom: 5 },
-    };
-
-    const axisProps = {
-      axisLine: false,
-      tickLine: false,
-      tick: { fontSize: 10, fill: 'currentColor' },
+    const chartProps = {
+      data: transformedData,
+      color,
+      className: "w-full h-full"
     };
 
     switch (type) {
       case 'area':
         return (
-          <ChartComponent {...commonProps}>
-            <defs>
-              <linearGradient id={`gradient-${dataKey}`} x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor={color} stopOpacity={0.3} />
-                <stop offset="95%" stopColor={color} stopOpacity={0} />
-              </linearGradient>
-            </defs>
-            <XAxis dataKey="date" {...axisProps} tickFormatter={tickFormatter} />
-            <YAxis {...axisProps} />
-            <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
-            <Tooltip content={<OptimizedTooltip formatter={tooltipFormatter} />} />
-            <Area
-              type="monotone"
-              dataKey={dataKey}
-              stroke={color}
-              strokeWidth={2}
-              fill={`url(#gradient-${dataKey})`}
-              animationDuration={animationDuration}
-              connectNulls={false}
-            />
-          </ChartComponent>
+          <LightweightPriceChart
+            {...chartProps}
+            data={transformedData as any}
+          />
         );
-
       case 'bar':
         return (
-          <ChartComponent {...commonProps}>
-            <XAxis dataKey="date" {...axisProps} tickFormatter={tickFormatter} />
-            <YAxis {...axisProps} />
-            <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
-            <Tooltip content={<OptimizedTooltip formatter={tooltipFormatter} />} />
-            <Bar
-              dataKey={dataKey}
-              fill={color}
-              animationDuration={animationDuration}
-              radius={[2, 2, 0, 0]}
-            />
-          </ChartComponent>
+          <LightweightBarChart
+            {...chartProps}
+            data={transformedData as any}
+          />
         );
-
       default: // line
         return (
-          <ChartComponent {...commonProps}>
-            <XAxis dataKey="date" {...axisProps} tickFormatter={tickFormatter} />
-            <YAxis {...axisProps} />
-            <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
-            <Tooltip content={<OptimizedTooltip formatter={tooltipFormatter} />} />
-            <Line
-              type="monotone"
-              dataKey={dataKey}
-              stroke={color}
-              strokeWidth={2}
-              dot={false}
-              activeDot={{ r: 4, stroke: color, strokeWidth: 2 }}
-              animationDuration={animationDuration}
-              connectNulls={false}
-            />
-          </ChartComponent>
+          <LightweightLineChart
+            {...chartProps}
+            data={transformedData as any}
+          />
         );
     }
   };
@@ -220,9 +156,17 @@ export const OptimizedChart = memo(({
       height={`h-[${height}px]`}
     >
       <div ref={containerRef} className="w-full h-full">
-        <ResponsiveContainer width="100%" height="100%">
+        <LightweightChartContainer
+          config={{
+            [dataKey]: {
+              label: title,
+              color: color,
+            }
+          }}
+          className="w-full h-full"
+        >
           {renderChart()}
-        </ResponsiveContainer>
+        </LightweightChartContainer>
       </div>
     </ChartContainer>
   );

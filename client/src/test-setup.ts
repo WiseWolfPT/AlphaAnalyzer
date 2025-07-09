@@ -133,7 +133,6 @@ export const mockMarketData = {
 };
 
 // Mock i18n for internationalization tests
-vi.mock('react-i18next', () => ({
   useTranslation: () => ({
     t: (key: string) => {
       // Simple mock translations

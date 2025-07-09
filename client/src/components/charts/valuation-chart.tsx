@@ -1,5 +1,5 @@
 // Valuation Chart - Green area chart showing valuation metrics over time
-import { AreaChart, Area, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { AreaChart, Area, ResponsiveContainer, Tooltip, XAxis, YAxis } from "@/components/ui/lightweight-chart";
 import { ChartContainer } from "./chart-container";
 
 interface ValuationChartProps {

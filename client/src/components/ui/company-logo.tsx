@@ -6,6 +6,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { cn } from '../../lib/utils';
 import { getCompanyLogo, getCompanyLogos, getCompanyColor, getCompanyName, getCachedLogo, cacheLogo } from '../../data/company-logos';
+import { OptimizedImage } from './optimized-image';
+import { useProgressiveImage } from '../../hooks/use-image-optimization';
 
 export interface CompanyLogoProps {
   symbol: string;
@@ -35,64 +37,29 @@ export function CompanyLogo({
   onError,
   priority = 'speed'
 }: CompanyLogoProps) {
-  const [currentLogoUrl, setCurrentLogoUrl] = useState<string | null>(null);
-  const [logoError, setLogoError] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const triedUrls = useRef<Set<string>>(new Set());
-  const logoProviders = useRef<string[]>([]);
-
   const actualSize = typeof size === 'number' ? size : SIZE_MAP[size];
   const displaySymbol = symbol.toUpperCase();
   const companyName = getCompanyName(symbol);
   const companyColor = getCompanyColor(symbol);
 
-  // Initialize logo providers
-  useEffect(() => {
-    logoProviders.current = getCompanyLogos(symbol);
-    triedUrls.current.clear();
-    
-    // Check cache first
-    const cached = getCachedLogo(symbol);
-    if (cached?.verified) {
-      setCurrentLogoUrl(cached.url);
-      setIsLoading(false);
-      setLogoError(false);
-      return;
-    }
+  // Generate optimized logo URLs with image proxy
+  const logoSources = getCompanyLogos(symbol).map(url => {
+    const optimizedUrl = `/api/image/proxy?${new URLSearchParams({
+      url: encodeURIComponent(url),
+      format: 'webp',
+      quality: '85',
+      width: actualSize.toString(),
+      height: actualSize.toString()
+    })}`;
+    return optimizedUrl;
+  });
 
-    // Start with first provider
-    tryNextLogo();
-  }, [symbol]);
+  // Use progressive image loading hook
+  const { src, isLoading, error, onLoad, onError: onImageError } = useProgressiveImage(logoSources);
 
-  const tryNextLogo = () => {
-    const availableUrls = logoProviders.current.filter(url => !triedUrls.current.has(url));
-    
-    if (availableUrls.length === 0) {
-      // All providers failed, show fallback
-      setLogoError(true);
-      setIsLoading(false);
-      onError?.(symbol);
-      return;
-    }
-
-    const nextUrl = availableUrls[0];
-    triedUrls.current.add(nextUrl);
-    setCurrentLogoUrl(nextUrl);
-  };
-
-  const handleImageLoad = () => {
-    setIsLoading(false);
-    setLogoError(false);
-    
-    // Cache successful URL
-    if (currentLogoUrl) {
-      cacheLogo(symbol, currentLogoUrl, true);
-    }
-  };
-
-  const handleImageError = () => {
-    console.warn(`Logo failed for ${symbol}: ${currentLogoUrl}`);
-    tryNextLogo();
+  const handleError = (error: Error) => {
+    console.warn(`Logo failed for ${symbol}:`, error);
+    onError?.(symbol);
   };
 
   const renderFallback = () => {
@@ -138,45 +105,31 @@ export function CompanyLogo({
   };
 
   const renderLogo = () => {
-    if (logoError || !currentLogoUrl) {
+    if (error || !src) {
       return renderFallback();
     }
 
     return (
-      <div className="relative">
-        <img
-          src={currentLogoUrl}
-          alt={`${companyName} logo`}
-          className={cn(
-            "object-contain bg-white",
-            rounded ? "rounded-full" : "rounded",
-            isLoading ? "opacity-0" : "opacity-100",
-            "transition-opacity duration-200",
-            className
-          )}
-          style={{ width: actualSize, height: actualSize }}
-          onLoad={handleImageLoad}
-          onError={handleImageError}
-          loading={priority === 'speed' ? 'lazy' : 'eager'}
-        />
-        
-        {isLoading && (
-          <div
-            className={cn(
-              "absolute inset-0 flex items-center justify-center bg-gray-100 animate-pulse",
-              rounded ? "rounded-full" : "rounded"
-            )}
-          >
-            <div
-              className="bg-gray-300 rounded"
-              style={{ 
-                width: actualSize * 0.6, 
-                height: actualSize * 0.6 
-              }}
-            />
-          </div>
+      <OptimizedImage
+        src={src}
+        alt={`${companyName} logo`}
+        width={actualSize}
+        height={actualSize}
+        priority={priority === 'speed' ? 'below-fold' : 'above-fold'}
+        placeholder="blur"
+        className={cn(
+          "object-contain bg-white",
+          rounded ? "rounded-full" : "rounded",
+          className
         )}
-      </div>
+        onLoad={onLoad}
+        onError={handleError}
+        optimization={{
+          quality: 85,
+          format: 'webp',
+          lazy: priority === 'speed'
+        }}
+      />
     );
   };
 

@@ -18,7 +18,7 @@ import {
   Edit,
   Trash2
 } from "lucide-react";
-import { format } from "date-fns";
+
 import { cn } from "@/lib/utils";
 import type { Transaction } from "@shared/schema";
 
@@ -140,7 +140,7 @@ export function TransactionHistory({
   const exportToCSV = () => {
     const headers = ['Date', 'Symbol', 'Type', 'Quantity', 'Price', 'Fees', 'Total', 'Notes'];
     const csvData = filteredAndSortedTransactions.map(t => [
-      format(new Date(t.executedAt), 'yyyy-MM-dd'),
+      new Date(t.executedAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: '2-digit' }),
       t.stockSymbol,
       t.type,
       t.quantity,
@@ -158,7 +158,7 @@ export function TransactionHistory({
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `portfolio-transactions-${format(new Date(), 'yyyy-MM-dd')}.csv`;
+    a.download = `portfolio-transactions-${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: '2-digit' })}.csv`;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -310,7 +310,7 @@ export function TransactionHistory({
                           </div>
                           <div className="text-sm text-muted-foreground">
                             <Calendar className="h-3 w-3 inline mr-1" />
-                            {format(new Date(transaction.executedAt), 'MMM dd, yyyy')}
+                            {new Date(transaction.executedAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: '2-digit' })}
                           </div>
                         </div>
                       </div>

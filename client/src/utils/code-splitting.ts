@@ -58,41 +58,30 @@ export const LazyComponents = {
 
 // Dynamic imports for chart libraries based on chart type
 export const ChartLibraries = {
-  async loadRechartsComponents() {
+  async loadChartjsComponents() {
     const [
-      { ResponsiveContainer },
-      { LineChart, Line },
-      { AreaChart, Area },
-      { BarChart, Bar },
-      { PieChart, Pie },
-      { Tooltip },
-      { XAxis, YAxis },
-      { CartesianGrid }
+      { LightweightChartContainer },
+      { LightweightLineChart },
+      { LightweightPriceChart },
+      { LightweightBarChart },
+      { LightweightPieChart },
+      { LightweightMiniChart }
     ] = await Promise.all([
-      import('recharts').then(m => ({ ResponsiveContainer: m.ResponsiveContainer })),
-      import('recharts').then(m => ({ LineChart: m.LineChart, Line: m.Line })),
-      import('recharts').then(m => ({ AreaChart: m.AreaChart, Area: m.Area })),
-      import('recharts').then(m => ({ BarChart: m.BarChart, Bar: m.Bar })),
-      import('recharts').then(m => ({ PieChart: m.PieChart, Pie: m.Pie })),
-      import('recharts').then(m => ({ Tooltip: m.Tooltip })),
-      import('recharts').then(m => ({ XAxis: m.XAxis, YAxis: m.YAxis })),
-      import('recharts').then(m => ({ CartesianGrid: m.CartesianGrid })),
+      import('@/components/ui/lightweight-chart').then(m => ({ LightweightChartContainer: m.LightweightChartContainer })),
+      import('@/components/ui/lightweight-chart').then(m => ({ LightweightLineChart: m.LightweightLineChart })),
+      import('@/components/ui/lightweight-chart').then(m => ({ LightweightPriceChart: m.LightweightPriceChart })),
+      import('@/components/ui/lightweight-chart').then(m => ({ LightweightBarChart: m.LightweightBarChart })),
+      import('@/components/ui/lightweight-chart').then(m => ({ LightweightPieChart: m.LightweightPieChart })),
+      import('@/components/ui/lightweight-chart').then(m => ({ LightweightMiniChart: m.LightweightMiniChart })),
     ]);
 
     return {
-      ResponsiveContainer,
-      LineChart,
-      Line,
-      AreaChart,
-      Area,
-      BarChart,
-      Bar,
-      PieChart,
-      Pie,
-      Tooltip,
-      XAxis,
-      YAxis,
-      CartesianGrid
+      LightweightChartContainer,
+      LightweightLineChart,
+      LightweightPriceChart,
+      LightweightBarChart,
+      LightweightPieChart,
+      LightweightMiniChart
     };
   },
 

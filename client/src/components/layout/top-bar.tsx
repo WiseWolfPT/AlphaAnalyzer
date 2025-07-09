@@ -17,7 +17,6 @@ import { Moon, Sun, User, Menu, UserCircle, HelpCircle, LogOut } from "lucide-re
 import NotificationCenter from "@/components/alerts/notification-center";
 
 // i18n and Currency imports
-import { useTranslation } from 'react-i18next';
 import { useCurrency } from '@/contexts/currency-context';
 
 interface TopBarProps {

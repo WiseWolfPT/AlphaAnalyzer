@@ -12,6 +12,7 @@ import healthRouter from "./routes/health";
 import stocksRouter from "./routes/stocks";
 import transcriptsRouter from "./routes/transcripts";
 import apiProxyRouter from "./routes/api-proxy";
+import { imageProxyRouter } from "./routes/image-proxy";
 // REMOVED: Cache and alerts imports due to startup issues
 // import cacheAdminRouter from "./routes/cache-admin";
 // import { alertsRouter } from "./routes/alerts";
@@ -137,6 +138,9 @@ export async function registerRoutes(app: Express, server: Server): Promise<void
   
   // WAVE 4: API proxy routes for secure external API access
   app.use("/api/proxy", apiProxyRouter);
+  
+  // Image optimization proxy routes
+  app.use("/api/image", imageProxyRouter);
   
   // REMOVED: Alert system routes due to startup issues
   // app.use("/api/alerts", alertsRouter);
