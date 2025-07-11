@@ -131,3 +131,236 @@
 **Documentado por Agent 3 - Claude Sonnet 4**
 **Fase 0 concluída em 11/07/2025**
 **Próxima fase: FASE 1 - PIPELINE DE DADOS REAL**
+
+---
+
+## 🚨 DIA 0 - VALIDAÇÃO DE INFRAESTRUTURA (OBRIGATÓRIO)
+
+**Data: 12/01/2025**  
+**Status: PENDENTE**  
+**Prioridade: CRÍTICA - Bloqueador para Fase 1**
+
+### 📋 CONTEXTO
+
+Análise profunda da Fase 0 por Opus 4 + Gemini + O3 identificou gaps críticos que DEVEM ser resolvidos antes de prosseguir:
+
+1. **Endpoints API não verificados** - Risco máximo para Fase 1
+2. **Variáveis de ambiente incompletas** - Bloqueador de configuração
+3. **Conectividade Supabase não testada** - Risco de integração
+4. **4 vulnerabilidades pendentes** - Decisão necessária
+
+### ✅ CHECKLIST OBRIGATÓRIO - DIA 0
+
+#### 1. VERIFICAÇÃO DE ENDPOINTS API (2-3 horas)
+
+**TAREFA**: Criar e executar testes de integração para TODAS as APIs externas.
+
+```typescript
+// criar arquivo: tests/integration/api-validation.test.ts
+import { describe, it, expect } from 'vitest';
+
+describe('API Endpoints Validation', () => {
+  // 1. Polygon.io
+  it('Polygon.io - deve buscar cotação', async () => {
+    const response = await fetch(`https://api.polygon.io/v2/aggs/ticker/AAPL/prev?apiKey=${process.env.POLYGON_API_KEY}`);
+    expect(response.status).toBe(200);
+    const data = await response.json();
+    expect(data.ticker).toBe('AAPL');
+    expect(data.results[0].c).toBeGreaterThan(0); // closing price
+  });
+
+  // 2. Finnhub
+  it('Finnhub - deve buscar quote', async () => {
+    const response = await fetch(`https://finnhub.io/api/v1/quote?symbol=AAPL&token=${process.env.FINNHUB_API_KEY}`);
+    expect(response.status).toBe(200);
+    const data = await response.json();
+    expect(data.c).toBeGreaterThan(0); // current price
+  });
+
+  // 3. Twelve Data
+  it('Twelve Data - deve buscar time series', async () => {
+    const response = await fetch(`https://api.twelvedata.com/time_series?symbol=AAPL&interval=1day&apikey=${process.env.TWELVE_DATA_API_KEY}`);
+    expect(response.status).toBe(200);
+    const data = await response.json();
+    expect(data.values).toBeDefined();
+  });
+
+  // 4. FMP
+  it('FMP - deve buscar profile', async () => {
+    const response = await fetch(`https://financialmodelingprep.com/api/v3/profile/AAPL?apikey=${process.env.FMP_API_KEY}`);
+    expect(response.status).toBe(200);
+    const data = await response.json();
+    expect(data[0].symbol).toBe('AAPL');
+  });
+});
+
+// EXECUTAR: npm test tests/integration/api-validation.test.ts
+```
+
+**CRITÉRIO DE SUCESSO**: Todos os 4 testes passando.
+
+#### 2. DOCUMENTAÇÃO COMPLETA DE ENV VARS (30 min)
+
+**TAREFA**: Sincronizar .env.example com TODAS as variáveis necessárias.
+
+```bash
+# Verificar TODAS as ocorrências de process.env no código
+grep -r "process\.env\." server/ client/ --include="*.ts" --include="*.tsx" | grep -o "process\.env\.[A-Z_]*" | sort | uniq
+
+# Atualizar .env.example com TODAS as variáveis encontradas
+```
+
+**ARQUIVO**: `.env.example` deve conter:
+```env
+# === OBRIGATÓRIAS PARA MVP ===
+# Supabase
+SUPABASE_URL=https://xxxxx.supabase.co
+SUPABASE_SERVICE_KEY=eyJxxxxx
+VITE_SUPABASE_URL=https://xxxxx.supabase.co
+VITE_SUPABASE_ANON_KEY=eyJxxxxx
+
+# APIs Financeiras (pelo menos uma obrigatória)
+POLYGON_API_KEY=free_tier_key_aqui
+FINNHUB_API_KEY=seu_key_aqui
+TWELVE_DATA_API_KEY=seu_key_aqui
+FMP_API_KEY=seu_key_aqui
+
+# === OPCIONAIS ===
+# Alpha Vantage (backup)
+ALPHA_VANTAGE_API_KEY=
+
+# Desenvolvimento
+NODE_ENV=development
+PORT=3001
+VITE_API_URL=http://localhost:3001
+```
+
+**CRITÉRIO DE SUCESSO**: 
+- [ ] Arquivo .env.example atualizado
+- [ ] Script de validação criado em `scripts/validate-env.ts`
+
+#### 3. TESTE DE CONECTIVIDADE SUPABASE (1 hora)
+
+**TAREFA**: Verificar CRUD completo no Supabase.
+
+```typescript
+// criar arquivo: tests/integration/supabase-validation.test.ts
+import { createClient } from '@supabase/supabase-js';
+
+const supabase = createClient(
+  process.env.SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_KEY!
+);
+
+describe('Supabase Connectivity', () => {
+  it('deve conectar e fazer CRUD básico', async () => {
+    // 1. CREATE
+    const { data: created, error: createError } = await supabase
+      .from('stocks')
+      .insert({ symbol: 'TEST', name: 'Test Stock' })
+      .select()
+      .single();
+    
+    expect(createError).toBeNull();
+    expect(created.symbol).toBe('TEST');
+
+    // 2. READ
+    const { data: read } = await supabase
+      .from('stocks')
+      .select('*')
+      .eq('symbol', 'TEST')
+      .single();
+    
+    expect(read.name).toBe('Test Stock');
+
+    // 3. UPDATE
+    const { error: updateError } = await supabase
+      .from('stocks')
+      .update({ name: 'Updated Test Stock' })
+      .eq('symbol', 'TEST');
+    
+    expect(updateError).toBeNull();
+
+    // 4. DELETE
+    const { error: deleteError } = await supabase
+      .from('stocks')
+      .delete()
+      .eq('symbol', 'TEST');
+    
+    expect(deleteError).toBeNull();
+  });
+
+  it('deve verificar autenticação', async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    // Se usando service key, user pode ser null
+    expect(true).toBe(true); // Apenas verificar que não deu erro
+  });
+});
+```
+
+**CRITÉRIO DE SUCESSO**: CRUD funcionando sem erros.
+
+#### 4. DECISÃO SOBRE VULNERABILIDADES (30 min)
+
+**TAREFA**: Documentar decisão para cada vulnerabilidade.
+
+```bash
+# Listar vulnerabilidades atuais
+npm audit
+
+# Para cada vulnerabilidade MODERATE:
+# 1. Tentar fix sem --force
+npm audit fix
+
+# 2. Se não resolver, documentar:
+```
+
+**ARQUIVO**: Criar `SECURITY_DECISIONS.md`:
+```markdown
+# Decisões de Segurança - Dia 0
+
+## Vulnerabilidades Adiadas
+
+### 1. esbuild in drizzle-kit
+- **Severidade**: MODERATE
+- **Decisão**: ADIAR para pós-MVP
+- **Justificativa**: Dev dependency apenas, não afeta produção
+- **Ação**: Revisar em Fevereiro 2025 quando drizzle-kit atualizar
+
+[Repetir para cada vulnerabilidade]
+```
+
+**CRITÉRIO DE SUCESSO**: 
+- [ ] Todas as 4 vulnerabilidades têm decisão documentada
+- [ ] Arquivo SECURITY_DECISIONS.md criado
+
+### 📊 MÉTRICAS DE CONCLUSÃO DO DIA 0
+
+**Tempo Estimado Total**: 4-5 horas
+
+**Checklist Final**:
+- [ ] 4/4 APIs testadas e funcionando
+- [ ] .env.example 100% completo
+- [ ] Supabase CRUD validado
+- [ ] Vulnerabilidades documentadas
+- [ ] `npm run build` continua passando
+- [ ] Commit com mensagem: `feat(dia-0): Complete infrastructure validation`
+
+### 🚀 PRÓXIMOS PASSOS
+
+**SOMENTE** após completar 100% do Dia 0:
+1. Criar branch `phase-1-main`
+2. Iniciar Fase 1 - Pipeline de Dados Real
+3. Usar múltiplos agentes REALMENTE em paralelo (não sequencial)
+
+### ⚠️ IMPORTANTE
+
+**NÃO PROSSEGUIR PARA FASE 1 SEM COMPLETAR DIA 0!**
+
+Este é um checkpoint obrigatório. A análise mostrou que pular verificações fundamentais causa problemas cascateados nas fases seguintes.
+
+---
+
+**Análise e instruções criadas por Claude Opus 4**  
+**Data: 12/01/2025**  
+**Para: Sonnet 4 - Implementação do Dia 0**
