@@ -48,7 +48,6 @@
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-hook-form": "^7.54.0",
-    "recharts": "^2.13.3",
     "tailwind-merge": "^2.5.4",
     "tailwindcss-animate": "^1.0.7",
     "vaul": "^1.0.0",

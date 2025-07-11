@@ -222,6 +222,14 @@ export default defineConfig({
       output: {
         // Aggressive chunk splitting with micro-bundles
         manualChunks: (id) => {
+          // Filter out empty chunks that only contain monitoring or streaming utilities
+          if (id.includes('web-vitals') && id.includes('node_modules')) {
+            return null; // Don't create separate chunk for web-vitals
+          }
+          if (id.includes('stream') && id.includes('node_modules') && 
+              (id.includes('buffer') || id.includes('events'))) {
+            return null; // Don't create separate chunk for stream utilities
+          }
           // Critical vendors (tiny bundle for first paint)
           if (id.includes('node_modules/wouter') ||
               id.includes('node_modules/react/jsx-runtime')) {
@@ -615,7 +623,7 @@ export default defineConfig({
           if (id.includes('node_modules') && (
             id.includes('web-vitals')
           )) {
-            return 'vendor-utils-monitoring';
+            return 'vendor-utils-tiny';
           }
           
           // Security libraries
@@ -749,7 +757,7 @@ export default defineConfig({
             id.includes('events') ||
             id.includes('buffer')
           )) {
-            return 'vendor-utils-streams';
+            return 'vendor-polyfills-node';
           }
           
           if (id.includes('node_modules') && (

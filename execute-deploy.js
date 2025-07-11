@@ -43,7 +43,7 @@ try {
 
 🔧 Tech Stack:
 - React + TypeScript + Vite
-- Tailwind CSS + Recharts
+- Tailwind CSS + Chart.js
 - Wouter routing
 - Mock data for demo
 

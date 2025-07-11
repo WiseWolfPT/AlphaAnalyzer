@@ -1,30 +1,12 @@
 // Wave 4: Comprehensive Monitoring System
 // Sentry, Analytics, and Performance Monitoring for Production
 import React from 'react';
+import * as Sentry from '@sentry/react';
+import { Replay } from '@sentry/replay';
+import { useLocation } from 'wouter';
 
-// Mock Sentry when not available
-const SentryMock = {
-  init: () => {},
-  captureException: (error: any) => console.error('Error captured:', error),
-  captureMessage: (message: string) => console.log('Message captured:', message),
-  setUser: () => {},
-  setTag: () => {},
-  setContext: () => {},
-  addBreadcrumb: () => {},
-  withErrorBoundary: (component: any) => component,
-  getCurrentHub: () => ({
-    getScope: () => ({
-      setTag: () => {},
-      setContext: () => {},
-    })
-  })
-};
-
-const BrowserTracingMock = class {};
-
-// Use mock for now - can be replaced with real Sentry when installed
-const Sentry = SentryMock;
-const BrowserTracing = BrowserTracingMock;
+// Re-export for compatibility
+export { Sentry };
 
 // Environment variables for monitoring
 const SENTRY_DSN = import.meta.env.VITE_SENTRY_DSN;
@@ -53,30 +35,63 @@ export const initializeSentry = () => {
     environment: NODE_ENV,
     release: `alfalyzer@${APP_VERSION}`,
     
-    // Performance monitoring
+    // Performance monitoring with Session Replay
     integrations: [
-      new BrowserTracing({
+      Sentry.browserTracingIntegration({
         // Capture interactions like clicks, form submissions
         tracingOrigins: [
           'localhost',
           'alfalyzer.vercel.app',
           /^\//,
         ],
-        routingInstrumentation: Sentry.reactRouterV6Instrumentation(
-          React.useEffect,
-          useLocation,
-          useNavigationType,
-          createRoutesFromChildren,
-          matchRoutes
-        ),
+        // Enable automatic instrumentation for Wouter routing
+        enableLongTask: true,
+        enableInp: true,
+      }),
+      Sentry.replayIntegration({
+        // Session replay for debugging financial calculations
+        maskAllText: false,
+        blockAllMedia: false,
+        // Privacy settings for financial data
+        mask: ['.password', '.credit-card', '.sensitive-data'],
+        block: ['.chart-container', '.trading-widget'],
+        // Collect replays on errors and 10% of sessions
+        sessionSampleRate: 0.1,
+        errorSampleRate: 1.0,
       }),
     ],
     
     // Performance monitoring sample rate
     tracesSampleRate: NODE_ENV === 'production' ? 0.1 : 1.0,
     
-    // Error filtering
-    beforeSend(event) {
+    // Session replay sample rate
+    replaysSessionSampleRate: NODE_ENV === 'production' ? 0.1 : 1.0,
+    replaysOnErrorSampleRate: 1.0,
+    
+    // Set user context for better error tracking
+    initialScope: {
+      tags: {
+        component: 'frontend',
+        market_focus: 'portugal',
+        target_markets: 'usa_eu',
+        platform: 'financial_dashboard'
+      },
+      contexts: {
+        app: {
+          name: 'Alfalyzer',
+          version: APP_VERSION,
+          environment: NODE_ENV,
+        },
+        market: {
+          primary_focus: 'portugal',
+          supported_markets: ['usa', 'eu'],
+          trading_hours: 'market_hours_aware',
+        },
+      },
+    },
+    
+    // Enhanced error filtering for financial platform
+    beforeSend(event, hint) {
       // Filter out non-critical errors in production
       if (NODE_ENV === 'production') {
         // Ignore network errors from third-party APIs
@@ -88,18 +103,26 @@ export const initializeSentry = () => {
         if (event.exception?.values?.[0]?.value?.includes('quota')) {
           return null;
         }
+        
+        // Ignore chart rendering errors (non-critical)
+        if (event.exception?.values?.[0]?.value?.includes('chart')) {
+          return null;
+        }
+      }
+      
+      // Add financial platform context
+      if (event.user) {
+        event.contexts = {
+          ...event.contexts,
+          trading_session: {
+            is_market_hours: isMarketHours(),
+            user_timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+            session_type: getSessionType(),
+          },
+        };
       }
       
       return event;
-    },
-    
-    // Set user context for better error tracking
-    initialScope: {
-      tags: {
-        component: 'frontend',
-        market_focus: 'portugal',
-        target_markets: 'usa_eu'
-      },
     },
   });
 
@@ -239,31 +262,106 @@ export const analytics = {
 
 // Performance monitoring utilities
 export const performanceMonitor = {
-  // Track Web Vitals
+  // Track Web Vitals with Sentry integration
   trackWebVitals: () => {
-    if ('web-vital' in window) {
-      import('web-vitals').then(({ getCLS, getFID, getFCP, getLCP, getTTFB }) => {
-        getCLS((metric) => {
-          analytics.trackApiCall('web-vitals', 'CLS', metric.value, metric.value < PERFORMANCE_THRESHOLDS.CLS);
+    // Import web-vitals dynamically to avoid chunking issues
+    import('web-vitals').then(({ getCLS, getFID, getFCP, getLCP, getTTFB }) => {
+      getCLS((metric) => {
+        const isGood = metric.value < PERFORMANCE_THRESHOLDS.CLS;
+        
+        // Send to Sentry as custom measurement
+        Sentry.addBreadcrumb({
+          category: 'web-vitals',
+          message: `CLS: ${metric.value}`,
+          level: isGood ? 'info' : 'warning',
+          data: {
+            metric: 'CLS',
+            value: metric.value,
+            threshold: PERFORMANCE_THRESHOLDS.CLS,
+            rating: metric.rating,
+            entries: metric.entries.length,
+          },
         });
-
-        getFID((metric) => {
-          analytics.trackApiCall('web-vitals', 'FID', metric.value, metric.value < PERFORMANCE_THRESHOLDS.FID);
-        });
-
-        getFCP((metric) => {
-          analytics.trackApiCall('web-vitals', 'FCP', metric.value, metric.value < PERFORMANCE_THRESHOLDS.FCP);
-        });
-
-        getLCP((metric) => {
-          analytics.trackApiCall('web-vitals', 'LCP', metric.value, metric.value < PERFORMANCE_THRESHOLDS.LCP);
-        });
-
-        getTTFB((metric) => {
-          analytics.trackApiCall('web-vitals', 'TTFB', metric.value, metric.value < PERFORMANCE_THRESHOLDS.TTFB);
-        });
+        
+        // Send to Analytics
+        analytics.trackApiCall('web-vitals', 'CLS', metric.value, isGood);
       });
-    }
+
+      getFID((metric) => {
+        const isGood = metric.value < PERFORMANCE_THRESHOLDS.FID;
+        
+        Sentry.addBreadcrumb({
+          category: 'web-vitals',
+          message: `FID: ${metric.value}ms`,
+          level: isGood ? 'info' : 'warning',
+          data: {
+            metric: 'FID',
+            value: metric.value,
+            threshold: PERFORMANCE_THRESHOLDS.FID,
+            rating: metric.rating,
+          },
+        });
+        
+        analytics.trackApiCall('web-vitals', 'FID', metric.value, isGood);
+      });
+
+      getFCP((metric) => {
+        const isGood = metric.value < PERFORMANCE_THRESHOLDS.FCP;
+        
+        Sentry.addBreadcrumb({
+          category: 'web-vitals',
+          message: `FCP: ${metric.value}ms`,
+          level: isGood ? 'info' : 'warning',
+          data: {
+            metric: 'FCP',
+            value: metric.value,
+            threshold: PERFORMANCE_THRESHOLDS.FCP,
+            rating: metric.rating,
+          },
+        });
+        
+        analytics.trackApiCall('web-vitals', 'FCP', metric.value, isGood);
+      });
+
+      getLCP((metric) => {
+        const isGood = metric.value < PERFORMANCE_THRESHOLDS.LCP;
+        
+        Sentry.addBreadcrumb({
+          category: 'web-vitals',
+          message: `LCP: ${metric.value}ms`,
+          level: isGood ? 'info' : 'warning',
+          data: {
+            metric: 'LCP',
+            value: metric.value,
+            threshold: PERFORMANCE_THRESHOLDS.LCP,
+            rating: metric.rating,
+            entries: metric.entries.length,
+          },
+        });
+        
+        analytics.trackApiCall('web-vitals', 'LCP', metric.value, isGood);
+      });
+
+      getTTFB((metric) => {
+        const isGood = metric.value < PERFORMANCE_THRESHOLDS.TTFB;
+        
+        Sentry.addBreadcrumb({
+          category: 'web-vitals',
+          message: `TTFB: ${metric.value}ms`,
+          level: isGood ? 'info' : 'warning',
+          data: {
+            metric: 'TTFB',
+            value: metric.value,
+            threshold: PERFORMANCE_THRESHOLDS.TTFB,
+            rating: metric.rating,
+          },
+        });
+        
+        analytics.trackApiCall('web-vitals', 'TTFB', metric.value, isGood);
+      });
+    }).catch(error => {
+      console.warn('Failed to load web-vitals:', error);
+    });
   },
 
   // Track API response times
@@ -288,37 +386,107 @@ export const performanceMonitor = {
     }
   },
 
-  // Track component render performance
+  // Track component render performance with enhanced Sentry integration
   trackComponentPerformance: (componentName: string, renderTime: number) => {
     if (renderTime > 100) { // Only track slow renders
-      Sentry.addBreadcrumb({
-        message: `Slow render: ${componentName}`,
-        category: 'performance',
-        data: { componentName, renderTime },
-        level: renderTime > 500 ? 'warning' : 'info'
+      const isVerySlow = renderTime > 500;
+      
+      // Create a custom Sentry span for slow renders
+      Sentry.withScope((scope) => {
+        scope.setTag('component', componentName);
+        scope.setTag('performance_category', isVerySlow ? 'very_slow' : 'slow');
+        scope.setContext('render_performance', {
+          componentName,
+          renderTime,
+          threshold: 100,
+          severity: isVerySlow ? 'high' : 'medium',
+        });
+        
+        // Add breadcrumb
+        Sentry.addBreadcrumb({
+          message: `Slow render: ${componentName}`,
+          category: 'performance',
+          data: {
+            componentName,
+            renderTime,
+            threshold: 100,
+            severity: isVerySlow ? 'high' : 'medium',
+          },
+          level: isVerySlow ? 'warning' : 'info',
+        });
+        
+        // Capture as custom measurement
+        Sentry.captureMessage(`Slow render: ${componentName} (${renderTime}ms)`, 'warning');
       });
+      
+      // Report to analytics for financial platform optimization
+      if (typeof window !== 'undefined' && (window as any).gtag) {
+        (window as any).gtag('event', 'slow_render', {
+          event_category: 'performance',
+          event_label: componentName,
+          value: Math.round(renderTime),
+          custom_parameters: {
+            component_type: getComponentType(componentName),
+            is_financial_widget: isFinancialWidget(componentName),
+          },
+        });
+      }
     }
+  },
+  
+  // Enhanced financial platform performance tracking
+  trackFinancialAction: (actionType: string, symbol: string, duration: number, success: boolean) => {
+    Sentry.withScope((scope) => {
+      scope.setTag('action_type', actionType);
+      scope.setTag('symbol', symbol);
+      scope.setTag('success', success.toString());
+      scope.setTag('market_hours', isMarketHours().toString());
+      
+      scope.setContext('financial_action', {
+        actionType,
+        symbol,
+        duration,
+        success,
+        market_hours: isMarketHours(),
+        session_type: getSessionType(),
+      });
+      
+      // Add breadcrumb for tracking
+      Sentry.addBreadcrumb({
+        message: `Financial Action: ${actionType}`,
+        category: 'financial_action',
+        data: {
+          actionType,
+          symbol,
+          duration,
+          success,
+        },
+        level: success ? 'info' : 'warning',
+      });
+      
+      // Capture slow or failed actions
+      if (duration > 2000 || !success) {
+        Sentry.captureMessage(
+          `Financial Action: ${actionType} - ${symbol} (${duration}ms)`,
+          success ? 'warning' : 'error'
+        );
+      }
+    });
+    
+    // Track in analytics
+    analytics.trackPortfolioAction(actionType, symbol, duration);
   }
 };
 
 // User context utilities
 export const userContext = {
-  // Set user context for error tracking
+  // Set user context for error tracking (enhanced)
   setUser: (user: { id: string; email: string; subscription_tier?: string }) => {
-    Sentry.setUser({
+    enhancedUserContext.setFinancialUser({
       id: user.id,
       email: user.email,
+      subscription_tier: user.subscription_tier,
     });
-
-    // Set custom dimensions for analytics
-    if (typeof window !== 'undefined' && (window as any).gtag) {
-      (window as any).gtag('config', GA_MEASUREMENT_ID, {
-        user_id: user.id,
-        custom_map: {
-          subscription_tier: user.subscription_tier || 'free'
-        }
-      });
-    }
   },
 
   // Clear user context on logout
@@ -360,8 +528,67 @@ export const initializeMonitoring = () => {
   }
 };
 
-// Error boundary integration
+// Error boundary integration with custom fallback
 export const MonitoringErrorBoundary = Sentry.withErrorBoundary;
+
+// Custom error boundary for financial widgets
+export const FinancialWidgetErrorBoundary = ({
+  children,
+  fallback,
+}: {
+  children: React.ReactNode;
+  fallback?: React.ComponentType<{ error: Error; resetError: () => void }>;
+}) => {
+  return (
+    <Sentry.ErrorBoundary
+      fallback={fallback || DefaultFinancialErrorFallback}
+      beforeCapture={(scope, error, errorInfo) => {
+        scope.setTag('widget_type', 'financial');
+        scope.setContext('widget_error', {
+          component_stack: errorInfo.componentStack,
+          error_boundary: 'financial_widget',
+        });
+      }}
+    >
+      {children}
+    </Sentry.ErrorBoundary>
+  );
+};
+
+// Default fallback component for financial widgets
+const DefaultFinancialErrorFallback = ({ error, resetError }: { error: Error; resetError: () => void }) => (
+  <div className="p-4 border border-red-200 rounded-lg bg-red-50">
+    <h3 className="text-red-800 font-semibold mb-2">Widget Error</h3>
+    <p className="text-red-700 text-sm mb-3">
+      A financial widget encountered an error. This has been reported to our team.
+    </p>
+    <button
+      onClick={resetError}
+      className="px-3 py-1 bg-red-600 text-white rounded text-sm hover:bg-red-700"
+    >
+      Retry
+    </button>
+  </div>
+);
+
+// Helper functions for financial platform context
+function isMarketHours(): boolean {
+  const now = new Date();
+  const hour = now.getHours();
+  const day = now.getDay();
+  
+  // Basic market hours (9 AM - 5 PM, Monday-Friday)
+  return day >= 1 && day <= 5 && hour >= 9 && hour <= 17;
+}
+
+function getSessionType(): string {
+  const hour = new Date().getHours();
+  
+  if (hour >= 9 && hour <= 17) return 'market_hours';
+  if (hour >= 6 && hour <= 9) return 'pre_market';
+  if (hour >= 17 && hour <= 20) return 'after_market';
+  return 'off_hours';
+}
 
 // HOC for tracking component performance
 export const withPerformanceTracking = <P extends object>(
@@ -380,5 +607,71 @@ export const withPerformanceTracking = <P extends object>(
   });
 };
 
-// Export monitoring context
-export { Sentry };
+// Enhanced user context for financial platform
+export const enhancedUserContext = {
+  ...userContext,
+  
+  // Set comprehensive user context for financial tracking
+  setFinancialUser: (user: {
+    id: string;
+    email: string;
+    subscription_tier?: string;
+    portfolio_value?: number;
+    preferred_currency?: string;
+    trading_experience?: string;
+  }) => {
+    Sentry.setUser({
+      id: user.id,
+      email: user.email,
+      subscription_tier: user.subscription_tier,
+    });
+    
+    // Set financial-specific context
+    Sentry.setContext('financial_profile', {
+      subscription_tier: user.subscription_tier || 'free',
+      portfolio_value_range: getPortfolioValueRange(user.portfolio_value),
+      preferred_currency: user.preferred_currency || 'EUR',
+      trading_experience: user.trading_experience || 'beginner',
+      market_focus: 'portugal',
+    });
+    
+    // Set analytics context
+    if (typeof window !== 'undefined' && (window as any).gtag) {
+      (window as any).gtag('config', GA_MEASUREMENT_ID, {
+        user_id: user.id,
+        custom_parameters: {
+          subscription_tier: user.subscription_tier || 'free',
+          preferred_currency: user.preferred_currency || 'EUR',
+        },
+      });
+    }
+  },
+};
+
+// Helper function to categorize portfolio value for privacy
+function getPortfolioValueRange(value?: number): string {
+  if (!value) return 'unknown';
+  if (value < 1000) return 'starter';
+  if (value < 10000) return 'growing';
+  if (value < 100000) return 'substantial';
+  return 'significant';
+}
+
+// Helper function to categorize component types
+function getComponentType(componentName: string): string {
+  if (componentName.includes('Chart')) return 'chart';
+  if (componentName.includes('Portfolio')) return 'portfolio';
+  if (componentName.includes('Stock')) return 'stock';
+  if (componentName.includes('Dashboard')) return 'dashboard';
+  if (componentName.includes('Watchlist')) return 'watchlist';
+  return 'general';
+}
+
+// Helper function to identify financial widgets
+function isFinancialWidget(componentName: string): boolean {
+  const financialKeywords = ['Chart', 'Portfolio', 'Stock', 'Trading', 'Watchlist', 'Price', 'Market'];
+  return financialKeywords.some(keyword => componentName.includes(keyword));
+}
+
+// Export enhanced monitoring context (already exported at top)
+// export { Sentry }; // Removed duplicate export

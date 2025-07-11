@@ -94,7 +94,7 @@ This project uses automatic deployment:
 ## Tech Stack
 - Frontend: React + TypeScript + Vite
 - Styling: Tailwind CSS
-- Charts: Recharts
+- Charts: Chart.js + React Chart.js 2
 - Routing: Wouter
 - APIs: Finnhub + Alpha Vantage
 

@@ -78,7 +78,7 @@ export default defineConfig({
           vendor: ['react', 'react-dom'],
           
           // Charts and visualization (split into smaller chunks)
-          recharts: ['recharts'],
+          charts: ['chart.js', 'react-chartjs-2'],
           lottie: [
             '@lottiefiles/dotlottie-react',
             '@lottiefiles/react-lottie-player'

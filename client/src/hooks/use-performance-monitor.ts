@@ -1,4 +1,5 @@
 import { useEffect, useRef, useCallback, useState } from 'react';
+import { performanceMonitor } from '@/lib/monitoring';
 
 interface PerformanceMetrics {
   renderTime: number;
@@ -68,8 +69,14 @@ export function usePerformanceMonitor(
     setMetrics(newMetrics);
 
     // Report if threshold exceeded
-    if (renderTime > reportThreshold && onReport) {
-      onReport(newMetrics);
+    if (renderTime > reportThreshold) {
+      // Send to Sentry via monitoring system
+      performanceMonitor.trackComponentPerformance(componentName, renderTime);
+      
+      // Call custom onReport callback if provided
+      if (onReport) {
+        onReport(newMetrics);
+      }
     }
 
     startTime.current = undefined;
@@ -185,24 +192,60 @@ export function useMemoryMonitor(intervalMs = 5000) {
 
 // Performance debugging utilities
 export const PerformanceUtils = {
-  // Measure function execution time
+  // Measure function execution time with Sentry integration
   measureAsync: async <T>(fn: () => Promise<T>, label: string): Promise<{ result: T; time: number }> => {
     const start = performance.now();
-    const result = await fn();
-    const time = performance.now() - start;
+    let success = false;
     
-    console.log(`[Performance] ${label}: ${time.toFixed(2)}ms`);
-    return { result, time };
+    try {
+      const result = await fn();
+      success = true;
+      const time = performance.now() - start;
+      
+      // Log to console in development
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`[Performance] ${label}: ${time.toFixed(2)}ms`);
+      }
+      
+      // Send to monitoring if slow
+      if (time > 1000) {
+        performanceMonitor.trackFinancialAction(label, 'unknown', time, success);
+      }
+      
+      return { result, time };
+    } catch (error) {
+      const time = performance.now() - start;
+      performanceMonitor.trackFinancialAction(label, 'unknown', time, false);
+      throw error;
+    }
   },
 
-  // Measure synchronous function
+  // Measure synchronous function with Sentry integration
   measure: <T>(fn: () => T, label: string): { result: T; time: number } => {
     const start = performance.now();
-    const result = fn();
-    const time = performance.now() - start;
+    let success = false;
     
-    console.log(`[Performance] ${label}: ${time.toFixed(2)}ms`);
-    return { result, time };
+    try {
+      const result = fn();
+      success = true;
+      const time = performance.now() - start;
+      
+      // Log to console in development
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`[Performance] ${label}: ${time.toFixed(2)}ms`);
+      }
+      
+      // Send to monitoring if slow
+      if (time > 500) {
+        performanceMonitor.trackFinancialAction(label, 'unknown', time, success);
+      }
+      
+      return { result, time };
+    } catch (error) {
+      const time = performance.now() - start;
+      performanceMonitor.trackFinancialAction(label, 'unknown', time, false);
+      throw error;
+    }
   },
 
   // Create a performance budget checker

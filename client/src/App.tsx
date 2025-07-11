@@ -6,7 +6,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { ThemeProvider } from "@/hooks/use-theme";
 import { SupabaseAuthProvider } from "@/contexts/supabase-auth-context";
 import { ErrorBoundary } from "@/components/shared/error-boundary";
-import { initializeMonitoring } from "@/lib/monitoring";
+import { initializeMonitoring, FinancialWidgetErrorBoundary, performanceMonitor } from "@/lib/monitoring";
 import { createLazyComponent, getLoadingMetrics } from "@/lib/lazy-loader";
 
 // Currency Context imports
@@ -385,8 +385,11 @@ function Router() {
 
 function App() {
   useEffect(() => {
-    // Initialize monitoring and performance tracking
+    // Initialize enhanced monitoring and performance tracking
     initializeMonitoring();
+    
+    // Start Web Vitals tracking
+    performanceMonitor.trackWebVitals();
     
     // Log loading metrics after initial render
     const logMetrics = () => {
@@ -398,49 +401,79 @@ function App() {
         
         if (metrics.slowComponents.length > 0) {
           console.warn('🐌 Slow Components:', metrics.slowComponents);
+          
+          // Track slow components in Sentry
+          metrics.slowComponents.forEach(component => {
+            performanceMonitor.trackComponentPerformance(component.name, component.loadTime);
+          });
         }
         
         console.table(metrics.components);
         console.groupEnd();
+        
+        // Send overall metrics to Sentry
+        if (metrics.averageLoadTime > 2000) {
+          performanceMonitor.trackFinancialAction(
+            'app_initialization',
+            'alfalyzer',
+            metrics.averageLoadTime,
+            true
+          );
+        }
       }
     };
     
     // Log metrics after components have had time to load
     setTimeout(logMetrics, 5000);
     
-    // Monitor bundle sizes in development
-    if (process.env.NODE_ENV === 'development') {
-      const observer = new PerformanceObserver((list) => {
-        list.getEntries().forEach((entry) => {
-          if (entry.entryType === 'navigation') {
-            console.log('📈 Navigation Performance:', {
-              domContentLoaded: entry.domContentLoadedEventEnd - entry.domContentLoadedEventStart,
-              loadComplete: entry.loadEventEnd - entry.loadEventStart,
-              totalTime: entry.loadEventEnd - entry.fetchStart
-            });
+    // Enhanced performance monitoring for production
+    const observer = new PerformanceObserver((list) => {
+      list.getEntries().forEach((entry) => {
+        if (entry.entryType === 'navigation') {
+          const navigationData = {
+            domContentLoaded: entry.domContentLoadedEventEnd - entry.domContentLoadedEventStart,
+            loadComplete: entry.loadEventEnd - entry.loadEventStart,
+            totalTime: entry.loadEventEnd - entry.fetchStart
+          };
+          
+          // Log to console in development
+          if (process.env.NODE_ENV === 'development') {
+            console.log('📈 Navigation Performance:', navigationData);
           }
-        });
+          
+          // Track in Sentry if slow
+          if (navigationData.totalTime > 3000) {
+            performanceMonitor.trackFinancialAction(
+              'navigation_slow',
+              'app_load',
+              navigationData.totalTime,
+              true
+            );
+          }
+        }
       });
-      
-      observer.observe({ entryTypes: ['navigation'] });
-      
-      // Clean up observer
-      return () => observer.disconnect();
-    }
+    });
+    
+    observer.observe({ entryTypes: ['navigation'] });
+    
+    // Clean up observer
+    return () => observer.disconnect();
   }, []);
 
   return (
     <CurrencyProvider>
-      <ErrorBoundary>
-        <QueryClientProvider client={queryClient}>
-          <ThemeProvider defaultTheme="dark" storageKey="alfalyzer-theme">
-            <SupabaseAuthProvider>
-              <Toaster />
-              <Router />
-            </SupabaseAuthProvider>
-          </ThemeProvider>
-        </QueryClientProvider>
-      </ErrorBoundary>
+      <FinancialWidgetErrorBoundary>
+        <ErrorBoundary>
+          <QueryClientProvider client={queryClient}>
+            <ThemeProvider defaultTheme="dark" storageKey="alfalyzer-theme">
+              <SupabaseAuthProvider>
+                <Toaster />
+                <Router />
+              </SupabaseAuthProvider>
+            </ThemeProvider>
+          </QueryClientProvider>
+        </ErrorBoundary>
+      </FinancialWidgetErrorBoundary>
     </CurrencyProvider>
   );
 }

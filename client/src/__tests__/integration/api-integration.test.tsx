@@ -216,8 +216,7 @@ describe('API Integration Tests', () => {
         ok: true,
         json: async () => ({
           dax: { value: 17234.67, change: 0.67 },
-          eurostoxx50: { value: 4989.21, change: -0.15 },
-          dax: { value: 17234.67, change: 0.67 }
+          eurostoxx50: { value: 4989.21, change: -0.15 }
         })
       });
 
