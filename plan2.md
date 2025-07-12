@@ -498,3 +498,222 @@ O DIA 0 está 100% completo. A Fase 1 - Pipeline de Dados Real pode ser iniciada
 
 **Análise crítica por Claude Opus 4**  
 **Recomendação: NÃO prosseguir sem validação mínima real**
+
+---
+
+## 🚨 CORREÇÕES CRÍTICAS DE SEGURANÇA - OPUS 4 (12/01/2025)
+
+**Status: BLOQUEADORES CRÍTICOS IDENTIFICADOS**  
+**Executor: Sonnet 4 deve implementar IMEDIATAMENTE**
+
+### 🔴 PROBLEMA 1: VAZAMENTO DE CHAVES DE API NO GIT
+
+**Gravidade: CRÍTICA - Segurança Comprometida**
+
+#### Evidência:
+- Arquivo `REAL_VALIDATION_RESULTS.md` contém TODAS as chaves de API em texto plano
+- Commit `9e25ca8f` expôs as chaves no histórico do Git
+- Qualquer pessoa com acesso ao repo pode usar suas APIs
+
+#### AÇÕES OBRIGATÓRIAS:
+
+1. **Remover arquivo do histórico Git** (FAZER PRIMEIRO):
+```bash
+# Opção 1: Usando git filter-branch
+git filter-branch --force --index-filter \
+  "git rm --cached --ignore-unmatch REAL_VALIDATION_RESULTS.md" \
+  --prune-empty --tag-name-filter cat -- --all
+
+# Opção 2: Usando BFG (mais fácil)
+brew install bfg
+bfg --delete-files REAL_VALIDATION_RESULTS.md
+git reflog expire --expire=now --all && git gc --prune=now --aggressive
+```
+
+2. **Criar versão segura do arquivo**:
+```bash
+# Copiar arquivo original
+cp REAL_VALIDATION_RESULTS.md REAL_VALIDATION_RESULTS_SAFE.md
+
+# Editar para remover TODAS as chaves
+# Substituir chaves por: "***REDACTED***" ou "pk_test_xxx..."
+```
+
+3. **Revogar TODAS as chaves comprometidas**:
+- [ ] Polygon.io: https://polygon.io/dashboard/api-keys (revogar e gerar nova)
+- [ ] Finnhub: https://finnhub.io/dashboard (revogar e gerar nova)
+- [ ] Twelve Data: https://twelvedata.com/account/api-keys (revogar e gerar nova)
+- [ ] FMP: https://site.financialmodelingprep.com/developer/docs (revogar e gerar nova)
+- [ ] Alpha Vantage: https://www.alphavantage.co/support (solicitar nova)
+
+4. **Atualizar .env com novas chaves** (após revogação)
+
+### 🔴 PROBLEMA 2: SUPABASE SEM SCHEMA/TABELAS
+
+**Gravidade: ALTA - Bloqueador para Fase 1**
+
+#### Evidência:
+- Teste mostrou: "relation public.users does not exist"
+- Nenhuma tabela foi criada
+- Impossível implementar pipeline sem estrutura de dados
+
+#### AÇÕES OBRIGATÓRIAS:
+
+1. **Executar migrations do Supabase**:
+```bash
+# Verificar se existem migrations
+ls -la migrations/
+
+# Se existirem, executar:
+npx supabase db push
+
+# OU executar manualmente no Supabase Dashboard
+```
+
+2. **Se não existirem migrations, criar schema básico**:
+```sql
+-- Criar no SQL Editor do Supabase Dashboard
+
+-- Enable UUID extension
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+-- Users table (básica para auth)
+CREATE TABLE IF NOT EXISTS public.users (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  email TEXT UNIQUE NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Stocks table
+CREATE TABLE IF NOT EXISTS public.stocks (
+  id SERIAL PRIMARY KEY,
+  symbol TEXT UNIQUE NOT NULL,
+  name TEXT NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Watchlists table
+CREATE TABLE IF NOT EXISTS public.watchlists (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  user_id UUID REFERENCES public.users(id) ON DELETE CASCADE,
+  name TEXT NOT NULL,
+  stocks JSONB DEFAULT '[]',
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Enable RLS
+ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.stocks ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.watchlists ENABLE ROW LEVEL SECURITY;
+
+-- Basic RLS policies
+CREATE POLICY "Users can view own profile" ON public.users
+  FOR SELECT USING (auth.uid() = id);
+
+CREATE POLICY "Public can view stocks" ON public.stocks
+  FOR SELECT USING (true);
+
+CREATE POLICY "Users can manage own watchlists" ON public.watchlists
+  FOR ALL USING (auth.uid() = user_id);
+```
+
+3. **Testar novamente**:
+```bash
+npm run supabase:test
+```
+
+### 🔴 PROBLEMA 3: PRÁTICAS DE SEGURANÇA
+
+**Gravidade: MÉDIA - Má prática**
+
+#### AÇÕES OBRIGATÓRIAS:
+
+1. **Mover dotenv para test-setup.ts**:
+```typescript
+// client/src/test-setup.ts
+import { config } from 'dotenv';
+
+// Carregar .env antes de tudo
+config();
+
+// ... resto do setup
+```
+
+```typescript
+// vitest.config.ts - REMOVER estas linhas:
+// import { config } from 'dotenv';
+// config();
+```
+
+2. **Criar helper seguro para logs**:
+```typescript
+// utils/secure-logger.ts
+export function logApiStatus(apiName: string, key: string | undefined) {
+  if (!key || key === 'your-key-here') {
+    console.log(`❌ ${apiName}: Não configurada`);
+  } else {
+    console.log(`✅ ${apiName}: Configurada (${key.substring(0, 6)}...)`);
+  }
+}
+```
+
+3. **Adicionar pre-commit hook**:
+```json
+// package.json
+{
+  "husky": {
+    "hooks": {
+      "pre-commit": "node scripts/check-secrets.js"
+    }
+  }
+}
+```
+
+```javascript
+// scripts/check-secrets.js
+const fs = require('fs');
+const path = require('path');
+
+const SECRET_PATTERNS = [
+  /pk_test_[A-Za-z0-9]{24,}/g,
+  /sk_test_[A-Za-z0-9]{24,}/g,
+  /whsec_[A-Za-z0-9]{32,}/g,
+  /[A-Za-z0-9]{32,}/ // API keys genéricas
+];
+
+// Verificar arquivos staged
+// Bloquear commit se encontrar secrets
+```
+
+### 📋 CHECKLIST DE VALIDAÇÃO FINAL
+
+Antes de declarar "pronto para Fase 1", CONFIRMAR:
+
+- [ ] Arquivo com chaves removido do histórico Git
+- [ ] TODAS as chaves antigas revogadas
+- [ ] Novas chaves geradas e testadas
+- [ ] Supabase com pelo menos 3 tabelas criadas
+- [ ] Teste de CRUD no Supabase passando (8/8)
+- [ ] Nenhuma chave real em arquivos commitados
+- [ ] Pre-commit hook configurado
+- [ ] Documentação atualizada SEM chaves expostas
+
+### ⏱️ TEMPO ESTIMADO
+
+- Limpeza do Git: 30 min
+- Revogar/gerar chaves: 45 min
+- Schema Supabase: 45 min
+- Melhorias segurança: 30 min
+- **Total: 2.5 horas**
+
+### 🎯 CRITÉRIO DE SUCESSO
+
+**Só está pronto para Fase 1 quando:**
+1. `git log --all --grep="API_KEY"` retorna ZERO resultados
+2. `npm run supabase:test` mostra 8/8 testes passando
+3. Todas as APIs continuam funcionando com NOVAS chaves
+4. Documentação segura sem informações sensíveis
+
+---
+
+**IMPORTANTE**: Estas correções são OBRIGATÓRIAS. Não prosseguir sem completar 100%.
