@@ -81,9 +81,9 @@ export class FinnhubProvider extends BaseMarketDataProvider {
 
   async getPrice(symbol: string): Promise<PriceData> {
     try {
-      // Return mock data in demo mode
+      // Throw error in demo mode instead of returning mock data
       if (this.isDemo) {
-        return this.getMockPriceData(symbol);
+        throw new Error('Finnhub API key não configurado. Configure FINNHUB_API_KEY para obter dados reais.');
       }
 
       const response = await this.client.get('/quote', {

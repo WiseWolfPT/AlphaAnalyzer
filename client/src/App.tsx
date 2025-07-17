@@ -1,13 +1,20 @@
 import { Switch, Route } from "wouter";
-import { queryClient } from "./lib/queryClient";
+import { queryClient } from "./lib/query-client";
 import { QueryClientProvider } from "@tanstack/react-query";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import React, { useEffect, Suspense, lazy } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { ThemeProvider } from "@/hooks/use-theme";
 import { SupabaseAuthProvider } from "@/contexts/supabase-auth-context";
 import { ErrorBoundary } from "@/components/shared/error-boundary";
-import { initializeMonitoring, FinancialWidgetErrorBoundary, performanceMonitor } from "@/lib/monitoring";
+import { DebugErrorBoundary } from "@/components/shared/debug-error-boundary";
+// Temporarily disable monitoring
+// import { initializeMonitoring, FinancialWidgetErrorBoundary, performanceMonitor } from "@/lib/monitoring";
+
+// Temporary replacement for FinancialWidgetErrorBoundary
+const FinancialWidgetErrorBoundary = ({ children }: { children: React.ReactNode }) => <>{children}</>;
 import { createLazyComponent, getLoadingMetrics } from "@/lib/lazy-loader";
+import { usePrefetch } from "@/hooks/use-prefetch";
 
 // Currency Context imports
 import { CurrencyProvider } from './contexts/currency-context';
@@ -32,10 +39,17 @@ const UserDashboard = createLazyComponent(
 );
 
 const AdminDashboard = createLazyComponent(
-  () => import("@/components/dashboard/unified-dashboard")
-    .then(module => ({ default: module.AdminDashboard })),
+  () => import("@/pages/admin/admin-dashboard"),
   {
     name: 'AdminDashboard',
+    fallback: FallbackDashboard
+  }
+);
+
+const AdminUsers = createLazyComponent(
+  () => import("@/pages/admin/admin-users"),
+  {
+    name: 'AdminUsers',
     fallback: FallbackDashboard
   }
 );
@@ -84,6 +98,13 @@ const Landing = createLazyComponent(
     preload: [
       () => import("@/pages/auth/login")
     ]
+  }
+);
+
+const Metodologia = createLazyComponent(
+  () => import("@/pages/metodologia").then(module => ({ default: module.MetodologiaPage })),
+  {
+    name: 'Metodologia'
   }
 );
 
@@ -167,6 +188,13 @@ const Transcripts = createLazyComponent(
   }
 );
 
+const TranscriptDetail = createLazyComponent(
+  () => import("@/pages/transcript-detail"),
+  {
+    name: 'TranscriptDetail'
+  }
+);
+
 const News = createLazyComponent(
   () => import("@/pages/news"),
   {
@@ -186,6 +214,18 @@ const IntrinsicValue = createLazyComponent(
   () => import("@/pages/intrinsic-value"),
   {
     name: 'IntrinsicValue'
+  }
+);
+
+// Stock comparison micro-bundle
+const Compare = createLazyComponent(
+  () => import("@/pages/compare"),
+  {
+    name: 'Compare',
+    preload: [
+      () => import("@/components/stock/unified-stock-card"),
+      () => import("@/components/stock/mini-charts")
+    ]
   }
 );
 
@@ -224,6 +264,21 @@ const ApiMonitoring = createLazyComponent(
   () => import("@/pages/admin/api-monitoring"),
   {
     name: 'ApiMonitoring'
+  }
+);
+
+const AdminTranscripts = createLazyComponent(
+  () => import("@/pages/admin/admin-transcripts"),
+  {
+    name: 'AdminTranscripts'
+  }
+);
+
+// Admin Route wrapper for protection
+const AdminRoute = createLazyComponent(
+  () => import("@/components/admin/AdminRoute").then(module => ({ default: module.AdminRoute })),
+  {
+    name: 'AdminRoute'
   }
 );
 
@@ -279,7 +334,7 @@ const PageLoader = () => {
         {/* Main spinner */}
         <div className="relative">
           <div className="animate-spin rounded-full h-16 w-16 border-4 border-muted border-t-primary"></div>
-          <div className="absolute inset-0 rounded-full h-16 w-16 border-4 border-transparent border-t-chartreuse animate-spin" 
+          <div className="absolute inset-0 rounded-full h-16 w-16 border-4 border-transparent border-t-teya-green animate-spin" 
                style={{ animationDirection: 'reverse', animationDuration: '1.5s' }}>
           </div>
         </div>
@@ -298,7 +353,7 @@ const PageLoader = () => {
         <div className="w-full max-w-xs">
           <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
             <div 
-              className="h-full bg-gradient-to-r from-primary to-chartreuse rounded-full transition-all duration-300 ease-out"
+              className="h-full bg-gradient-to-r from-primary to-teya-green rounded-full transition-all duration-300 ease-out"
               style={{ width: `${getProgressWidth()}%` }}
             />
           </div>
@@ -339,12 +394,14 @@ function Router() {
     <Suspense fallback={<PageLoader />}>
       <Switch>
         <Route path="/" component={Landing} />
+        <Route path="/metodologia" component={Metodologia} />
         <Route path="/login" component={Login} />
         <Route path="/auth/login" component={Login} />
         <Route path="/register" component={Register} />
         <Route path="/auth/register" component={Register} />
         <Route path="/trial" component={Trial} />
         <Route path="/home" component={FindStocks} />
+        <Route path="/compare" component={Compare} />
         
         {/* Unified Dashboard Routes */}
         <Route path="/dashboard" component={UserDashboard} />
@@ -353,9 +410,42 @@ function Router() {
         <Route path="/dashboard/test" component={TestDashboard} />
         <Route path="/insights" component={UserDashboard} />
         
-        {/* Admin Dashboard Routes */}
-        <Route path="/admin" component={AdminDashboard} />
-        <Route path="/admin/dashboard" component={AdminDashboard} />
+        {/* Admin Dashboard Routes - Protected */}
+        <Route path="/admin">
+          {() => (
+            <AdminRoute>
+              <AdminDashboard />
+            </AdminRoute>
+          )}
+        </Route>
+        <Route path="/admin/dashboard">
+          {() => (
+            <AdminRoute>
+              <AdminDashboard />
+            </AdminRoute>
+          )}
+        </Route>
+        <Route path="/admin/users">
+          {() => (
+            <AdminRoute>
+              <AdminUsers />
+            </AdminRoute>
+          )}
+        </Route>
+        <Route path="/admin/transcripts">
+          {() => (
+            <AdminRoute>
+              <AdminTranscripts />
+            </AdminRoute>
+          )}
+        </Route>
+        <Route path="/admin/api-monitoring">
+          {() => (
+            <AdminRoute>
+              <ApiMonitoring />
+            </AdminRoute>
+          )}
+        </Route>
         <Route path="/admin/debug" component={DebugDashboard} />
         
         {/* Valuation Dashboard Route */}
@@ -370,12 +460,12 @@ function Router() {
         <Route path="/watchlists" component={Watchlists} />
         <Route path="/earnings" component={Earnings} />
         <Route path="/transcripts" component={Transcripts} />
+        <Route path="/transcript/:id" component={TranscriptDetail} />
         <Route path="/profile" component={Profile} />
         <Route path="/settings" component={Settings} />
         <Route path="/help" component={Help} />
         <Route path="/news" component={News} />
         <Route path="/alerts" component={Alerts} />
-        <Route path="/admin/api-monitoring" component={ApiMonitoring} />
         <Route path="/test/stock-header" component={StockHeaderTest} />
         <Route component={NotFound} />
       </Switch>
@@ -384,9 +474,14 @@ function Router() {
 }
 
 function App() {
+  const { warmupCache } = usePrefetch();
+  
   useEffect(() => {
-    // Initialize enhanced monitoring and performance tracking
-    initializeMonitoring();
+    // Temporarily disable monitoring
+    // initializeMonitoring();
+    
+    // Warm up cache with popular symbols during idle time
+    warmupCache();
     
     // Start Web Vitals tracking
     performanceMonitor.trackWebVitals();
@@ -461,20 +556,27 @@ function App() {
   }, []);
 
   return (
-    <CurrencyProvider>
-      <FinancialWidgetErrorBoundary>
-        <ErrorBoundary>
-          <QueryClientProvider client={queryClient}>
-            <ThemeProvider defaultTheme="dark" storageKey="alfalyzer-theme">
-              <SupabaseAuthProvider>
-                <Toaster />
-                <Router />
+    <DebugErrorBoundary>
+      <CurrencyProvider>
+        <FinancialWidgetErrorBoundary>
+          <ErrorBoundary>
+            <QueryClientProvider client={queryClient}>
+              <ThemeProvider defaultTheme="dark" storageKey="alfalyzer-theme">
+                <SupabaseAuthProvider>
+                  <Toaster />
+                  <Router />
+                  <ReactQueryDevtools 
+                    initialIsOpen={false} 
+                  buttonPosition="bottom-right"
+                  position="bottom"
+                />
               </SupabaseAuthProvider>
             </ThemeProvider>
           </QueryClientProvider>
         </ErrorBoundary>
       </FinancialWidgetErrorBoundary>
     </CurrencyProvider>
+    </DebugErrorBoundary>
   );
 }
 

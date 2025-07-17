@@ -1,50 +1,11 @@
 {
   "$schema": "https://railway.app/railway.schema.json",
   "build": {
-    "builder": "NIXPACKS",
-    "buildCommand": "npm run build:server",
-    "watchPatterns": [
-      "server/**",
-      "shared/**",
-      "package.json",
-      "tsconfig.json"
-    ]
+    "builder": "NIXPACKS"
   },
   "deploy": {
-    "numReplicas": 1,
+    "startCommand": "npm run backend:prod",
     "restartPolicyType": "ON_FAILURE",
-    "restartPolicyMaxRetries": 3,
-    "healthcheckPath": "/api/health",
-    "healthcheckTimeout": 10,
-    "startCommand": "npm run start:server"
-  },
-  "services": {
-    "backend": {
-      "source": {
-        "repo": "alfalyzer",
-        "branch": "main"
-      },
-      "variables": {
-        "NODE_ENV": "production",
-        "PORT": "3001"
-      }
-    },
-    "postgres": {
-      "plan": "starter",
-      "region": "eu-west"
-    },
-    "redis": {
-      "plan": "starter", 
-      "region": "eu-west"
-    }
-  },
-  "environments": {
-    "production": {
-      "variables": {
-        "NODE_ENV": "production",
-        "DATABASE_URL": "${{POSTGRES.DATABASE_URL}}",
-        "REDIS_URL": "${{REDIS.REDIS_URL}}"
-      }
-    }
+    "restartPolicyMaxRetries": 10
   }
 }

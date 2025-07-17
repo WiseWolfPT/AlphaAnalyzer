@@ -78,7 +78,7 @@ export class TwelveDataProvider extends BaseMarketDataProvider {
     try {
       // Return mock data in demo mode
       if (this.isDemo) {
-        return this.getMockPriceData(symbol);
+        throw new Error('Twelve Data API key não configurado. Configure TWELVE_DATA_API_KEY para obter dados reais.');
       }
 
       const response = await this.client.get('/quote', {
@@ -112,9 +112,8 @@ export class TwelveDataProvider extends BaseMarketDataProvider {
 
   async getBatchPrices(symbols: string[]): Promise<PriceData[]> {
     try {
-      // Return mock data in demo mode
       if (this.isDemo) {
-        return symbols.map(symbol => this.getMockPriceData(symbol));
+        throw new Error('Twelve Data API key não configurado. Configure TWELVE_DATA_API_KEY para obter dados reais.');
       }
 
       const response = await this.client.get('/quote', {
@@ -155,9 +154,8 @@ export class TwelveDataProvider extends BaseMarketDataProvider {
 
   async getFundamentals(symbol: string): Promise<Fundamentals> {
     try {
-      // Return mock data in demo mode
       if (this.isDemo) {
-        return this.getMockFundamentals(symbol);
+        throw new Error('Twelve Data API key não configurado para dados fundamentais.');
       }
 
       const response = await this.client.get('/statistics', {
@@ -186,9 +184,8 @@ export class TwelveDataProvider extends BaseMarketDataProvider {
 
   async getHistorical(symbol: string, range: TimeRange): Promise<HistoricalData> {
     try {
-      // Return mock data in demo mode
       if (this.isDemo) {
-        return this.getMockHistoricalData(symbol, range);
+        throw new Error('Twelve Data API key não configurado para dados históricos.');
       }
 
       // Map range to TwelveData parameters
@@ -232,9 +229,8 @@ export class TwelveDataProvider extends BaseMarketDataProvider {
 
   async getCompanyInfo(symbol: string): Promise<CompanyInfo> {
     try {
-      // Return mock data in demo mode
       if (this.isDemo) {
-        return this.getMockCompanyInfo(symbol);
+        throw new Error('Twelve Data API key não configurado para informações da empresa.');
       }
 
       const response = await this.client.get('/stocks', {

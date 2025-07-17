@@ -459,7 +459,7 @@ export const ProtectedRoute: React.FC<{
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-chartreuse"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teya-green"></div>
       </div>
     );
   }
@@ -472,7 +472,7 @@ export const ProtectedRoute: React.FC<{
           <p className="text-muted-foreground mb-4">
             Precisa de fazer login para aceder a esta página.
           </p>
-          <a href="/login" className="text-chartreuse hover:underline">
+          <a href="/login" className="text-teya-green hover:underline">
             Fazer Login
           </a>
         </div>
@@ -485,7 +485,7 @@ export const ProtectedRoute: React.FC<{
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <h2 className="text-2xl font-bold mb-4">A configurar perfil...</h2>
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-chartreuse mx-auto"></div>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-teya-green mx-auto"></div>
         </div>
       </div>
     );

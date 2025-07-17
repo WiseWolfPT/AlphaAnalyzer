@@ -23,6 +23,12 @@ export default defineConfig({
       jsxRuntime: 'automatic',
       // Optimize for development
       fastRefresh: true,
+      babel: {
+        plugins: [
+          // Add babel plugins for optimization
+          ['@babel/plugin-transform-react-jsx', { runtime: 'automatic' }]
+        ]
+      }
     }),
     // Bundle analyzer for optimization
     visualizer({
@@ -30,6 +36,7 @@ export default defineConfig({
       open: false,
       gzipSize: true,
       brotliSize: true,
+      template: 'treemap', // Better visualization
     }),
   ],
   server: {
@@ -205,20 +212,8 @@ export default defineConfig({
     outDir: path.resolve(__dirname, "dist/public"),
     emptyOutDir: true,
     rollupOptions: {
-      // External dependencies to load from CDN in production
-      external: process.env.NODE_ENV === 'production' ? [
-        'react', 
-        'react-dom',
-        // Exclude test libraries from production builds
-        'vitest',
-        'jsdom',
-        '@testing-library/react',
-        '@testing-library/jest-dom',
-        '@testing-library/user-event',
-        'jest',
-        'test',
-        'spec'
-      ] : [],
+      // DON'T externalize React - include it in the bundle
+      external: [],
       output: {
         // Aggressive chunk splitting with micro-bundles
         manualChunks: (id) => {
@@ -835,13 +830,7 @@ export default defineConfig({
           if (id.includes('node_modules')) {
             return 'vendor-misc';
           }
-        },
-        
-        // CDN imports for React in production
-        globals: process.env.NODE_ENV === 'production' ? {
-          'react': 'React',
-          'react-dom': 'ReactDOM'
-        } : {}
+        }
       }
     },
     

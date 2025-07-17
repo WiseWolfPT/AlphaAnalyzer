@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alfalyzer</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            background: #000;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            text-align: center;
+        }
+        .container {
+            max-width: 600px;
+        }
+        h1 {
+            font-size: 48px;
+            margin-bottom: 20px;
+        }
+        .status {
+            font-size: 24px;
+            color: #4CAF50;
+            margin: 20px 0;
+        }
+        .error {
+            color: #f44336;
+        }
+        .info {
+            margin-top: 40px;
+            padding: 20px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 8px;
+        }
+        a {
+            color: #2196F3;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Alfalyzer Test Deployment</h1>
+        <p class="status">✅ HTML is loading correctly!</p>
+        
+        <div id="js-test" class="error">❌ JavaScript is NOT working</div>
+        
+        <div class="info">
+            <h2>Debug Information:</h2>
+            <p>If you see this page, the deployment is working at the basic level.</p>
+            <p>The issue with the black screen is likely due to:</p>
+            <ul style="text-align: left;">
+                <li>JavaScript bundle not loading</li>
+                <li>React mounting errors</li>
+                <li>Missing environment variables</li>
+                <li>CORS or security policies</li>
+            </ul>
+            <p>Open DevTools Console (F12) to check for errors.</p>
+        </div>
+
+        <div style="margin-top: 40px;">
+            <a href="/">Go to Main App</a>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('js-test').innerHTML = '✅ JavaScript IS working!';
+        document.getElementById('js-test').className = 'status';
+        console.log('Test page loaded successfully');
+        console.log('Current URL:', window.location.href);
+        console.log('User Agent:', navigator.userAgent);
+    </script>
+</body>
+</html>

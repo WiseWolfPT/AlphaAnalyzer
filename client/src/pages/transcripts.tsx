@@ -180,7 +180,7 @@ function TranscriptCard({ transcript }: TranscriptCardProps) {
             <Button 
               size="sm"
               onClick={handleViewTranscript}
-              className="bg-gradient-to-r from-chartreuse via-chartreuse-dark to-chartreuse hover:from-chartreuse-dark hover:via-chartreuse hover:to-chartreuse-dark text-rich-black font-semibold"
+              className="bg-gradient-to-r from-teya-green via-teya-green-dark to-teya-green hover:from-teya-green-dark hover:via-teya-green hover:to-teya-green-dark text-rich-black font-semibold"
             >
               <Play className="h-3 w-3 mr-1" />
               Read Transcript

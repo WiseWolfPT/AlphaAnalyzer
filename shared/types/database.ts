@@ -4,6 +4,53 @@
 export interface Database {
   public: {
     Tables: {
+      transcripts: {
+        Row: {
+          id: number;
+          ticker: string;
+          company_name: string;
+          quarter: string;
+          year: number;
+          call_date: string | null;
+          raw_transcript: string | null;
+          ai_summary: string | null;
+          status: 'pending' | 'review' | 'published' | 'archived';
+          created_at: string;
+          published_at: string | null;
+          view_count: number;
+          metadata: string | null;
+        };
+        Insert: {
+          id?: number;
+          ticker: string;
+          company_name: string;
+          quarter: string;
+          year: number;
+          call_date?: string | null;
+          raw_transcript?: string | null;
+          ai_summary?: string | null;
+          status?: 'pending' | 'review' | 'published' | 'archived';
+          created_at?: string;
+          published_at?: string | null;
+          view_count?: number;
+          metadata?: string | null;
+        };
+        Update: {
+          id?: number;
+          ticker?: string;
+          company_name?: string;
+          quarter?: string;
+          year?: number;
+          call_date?: string | null;
+          raw_transcript?: string | null;
+          ai_summary?: string | null;
+          status?: 'pending' | 'review' | 'published' | 'archived';
+          created_at?: string;
+          published_at?: string | null;
+          view_count?: number;
+          metadata?: string | null;
+        };
+      };
       users: {
         Row: {
           id: string;
@@ -489,6 +536,9 @@ export type Alert = Tables<'alerts'>;
 export type AlertTrigger = Tables<'alert_triggers'>;
 
 // Insert types
+export type Transcript = Database['public']['Tables']['transcripts']['Row'];
+export type InsertTranscript = Database['public']['Tables']['transcripts']['Insert'];
+export type UpdateTranscript = Database['public']['Tables']['transcripts']['Update'];
 export type InsertUser = Database['public']['Tables']['users']['Insert'];
 export type InsertWatchlist = Database['public']['Tables']['watchlists']['Insert'];
 export type InsertWatchlistItem = Database['public']['Tables']['watchlist_items']['Insert'];

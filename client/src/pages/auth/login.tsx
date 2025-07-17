@@ -87,16 +87,16 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex">
       {/* Left side - Branding */}
-      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-chartreuse/10 to-chartreuse/5 flex-col justify-center px-12">
+      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-teya-green/10 to-teya-green/5 flex-col justify-center px-12">
         <div className="max-w-lg">
           <div className="flex items-center space-x-2 mb-8">
-            <TrendingUp className="h-8 w-8 text-chartreuse" />
+            <TrendingUp className="h-8 w-8 text-teya-green" />
             <span className="text-2xl font-bold">Alfalyzer</span>
           </div>
           
           <h1 className="text-4xl font-bold mb-6">
             Mercados USA & EU para
-            <span className="text-chartreuse"> Investidores Portugueses</span>
+            <span className="text-teya-green"> Investidores Portugueses</span>
           </h1>
           
           <p className="text-xl text-muted-foreground mb-8">
@@ -106,15 +106,15 @@ export default function LoginPage() {
           
           <div className="space-y-4">
             <div className="flex items-center space-x-3">
-              <div className="w-2 h-2 bg-chartreuse rounded-full"></div>
+              <div className="w-2 h-2 bg-teya-green rounded-full"></div>
               <span>Dados em tempo real de NYSE, NASDAQ, Euronext</span>
             </div>
             <div className="flex items-center space-x-3">
-              <div className="w-2 h-2 bg-chartreuse rounded-full"></div>
+              <div className="w-2 h-2 bg-teya-green rounded-full"></div>
               <span>Portfolio P&L automático com conversão EUR/USD</span>
             </div>
             <div className="flex items-center space-x-3">
-              <div className="w-2 h-2 bg-chartreuse rounded-full"></div>
+              <div className="w-2 h-2 bg-teya-green rounded-full"></div>
               <span>Análise fundamental de empresas americanas e europeias</span>
             </div>
           </div>

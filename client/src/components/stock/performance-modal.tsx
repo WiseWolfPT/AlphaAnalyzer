@@ -1,7 +1,8 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { X, TrendingUp, TrendingDown } from "lucide-react";
-import { LineChart, Line, ResponsiveContainer, Tooltip } from "@/components/ui/lightweight-chart";
+import { LineChart, ResponsiveContainer } from "@/components/ui/lightweight-chart";
+import { Line, Tooltip } from "recharts";
 import { cn } from "@/lib/utils";
 import type { MockStock } from "@/lib/mock-api";
 
@@ -230,7 +231,7 @@ export function PerformanceModal({ isOpen, onClose, stock }: PerformanceModalPro
           {/* Actions */}
           <div className="flex space-x-2 pt-4">
             <Button 
-              className="flex-1 bg-gradient-to-r from-chartreuse via-chartreuse-dark to-chartreuse hover:from-chartreuse-dark hover:via-chartreuse hover:to-chartreuse-dark text-rich-black font-semibold shadow-lg shadow-chartreuse/30 hover:shadow-chartreuse/50 hover:scale-105 transition-all duration-300 border-0"
+              className="flex-1 bg-gradient-to-r from-teya-green via-teya-green-dark to-teya-green hover:from-teya-green-dark hover:via-teya-green hover:to-teya-green-dark text-rich-black font-semibold shadow-lg shadow-teya-green/30 hover:shadow-teya-green/50 hover:scale-105 transition-all duration-300 border-0"
               onClick={() => {
                 // Navigate to stock detail page
                 window.location.href = `/stock/${stock.symbol}`;

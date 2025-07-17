@@ -33,7 +33,7 @@ interface QueryMetrics {
 
 // Environment detection
 const isProduction = process.env.NODE_ENV === 'production';
-const isSupabaseEnabled = !!(process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_KEY);
+const isSupabaseEnabled = !!(process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY);
 
 /**
  * Optimized Connection Pool Manager
@@ -98,7 +98,7 @@ export class OptimizedConnectionPool {
       // Initialize Supabase client with optimized settings
       this.supabaseClient = createClient(
         process.env.SUPABASE_URL!,
-        process.env.SUPABASE_SERVICE_KEY!,
+        process.env.SUPABASE_SERVICE_ROLE_KEY!,
         {
           auth: {
             autoRefreshToken: false,

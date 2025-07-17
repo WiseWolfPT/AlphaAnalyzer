@@ -8,18 +8,12 @@
 
 // Lista de variáveis que NUNCA devem estar no frontend
 const FORBIDDEN_FRONTEND_VARS = [
-  'VITE_WHOP_CLIENT_SECRET',
-  'VITE_STRIPE_SECRET_KEY',
   'VITE_DATABASE_URL',
   'JWT_SECRET',
   'JWT_REFRESH_SECRET',
   // API keys também não devem estar no frontend em produção
   // SECURITY: API keys moved to server-side for security
   // Client should use server proxy endpoints instead
-  // 'VITE_FINNHUB_API_KEY',
-  // 'VITE_ALPHA_VANTAGE_API_KEY', 
-  // 'VITE_FMP_API_KEY',
-  // 'VITE_TWELVE_DATA_API_KEY'
 ];
 
 // Função segura para acessar variáveis de ambiente

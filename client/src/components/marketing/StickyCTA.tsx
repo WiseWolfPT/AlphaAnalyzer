@@ -68,7 +68,7 @@ export function StickyCTA() {
               <div className="flex items-center gap-2">
                 <Button
                   size="sm"
-                  className="bg-gradient-to-r from-chartreuse via-chartreuse-dark to-chartreuse hover:from-chartreuse-dark hover:via-chartreuse hover:to-chartreuse-dark text-rich-black font-semibold text-sm px-4 py-2 h-9 shadow-lg shadow-chartreuse/30 hover:shadow-chartreuse/50 hover:scale-105 transition-all duration-300 border-0"
+                  className="bg-gradient-to-r from-teya-green via-teya-green-dark to-teya-green hover:from-teya-green-dark hover:via-teya-green hover:to-teya-green-dark text-rich-black font-semibold text-sm px-4 py-2 h-9 shadow-lg shadow-teya-green/30 hover:shadow-teya-green/50 hover:scale-105 transition-all duration-300 border-0"
                   onClick={() => window.location.href = '/trial'}
                   aria-label="Começar trial grátis"
                 >

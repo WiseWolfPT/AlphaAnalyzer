@@ -232,7 +232,7 @@ export default function AdvancedCharts() {
             <div className="text-red-500 mb-4">⚠️ Error</div>
             <h3 className="text-xl font-semibold mb-2">Failed to load stock data</h3>
             <p className="text-muted-foreground mb-4">{error}</p>
-            <Button onClick={() => setLocation('/dashboard')} className="bg-gradient-to-r from-chartreuse via-chartreuse-dark to-chartreuse hover:from-chartreuse-dark hover:via-chartreuse hover:to-chartreuse-dark text-rich-black font-semibold shadow-lg shadow-chartreuse/30 hover:shadow-chartreuse/50 hover:scale-105 transition-all duration-300 border-0">Go Back</Button>
+            <Button onClick={() => setLocation('/dashboard')} className="bg-gradient-to-r from-teya-green via-teya-green-dark to-teya-green hover:from-teya-green-dark hover:via-teya-green hover:to-teya-green-dark text-rich-black font-semibold shadow-lg shadow-teya-green/30 hover:shadow-teya-green/50 hover:scale-105 transition-all duration-300 border-0">Go Back</Button>
           </div>
         </div>
       </MainLayout>
@@ -303,7 +303,7 @@ export default function AdvancedCharts() {
                 <div>
                   <div className="flex items-center gap-2 mb-1">
                     <h1 className="text-xl font-bold text-foreground">{stockData.symbol}</h1>
-                    <div className="flex items-center gap-1 px-2 py-1 bg-chartreuse/10 text-chartreuse-dark rounded-md text-xs font-medium">
+                    <div className="flex items-center gap-1 px-2 py-1 bg-teya-green/10 text-teya-green-dark rounded-md text-xs font-medium">
                       <Calendar className="h-3 w-3" />
                       <span>Earnings: Jul 30</span>
                     </div>
@@ -421,7 +421,7 @@ export default function AdvancedCharts() {
                   {/* FINANCIALS */}
                   <div className="bg-secondary/10 rounded-lg p-3">
                     <div className="flex items-center gap-2 mb-2">
-                      <Target className="h-4 w-4 text-chartreuse-dark" />
+                      <Target className="h-4 w-4 text-teya-green-dark" />
                       <h3 className="text-sm font-semibold text-foreground">FINANCIALS</h3>
                     </div>
                     <div className="grid grid-cols-2 gap-2 text-xs">
@@ -515,7 +515,7 @@ export default function AdvancedCharts() {
 
                 {/* Actions */}
                 <div className="space-y-2 pt-4 border-t border-border/50">
-                  <Button className="w-full bg-gradient-to-r from-chartreuse via-chartreuse-dark to-chartreuse hover:from-chartreuse-dark hover:via-chartreuse hover:to-chartreuse-dark text-rich-black font-semibold shadow-lg shadow-chartreuse/30 hover:shadow-chartreuse/50 hover:scale-105 transition-all duration-300 border-0" size="sm">
+                  <Button className="w-full bg-gradient-to-r from-teya-green via-teya-green-dark to-teya-green hover:from-teya-green-dark hover:via-teya-green hover:to-teya-green-dark text-rich-black font-semibold shadow-lg shadow-teya-green/30 hover:shadow-teya-green/50 hover:scale-105 transition-all duration-300 border-0" size="sm">
                     Add to Watchlist
                   </Button>
                   <div className="grid grid-cols-2 gap-2">
@@ -545,8 +545,8 @@ export default function AdvancedCharts() {
                   onClick={() => setChartPeriod('quarterly')}
                   className={`px-4 py-2 text-sm transition-all duration-300 ${
                     chartPeriod === 'quarterly' 
-                      ? 'bg-gradient-to-r from-chartreuse via-chartreuse-dark to-chartreuse text-rich-black font-semibold shadow-sm shadow-chartreuse/30' 
-                      : 'hover:bg-chartreuse/10 hover:text-chartreuse'
+                      ? 'bg-gradient-to-r from-teya-green via-teya-green-dark to-teya-green text-rich-black font-semibold shadow-sm shadow-teya-green/30' 
+                      : 'hover:bg-teya-green/10 hover:text-teya-green'
                   }`}
                 >
                   Quarterly
@@ -557,8 +557,8 @@ export default function AdvancedCharts() {
                   onClick={() => setChartPeriod('annual')}
                   className={`px-4 py-2 text-sm transition-all duration-300 ${
                     chartPeriod === 'annual' 
-                      ? 'bg-gradient-to-r from-chartreuse via-chartreuse-dark to-chartreuse text-rich-black font-semibold shadow-sm shadow-chartreuse/30' 
-                      : 'hover:bg-chartreuse/10 hover:text-chartreuse'
+                      ? 'bg-gradient-to-r from-teya-green via-teya-green-dark to-teya-green text-rich-black font-semibold shadow-sm shadow-teya-green/30' 
+                      : 'hover:bg-teya-green/10 hover:text-teya-green'
                   }`}
                 >
                   Annual

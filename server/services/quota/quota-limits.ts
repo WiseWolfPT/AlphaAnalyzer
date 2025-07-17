@@ -50,15 +50,25 @@ export const PROVIDER_QUOTAS: Record<string, ProviderQuotaConfig> = {
       perMinute: 5 // API has 5 calls per minute limit
     },
     resetTime: '00:00',
-    priority: 4 // Lowest priority - emergency fallback only
+    priority: 4 // Low priority - use sparingly
+  },
+  
+  polygon: {
+    name: 'Polygon.io',
+    limits: {
+      daily: 5,      // Very conservative for free tier
+      perMinute: 5   // 5 calls/minute on free tier
+    },
+    resetTime: '00:00',
+    priority: 5 // Emergency fallback only due to low limits
   }
 };
 
-// Data type to provider mapping
+// Data type to provider mapping (ordered by priority)
 export const DATA_TYPE_PROVIDERS = {
-  price: ['finnhub', 'twelveData', 'fmp'],
+  price: ['finnhub', 'twelveData', 'fmp', 'polygon'],
   fundamentals: ['fmp', 'finnhub', 'alphaVantage'],
-  historical: ['twelveData', 'alphaVantage', 'fmp'],
+  historical: ['twelveData', 'alphaVantage', 'fmp', 'polygon'],
   news: ['finnhub', 'fmp'],
   companyInfo: ['finnhub', 'fmp']
 } as const;

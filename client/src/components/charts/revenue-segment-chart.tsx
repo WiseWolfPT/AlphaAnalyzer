@@ -1,5 +1,6 @@
 // Revenue by Segment Chart - Stacked bars with different colors for each segment
-import { BarChart, Bar, ResponsiveContainer, Tooltip, XAxis, YAxis } from "@/components/ui/lightweight-chart";
+import { BarChart, ResponsiveContainer, XAxis, YAxis } from "@/components/ui/lightweight-chart";
+import { Bar, Tooltip } from "recharts";
 import { ChartContainer } from "./chart-container";
 
 interface RevenueSegmentChartProps {

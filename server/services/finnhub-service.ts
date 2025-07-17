@@ -155,6 +155,8 @@ class FinnhubService {
   }
 }
 
+export { FinnhubService };
+
 export const finnhubService = new FinnhubService({
   apiKey: process.env.FINNHUB_API_KEY || 'demo'
 });

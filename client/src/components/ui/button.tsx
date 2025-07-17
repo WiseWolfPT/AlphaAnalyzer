@@ -9,19 +9,19 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-chartreuse-dark dark:bg-chartreuse text-deep-black dark:text-rich-black hover:bg-chartreuse-dark/90 dark:hover:bg-chartreuse/90 shadow-md hover:shadow-lg hover:shadow-chartreuse/20 hover:-translate-y-0.5",
+        default: "bg-teya-green text-teya-black hover:bg-teya-green/90 shadow-md hover:shadow-lg hover:shadow-teya-green/20 hover:-translate-y-0.5",
         destructive:
           "bg-destructive text-destructive-foreground hover:bg-destructive/90 shadow-md hover:shadow-lg hover:-translate-y-0.5",
         outline:
-          "border border-chartreuse/50 bg-background hover:bg-chartreuse/10 hover:text-chartreuse hover:border-chartreuse text-chartreuse shadow-sm hover:shadow-md hover:-translate-y-0.5",
+          "border border-teya-green/50 bg-background hover:bg-teya-green/10 hover:text-teya-green hover:border-teya-green text-teya-green shadow-sm hover:shadow-md hover:-translate-y-0.5",
         secondary:
           "bg-secondary text-secondary-foreground hover:bg-secondary/80 shadow-sm hover:shadow-md hover:-translate-y-0.5",
-        ghost: "hover:bg-chartreuse/10 hover:text-chartreuse transition-all duration-200",
-        link: "text-chartreuse underline-offset-4 hover:underline hover:text-chartreuse-dark",
+        ghost: "hover:bg-teya-green/10 hover:text-teya-green transition-all duration-200",
+        link: "text-teya-green underline-offset-4 hover:underline hover:text-teya-green/80",
         success: "bg-emerald-600 text-white hover:bg-emerald-700 shadow-md hover:shadow-lg hover:shadow-emerald/20 hover:-translate-y-0.5",
         warning: "bg-amber-500 text-white hover:bg-amber-600 shadow-md hover:shadow-lg hover:shadow-amber/20 hover:-translate-y-0.5",
-        premium: "bg-chartreuse text-deep-black hover:bg-chartreuse-dark shadow-lg hover:shadow-xl hover:shadow-chartreuse/30 hover:-translate-y-1 font-semibold border border-chartreuse-dark",
-        attention: "bg-chartreuse text-deep-black hover:bg-chartreuse-dark shadow-lg hover:shadow-xl hover:shadow-chartreuse/40 hover:-translate-y-1 font-semibold animate-pulse",
+        premium: "bg-teya-green text-teya-black hover:bg-teya-green/90 shadow-lg hover:shadow-xl hover:shadow-teya-green/30 hover:-translate-y-1 font-semibold border border-teya-green/50",
+        attention: "bg-teya-green text-teya-black hover:bg-teya-green/90 shadow-lg hover:shadow-xl hover:shadow-teya-green/40 hover:-translate-y-1 font-semibold animate-pulse",
       },
       size: {
         default: "h-10 px-4 py-2",

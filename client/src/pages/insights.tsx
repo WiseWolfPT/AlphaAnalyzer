@@ -95,7 +95,7 @@ export default function Insights() {
         {/* Hero Section */}
         <div className="mb-12">
           <div className="flex items-center gap-3 mb-4">
-            <div className="p-2 bg-chartreuse/10 rounded-xl">
+            <div className="p-2 bg-teya-green/10 rounded-xl">
               <TrendingUp className="h-6 w-6 text-primary" />
             </div>
             <div>
@@ -192,7 +192,7 @@ export default function Insights() {
         {/* Load More Button */}
         {!isLoading && filteredStocks && filteredStocks.length >= 20 && (
           <div className="flex justify-center mt-12">
-            <Button size="lg" className="bg-gradient-to-r from-chartreuse via-chartreuse-dark to-chartreuse hover:from-chartreuse-dark hover:via-chartreuse hover:to-chartreuse-dark text-rich-black font-semibold shadow-lg shadow-chartreuse/30 hover:shadow-chartreuse/50 hover:scale-105 transition-all duration-300 border-0 px-8 py-3 rounded-xl">
+            <Button size="lg" className="bg-gradient-to-r from-teya-green via-teya-green-dark to-teya-green hover:from-teya-green-dark hover:via-teya-green hover:to-teya-green-dark text-rich-black font-semibold shadow-lg shadow-teya-green/30 hover:shadow-teya-green/50 hover:scale-105 transition-all duration-300 border-0 px-8 py-3 rounded-xl">
               Load More Stocks
             </Button>
           </div>

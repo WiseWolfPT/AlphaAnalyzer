@@ -342,7 +342,7 @@ export default function Profile() {
         <div className="mb-8">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <div className="p-2 bg-chartreuse/10 rounded-xl">
+              <div className="p-2 bg-teya-green/10 rounded-xl">
                 <User className="h-6 w-6 text-primary" />
               </div>
               <div>
@@ -445,7 +445,7 @@ export default function Profile() {
                         <User className="h-5 w-5" />
                         Personal Information
                       </CardTitle>
-                      <Button size="sm" onClick={handleSavePersonal} className="bg-gradient-to-r from-chartreuse via-chartreuse-dark to-chartreuse hover:from-chartreuse-dark hover:via-chartreuse hover:to-chartreuse-dark text-rich-black font-semibold shadow-lg shadow-chartreuse/30 hover:shadow-chartreuse/50 hover:scale-105 transition-all duration-300 border-0">
+                      <Button size="sm" onClick={handleSavePersonal} className="bg-gradient-to-r from-teya-green via-teya-green-dark to-teya-green hover:from-teya-green-dark hover:via-teya-green hover:to-teya-green-dark text-rich-black font-semibold shadow-lg shadow-teya-green/30 hover:shadow-teya-green/50 hover:scale-105 transition-all duration-300 border-0">
                         <Save className="h-4 w-4 mr-2" />
                         Save
                       </Button>
@@ -518,7 +518,7 @@ export default function Profile() {
                           <Shield className="h-5 w-5" />
                           Change Password
                         </h3>
-                        <Button size="sm" onClick={handleChangePassword} className="bg-gradient-to-r from-chartreuse via-chartreuse-dark to-chartreuse hover:from-chartreuse-dark hover:via-chartreuse hover:to-chartreuse-dark text-rich-black font-semibold shadow-lg shadow-chartreuse/30 hover:shadow-chartreuse/50 hover:scale-105 transition-all duration-300 border-0">
+                        <Button size="sm" onClick={handleChangePassword} className="bg-gradient-to-r from-teya-green via-teya-green-dark to-teya-green hover:from-teya-green-dark hover:via-teya-green hover:to-teya-green-dark text-rich-black font-semibold shadow-lg shadow-teya-green/30 hover:shadow-teya-green/50 hover:scale-105 transition-all duration-300 border-0">
                           <Save className="h-4 w-4 mr-2" />
                           Change Password
                         </Button>
@@ -579,7 +579,7 @@ export default function Profile() {
                         <Bell className="h-5 w-5" />
                         Notification Settings
                       </CardTitle>
-                      <Button size="sm" onClick={handleSaveNotifications} className="bg-gradient-to-r from-chartreuse via-chartreuse-dark to-chartreuse hover:from-chartreuse-dark hover:via-chartreuse hover:to-chartreuse-dark text-rich-black font-semibold shadow-lg shadow-chartreuse/30 hover:shadow-chartreuse/50 hover:scale-105 transition-all duration-300 border-0">
+                      <Button size="sm" onClick={handleSaveNotifications} className="bg-gradient-to-r from-teya-green via-teya-green-dark to-teya-green hover:from-teya-green-dark hover:via-teya-green hover:to-teya-green-dark text-rich-black font-semibold shadow-lg shadow-teya-green/30 hover:shadow-teya-green/50 hover:scale-105 transition-all duration-300 border-0">
                         <Save className="h-4 w-4 mr-2" />
                         Save
                       </Button>

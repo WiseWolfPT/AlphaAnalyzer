@@ -72,7 +72,7 @@ export function CollapsibleSidebar() {
             variant="outline"
             size="sm"
             onClick={toggleSidebar}
-            className="bg-background border-chartreuse/20 hover:bg-chartreuse/10"
+            className="bg-background border-teya-green/20 hover:bg-teya-green/10"
           >
             {isMobileMenuOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
           </Button>
@@ -103,14 +103,14 @@ export function CollapsibleSidebar() {
           )}>
             {isCollapsed && !isMobile ? (
               <div className="flex flex-col items-center space-y-2">
-                <div className="w-10 h-10 bg-gradient-to-br from-chartreuse to-chartreuse-dark rounded-xl flex items-center justify-center shadow-lg">
+                <div className="w-10 h-10 bg-gradient-to-br from-teya-green to-teya-green-dark rounded-xl flex items-center justify-center shadow-lg">
                   <BarChart3 className="h-5 w-5 text-black" />
                 </div>
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={toggleSidebar}
-                  className="text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-chartreuse/10 transition-all duration-200 rounded-lg p-1 w-8 h-8 border border-transparent hover:border-chartreuse/30"
+                  className="text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-teya-green/10 transition-all duration-200 rounded-lg p-1 w-8 h-8 border border-transparent hover:border-teya-green/30"
                 >
                   <ChevronRight className="w-3 h-3" />
                 </Button>
@@ -118,7 +118,7 @@ export function CollapsibleSidebar() {
             ) : (
               <>
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-gradient-to-br from-chartreuse to-chartreuse-dark rounded-xl flex items-center justify-center shadow-lg">
+                  <div className="w-10 h-10 bg-gradient-to-br from-teya-green to-teya-green-dark rounded-xl flex items-center justify-center shadow-lg">
                     <BarChart3 className="h-5 w-5 text-black" />
                   </div>
                   <div className="overflow-hidden">
@@ -131,7 +131,7 @@ export function CollapsibleSidebar() {
                     variant="ghost"
                     size="sm"
                     onClick={toggleSidebar}
-                    className="text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-chartreuse/10 transition-all duration-200 rounded-lg p-2 flex-shrink-0 border border-transparent hover:border-chartreuse/30"
+                    className="text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-teya-green/10 transition-all duration-200 rounded-lg p-2 flex-shrink-0 border border-transparent hover:border-teya-green/30"
                   >
                     <ChevronLeft className="w-4 h-4" />
                   </Button>
@@ -165,15 +165,15 @@ export function CollapsibleSidebar() {
                         ? "flex items-center justify-center p-3 h-12" 
                         : "flex items-center gap-3 px-4 py-3",
                       isActive 
-                        ? "bg-chartreuse/15 text-chartreuse shadow-lg shadow-chartreuse/20 border border-chartreuse/30" 
-                        : "text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-chartreuse/5 hover:shadow-md border border-transparent hover:border-chartreuse/20"
+                        ? "bg-teya-green/15 text-teya-green shadow-lg shadow-teya-green/20 border border-teya-green/30" 
+                        : "text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-teya-green/5 hover:shadow-md border border-transparent hover:border-teya-green/20"
                     )}
                     title={isCollapsed && !isMobile ? item.name : undefined}
                   >
                     <Icon className={cn(
                       "flex-shrink-0 transition-all duration-200",
                       isCollapsed && !isMobile ? "w-5 h-5" : "w-5 h-5",
-                      isActive ? "text-chartreuse" : "group-hover:scale-110"
+                      isActive ? "text-teya-green" : "group-hover:scale-110"
                     )} />
                     {(!isCollapsed || isMobile) && (
                       <span className="text-sm font-medium truncate transition-all duration-200">
@@ -191,16 +191,16 @@ export function CollapsibleSidebar() {
             {user ? (
               <div className="space-y-3">
                 {(!isCollapsed || isMobile) && (
-                  <div className="bg-gradient-to-r from-chartreuse/10 to-chartreuse/5 border border-chartreuse/20 rounded-xl p-3">
+                  <div className="bg-gradient-to-r from-teya-green/10 to-teya-green/5 border border-teya-green/20 rounded-xl p-3">
                     <button
                       onClick={() => {
                         navigate('/profile');
                         if (isMobile) setIsMobileMenuOpen(false);
                       }}
-                      className="flex items-center gap-3 mb-2 w-full hover:bg-chartreuse/5 rounded-lg p-2 -m-2 transition-colors duration-200 group"
+                      className="flex items-center gap-3 mb-2 w-full hover:bg-teya-green/5 rounded-lg p-2 -m-2 transition-colors duration-200 group"
                     >
-                      <div className="w-8 h-8 bg-chartreuse/20 rounded-full flex items-center justify-center group-hover:bg-chartreuse/30 transition-colors duration-200">
-                        <User className="h-4 w-4 text-chartreuse" />
+                      <div className="w-8 h-8 bg-teya-green/20 rounded-full flex items-center justify-center group-hover:bg-teya-green/30 transition-colors duration-200">
+                        <User className="h-4 w-4 text-teya-green" />
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="font-medium text-sm text-sidebar-foreground truncate">{user.name || "User"}</p>
@@ -220,7 +220,7 @@ export function CollapsibleSidebar() {
                         <Button
                           size="sm"
                           variant="outline"
-                          className="h-6 px-2 text-xs border-chartreuse/30 text-chartreuse hover:bg-chartreuse/10"
+                          className="h-6 px-2 text-xs border-teya-green/30 text-teya-green hover:bg-teya-green/10"
                         >
                           Upgrade
                         </Button>
@@ -231,11 +231,11 @@ export function CollapsibleSidebar() {
                 {isCollapsed && !isMobile && (
                   <button
                     onClick={() => navigate('/profile')}
-                    className="flex justify-center mb-2 w-full hover:bg-chartreuse/5 rounded-lg p-2 transition-colors duration-200 group"
+                    className="flex justify-center mb-2 w-full hover:bg-teya-green/5 rounded-lg p-2 transition-colors duration-200 group"
                     title="Profile Settings"
                   >
-                    <div className="w-8 h-8 bg-gradient-to-br from-chartreuse/20 to-chartreuse/10 rounded-full flex items-center justify-center group-hover:bg-chartreuse/30 transition-colors duration-200">
-                      <User className="w-4 h-4 text-chartreuse" />
+                    <div className="w-8 h-8 bg-gradient-to-br from-teya-green/20 to-teya-green/10 rounded-full flex items-center justify-center group-hover:bg-teya-green/30 transition-colors duration-200">
+                      <User className="w-4 h-4 text-teya-green" />
                     </div>
                   </button>
                 )}
@@ -244,7 +244,7 @@ export function CollapsibleSidebar() {
               <Button
                 onClick={() => setShowAuthModal(true)}
                 className={cn(
-                  "w-full bg-gradient-to-r from-chartreuse to-chartreuse-dark hover:from-chartreuse-dark hover:to-chartreuse text-black font-semibold shadow-lg hover:shadow-xl transition-all duration-200 rounded-lg",
+                  "w-full bg-gradient-to-r from-teya-green to-teya-green-dark hover:from-teya-green-dark hover:to-teya-green text-black font-semibold shadow-lg hover:shadow-xl transition-all duration-200 rounded-lg",
                   isCollapsed && !isMobile ? "px-2 py-3" : "py-3"
                 )}
                 title={isCollapsed && !isMobile ? "Sign In" : undefined}

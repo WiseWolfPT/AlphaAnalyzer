@@ -46,7 +46,7 @@ export function SectorTabs({ selectedSector, onSectorChange }: SectorTabsProps) 
           className={cn(
             "whitespace-nowrap transition-all duration-200 px-4 py-2 rounded-xl font-medium",
             selectedSector === sector 
-              ? "bg-gradient-to-r from-chartreuse via-chartreuse-dark to-chartreuse text-rich-black font-semibold shadow-lg shadow-chartreuse/30 border-0" 
+              ? "bg-gradient-to-r from-teya-green via-teya-green-dark to-teya-green text-rich-black font-semibold shadow-lg shadow-teya-green/30 border-0" 
               : "border-border/50 hover:bg-secondary/80 hover:text-foreground hover:border-border bg-card/50 backdrop-blur-sm"
           )}
         >
@@ -72,7 +72,7 @@ export function SectorTabs({ selectedSector, onSectorChange }: SectorTabsProps) 
               onClick={() => onSectorChange(sector)}
               className={cn(
                 "cursor-pointer rounded-lg mx-1 my-0.5",
-                selectedSector === sector && "bg-chartreuse/20 text-rich-black font-semibold"
+                selectedSector === sector && "bg-teya-green/20 text-rich-black font-semibold"
               )}
             >
               {sector}

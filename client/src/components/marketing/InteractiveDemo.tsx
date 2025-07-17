@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { TrendingUp, TrendingDown, Calculator, DollarSign } from "lucide-react";
+import { TrendingUp, TrendingDown, Calculator, DollarSign, Target, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 
@@ -64,11 +64,36 @@ export function InteractiveDemo() {
   };
 
   const getRecommendation = (margin: number) => {
-    if (margin > 15) return { text: "COMPRAR FORTE", color: "text-emerald-600", bgColor: "bg-emerald-500/20" };
-    if (margin > 5) return { text: "COMPRAR", color: "text-emerald-500", bgColor: "bg-emerald-500/10" };
-    if (margin > -5) return { text: "NEUTRO", color: "text-yellow-500", bgColor: "bg-yellow-500/10" };
-    if (margin > -15) return { text: "VENDER", color: "text-orange-500", bgColor: "bg-orange-500/10" };
-    return { text: "VENDER FORTE", color: "text-red-500", bgColor: "bg-red-500/10" };
+    if (margin > 15) return { 
+      text: "🔥 COMPRAR FORTE", 
+      color: "text-green-600", 
+      bgColor: "bg-green-500/20",
+      explanation: "Excelente oportunidade - desconto significativo"
+    };
+    if (margin > 5) return { 
+      text: "✅ COMPRAR", 
+      color: "text-green-500", 
+      bgColor: "bg-green-500/10",
+      explanation: "Boa oportunidade - preço atrativo"
+    };
+    if (margin > -5) return { 
+      text: "⚖️ NEUTRO", 
+      color: "text-yellow-600", 
+      bgColor: "bg-yellow-500/10",
+      explanation: "Preço justo - sem urgência"
+    };
+    if (margin > -15) return { 
+      text: "⚠️ VENDER", 
+      color: "text-orange-500", 
+      bgColor: "bg-orange-500/10",
+      explanation: "Sobrevalorizada - considerar venda"
+    };
+    return { 
+      text: "🚨 VENDER FORTE", 
+      color: "text-red-500", 
+      bgColor: "bg-red-500/10",
+      explanation: "Muito cara - venda recomendada"
+    };
   };
 
   const handleStockChange = (stock: typeof STOCKS[0]) => {
@@ -93,10 +118,14 @@ export function InteractiveDemo() {
           viewport={{ once: true }}
           className="text-center mb-16"
         >
-          <h2 className="text-3xl lg:text-4xl font-bold text-foreground mb-4">
-            Experimenta o Alpha Analyzer
+          <div className="inline-flex items-center gap-2 bg-teya-green/10 text-teya-green border border-teya-green/20 px-4 py-2 rounded-full font-medium text-sm mb-6">
+            <Sparkles className="w-4 h-4" />
+            Demo Interativo
+          </div>
+          <h2 className="heading-section mb-4">
+            Experimenta o <span className="text-teya-green font-bold">Alfalyzer</span>
           </h2>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+          <p className="text-body-large max-w-2xl mx-auto text-muted-foreground">
             Clica numa ação e vê instantaneamente se está cara ou barata
           </p>
         </motion.div>
@@ -116,10 +145,10 @@ export function InteractiveDemo() {
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => handleStockChange(stock)}
-                className={`p-2 sm:p-4 rounded-xl border-2 transition-all duration-200 ${
+                className={`p-2 sm:p-4 rounded-xl border-2 transition-all duration-200 touch-target-44 ${
                   selectedStock.symbol === stock.symbol
-                    ? 'border-chartreuse bg-chartreuse/10'
-                    : 'border-gray-200 dark:border-gray-700 hover:border-chartreuse/50'
+                    ? 'border-teya-green bg-teya-green/10 shadow-lg shadow-teya-green/20'
+                    : 'border-gray-200 dark:border-gray-700 hover:border-teya-green/50 hover:bg-teya-green/5'
                 }`}
               >
                 <div className="text-xl sm:text-2xl mb-1 sm:mb-2">{stock.logo}</div>
@@ -166,11 +195,11 @@ export function InteractiveDemo() {
                       initial={{ opacity: 0, scale: 0.9 }}
                       animate={{ opacity: 1, scale: 1 }}
                       transition={{ duration: 0.3, delay: 0.1 }}
-                      className="bg-chartreuse/10 border border-chartreuse/20 rounded-xl p-6 text-center"
+                      className="bg-blue-500/10 border border-blue-500/20 rounded-xl p-6 text-center"
                     >
-                      <DollarSign className="h-8 w-8 text-chartreuse-dark mx-auto mb-3" />
+                      <DollarSign className="h-8 w-8 text-blue-500 mx-auto mb-3" />
                       <h4 className="font-semibold text-foreground mb-2">Preço Atual</h4>
-                      <div className="text-2xl font-bold text-chartreuse-dark">${selectedStock.price}</div>
+                      <div className="text-2xl font-bold text-blue-600">${selectedStock.price}</div>
                       <p className="text-sm text-muted-foreground mt-2">Preço de mercado</p>
                     </motion.div>
 
@@ -179,12 +208,12 @@ export function InteractiveDemo() {
                       initial={{ opacity: 0, scale: 0.9 }}
                       animate={{ opacity: 1, scale: 1 }}
                       transition={{ duration: 0.3, delay: 0.2 }}
-                      className="bg-orange-500/10 border border-orange-500/20 rounded-xl p-6 text-center"
+                      className="bg-teya-green/10 border border-teya-green/20 rounded-xl p-6 text-center"
                     >
-                      <Calculator className="h-8 w-8 text-orange-500 mx-auto mb-3" />
+                      <Calculator className="h-8 w-8 text-teya-green mx-auto mb-3" />
                       <h4 className="font-semibold text-foreground mb-2">Valor Intrínseco</h4>
-                      <div className="text-2xl font-bold text-orange-500">${selectedStock.intrinsicValue}</div>
-                      <p className="text-sm text-muted-foreground mt-2">Valor justo calculado</p>
+                      <div className="text-2xl font-bold text-teya-green">${selectedStock.intrinsicValue}</div>
+                      <p className="text-sm text-muted-foreground mt-2">Valor justo (DCF)</p>
                     </motion.div>
 
                     {/* Recommendation */}
@@ -192,19 +221,19 @@ export function InteractiveDemo() {
                       initial={{ opacity: 0, scale: 0.9 }}
                       animate={{ opacity: 1, scale: 1 }}
                       transition={{ duration: 0.3, delay: 0.3 }}
-                      className={`${recommendation.bgColor} border ${recommendation.color.replace('text-', 'border-')}/20 rounded-xl p-6 text-center`}
+                      className={`${recommendation.bgColor} border ${recommendation.color.replace('text-', 'border-')}/20 rounded-xl p-6 text-center lg:col-span-1 sm:col-span-2`}
                     >
                       {isUndervalued ? (
                         <TrendingUp className={`h-8 w-8 ${recommendation.color} mx-auto mb-3`} />
                       ) : (
                         <TrendingDown className={`h-8 w-8 ${recommendation.color} mx-auto mb-3`} />
                       )}
-                      <h4 className="font-semibold text-foreground mb-2">Recomendação</h4>
-                      <div className={`text-lg font-bold ${recommendation.color}`}>
+                      <h4 className="font-semibold text-foreground mb-2">Recomendação IA</h4>
+                      <div className={`text-lg font-bold ${recommendation.color} mb-2`}>
                         {recommendation.text}
                       </div>
-                      <p className="text-sm text-muted-foreground mt-2">
-                        {isUndervalued ? 'Potencial de valorização' : 'Risco de correção'}
+                      <p className="text-sm text-muted-foreground">
+                        {recommendation.explanation}
                       </p>
                     </motion.div>
                   </div>
@@ -218,7 +247,7 @@ export function InteractiveDemo() {
                   >
                     <Button 
                       size="lg"
-                      className="bg-gradient-to-r from-chartreuse via-chartreuse-dark to-chartreuse hover:from-chartreuse-dark hover:via-chartreuse hover:to-chartreuse-dark text-rich-black font-semibold px-8 py-3 shadow-lg shadow-chartreuse/30 hover:shadow-chartreuse/50 hover:scale-105 transition-all duration-300 border-0"
+                      className="bg-gradient-to-r from-teya-green via-teya-green-dark to-teya-green hover:from-teya-green-dark hover:via-teya-green hover:to-teya-green-dark text-teya-black font-semibold px-8 py-3 shadow-lg shadow-teya-green/30 hover:shadow-teya-green/50 hover:scale-105 transition-all duration-300 border-0"
                       onClick={() => window.location.href = '/trial'}
                     >
                       🚀 Analisar Todas as Ações - Trial Grátis

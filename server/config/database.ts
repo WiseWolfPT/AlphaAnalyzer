@@ -4,16 +4,16 @@
  */
 
 export const databaseConfig = {
-  // Tipo de banco de dados
-  type: process.env.DATABASE_TYPE || 'sqlite', // 'sqlite' ou 'supabase'
+  // Tipo de banco de dados - SUPABASE É O PADRÃO!
+  type: process.env.DATABASE_TYPE || 'supabase', // 'sqlite' ou 'supabase'
   
-  // Configurações SQLite
+  // Configurações SQLite (apenas para desenvolvimento local)
   sqlite: {
     path: process.env.DATABASE_PATH || './data/alfalyzer.db',
     verbose: process.env.NODE_ENV === 'development'
   },
   
-  // Configurações Supabase
+  // Configurações Supabase (PADRÃO)
   supabase: {
     url: process.env.SUPABASE_URL,
     serviceKey: process.env.SUPABASE_SERVICE_ROLE_KEY,
@@ -30,8 +30,8 @@ export const databaseConfig = {
   // Modo de migração
   migrationMode: process.env.MIGRATION_MODE === 'true',
   
-  // Usar Supabase em produção
-  useSupabase: process.env.NODE_ENV === 'production' || process.env.USE_SUPABASE === 'true'
+  // Usar SQLite apenas quando explicitamente solicitado para desenvolvimento
+  useSupabase: process.env.USE_SQLITE !== 'true'
 };
 
 export function isDatabaseConfigured(): boolean {

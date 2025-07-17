@@ -114,8 +114,8 @@ export default function Register() {
         >
           <Card className="border-border/50 shadow-xl text-center">
             <CardContent className="p-8">
-              <div className="w-16 h-16 bg-chartreuse/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Check className="h-8 w-8 text-chartreuse" />
+              <div className="w-16 h-16 bg-teya-green/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Check className="h-8 w-8 text-teya-green" />
               </div>
               <h2 className="text-2xl font-bold text-foreground mb-2">Conta criada!</h2>
               <p className="text-muted-foreground mb-6">
@@ -123,7 +123,7 @@ export default function Register() {
               </p>
               <Button
                 onClick={() => window.location.href = "/login"}
-                className="w-full bg-chartreuse-dark dark:bg-chartreuse hover:bg-chartreuse-dark/90 dark:hover:bg-chartreuse/90 text-deep-black font-semibold"
+                className="w-full bg-teya-green-dark dark:bg-teya-green hover:bg-teya-green-dark/90 dark:hover:bg-teya-green/90 text-deep-black font-semibold"
               >
                 Ir para Login
               </Button>
@@ -145,7 +145,7 @@ export default function Register() {
           className="text-center mb-8"
         >
           <div className="flex items-center justify-center gap-3 mb-4">
-            <div className="w-12 h-12 bg-gradient-to-br from-chartreuse-dark to-chartreuse rounded-xl flex items-center justify-center shadow-lg">
+            <div className="w-12 h-12 bg-gradient-to-br from-teya-green-dark to-teya-green rounded-xl flex items-center justify-center shadow-lg">
               <BarChart3 className="h-6 w-6 text-white" />
             </div>
             <h1 className="text-2xl font-bold text-foreground">Alpha Analyzer</h1>
@@ -287,7 +287,7 @@ export default function Register() {
                   />
                   <Label htmlFor="terms" className="text-sm">
                     Aceito os{" "}
-                    <a href="/terms" className="text-chartreuse hover:text-chartreuse-dark underline">
+                    <a href="/terms" className="text-teya-green hover:text-teya-green-dark underline">
                       termos e condições
                     </a>
                   </Label>
@@ -295,7 +295,7 @@ export default function Register() {
 
                 <Button
                   type="submit"
-                  className="w-full bg-chartreuse-dark dark:bg-chartreuse hover:bg-chartreuse-dark/90 dark:hover:bg-chartreuse/90 text-deep-black font-semibold"
+                  className="w-full bg-teya-green-dark dark:bg-teya-green hover:bg-teya-green-dark/90 dark:hover:bg-teya-green/90 text-deep-black font-semibold"
                   disabled={loading || !acceptTerms}
                 >
                   {loading ? "A criar conta..." : "Criar Conta"}
@@ -330,7 +330,7 @@ export default function Register() {
               <div className="text-center">
                 <p className="text-sm text-muted-foreground">
                   Já tem conta?{" "}
-                  <a href="/login" className="text-chartreuse hover:text-chartreuse-dark underline">
+                  <a href="/login" className="text-teya-green hover:text-teya-green-dark underline">
                     Fazer login
                   </a>
                 </p>

@@ -110,8 +110,8 @@ export function ChartsShowcase() {
                 onClick={() => setSelectedStock(stock)}
                 className={`px-6 py-3 rounded-xl border-2 transition-all duration-200 ${
                   selectedStock.symbol === stock.symbol
-                    ? 'border-chartreuse bg-chartreuse/10 text-chartreuse'
-                    : 'border-gray-200 dark:border-gray-700 hover:border-chartreuse/50'
+                    ? 'border-teya-green bg-teya-green/10 text-teya-green'
+                    : 'border-gray-200 dark:border-gray-700 hover:border-teya-green/50'
                 }`}
               >
                 <div className="font-bold">{stock.symbol}</div>
@@ -201,10 +201,10 @@ export function ChartsShowcase() {
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ duration: 0.3, delay: 0.1 }}
-                  className="bg-chartreuse/10 border border-chartreuse/20 rounded-xl p-6"
+                  className="bg-teya-green/10 border border-teya-green/20 rounded-xl p-6"
                 >
                   <div className="flex items-center gap-3 mb-3">
-                    <Target className="h-5 w-5 text-chartreuse-dark" />
+                    <Target className="h-5 w-5 text-teya-green-dark" />
                     <h4 className="font-semibold text-foreground">Análise de Valor</h4>
                   </div>
                   <div className="space-y-3">
@@ -262,7 +262,7 @@ export function ChartsShowcase() {
               >
                 <Button 
                   size="lg"
-                  className="bg-gradient-to-r from-chartreuse via-chartreuse-dark to-chartreuse hover:from-chartreuse-dark hover:via-chartreuse hover:to-chartreuse-dark text-rich-black font-semibold px-8 py-3 shadow-lg shadow-chartreuse/30 hover:shadow-chartreuse/50 hover:scale-105 transition-all duration-300 border-0"
+                  className="bg-gradient-to-r from-teya-green via-teya-green-dark to-teya-green hover:from-teya-green-dark hover:via-teya-green hover:to-teya-green-dark text-rich-black font-semibold px-8 py-3 shadow-lg shadow-teya-green/30 hover:shadow-teya-green/50 hover:scale-105 transition-all duration-300 border-0"
                   onClick={() => window.location.href = '/trial'}
                 >
                   📊 Aceder a Todos os Gráficos - Trial Grátis

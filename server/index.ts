@@ -2,12 +2,23 @@
 import dotenv from 'dotenv';
 dotenv.config();
 
+// Initialize Sentry BEFORE other imports
+import { initializeSentry, setupSentryMiddleware, setupSentryErrorHandler } from './lib/sentry';
+initializeSentry();
+
 // Validate environment variables
 import { env, isProduction, isDevelopment } from './config/env';
 
 import express, { type Request, Response, NextFunction } from "express";
 import cors from "cors";
 import helmet from "helmet";
+import { 
+  apiSecurityMiddleware, 
+  adminSecurityMiddleware, 
+  originValidationMiddleware, 
+  inputSanitationMiddleware, 
+  securityLoggingMiddleware 
+} from './middleware/api-security';
 import compression from "compression";
 import path from "path";
 import { createServer, type Server } from "http";
@@ -32,6 +43,7 @@ import {
   corsConfig, 
   securityErrorHandler 
 } from "./security/security-middleware";
+import { errorHandler, notFoundHandler, gracefulShutdownHandler, healthCheckHandler } from './middleware/error-handler';
 import { AuditLogger } from "./security/compliance-audit";
 // BROKEN IMPORTS - WebSocket package removed, CSRF disabled
 // SECURITY FIX: Import WebSocket and JWT for secure real-time connections
@@ -51,6 +63,7 @@ import { FinnhubProvider } from './services/unified-api/providers/finnhub.provid
 import { AlphaVantageProvider } from './services/unified-api/providers/alpha-vantage.provider';
 import { FMPProvider } from './services/unified-api/providers/fmp.provider';
 import { TwelveDataProvider } from './services/unified-api/providers/twelve-data.provider';
+import { PolygonProvider } from './services/unified-api/providers/polygon.provider';
 import * as schema from '@shared/schema';
 // ROADMAP V4: Import global back-off middleware for 429 responses
 import { globalBackoffMiddleware } from './middleware/global-backoff';
@@ -64,40 +77,52 @@ import { requireAuth, requireAdmin, optionalAuth } from './middleware/supabase-a
 const app = express();
 const APP_VERSION = process.env.npm_package_version || '1.0.0';
 
-// CRITICAL: Health check endpoint MUST be before ALL middleware
-app.get('/health', (req, res) => {
-  console.log(`Health check requested from ${req.ip}`);
-  res.status(200).json({
-    status: 'healthy',
-    timestamp: new Date().toISOString(),
-    version: APP_VERSION,
-    uptime: process.uptime(),
-    environment: env.NODE_ENV
-  });
-});
+// Setup Sentry middleware BEFORE any other middleware
+setupSentryMiddleware(app);
 
-// Production security headers using helmet
-if (isProduction) {
-  app.use(helmet({
-    contentSecurityPolicy: {
-      directives: {
-        defaultSrc: ["'self'"],
-        styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
-        scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
-        imgSrc: ["'self'", "data:", "https:"],
-        connectSrc: ["'self'", "wss:", "https:"]
-      }
-    },
-    hsts: {
-      maxAge: 31536000,
-      includeSubDomains: true,
-      preload: true
+// CRITICAL: Health check endpoint MUST be before ALL middleware
+app.get('/health', healthCheckHandler);
+
+// Enhanced security headers with Content Security Policy
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://fonts.gstatic.com"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://cdn.jsdelivr.net"],
+      imgSrc: ["'self'", "data:", "https:", "https://logo.clearbit.com"],
+      connectSrc: [
+        "'self'", 
+        "wss:", 
+        "https:",
+        env.SUPABASE_URL || "https://supabase.co",
+        "https://api.finnhub.io",
+        "https://api.twelvedata.com",
+        "https://www.alphavantage.co",
+        "https://financialmodelingprep.com",
+        "https://api.polygon.io"
+      ],
+      fontSrc: ["'self'", "https://fonts.gstatic.com"],
+      objectSrc: ["'none'"],
+      mediaSrc: ["'self'"],
+      frameSrc: ["'none'"],
+      childSrc: ["'none'"],
+      manifestSrc: ["'self'"],
+      workerSrc: ["'self'"]
     }
-  }));
-} else {
-  // Use custom security headers in development
-  app.use(securityHeaders);
-}
+  },
+  hsts: {
+    maxAge: 31536000,
+    includeSubDomains: true,
+    preload: true
+  },
+  noSniff: true,
+  xssFilter: true,
+  referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
+  frameguard: { action: 'deny' },
+  dnsPrefetchControl: { allow: false },
+  permittedCrossDomainPolicies: false
+}));
 
 // Enable compression for all responses
 app.use(compression({
@@ -150,6 +175,11 @@ const csrfProtection = null; // BROKEN: csurf package removed
 //     sameSite: 'strict'
 //   }
 // }) : null;
+
+// Add security middleware layers
+app.use(originValidationMiddleware);
+app.use(inputSanitationMiddleware);
+app.use(securityLoggingMiddleware);
 
 // Add request ID and logging middleware
 app.use((req, res, next) => {
@@ -330,6 +360,17 @@ async function initializeMarketDataServices() {
       }
     }
     
+    if (process.env.POLYGON_API_KEY && process.env.POLYGON_API_KEY !== 'demo') {
+      try {
+        const polygon = new PolygonProvider();
+        await polygon.initialize();
+        providers.push(polygon);
+        console.log('✅ Polygon.io provider initialized');
+      } catch (error) {
+        console.warn('⚠️ Polygon.io provider failed to initialize:', error);
+      }
+    }
+    
     // Initialize the unified API service with available providers
     if (providers.length > 0) {
       await unifiedAPI.initialize(providers);
@@ -377,48 +418,14 @@ async function initializeMarketDataServices() {
     app.use('/api/intrinsic-values', financialDataSecurity);
     app.use('/api/earnings', financialDataSecurity);
 
-    // Global error handling middleware
-    app.use((err: any, req: Request, res: Response, next: NextFunction) => {
-      // Log error details
-      const errorLog = {
-        requestId: req.requestId,
-        error: err.message,
-        stack: isProduction ? undefined : err.stack,
-        method: req.method,
-        path: req.path,
-        timestamp: new Date().toISOString()
-      };
-      
-      console.error(isProduction ? JSON.stringify(errorLog) : errorLog);
-      
-      // Determine status code
-      const statusCode = err.statusCode || err.status || 500;
-      
-      // Send appropriate error response
-      res.status(statusCode).json({
-        error: {
-          message: isProduction ? 'An error occurred' : err.message,
-          code: err.code || 'INTERNAL_ERROR',
-          statusCode,
-          requestId: req.requestId,
-          timestamp: new Date().toISOString()
-        }
-      });
-    });
+    // Add 404 handler for undefined routes
+    app.use(notFoundHandler);
 
-    // 404 handler
-    app.use((req, res) => {
-      res.status(404).json({
-        error: {
-          message: 'Resource not found',
-          code: 'NOT_FOUND',
-          statusCode: 404,
-          requestId: req.requestId,
-          path: req.path,
-          timestamp: new Date().toISOString()
-        }
-      });
-    });
+    // Setup Sentry error handler BEFORE other error middleware
+    setupSentryErrorHandler(app);
+
+    // Global error handling middleware (must be last)
+    app.use(errorHandler);
 
     // Setup Vite AFTER everything else
     // if (process.env.NODE_ENV === "development") {
@@ -527,6 +534,99 @@ async function initializeMarketDataServices() {
         console.warn('⚠️ Market data services initialization failed:', error);
       });
       
+      // PHASE 1 - DAY 1: Initialize Background Job Processor
+      if (process.env.ENABLE_BACKGROUND_JOBS !== 'false') {
+        import('./services/job-processor').then(async ({ jobProcessor }) => {
+          try {
+            await jobProcessor.startProcessing();
+            console.log('🚀 Background job processor started');
+          } catch (error) {
+            console.warn('⚠️ Background job processor failed to start:', error);
+          }
+        }).catch(error => {
+          console.warn('⚠️ Background job processor import failed:', error);
+        });
+      }
+      
+      // FASE 2 - DIA 4: Initialize Rate Limit Alert Service
+      if (process.env.ENABLE_RATE_LIMIT_ALERTS !== 'false') {
+        import('./services/rate-limit-alert-service').then(({ rateLimitAlertService }) => {
+          try {
+            rateLimitAlertService.start();
+            console.log('🚨 Rate limit alert service started');
+          } catch (error) {
+            console.warn('⚠️ Rate limit alert service failed to start:', error);
+          }
+        }).catch(error => {
+          console.warn('⚠️ Rate limit alert service import failed:', error);
+        });
+      }
+      
+      // FASE 2 - DIA 5: Initialize Backfill Service
+      if (process.env.ENABLE_BACKFILL_SERVICE !== 'false') {
+        import('./services/backfill-service').then(async ({ backfillService }) => {
+          try {
+            await backfillService.start();
+            console.log('📊 Historical data backfill service started');
+          } catch (error) {
+            console.warn('⚠️ Backfill service failed to start:', error);
+          }
+        }).catch(error => {
+          console.warn('⚠️ Backfill service import failed:', error);
+        });
+      }
+      
+      // FASE 2 - DIA 6: Initialize WebSocket Real-time Service
+      if (process.env.ENABLE_WEBSOCKET_SERVICE !== 'false') {
+        import('./services/websocket-service').then(async ({ webSocketService }) => {
+          try {
+            await webSocketService.start();
+            console.log('🔗 WebSocket real-time service started');
+          } catch (error) {
+            console.warn('⚠️ WebSocket service failed to start:', error);
+          }
+        }).catch(error => {
+          console.warn('⚠️ WebSocket service import failed:', error);
+        });
+      }
+      
+      // FASE 2 - DIA 7: Initialize Performance Optimization & Monitoring
+      if (process.env.ENABLE_PERFORMANCE_OPTIMIZATION !== 'false') {
+        import('./services/performance-optimizer').then(async ({ performanceOptimizer }) => {
+          try {
+            const dbPath = process.env.DATABASE_PATH || path.join(process.cwd(), 'data', 'alfalyzer.db');
+            const optimizer = performanceOptimizer(dbPath, {
+              connectionPool: {
+                maxConnections: 15,
+                minConnections: 3,
+                idleTimeout: 300000,
+                maxAge: 3600000
+              },
+              cache: {
+                maxSize: 2000,
+                ttl: 600000, // 10 minutes
+                updateAgeOnGet: true
+              },
+              monitoring: {
+                slowQueryThreshold: 200, // 200ms
+                metricsRetentionDays: 7,
+                enableDetailedMetrics: true
+              }
+            });
+            
+            // Connect performance monitor to optimizer
+            const { performanceMonitor } = await import('./services/performance-monitor');
+            performanceMonitor.setPerformanceOptimizer(optimizer);
+            
+            console.log('📊 Performance optimization & monitoring started');
+          } catch (error) {
+            console.warn('⚠️ Performance optimization failed to start:', error);
+          }
+        }).catch(error => {
+          console.warn('⚠️ Performance optimization import failed:', error);
+        });
+      }
+      
       // Debug: Check if server is really listening
       const address = serverInstance.address();
       console.log('🔍 Server address:', address);
@@ -587,6 +687,18 @@ async function initializeMarketDataServices() {
       console.log(`🔧 Health:   http://localhost:${port}/health`);
       console.log('✅ Ready to accept connections...');
       
+      // PHASE 1 - DAY 1: Initialize Background Job Processor (simplified startup)
+      if (process.env.ENABLE_BACKGROUND_JOBS !== 'false') {
+        try {
+          import('./services/job-processor').then(async ({ jobProcessor }) => {
+            await jobProcessor.startProcessing();
+            console.log('🚀 Background job processor started');
+          });
+        } catch (error) {
+          console.warn('⚠️ Background job processor failed to start:', error);
+        }
+      }
+      
       // Test the server internally
       console.log('🔍 Testing internal connection...');
       import('node:http').then(http => {
@@ -639,57 +751,8 @@ async function initializeMarketDataServices() {
     
     } // Close the production WebSocket block
 
-    // Enhanced graceful shutdown handling
-    let isShuttingDown = false;
-    const shutdownTimeout = 30000; // 30 seconds
-    
-    const gracefulShutdown = (signal: string) => {
-      if (isShuttingDown) return;
-      isShuttingDown = true;
-      
-      console.log(`\n${signal} received, starting graceful shutdown...`);
-      
-      // Stop accepting new connections
-      server.close((err) => {
-        if (err) {
-          console.error('Error during server close:', err);
-        }
-        console.log('HTTP server closed');
-      });
-      
-      // Close WebSocket connections if they exist
-      if (wss && wss.clients) {
-        console.log(`Closing ${wss.clients.size} WebSocket connections...`);
-        wss.clients.forEach((ws) => {
-          ws.close(1001, 'Server shutting down');
-        });
-        wss.close(() => {
-          console.log('WebSocket server closed');
-        });
-      }
-      
-      // Close database connections
-      try {
-        // For better-sqlite3, we don't have a destroy method
-        // The connection will be closed when the process exits
-        console.log('Database connections will close on exit');
-      } catch (error) {
-        console.error('Error closing database:', error);
-      }
-      
-      // Force shutdown after timeout
-      const forceShutdown = setTimeout(() => {
-        console.error('Could not close connections in time, forcefully shutting down');
-        process.exit(1);
-      }, shutdownTimeout);
-      
-      // Clear the timeout if we finish before it triggers
-      server.on('close', () => {
-        clearTimeout(forceShutdown);
-        console.log('Graceful shutdown completed');
-        process.exit(0);
-      });
-    };
+    // Enhanced graceful shutdown handling using robust error handler
+    const gracefulShutdown = gracefulShutdownHandler(server);
     
     // Handle various shutdown signals
     process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));

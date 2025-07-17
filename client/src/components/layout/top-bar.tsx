@@ -17,6 +17,7 @@ import { Moon, Sun, User, Menu, UserCircle, HelpCircle, LogOut } from "lucide-re
 import NotificationCenter from "@/components/alerts/notification-center";
 
 // i18n and Currency imports
+import { useTranslation } from 'react-i18next';
 import { useCurrency } from '@/contexts/currency-context';
 
 interface TopBarProps {
@@ -65,7 +66,7 @@ export function TopBar({ onMobileMenuToggle }: TopBarProps) {
   };
 
   return (
-    <header className="bg-chartreuse/20 backdrop-blur-xl border-b border-chartreuse/30 px-6 py-4 flex items-center justify-between sticky top-0 z-10 pt-[env(safe-area-inset-top)] pl-[calc(1.5rem+env(safe-area-inset-left))] pr-[calc(1.5rem+env(safe-area-inset-right))]">
+    <header className="bg-teya-green/20 backdrop-blur-xl border-b border-teya-green/30 px-6 py-4 flex items-center justify-between sticky top-0 z-10 pt-[env(safe-area-inset-top)] pl-[calc(1.5rem+env(safe-area-inset-left))] pr-[calc(1.5rem+env(safe-area-inset-right))]">
       <div className="flex items-center space-x-8">
         {/* Mobile Menu Button */}
         {isMobile && (
@@ -190,7 +191,7 @@ export function TopBar({ onMobileMenuToggle }: TopBarProps) {
               size="sm" 
               className="h-11 w-11 p-0 bg-secondary/50 hover:bg-secondary border border-border/50 rounded-full flex items-center justify-center"
             >
-              <div className="h-9 w-9 rounded-full bg-chartreuse/20 flex items-center justify-center text-chartreuse font-medium text-sm">
+              <div className="h-9 w-9 rounded-full bg-teya-green/20 flex items-center justify-center text-teya-green font-medium text-sm">
                 {user?.name?.charAt(0).toUpperCase() || 'A'}
               </div>
             </Button>
@@ -208,7 +209,7 @@ export function TopBar({ onMobileMenuToggle }: TopBarProps) {
             <DropdownMenuSeparator className="bg-zinc-800" />
             <DropdownMenuItem 
               onClick={() => setLocation('/profile')}
-              className="hover:bg-chartreuse/10 hover:text-chartreuse cursor-pointer"
+              className="hover:bg-teya-green/10 hover:text-teya-green cursor-pointer"
             >
               <UserCircle className="mr-2 h-4 w-4" />
               <span>{t('navigation.my_account')}</span>

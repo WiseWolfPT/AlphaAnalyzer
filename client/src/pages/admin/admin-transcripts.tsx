@@ -8,6 +8,7 @@ import { TokenCounter } from '@/components/ui/token-counter';
 import { useTokenCounter } from '@/hooks/use-token-counter';
 import { AlertCircle, FileText, Sparkles, Upload } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { TranscriptManagement } from '@/components/admin/TranscriptManagement';
 import axios from 'axios';
 
 export default function AdminTranscripts() {
@@ -209,20 +210,7 @@ export default function AdminTranscripts() {
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Recent Transcripts</CardTitle>
-          <CardDescription>
-            View and manage uploaded transcripts
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="text-muted-foreground text-sm">
-            <FileText className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
-            <p className="text-center">No transcripts uploaded yet</p>
-          </div>
-        </CardContent>
-      </Card>
+      <TranscriptManagement />
     </div>
   );
 }

@@ -69,7 +69,7 @@ export function Header() {
             className="flex items-center gap-2 sm:gap-3 cursor-pointer hover:opacity-80 transition-opacity"
             onClick={() => setLocation(user ? "/find-stocks" : "/")}
           >
-            <div className="w-8 h-8 sm:w-10 sm:h-10 bg-chartreuse-dark dark:bg-chartreuse rounded-xl flex items-center justify-center shadow-lg hover:shadow-chartreuse/30 transition-all duration-300 hover:scale-105">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 bg-teya-green-dark dark:bg-teya-green rounded-xl flex items-center justify-center shadow-lg hover:shadow-teya-green/30 transition-all duration-300 hover:scale-105">
               <BarChart3 className="h-4 w-4 sm:h-5 sm:w-5 text-deep-black" />
             </div>
             <div className="font-bold text-lg sm:text-xl text-foreground">
@@ -83,12 +83,12 @@ export function Header() {
               <button
                 key={item.name}
                 onClick={() => scrollToSection(item.href)}
-                className={`relative text-muted-foreground hover:text-chartreuse transition-all duration-200 font-medium group ${
+                className={`relative text-muted-foreground hover:text-teya-green transition-all duration-200 font-medium group ${
                   activeSection === item.id ? 'text-foreground' : ''
                 }`}
               >
                 {item.name}
-                <div className={`absolute bottom-0 left-0 w-full h-0.5 bg-chartreuse transform origin-left transition-transform duration-200 ${
+                <div className={`absolute bottom-0 left-0 w-full h-0.5 bg-teya-green transform origin-left transition-transform duration-200 ${
                   activeSection === item.id ? 'scale-x-100' : 'scale-x-0 group-hover:scale-x-100'
                 }`} />
               </button>
@@ -114,14 +114,14 @@ export function Header() {
             {user ? (
               <div className="flex items-center gap-3">
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <div className="w-8 h-8 bg-chartreuse-dark dark:bg-chartreuse rounded-full flex items-center justify-center text-deep-black font-semibold text-xs">
+                  <div className="w-8 h-8 bg-teya-green-dark dark:bg-teya-green rounded-full flex items-center justify-center text-deep-black font-semibold text-xs">
                     {user.avatar || user.name?.charAt(0) || 'U'}
                   </div>
                   <span className="hidden lg:inline">{user.name}</span>
                 </div>
                 <Button 
                   onClick={() => setLocation('/find-stocks')}
-                  className="bg-chartreuse-dark dark:bg-chartreuse hover:bg-chartreuse-dark/90 dark:hover:bg-chartreuse/90 text-deep-black dark:text-rich-black"
+                  className="bg-teya-green-dark dark:bg-teya-green hover:bg-teya-green-dark/90 dark:hover:bg-teya-green/90 text-deep-black dark:text-rich-black"
                 >
                   Dashboard
                 </Button>
@@ -139,20 +139,20 @@ export function Header() {
                 <Button 
                   variant="ghost" 
                   size="sm"
-                  className="text-foreground hover:text-chartreuse border border-transparent hover:border-chartreuse/30"
+                  className="text-foreground hover:text-teya-green border border-transparent hover:border-teya-green/30"
                   onClick={toggleAuthState}
                 >
                   Beta Login
                 </Button>
                 <Button 
                   variant="ghost" 
-                  className="text-foreground hover:text-chartreuse border border-transparent hover:border-chartreuse/30"
+                  className="text-foreground hover:text-teya-green border border-transparent hover:border-teya-green/30"
                   onClick={() => setLocation('/login')}
                 >
                   Login
                 </Button>
                 <Button 
-                  className="bg-chartreuse-dark dark:bg-chartreuse hover:bg-chartreuse-dark/90 dark:hover:bg-chartreuse/90 text-deep-black dark:text-rich-black font-semibold"
+                  className="bg-teya-green-dark dark:bg-teya-green hover:bg-teya-green-dark/90 dark:hover:bg-teya-green/90 text-deep-black dark:text-rich-black font-semibold"
                   onClick={() => setLocation('/register')}
                 >
                   Registar
@@ -217,14 +217,14 @@ export function Header() {
                   {user ? (
                     <>
                       <div className="flex items-center gap-2 px-4 py-2 text-sm text-muted-foreground">
-                        <div className="w-8 h-8 bg-chartreuse-dark dark:bg-chartreuse rounded-full flex items-center justify-center text-deep-black font-semibold text-xs">
+                        <div className="w-8 h-8 bg-teya-green-dark dark:bg-teya-green rounded-full flex items-center justify-center text-deep-black font-semibold text-xs">
                           {user.avatar || user.name?.charAt(0) || 'U'}
                         </div>
                         <span>{user.name}</span>
                       </div>
                       <Button 
                         onClick={() => setLocation('/find-stocks')}
-                        className="bg-chartreuse-dark dark:bg-chartreuse hover:bg-chartreuse-dark/90 dark:hover:bg-chartreuse/90 text-deep-black dark:text-rich-black justify-start"
+                        className="bg-teya-green-dark dark:bg-teya-green hover:bg-teya-green-dark/90 dark:hover:bg-teya-green/90 text-deep-black dark:text-rich-black justify-start"
                       >
                         <User className="h-4 w-4 mr-2" />
                         Dashboard
@@ -242,13 +242,13 @@ export function Header() {
                     <>
                       <Button 
                         variant="ghost" 
-                        className="text-foreground justify-start border border-transparent hover:border-chartreuse/30"
+                        className="text-foreground justify-start border border-transparent hover:border-teya-green/30"
                         onClick={() => setLocation('/login')}
                       >
                         Login
                       </Button>
                       <Button 
-                        className="bg-chartreuse-dark dark:bg-chartreuse hover:bg-chartreuse-dark/90 dark:hover:bg-chartreuse/90 text-deep-black dark:text-rich-black justify-start"
+                        className="bg-teya-green-dark dark:bg-teya-green hover:bg-teya-green-dark/90 dark:hover:bg-teya-green/90 text-deep-black dark:text-rich-black justify-start"
                         onClick={() => setLocation('/register')}
                       >
                         Registar

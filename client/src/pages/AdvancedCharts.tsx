@@ -277,7 +277,7 @@ export default function AdvancedCharts() {
             <div className="text-red-500 mb-4">⚠️ Error</div>
             <h3 className="text-xl font-semibold mb-2">Failed to load stock data</h3>
             <p className="text-muted-foreground mb-4">{error}</p>
-            <Button onClick={() => setLocation('/dashboard')} className="bg-gradient-to-r from-chartreuse via-chartreuse-dark to-chartreuse hover:from-chartreuse-dark hover:via-chartreuse hover:to-chartreuse-dark text-rich-black font-semibold shadow-lg shadow-chartreuse/30 hover:shadow-chartreuse/50 hover:scale-105 transition-all duration-300 border-0">Go Back</Button>
+            <Button onClick={() => setLocation('/dashboard')} className="bg-gradient-to-r from-teya-green via-teya-green-dark to-teya-green hover:from-teya-green-dark hover:via-teya-green hover:to-teya-green-dark text-rich-black font-semibold shadow-lg shadow-teya-green/30 hover:shadow-teya-green/50 hover:scale-105 transition-all duration-300 border-0">Go Back</Button>
           </div>
         </div>
       </MainLayout>
@@ -327,8 +327,8 @@ export default function AdvancedCharts() {
               className={cn(
                 "gap-2",
                 isInWatchlist 
-                  ? "bg-chartreuse/10 border-chartreuse/30 text-chartreuse" 
-                  : "border-chartreuse/20 hover:bg-chartreuse/10"
+                  ? "bg-teya-green/10 border-teya-green/30 text-teya-green" 
+                  : "border-teya-green/20 hover:bg-teya-green/10"
               )}
             >
               {isInWatchlist ? <Star className="w-4 h-4 fill-current" /> : <Plus className="w-4 h-4" />}
@@ -469,7 +469,7 @@ export default function AdvancedCharts() {
             {/* FINANCIALS */}
             <div className="bg-secondary/10 rounded-lg p-4">
               <div className="flex items-center gap-2 mb-3">
-                <Target className="h-4 w-4 text-chartreuse-dark" />
+                <Target className="h-4 w-4 text-teya-green-dark" />
                 <h3 className="text-sm font-semibold text-foreground">FINANCIALS</h3>
               </div>
               <div className="space-y-2 text-xs">
@@ -577,7 +577,7 @@ export default function AdvancedCharts() {
           <div className="flex items-center gap-4">
             <h3 className="text-lg font-semibold">Charts</h3>
             {isCustomized && (
-              <span className="text-xs text-muted-foreground bg-chartreuse/10 text-chartreuse-dark px-2 py-1 rounded-md">
+              <span className="text-xs text-muted-foreground bg-teya-green/10 text-teya-green-dark px-2 py-1 rounded-md">
                 Custom Layout
               </span>
             )}
@@ -593,8 +593,8 @@ export default function AdvancedCharts() {
                 onClick={() => setChartPeriod('quarterly')}
                 className={`px-4 py-2 text-sm transition-all duration-300 ${
                   chartPeriod === 'quarterly' 
-                    ? 'bg-gradient-to-r from-chartreuse via-chartreuse-dark to-chartreuse text-rich-black font-semibold shadow-sm shadow-chartreuse/30' 
-                    : 'hover:bg-chartreuse/10 hover:text-chartreuse'
+                    ? 'bg-gradient-to-r from-teya-green via-teya-green-dark to-teya-green text-rich-black font-semibold shadow-sm shadow-teya-green/30' 
+                    : 'hover:bg-teya-green/10 hover:text-teya-green'
                 }`}
               >
                 Quarterly
@@ -605,8 +605,8 @@ export default function AdvancedCharts() {
                 onClick={() => setChartPeriod('annual')}
                 className={`px-4 py-2 text-sm transition-all duration-300 ${
                   chartPeriod === 'annual' 
-                    ? 'bg-gradient-to-r from-chartreuse via-chartreuse-dark to-chartreuse text-rich-black font-semibold shadow-sm shadow-chartreuse/30' 
-                    : 'hover:bg-chartreuse/10 hover:text-chartreuse'
+                    ? 'bg-gradient-to-r from-teya-green via-teya-green-dark to-teya-green text-rich-black font-semibold shadow-sm shadow-teya-green/30' 
+                    : 'hover:bg-teya-green/10 hover:text-teya-green'
                 }`}
               >
                 Annual
@@ -621,8 +621,8 @@ export default function AdvancedCharts() {
               onClick={() => setIsDragMode(!isDragMode)}
               className={`flex items-center gap-2 transition-all duration-300 ${
                 isDragMode 
-                  ? 'bg-gradient-to-r from-chartreuse via-chartreuse-dark to-chartreuse text-rich-black font-semibold shadow-sm shadow-chartreuse/30' 
-                  : 'border border-chartreuse/30 hover:border-chartreuse hover:bg-chartreuse/10 hover:text-chartreuse'
+                  ? 'bg-gradient-to-r from-teya-green via-teya-green-dark to-teya-green text-rich-black font-semibold shadow-sm shadow-teya-green/30' 
+                  : 'border border-teya-green/30 hover:border-teya-green hover:bg-teya-green/10 hover:text-teya-green'
               }`}
             >
               <Settings className="h-4 w-4" />
@@ -634,7 +634,7 @@ export default function AdvancedCharts() {
                 variant="ghost"
                 size="sm"
                 onClick={resetLayout}
-                className="flex items-center gap-2 border border-chartreuse/30 hover:border-chartreuse hover:bg-chartreuse/10 hover:text-chartreuse transition-all duration-300"
+                className="flex items-center gap-2 border border-teya-green/30 hover:border-teya-green hover:bg-teya-green/10 hover:text-teya-green transition-all duration-300"
               >
                 <RotateCcw className="h-4 w-4" />
                 Reset

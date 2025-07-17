@@ -1,6 +1,6 @@
 /**
- * Enhanced Health Monitoring Service
- * Provides comprehensive health checks, auto-recovery, and system monitoring
+ * FASE 2 - DIA 8: Enhanced Health Monitoring System
+ * Comprehensive health monitoring with automated alerts, system diagnostics and performance analytics
  */
 
 import { performance } from 'perf_hooks';
@@ -8,6 +8,7 @@ import os from 'os';
 import fs from 'fs/promises';
 import path from 'path';
 import { spawn } from 'child_process';
+import { EventEmitter } from 'events';
 
 interface HealthMetric {
   name: string;
@@ -58,7 +59,23 @@ interface HealthCheckResult {
   };
 }
 
-class HealthMonitor {
+// Enhanced alert interface for DIA 8
+interface HealthAlert {
+  id: string;
+  type: 'system' | 'performance' | 'security' | 'business';
+  severity: 'low' | 'medium' | 'high' | 'critical';
+  title: string;
+  message: string;
+  source: string;
+  timestamp: Date;
+  resolved: boolean;
+  resolvedAt?: Date;
+  metadata: Record<string, any>;
+  escalationLevel: number;
+  lastNotified?: Date;
+}
+
+class HealthMonitor extends EventEmitter {
   private static instance: HealthMonitor;
   private startTime: number;
   private requestCounts: Map<string, number> = new Map();
@@ -66,8 +83,16 @@ class HealthMonitor {
   private recoveryAttempts: number = 0;
   private lastRecoveryAttempt?: Date;
   private autoRecoveryEnabled: boolean = true;
+  
+  // DIA 8: Enhanced monitoring features
+  private alerts: Map<string, HealthAlert> = new Map();
+  private alertCooldowns: Map<string, Date> = new Map();
+  private metricsHistory: Array<{ timestamp: Date; metrics: SystemMetrics }> = [];
+  private isMonitoring = false;
+  private monitoringInterval?: NodeJS.Timeout;
 
   private constructor() {
+    super();
     this.startTime = Date.now();
     this.initializeMetricsCollection();
   }
@@ -586,6 +611,370 @@ class HealthMonitor {
       enabled: this.autoRecoveryEnabled,
       attempts: this.recoveryAttempts,
       lastAttempt: this.lastRecoveryAttempt?.toISOString(),
+    };
+  }
+
+  // ============================================================================
+  // DIA 8: NEW MONITORING & ALERTS FEATURES
+  // ============================================================================
+
+  /**
+   * Start continuous health monitoring with alerts
+   */
+  startContinuousMonitoring(intervalMs = 30000): void {
+    if (this.isMonitoring) {
+      console.warn('📊 [HealthMonitor] Already monitoring');
+      return;
+    }
+
+    this.isMonitoring = true;
+    console.log(`📊 [HealthMonitor] Starting continuous monitoring (${intervalMs}ms interval)`);
+
+    // Run initial check
+    this.runContinuousCheck();
+
+    // Set up periodic monitoring
+    this.monitoringInterval = setInterval(() => {
+      this.runContinuousCheck();
+    }, intervalMs);
+
+    this.emit('monitoring_started');
+  }
+
+  /**
+   * Stop continuous monitoring
+   */
+  stopContinuousMonitoring(): void {
+    if (!this.isMonitoring) return;
+
+    this.isMonitoring = false;
+    
+    if (this.monitoringInterval) {
+      clearInterval(this.monitoringInterval);
+      this.monitoringInterval = undefined;
+    }
+
+    console.log('📊 [HealthMonitor] Stopped continuous monitoring');
+    this.emit('monitoring_stopped');
+  }
+
+  /**
+   * Run continuous health check and alert processing
+   */
+  private async runContinuousCheck(): Promise<void> {
+    try {
+      const healthResult = await this.performHealthCheck();
+      const systemMetrics = healthResult.system;
+      
+      // Store metrics history
+      this.metricsHistory.push({
+        timestamp: new Date(),
+        metrics: systemMetrics
+      });
+
+      // Keep only last 1000 metrics (sliding window)
+      if (this.metricsHistory.length > 1000) {
+        this.metricsHistory = this.metricsHistory.slice(-1000);
+      }
+
+      // Check for alert conditions
+      this.checkAlertConditions(healthResult);
+      
+      this.emit('health_check_completed', healthResult);
+    } catch (error) {
+      console.error('📊 [HealthMonitor] Continuous check error:', error);
+      this.emit('health_check_error', error);
+    }
+  }
+
+  /**
+   * Check for alert conditions and create alerts
+   */
+  private checkAlertConditions(healthResult: HealthCheckResult): void {
+    const now = new Date();
+    
+    // System performance alerts
+    if (healthResult.system.memory.percentage > 90) {
+      this.createSystemAlert({
+        type: 'performance',
+        severity: 'critical',
+        title: 'Critical Memory Usage',
+        message: `Memory usage at ${healthResult.system.memory.percentage}%`,
+        source: 'system_monitor',
+        metadata: { memoryPercent: healthResult.system.memory.percentage }
+      });
+    } else if (healthResult.system.memory.percentage > 80) {
+      this.createSystemAlert({
+        type: 'performance',
+        severity: 'high',
+        title: 'High Memory Usage',
+        message: `Memory usage at ${healthResult.system.memory.percentage}%`,
+        source: 'system_monitor',
+        metadata: { memoryPercent: healthResult.system.memory.percentage }
+      });
+    }
+
+    // CPU usage alerts
+    if (healthResult.system.cpu.loadAverage[0] > os.cpus().length * 1.5) {
+      this.createSystemAlert({
+        type: 'performance',
+        severity: 'high',
+        title: 'High CPU Load',
+        message: `Load average: ${healthResult.system.cpu.loadAverage[0].toFixed(2)}`,
+        source: 'system_monitor',
+        metadata: { loadAverage: healthResult.system.cpu.loadAverage }
+      });
+    }
+
+    // Response time alerts
+    if (healthResult.performance.responseTime > 5000) {
+      this.createSystemAlert({
+        type: 'performance',
+        severity: 'high',
+        title: 'Slow Health Check Response',
+        message: `Health check took ${healthResult.performance.responseTime.toFixed(0)}ms`,
+        source: 'performance_monitor',
+        metadata: { responseTime: healthResult.performance.responseTime }
+      });
+    }
+
+    // Error rate alerts
+    if (healthResult.performance.errorRate && healthResult.performance.errorRate > 10) {
+      this.createSystemAlert({
+        type: 'system',
+        severity: 'critical',
+        title: 'High Error Rate',
+        message: `Error rate at ${healthResult.performance.errorRate}%`,
+        source: 'error_monitor',
+        metadata: { errorRate: healthResult.performance.errorRate }
+      });
+    }
+
+    // Check individual health checks for failures
+    healthResult.checks.forEach(check => {
+      if (check.status === 'critical') {
+        this.createSystemAlert({
+          type: 'system',
+          severity: 'critical',
+          title: `${check.name} Health Check Failed`,
+          message: check.message || `${check.name} is in critical state`,
+          source: `health_check_${check.name}`,
+          metadata: { check }
+        });
+      }
+    });
+  }
+
+  /**
+   * Create a system alert with cooldown logic
+   */
+  private createSystemAlert(alertData: Omit<HealthAlert, 'id' | 'timestamp' | 'resolved' | 'escalationLevel'>): void {
+    const alertId = `${alertData.source}_${alertData.severity}`;
+    
+    // Check cooldown to prevent spam
+    const cooldownKey = `${alertData.source}_${alertData.severity}`;
+    const cooldown = this.alertCooldowns.get(cooldownKey);
+    const cooldownPeriod = 5 * 60 * 1000; // 5 minutes
+    
+    if (cooldown && Date.now() - cooldown.getTime() < cooldownPeriod) {
+      return; // Still in cooldown
+    }
+
+    const existingAlert = this.alerts.get(alertId);
+    
+    if (!existingAlert || existingAlert.resolved) {
+      // Create new alert
+      const alert: HealthAlert = {
+        ...alertData,
+        id: alertId,
+        timestamp: new Date(),
+        resolved: false,
+        escalationLevel: 0
+      };
+
+      this.alerts.set(alertId, alert);
+      this.alertCooldowns.set(cooldownKey, new Date());
+      
+      console.warn(`🚨 [HealthMonitor] Alert created: ${alert.title} - ${alert.message}`);
+      this.emit('alert_created', alert);
+    }
+  }
+
+  /**
+   * Create a manual alert
+   */
+  createAlert(alertData: Omit<HealthAlert, 'id' | 'timestamp' | 'resolved' | 'escalationLevel'>): HealthAlert {
+    const alert: HealthAlert = {
+      ...alertData,
+      id: `manual_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      timestamp: new Date(),
+      resolved: false,
+      escalationLevel: 0
+    };
+
+    this.alerts.set(alert.id, alert);
+    
+    console.warn(`🚨 [HealthMonitor] Manual alert created: ${alert.title}`);
+    this.emit('alert_created', alert);
+    
+    return alert;
+  }
+
+  /**
+   * Resolve an alert
+   */
+  resolveAlert(alertId: string): boolean {
+    const alert = this.alerts.get(alertId);
+    if (!alert || alert.resolved) return false;
+
+    alert.resolved = true;
+    alert.resolvedAt = new Date();
+    
+    console.log(`✅ [HealthMonitor] Alert resolved: ${alert.title}`);
+    this.emit('alert_resolved', alert);
+    
+    return true;
+  }
+
+  /**
+   * Get all alerts with filtering
+   */
+  getAlerts(filters?: {
+    resolved?: boolean;
+    severity?: string;
+    type?: string;
+    limit?: number;
+  }): HealthAlert[] {
+    let alerts = Array.from(this.alerts.values());
+
+    if (filters) {
+      if (filters.resolved !== undefined) {
+        alerts = alerts.filter(a => a.resolved === filters.resolved);
+      }
+      if (filters.severity) {
+        alerts = alerts.filter(a => a.severity === filters.severity);
+      }
+      if (filters.type) {
+        alerts = alerts.filter(a => a.type === filters.type);
+      }
+      if (filters.limit) {
+        alerts = alerts.slice(0, filters.limit);
+      }
+    }
+
+    return alerts.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
+  }
+
+  /**
+   * Get performance analytics for a time range
+   */
+  getPerformanceAnalytics(minutes = 60): {
+    timeRange: { start: Date; end: Date };
+    trends: {
+      memoryUsage: Array<{ timestamp: Date; value: number }>;
+      cpuUsage: Array<{ timestamp: Date; value: number }>;
+      responseTime: Array<{ timestamp: Date; value: number }>;
+    };
+    summary: {
+      avgMemoryUsage: number;
+      peakMemoryUsage: number;
+      avgCpuUsage: number;
+      peakCpuUsage: number;
+      totalRequests: number;
+      errorRate: number;
+    };
+  } {
+    const cutoff = new Date(Date.now() - minutes * 60 * 1000);
+    const relevantMetrics = this.metricsHistory.filter(m => m.timestamp >= cutoff);
+    
+    const trends = {
+      memoryUsage: relevantMetrics.map(m => ({
+        timestamp: m.timestamp,
+        value: m.metrics.memory.percentage
+      })),
+      cpuUsage: relevantMetrics.map(m => ({
+        timestamp: m.timestamp,
+        value: m.metrics.cpu.usage
+      })),
+      responseTime: [] // Would need to track this separately
+    };
+
+    const memoryValues = trends.memoryUsage.map(t => t.value);
+    const cpuValues = trends.cpuUsage.map(t => t.value);
+
+    const summary = {
+      avgMemoryUsage: memoryValues.length > 0 ? memoryValues.reduce((a, b) => a + b, 0) / memoryValues.length : 0,
+      peakMemoryUsage: memoryValues.length > 0 ? Math.max(...memoryValues) : 0,
+      avgCpuUsage: cpuValues.length > 0 ? cpuValues.reduce((a, b) => a + b, 0) / cpuValues.length : 0,
+      peakCpuUsage: cpuValues.length > 0 ? Math.max(...cpuValues) : 0,
+      totalRequests: this.getRequestsPerMinute(),
+      errorRate: this.getErrorRate()
+    };
+
+    return {
+      timeRange: { start: cutoff, end: new Date() },
+      trends,
+      summary
+    };
+  }
+
+  /**
+   * Get enhanced health status with alerts
+   */
+  getEnhancedHealthStatus(): {
+    overall: 'healthy' | 'warning' | 'critical';
+    health: HealthCheckResult;
+    alerts: HealthAlert[];
+    analytics: any;
+    monitoring: {
+      isActive: boolean;
+      metricsCount: number;
+      alertsCount: number;
+    };
+  } {
+    const health = this.performHealthCheck();
+    const alerts = this.getAlerts({ resolved: false });
+    const analytics = this.getPerformanceAnalytics(60);
+    
+    let overall: 'healthy' | 'warning' | 'critical' = 'healthy';
+    
+    // Determine overall status from alerts
+    const criticalAlerts = alerts.filter(a => a.severity === 'critical');
+    const highAlerts = alerts.filter(a => a.severity === 'high');
+    
+    if (criticalAlerts.length > 0) {
+      overall = 'critical';
+    } else if (highAlerts.length > 0 || alerts.length > 3) {
+      overall = 'warning';
+    }
+
+    return {
+      overall,
+      health: health as any, // Type assertion for now
+      alerts,
+      analytics,
+      monitoring: {
+        isActive: this.isMonitoring,
+        metricsCount: this.metricsHistory.length,
+        alertsCount: this.alerts.size
+      }
+    };
+  }
+
+  /**
+   * Export monitoring data for analysis
+   */
+  exportMonitoringData(): {
+    alerts: HealthAlert[];
+    metricsHistory: Array<{ timestamp: Date; metrics: SystemMetrics }>;
+    recoveryHistory: any;
+    exportTimestamp: Date;
+  } {
+    return {
+      alerts: Array.from(this.alerts.values()),
+      metricsHistory: this.metricsHistory,
+      recoveryHistory: this.getRecoveryStatus(),
+      exportTimestamp: new Date()
     };
   }
 }

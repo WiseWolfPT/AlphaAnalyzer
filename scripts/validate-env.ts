@@ -47,8 +47,33 @@ class EnvValidator {
     'TWELVE_DATA_API_KEY',
     'FMP_API_KEY',
     'FINNHUB_API_KEY',
+    'POLYGON_API_KEY',
+    'OPENAI_API_KEY',
+    'ANTHROPIC_API_KEY',
     'STRIPE_SECRET_KEY',
     'REDIS_URL'
+  ];
+
+  // Variáveis de feature flags
+  private readonly featureFlags = [
+    'ENABLE_BACKGROUND_JOBS',
+    'ENABLE_BACKFILL_SERVICE',
+    'ENABLE_WEBSOCKET_SERVICE',
+    'ENABLE_PERFORMANCE_OPTIMIZATION',
+    'ENABLE_RATE_LIMIT_ALERTS',
+    'ENABLE_FILE_LOGGING'
+  ];
+
+  // Variáveis de logging
+  private readonly loggingVars = [
+    'LOG_LEVEL',
+    'LOG_DIRECTORY',
+    'LOG_ROTATION',
+    'LOG_MAX_FILE_SIZE',
+    'LOG_MAX_FILES',
+    'ERROR_SAMPLING',
+    'ERROR_SAMPLING_RATE',
+    'ERROR_RETENTION_DAYS'
   ];
 
   private log(service: string, status: 'SUCCESS' | 'WARNING' | 'ERROR', message: string, details?: string) {
@@ -113,6 +138,52 @@ class EnvValidator {
         );
       } else {
         this.log('ENV_VAR', 'SUCCESS', `${varName} configurada`);
+      }
+    }
+
+    // Verificar feature flags
+    for (const varName of this.featureFlags) {
+      const value = process.env[varName];
+      
+      if (!value) {
+        this.log(
+          'FEATURE_FLAG', 
+          'WARNING', 
+          `Feature flag ${varName} não configurada`,
+          'Usando valor padrão'
+        );
+      } else if (value === 'true' || value === 'false') {
+        this.log('FEATURE_FLAG', 'SUCCESS', `${varName} = ${value}`);
+      } else {
+        this.log(
+          'FEATURE_FLAG', 
+          'WARNING', 
+          `${varName} tem valor inválido: ${value}`,
+          'Use "true" ou "false"'
+        );
+      }
+    }
+
+    // Verificar variáveis de logging
+    for (const varName of this.loggingVars) {
+      const value = process.env[varName];
+      
+      if (!value && varName === 'LOG_LEVEL') {
+        this.log(
+          'LOGGING', 
+          'WARNING', 
+          `${varName} não configurada`,
+          'Usando valor padrão "info"'
+        );
+      } else if (value) {
+        this.log('LOGGING', 'SUCCESS', `${varName} configurada`);
+      } else {
+        this.log(
+          'LOGGING', 
+          'WARNING', 
+          `${varName} não configurada`,
+          'Usando valor padrão'
+        );
       }
     }
   }

@@ -18,11 +18,13 @@ import {
   Crown,
   Newspaper,
   Search,
-  Bell
+  Bell,
+  GitCompare
 } from "lucide-react";
 
 const navigation = [
   { name: "Find Stocks", href: "/home", icon: Search },
+  { name: "Compare", href: "/compare", icon: GitCompare },
   { name: "Intrinsic Value", href: "/intrinsic-value", icon: Calculator },
   { name: "My Portfolios", href: "/portfolios", icon: Briefcase },
   { name: "Watchlists", href: "/watchlists", icon: Heart },
@@ -69,13 +71,13 @@ export function Sidebar() {
                   className={cn(
                     "flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 group cursor-pointer",
                     isActive
-                      ? "bg-chartreuse/10 text-chartreuse border border-chartreuse/20"
+                      ? "bg-teya-green/10 text-teya-green border border-teya-green/20"
                       : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
                   )}
                 >
                   <item.icon className={cn(
                     "h-5 w-5 transition-transform group-hover:scale-110",
-                    isActive ? "text-chartreuse" : "text-muted-foreground"
+                    isActive ? "text-teya-green" : "text-muted-foreground"
                   )} />
                   <span>{item.name}</span>
                 </div>
@@ -89,10 +91,10 @@ export function Sidebar() {
           {user ? (
             <div className="space-y-3">
               {/* Enhanced User Banner with better visual balance */}
-              <div className="bg-gradient-to-br from-chartreuse/15 via-chartreuse/10 to-chartreuse/5 border border-chartreuse/25 rounded-2xl p-5 shadow-sm hover:shadow-md transition-shadow duration-300">
+              <div className="bg-gradient-to-br from-teya-green/15 via-teya-green/10 to-teya-green/5 border border-teya-green/25 rounded-2xl p-5 shadow-sm hover:shadow-md transition-shadow duration-300">
                 <div className="flex items-center gap-4 mb-4">
-                  <div className="w-12 h-12 bg-gradient-to-br from-chartreuse/30 to-chartreuse/20 rounded-full flex items-center justify-center shadow-sm">
-                    <User className="h-5 w-5 text-chartreuse" />
+                  <div className="w-12 h-12 bg-gradient-to-br from-teya-green/30 to-teya-green/20 rounded-full flex items-center justify-center shadow-sm">
+                    <User className="h-5 w-5 text-teya-green" />
                   </div>
                   <div className="flex-1">
                     <p className="font-semibold text-base text-foreground">{user.name || "User"}</p>
@@ -114,7 +116,7 @@ export function Sidebar() {
                     <Button
                       size="sm"
                       variant="outline"
-                      className="h-7 px-3 text-xs font-medium border-chartreuse/40 text-chartreuse hover:bg-chartreuse/15 hover:border-chartreuse/60 transition-all duration-200"
+                      className="h-7 px-3 text-xs font-medium border-teya-green/40 text-teya-green hover:bg-teya-green/15 hover:border-teya-green/60 transition-all duration-200"
                     >
                       Upgrade
                     </Button>
@@ -124,7 +126,7 @@ export function Sidebar() {
             </div>
           ) : (
             <Button 
-              className="w-full bg-gradient-to-r from-chartreuse via-chartreuse-dark to-chartreuse hover:from-chartreuse-dark hover:via-chartreuse hover:to-chartreuse-dark text-rich-black font-semibold shadow-lg shadow-chartreuse/30 hover:shadow-chartreuse/50 hover:scale-105 transition-all duration-300 border-0"
+              className="w-full bg-gradient-to-r from-teya-green via-teya-green-dark to-teya-green hover:from-teya-green-dark hover:via-teya-green hover:to-teya-green-dark text-rich-black font-semibold shadow-lg shadow-teya-green/30 hover:shadow-teya-green/50 hover:scale-105 transition-all duration-300 border-0"
               onClick={() => setShowAuthModal(true)}
             >
               <LogIn className="h-4 w-4 mr-2" />

@@ -21,7 +21,7 @@ export function ScrollProgress() {
       initial={{ scaleX: 0 }}
       animate={{ scaleX: scrollProgress / 100 }}
       transition={{ duration: 0.1, ease: "easeOut" }}
-      className="fixed top-0 left-0 w-full h-1 bg-gradient-to-r from-chartreuse-dark via-chartreuse to-chartreuse-dark z-50 origin-left"
+      className="fixed top-0 left-0 w-full h-1 bg-gradient-to-r from-teya-green-dark via-teya-green to-teya-green-dark z-50 origin-left"
       style={{
         boxShadow: "0 0 10px rgba(216, 242, 45, 0.3)"
       }}

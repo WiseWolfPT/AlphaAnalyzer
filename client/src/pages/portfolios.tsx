@@ -56,21 +56,21 @@ function PortfolioHolding({ holding }: { holding: any }) {
           <span className="text-sm font-medium text-primary">{holding.symbol.charAt(0)}</span>
         </div>
         <div>
-          <div className="font-medium group-hover:text-primary transition-colors">
+          <div className="text-label group-hover:text-primary transition-colors">
             {holding.symbol}
           </div>
-          <div className="text-sm text-muted-foreground">
+          <div className="text-caption">
             {holding.shares} shares × ${currentPrice.toFixed(2)}
           </div>
         </div>
       </div>
       <div className="text-right flex items-center space-x-3">
         <div>
-          <div className="font-medium">
+          <div className="text-metric">
             ${currentValue.toFixed(2)}
           </div>
           <div className={cn(
-            "text-sm",
+            "text-caption",
             isPositive ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"
           )}>
             {isPositive ? "+" : ""}${gainLoss.toFixed(2)} ({isPositive ? "+" : ""}{gainLossPercent.toFixed(2)}%)
@@ -158,7 +158,7 @@ export default function Portfolios() {
               <p className="text-muted-foreground">Comprehensive analysis of your investment portfolio</p>
             </div>
           </div>
-          <Button className="bg-gradient-to-r from-chartreuse via-chartreuse-dark to-chartreuse hover:from-chartreuse-dark hover:via-chartreuse hover:to-chartreuse-dark text-rich-black font-semibold shadow-lg shadow-chartreuse/30 hover:shadow-chartreuse/50 hover:scale-105 transition-all duration-300 border-0">
+          <Button className="bg-gradient-to-r from-teya-green via-teya-green-dark to-teya-green hover:from-teya-green-dark hover:via-teya-green hover:to-teya-green-dark text-rich-black font-semibold shadow-lg shadow-teya-green/30 hover:shadow-teya-green/50 hover:scale-105 transition-all duration-300 border-0">
             <Plus className="h-4 w-4 mr-2" />
             Add Holding
           </Button>
@@ -193,7 +193,7 @@ export default function Portfolios() {
               <Card className="bg-card/50 backdrop-blur-sm border border-border/50">
                 <CardContent className="p-4">
                   <div className="flex items-center gap-2 mb-2">
-                    <TrendingUp className="h-4 w-4 text-chartreuse-dark" />
+                    <TrendingUp className="h-4 w-4 text-teya-green-dark" />
                     <span className="text-sm text-muted-foreground">Total Gain/Loss</span>
                   </div>
                   <div className="text-2xl font-bold text-green-600">+${portfolioData.totalGainLoss.toFixed(2)}</div>

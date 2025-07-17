@@ -58,7 +58,7 @@ export default function Login() {
           className="text-center mb-8"
         >
           <div className="flex items-center justify-center gap-3 mb-4">
-            <div className="w-12 h-12 bg-gradient-to-br from-chartreuse-dark to-chartreuse rounded-xl flex items-center justify-center shadow-lg">
+            <div className="w-12 h-12 bg-gradient-to-br from-teya-green-dark to-teya-green rounded-xl flex items-center justify-center shadow-lg">
               <BarChart3 className="h-6 w-6 text-white" />
             </div>
             <h1 className="text-2xl font-bold text-foreground">Alpha Analyzer</h1>
@@ -80,8 +80,8 @@ export default function Login() {
             </CardHeader>
             <CardContent className="space-y-6">
               {/* Beta Demo Credentials */}
-              <Alert className="border-chartreuse/50 bg-chartreuse/10">
-                <AlertDescription className="text-chartreuse-dark">
+              <Alert className="border-teya-green/50 bg-teya-green/10">
+                <AlertDescription className="text-teya-green-dark">
                   <strong>Credenciais Beta:</strong><br />
                   Email: beta@alfalyzer.com<br />
                   Password: 123demo
@@ -95,8 +95,8 @@ export default function Login() {
               )}
 
               {resetEmailSent && (
-                <Alert className="border-chartreuse/50 bg-chartreuse/10">
-                  <AlertDescription className="text-chartreuse-dark">
+                <Alert className="border-teya-green/50 bg-teya-green/10">
+                  <AlertDescription className="text-teya-green-dark">
                     Email de recuperação enviado! Verifique a sua caixa de entrada.
                   </AlertDescription>
                 </Alert>
@@ -144,7 +144,7 @@ export default function Login() {
 
                 <Button
                   type="submit"
-                  className="w-full bg-chartreuse-dark dark:bg-chartreuse hover:bg-chartreuse-dark/90 dark:hover:bg-chartreuse/90 text-deep-black font-semibold"
+                  className="w-full bg-teya-green-dark dark:bg-teya-green hover:bg-teya-green-dark/90 dark:hover:bg-teya-green/90 text-deep-black font-semibold"
                   disabled={loading}
                 >
                   {loading ? "A fazer login..." : "Fazer Login"}
@@ -180,7 +180,7 @@ export default function Login() {
                 <button
                   type="button"
                   onClick={handleResetPassword}
-                  className="text-sm text-chartreuse hover:text-chartreuse-dark underline"
+                  className="text-sm text-teya-green hover:text-teya-green-dark underline"
                   disabled={loading}
                 >
                   Esqueceu-se da password?
@@ -188,7 +188,7 @@ export default function Login() {
                 
                 <p className="text-sm text-muted-foreground">
                   Não tem conta?{" "}
-                  <a href="/register" className="text-chartreuse hover:text-chartreuse-dark underline">
+                  <a href="/register" className="text-teya-green hover:text-teya-green-dark underline">
                     Registar-se
                   </a>
                 </p>

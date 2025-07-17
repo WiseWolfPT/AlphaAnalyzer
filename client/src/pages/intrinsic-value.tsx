@@ -24,7 +24,8 @@ import {
   ArrowDown,
   Info
 } from "lucide-react";
-import { PieChart as RechartsPieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from "@/components/ui/lightweight-chart";
+import { PieChart as RechartsPieChart, ResponsiveContainer, BarChart, XAxis, YAxis, CartesianGrid } from "@/components/ui/lightweight-chart";
+import { Pie, Cell, Bar, Tooltip, Legend } from "recharts";
 import { motion } from "framer-motion";
 import type { Stock } from "@shared/schema";
 
@@ -184,7 +185,7 @@ export default function IntrinsicValue() {
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-4">
-            <div className="p-2 bg-chartreuse/10 rounded-xl">
+            <div className="p-2 bg-teya-green/10 rounded-xl">
               <Calculator className="h-6 w-6 text-primary" />
             </div>
             <div>
@@ -218,7 +219,7 @@ export default function IntrinsicValue() {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-chartreuse/20 rounded-lg flex items-center justify-center">
+                    <div className="w-12 h-12 bg-teya-green/20 rounded-lg flex items-center justify-center">
                       <span className="font-bold text-primary">{selectedStock.symbol.charAt(0)}</span>
                     </div>
                     <div>
@@ -277,7 +278,7 @@ export default function IntrinsicValue() {
                           <div className="text-sm text-muted-foreground">Current Price</div>
                           <div className="text-2xl font-bold">{formatCurrency(calculation.currentPrice)}</div>
                         </div>
-                        <div className="p-4 bg-chartreuse/10 rounded-lg">
+                        <div className="p-4 bg-teya-green/10 rounded-lg">
                           <div className="text-sm text-muted-foreground">Intrinsic Value</div>
                           <div className="text-2xl font-bold text-primary">{formatCurrency(calculation.intrinsicValue)}</div>
                         </div>
@@ -458,7 +459,7 @@ export default function IntrinsicValue() {
                     </div>
                     <Button 
                       onClick={() => selectedStock && calculateIntrinsicValue(selectedStock)}
-                      className="w-full bg-gradient-to-r from-chartreuse via-chartreuse-dark to-chartreuse hover:from-chartreuse-dark hover:via-chartreuse hover:to-chartreuse-dark text-rich-black font-semibold shadow-lg shadow-chartreuse/30 hover:shadow-chartreuse/50 hover:scale-105 transition-all duration-300 border-0"
+                      className="w-full bg-gradient-to-r from-teya-green via-teya-green-dark to-teya-green hover:from-teya-green-dark hover:via-teya-green hover:to-teya-green-dark text-rich-black font-semibold shadow-lg shadow-teya-green/30 hover:shadow-teya-green/50 hover:scale-105 transition-all duration-300 border-0"
                     >
                       Recalculate
                     </Button>

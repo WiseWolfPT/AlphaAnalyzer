@@ -34,6 +34,7 @@ import {
   Globe
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { AITranscriptSummary } from '@/components/admin/ai-transcript-summary';
 
 
 // US S&P 500 companies for transcript upload (focused list)
@@ -532,28 +533,11 @@ export default function TranscriptUpload() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Bot className="h-5 w-5" />
-                  Integração com ChatGPT (Em Desenvolvimento)
+                  Geração de Resumo com IA (Anthropic Claude)
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <Alert>
-                  <AlertCircle className="h-4 w-4" />
-                  <AlertDescription>
-                    <div className="space-y-2">
-                      <p className="font-medium">Workflow de AI Summary</p>
-                      <ol className="list-decimal list-inside space-y-1 text-sm">
-                        <li>Admin faz upload da transcrição bruta</li>
-                        <li>Sistema processa e identifica seções-chave</li>
-                        <li>Integração com ChatGPT API para geração de resumo</li>
-                        <li>Admin revisa e edita o resumo gerado</li>
-                        <li>Publicação para usuários finais</li>
-                      </ol>
-                      <p className="text-xs text-muted-foreground mt-4">
-                        Esta funcionalidade será implementada na próxima fase com API do ChatGPT.
-                      </p>
-                    </div>
-                  </AlertDescription>
-                </Alert>
+                <AITranscriptSummary />
               </CardContent>
             </Card>
           </TabsContent>

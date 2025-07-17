@@ -41,3 +41,5 @@ workspace/
 # Vercel
 .vercel
 .env
+
+.env.status.json

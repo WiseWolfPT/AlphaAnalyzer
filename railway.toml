@@ -1,0 +1,28 @@
+[build]
+builder = "nixpacks"
+
+[deploy]
+healthcheckPath = "/health"
+healthcheckTimeout = 300
+restartPolicyType = "never"
+
+# Main web service
+[[services]]
+name = "alfalyzer-web"
+source = "."
+variables = { PORT = "3000" }
+
+[services.healthcheck]
+path = "/health"
+timeout = 300
+
+# Price update cron job
+[[services]]
+name = "alfalyzer-price-cron"
+source = "."
+cron = "*/15 * * * *"  # Every 15 minutes
+command = "npm run cron:update-prices"
+
+# Variáveis de ambiente para todos os serviços
+[env]
+NODE_ENV = "production"

@@ -1,36 +1,64 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import enhancedApi from '@/lib/enhanced-api';
+import { queryKeys, prefetchConfigs } from '@/lib/query-client';
+import { localCache } from '@/services/local-cache';
 import type { Stock } from '@shared/schema';
 
 // Hook for fetching a single stock with real-time data
 export function useStock(symbol: string, enabled = true) {
   return useQuery({
-    queryKey: ['stock', symbol],
-    queryFn: () => enhancedApi.stocks.getBySymbol(symbol),
+    queryKey: queryKeys.stock(symbol),
+    queryFn: async () => {
+      // Check local cache first
+      const cached = localCache.getStockData(symbol, 'stock_profile');
+      if (cached) {
+        return cached;
+      }
+      
+      // Fetch from API
+      const data = await enhancedApi.stocks.getBySymbol(symbol);
+      
+      // Cache the result
+      localCache.setStockData(symbol, 'stock_profile', data);
+      
+      return data;
+    },
     enabled: enabled && !!symbol,
-    staleTime: 60 * 1000, // Data is fresh for 1 minute
-    refetchInterval: 60 * 1000, // Refetch every minute
+    ...prefetchConfigs.stock,
   });
 }
 
 // Hook for fetching multiple stocks
 export function useStocks(symbols: string[]) {
   return useQuery({
-    queryKey: ['stocks', 'batch', symbols],
+    queryKey: ['stocks', 'batch', symbols.sort().join(',')],
     queryFn: () => enhancedApi.stocks.getBatch(symbols),
     enabled: symbols.length > 0,
-    staleTime: 60 * 1000,
-    refetchInterval: 60 * 1000,
+    ...prefetchConfigs.stock,
   });
 }
 
 // Hook for searching stocks
 export function useStockSearch(query: string) {
   return useQuery({
-    queryKey: ['stocks', 'search', query],
-    queryFn: () => enhancedApi.stocks.search(query),
+    queryKey: queryKeys.search(query),
+    queryFn: async () => {
+      // Check cache first
+      const cached = localCache.get(`search_${query}`);
+      if (cached) {
+        return cached;
+      }
+      
+      // Fetch from API
+      const data = await enhancedApi.stocks.search(query);
+      
+      // Cache the result
+      localCache.set(`search_${query}`, data, { ttl: 10 * 60 * 1000 }); // 10 minutes
+      
+      return data;
+    },
     enabled: query.length >= 2,
-    staleTime: 5 * 60 * 1000, // Cache search results for 5 minutes
+    ...prefetchConfigs.search,
   });
 }
 
@@ -41,8 +69,27 @@ export function useHistoricalData(
   outputsize = 30
 ) {
   return useQuery({
-    queryKey: ['stocks', 'historical', symbol, interval, outputsize],
-    queryFn: () => enhancedApi.stocks.getHistoricalData(symbol, interval, outputsize),
+    queryKey: queryKeys.stockChart(symbol, `${interval}_${outputsize}`),
+    queryFn: async () => {
+      // Check cache for chart data
+      const cached = localCache.getStockData(symbol, 'stock_chart');
+      if (cached && cached.interval === interval && cached.outputsize === outputsize) {
+        return cached.data;
+      }
+      
+      // Fetch from API
+      const data = await enhancedApi.stocks.getHistoricalData(symbol, interval, outputsize);
+      
+      // Cache the result
+      localCache.setStockData(symbol, 'stock_chart', { 
+        data, 
+        interval, 
+        outputsize,
+        timestamp: Date.now()
+      });
+      
+      return data;
+    },
     enabled: !!symbol,
     staleTime: interval === '1min' ? 60 * 1000 : 
               interval === '5min' ? 5 * 60 * 1000 :
@@ -56,10 +103,23 @@ export function useHistoricalData(
 // Hook for market indices
 export function useMarketIndices() {
   return useQuery({
-    queryKey: ['market', 'indices'],
-    queryFn: () => enhancedApi.market.getIndices(),
-    staleTime: 60 * 1000,
-    refetchInterval: 60 * 1000,
+    queryKey: queryKeys.marketOverview(),
+    queryFn: async () => {
+      // Check cache first
+      const cached = localCache.getMarketData('indices');
+      if (cached) {
+        return cached;
+      }
+      
+      // Fetch from API
+      const data = await enhancedApi.market.getIndices();
+      
+      // Cache the result
+      localCache.setMarketData('indices', data);
+      
+      return data;
+    },
+    ...prefetchConfigs.market,
   });
 }
 

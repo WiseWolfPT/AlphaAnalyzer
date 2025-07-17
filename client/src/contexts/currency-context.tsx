@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback, useRef } from 'react';
-import { ExchangeRateService } from '@/services/exchange-rate-service';
+import { exchangeRateService } from '@/services/exchange-rate-service';
 
 type Currency = 'USD' | 'EUR';
 
@@ -29,7 +29,7 @@ export const CurrencyProvider = ({ children }: CurrencyProviderProps) => {
   });
 
   const [isLoading, setIsLoading] = useState(false);
-  const exchangeRateService = useRef(new ExchangeRateService()).current;
+  const exchangeService = exchangeRateService;
 
   useEffect(() => {
     localStorage.setItem('alfalyzer-currency', currentCurrency);
@@ -71,7 +71,7 @@ export const CurrencyProvider = ({ children }: CurrencyProviderProps) => {
 
     try {
       setIsLoading(true);
-      const convertedValue = await exchangeRateService.convertCurrency(value, fromCurrency, toCurrency);
+      const convertedValue = await exchangeService.convertCurrency(value, fromCurrency, toCurrency);
       return convertedValue;
     } catch (error) {
       console.error('Currency conversion failed, using fallback:', error);
@@ -93,21 +93,21 @@ export const CurrencyProvider = ({ children }: CurrencyProviderProps) => {
   const getExchangeRate = useCallback(async (fromCurrency: Currency, toCurrency: Currency): Promise<number | null> => {
     try {
       setIsLoading(true);
-      return await exchangeRateService.getExchangeRate(fromCurrency, toCurrency);
+      return await exchangeService.getExchangeRate(fromCurrency, toCurrency);
     } catch (error) {
       console.error('Failed to get exchange rate:', error);
       return null;
     } finally {
       setIsLoading(false);
     }
-  }, [exchangeRateService]);
+  }, [exchangeService]);
 
   // Warm the cache on startup
   useEffect(() => {
-    exchangeRateService.warmCache().catch(error => {
+    exchangeService.warmCache().catch(error => {
       console.debug('Exchange rate cache warming failed:', error);
     });
-  }, [exchangeRateService]);
+  }, [exchangeService]);
 
   return (
     <CurrencyContext.Provider value={{ 

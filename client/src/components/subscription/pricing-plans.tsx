@@ -111,7 +111,7 @@ export function PricingPlans({ currentPlan, onSelectPlan }: PricingPlansProps) {
 
               <Button
                 className={`w-full ${plan.isPopular 
-                  ? 'bg-gradient-to-r from-chartreuse via-chartreuse-dark to-chartreuse hover:from-chartreuse-dark hover:via-chartreuse hover:to-chartreuse-dark text-rich-black font-semibold shadow-lg shadow-chartreuse/30 hover:shadow-chartreuse/50 hover:scale-105 transition-all duration-300 border-0' 
+                  ? 'bg-gradient-to-r from-teya-green via-teya-green-dark to-teya-green hover:from-teya-green-dark hover:via-teya-green hover:to-teya-green-dark text-rich-black font-semibold shadow-lg shadow-teya-green/30 hover:shadow-teya-green/50 hover:scale-105 transition-all duration-300 border-0' 
                   : ''
                 }`}
                 variant={plan.isPopular ? "default" : "outline"}
@@ -164,7 +164,7 @@ export function PricingPlans({ currentPlan, onSelectPlan }: PricingPlansProps) {
                 Cancel
               </Button>
               <Button 
-                className="flex-1 bg-gradient-to-r from-chartreuse via-chartreuse-dark to-chartreuse hover:from-chartreuse-dark hover:via-chartreuse hover:to-chartreuse-dark text-rich-black font-semibold shadow-lg shadow-chartreuse/30 hover:shadow-chartreuse/50 hover:scale-105 transition-all duration-300 border-0"
+                className="flex-1 bg-gradient-to-r from-teya-green via-teya-green-dark to-teya-green hover:from-teya-green-dark hover:via-teya-green hover:to-teya-green-dark text-rich-black font-semibold shadow-lg shadow-teya-green/30 hover:shadow-teya-green/50 hover:scale-105 transition-all duration-300 border-0"
                 onClick={() => {
                   // Redirect to Whop subscription page
                   window.open('https://whop.com/your-community-link', '_blank');

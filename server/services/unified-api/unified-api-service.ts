@@ -10,20 +10,24 @@ import {
 import { DataType, DATA_TYPE_PROVIDERS, ProviderName } from '../quota/quota-limits';
 import { getCache, CACHE_TTL } from '../cache';
 import { getQuotaTracker } from '../quota';
-// import { 
-//   circuitBreakerManager, 
-//   CircuitBreaker, 
-//   CircuitBreakerState 
-// } from './circuit-breaker';
+import { 
+  circuitBreakerManager, 
+  CircuitBreaker, 
+  CircuitBreakerState 
+} from './circuit-breaker';
 
 export class UnifiedAPIService {
   private providers: Map<ProviderName, IMarketDataProvider> = new Map();
-  private cache = getCache();
-  private quotaTracker = getQuotaTracker();
+  private cache: any;
+  private quotaTracker: any;
   private initialized = false;
 
   async initialize(providers: IMarketDataProvider[]): Promise<void> {
     console.log('[UnifiedAPIService] Initializing with providers:', providers.map(p => p.name));
+    
+    // Initialize cache and quota tracker
+    this.cache = getCache();
+    this.quotaTracker = getQuotaTracker();
     
     // Register providers
     for (const provider of providers) {

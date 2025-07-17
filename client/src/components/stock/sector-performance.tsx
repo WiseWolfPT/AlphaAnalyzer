@@ -1,7 +1,8 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { TrendingUp, TrendingDown, Activity, BarChart3 } from "lucide-react";
-import { BarChart, Bar, ResponsiveContainer, Tooltip, XAxis, YAxis, CartesianGrid, PieChart, Pie, Cell, Legend } from "@/components/ui/lightweight-chart";
+import { BarChart, ResponsiveContainer, XAxis, YAxis, CartesianGrid, PieChart, Cell } from "@/components/ui/lightweight-chart";
+import { Bar, Tooltip, Pie, Legend } from "recharts";
 import { cn } from "@/lib/utils";
 import type { MockStock } from "@/lib/mock-api";
 

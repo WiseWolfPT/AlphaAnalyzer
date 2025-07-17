@@ -13,9 +13,16 @@ export interface ProviderUsage {
 }
 
 export class QuotaTracker {
-  private cache = getCache();
+  private cache: any;
   private readonly USAGE_KEY_PREFIX = 'quota:usage:';
   private readonly MINUTE_KEY_PREFIX = 'quota:minute:';
+
+  constructor() {
+    // Defer cache initialization to avoid circular dependencies
+    setTimeout(() => {
+      this.cache = getCache();
+    }, 0);
+  }
 
   async recordCall(provider: ProviderName, endpoint: string): Promise<void> {
     const now = Date.now();

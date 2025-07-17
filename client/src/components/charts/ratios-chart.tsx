@@ -1,5 +1,6 @@
 // Ratios Chart - Blue bars showing financial ratios (P/E, ROE, etc.)
-import { BarChart, Bar, ResponsiveContainer, Tooltip, XAxis, YAxis } from "@/components/ui/lightweight-chart";
+import { BarChart, ResponsiveContainer, XAxis, YAxis } from "@/components/ui/lightweight-chart";
+import { Bar, Tooltip } from "recharts";
 import { ChartContainer } from "./chart-container";
 
 interface RatiosChartProps {
@@ -38,7 +39,7 @@ export function RatiosChart({ data }: RatiosChartProps) {
         <div className="bg-background border border-border rounded-lg p-3 shadow-lg">
           <p className="text-sm font-medium mb-2">{label}</p>
           <div className="space-y-1 text-xs">
-            <p className="text-chartreuse-dark">
+            <p className="text-teya-green">
               Return on Capital Employed: <span className="font-semibold">{data.roe.toFixed(1)}%</span>
             </p>
             <p className="text-muted-foreground">
@@ -85,7 +86,7 @@ export function RatiosChart({ data }: RatiosChartProps) {
           <Tooltip content={<CustomTooltip />} />
           <Bar 
             dataKey="roe" 
-            fill="#D8F22D" 
+            fill="#F4FA4E" 
             radius={[2, 2, 0, 0]}
           />
         </BarChart>

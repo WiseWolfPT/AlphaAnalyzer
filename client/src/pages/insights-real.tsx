@@ -55,7 +55,7 @@ export default function InsightsReal() {
         <div className="mb-12">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-chartreuse/10 rounded-xl">
+              <div className="p-2 bg-teya-green/10 rounded-xl">
                 <TrendingUp className="h-6 w-6 text-primary" />
               </div>
               <div>

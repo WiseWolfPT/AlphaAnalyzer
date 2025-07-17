@@ -7,14 +7,15 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ChevronLeft, ChevronRight, Calendar, ExternalLink, TrendingUp } from "lucide-react";
+import { ChevronLeft, ChevronRight, Calendar, ExternalLink, TrendingUp, Wifi, WifiOff } from "lucide-react";
+import { addDays, subWeeks, addWeeks, startOfWeek, endOfWeek, format } from "date-fns";
 
 import { useStock } from "@/hooks/use-enhanced-stocks";
 import { cn } from "@/lib/utils";
-import type { Earnings } from "@shared/schema";
+import { earningsService, type EarningsEvent } from "@/services/earnings-service";
 
 // Enhanced earnings item component with real data
-function EarningsItem({ earning }: { earning: any }) {
+function EarningsItem({ earning }: { earning: EarningsEvent }) {
   const [, setLocation] = useLocation();
   const { data: stock, isLoading } = useStock(earning.symbol);
 
@@ -50,6 +51,9 @@ function EarningsItem({ earning }: { earning: any }) {
           <div className="text-xs font-medium group-hover:text-primary transition-colors">
             {earning.symbol}
           </div>
+          <div className="text-xs text-muted-foreground truncate max-w-20">
+            {earning.companyName || earning.symbol}
+          </div>
           <div className="text-xs text-muted-foreground">
             EPS: ${earning.estimatedEPS?.toFixed(2) || "N/A"}
           </div>
@@ -69,8 +73,12 @@ export default function EarningsCalendar() {
   const weekStart = startOfWeek(currentWeek, { weekStartsOn: 1 }); // Monday
   const weekEnd = endOfWeek(currentWeek, { weekStartsOn: 1 }); // Sunday
 
-  const { data: earnings } = useQuery<Earnings[]>({
-    queryKey: ["/api/earnings"],
+  // Integração real com API de earnings - Fase 3.7
+  const { data: earningsData, isLoading: earningsLoading, error: earningsError } = useQuery({
+    queryKey: ["earnings-calendar", weekStart.toISOString(), weekEnd.toISOString()],
+    queryFn: () => earningsService.getEarningsForWeek(weekStart, weekEnd),
+    staleTime: 24 * 60 * 60 * 1000, // 24 horas
+    cacheTime: 24 * 60 * 60 * 1000,
   });
 
   const goToPreviousWeek = () => {
@@ -85,21 +93,14 @@ export default function EarningsCalendar() {
     setCurrentWeek(new Date());
   };
 
-  const getEarningsForDay = (day: Date, time: 'before_open' | 'after_close') => {
-    // Mock earnings data for demonstration
-    const mockEarnings = [
-      { symbol: 'AAPL', day: 1, time: 'after_close', estimatedEPS: 2.11, estimatedRevenue: 125000000000 },
-      { symbol: 'MSFT', day: 2, time: 'after_close', estimatedEPS: 2.78, estimatedRevenue: 58000000000 },
-      { symbol: 'GOOGL', day: 2, time: 'before_open', estimatedEPS: 1.45, estimatedRevenue: 86000000000 },
-      { symbol: 'AMZN', day: 3, time: 'after_close', estimatedEPS: 0.85, estimatedRevenue: 149000000000 },
-      { symbol: 'TSLA', day: 4, time: 'after_close', estimatedEPS: 0.75, estimatedRevenue: 24000000000 },
-      { symbol: 'META', day: 4, time: 'before_open', estimatedEPS: 3.20, estimatedRevenue: 40000000000 },
-    ];
+  const getEarningsForDay = (day: Date, time: 'before_open' | 'after_close'): EarningsEvent[] => {
+    if (!earningsData?.events) return [];
 
-    const dayOfWeek = day.getDay();
-    const adjustedDay = dayOfWeek === 0 ? 7 : dayOfWeek; // Convert Sunday (0) to 7
-
-    return mockEarnings.filter(e => e.day === adjustedDay && e.time === time);
+    const dayString = format(day, 'yyyy-MM-dd');
+    
+    return earningsData.events.filter(earning => 
+      earning.reportDate === dayString && earning.time === time
+    );
   };
 
   const weekDays = Array.from({ length: 5 }, (_, i) => addDays(weekStart, i));
@@ -122,6 +123,37 @@ export default function EarningsCalendar() {
               <h1 className="text-xl font-bold">
                 Earnings This Week – {format(weekStart, 'MMM dd')} → {format(weekEnd, 'MMM dd')}
               </h1>
+              
+              {/* Indicador de fonte de dados - Fase 3.7 */}
+              <div className="flex items-center space-x-2">
+                {earningsLoading ? (
+                  <Badge variant="secondary" className="text-xs">
+                    <TrendingUp className="h-3 w-3 mr-1" />
+                    Loading...
+                  </Badge>
+                ) : earningsData?.fromCache ? (
+                  <Badge variant="outline" className="text-xs">
+                    <WifiOff className="h-3 w-3 mr-1" />
+                    Cached
+                  </Badge>
+                ) : earningsData?.source === 'mock' ? (
+                  <Badge variant="destructive" className="text-xs">
+                    <WifiOff className="h-3 w-3 mr-1" />
+                    Demo
+                  </Badge>
+                ) : (
+                  <Badge variant="default" className="text-xs bg-green-600">
+                    <Wifi className="h-3 w-3 mr-1" />
+                    Live
+                  </Badge>
+                )}
+                
+                {earningsData && (
+                  <span className="text-xs text-muted-foreground">
+                    {earningsData.events.length} events
+                  </span>
+                )}
+              </div>
             </div>
           </div>
 
@@ -157,13 +189,54 @@ export default function EarningsCalendar() {
           <div className="flex gap-6">
             {/* Calendar Grid */}
             <div className="flex-1">
-              <div className="grid grid-cols-5 gap-4">
+              {earningsLoading ? (
+                <div className="grid grid-cols-5 gap-4">
+                  {Array.from({ length: 5 }, (_, i) => (
+                    <div key={i} className="space-y-4">
+                      <div className="text-center animate-pulse">
+                        <div className="text-sm text-muted-foreground">Loading...</div>
+                        <div className="w-8 h-8 mx-auto rounded-full bg-gray-300"></div>
+                      </div>
+                      <Card className="min-h-[120px] animate-pulse">
+                        <CardHeader className="pb-2">
+                          <div className="h-4 bg-gray-300 rounded w-20"></div>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="space-y-2">
+                            <div className="h-8 bg-gray-300 rounded"></div>
+                            <div className="h-8 bg-gray-300 rounded"></div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                      <Card className="min-h-[120px] animate-pulse">
+                        <CardHeader className="pb-2">
+                          <div className="h-4 bg-gray-300 rounded w-20"></div>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="space-y-2">
+                            <div className="h-8 bg-gray-300 rounded"></div>
+                            <div className="h-8 bg-gray-300 rounded"></div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </div>
+                  ))}
+                </div>
+              ) : earningsError ? (
+                <div className="text-center py-8">
+                  <div className="text-red-500 mb-2">⚠️ Erro ao carregar earnings</div>
+                  <div className="text-sm text-muted-foreground">
+                    Usando dados de demonstração
+                  </div>
+                </div>
+              ) : (
+                <div className="grid grid-cols-5 gap-4">
                 {weekDays.map((day) => (
                   <div key={day.toISOString()} className="space-y-4">
                     {/* Day Header */}
                     <div className="text-center">
                       <div className="text-sm text-muted-foreground">{format(day, 'EEE')}</div>
-                      <div className="w-8 h-8 mx-auto rounded-full bg-chartreuse text-rich-black flex items-center justify-center text-sm font-medium">
+                      <div className="w-8 h-8 mx-auto rounded-full bg-teya-green text-rich-black flex items-center justify-center text-sm font-medium">
                         {format(day, 'd')}
                       </div>
                     </div>
@@ -193,7 +266,8 @@ export default function EarningsCalendar() {
                     </Card>
                   </div>
                 ))}
-              </div>
+                </div>
+              )}
             </div>
 
             {/* Side Panel */}
@@ -202,7 +276,7 @@ export default function EarningsCalendar() {
                 <Card>
                   <CardHeader>
                     <div className="flex items-center space-x-3">
-                      <div className="w-10 h-10 rounded-lg bg-chartreuse/20 flex items-center justify-center">
+                      <div className="w-10 h-10 rounded-lg bg-teya-green/20 flex items-center justify-center">
                         <span className="font-medium">{selectedStock.charAt(0)}</span>
                       </div>
                       <div>
@@ -221,7 +295,7 @@ export default function EarningsCalendar() {
                     <div>
                       <h4 className="font-medium mb-2">Next Earnings</h4>
                       <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-                        <Calendar className="h-4 w-4" />
+                        <Calendar className="h-4" />
                         <span>Jan 25, 2024 - After Close</span>
                       </div>
                       <div className="text-sm text-muted-foreground mt-1">
@@ -280,7 +354,7 @@ export default function EarningsCalendar() {
               </div>
             )}
           </div>
-      </div>
+        </div>
     </MainLayout>
   );
 }

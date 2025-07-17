@@ -43,7 +43,7 @@ const envRequirements = {
       // Database
       'VITE_SUPABASE_URL',
       'VITE_SUPABASE_ANON_KEY',
-      'SUPABASE_SERVICE_KEY',
+      'SUPABASE_SERVICE_ROLE_KEY',
       'DATABASE_URL',
       
       // Financial APIs (at least one required)
@@ -122,7 +122,7 @@ const securityChecks = [
     name: 'No VITE_ prefix on server-side secrets',
     check: (env) => {
       const serverSecrets = [
-        'SUPABASE_SERVICE_KEY',
+        'SUPABASE_SERVICE_ROLE_KEY',
         'FINNHUB_API_KEY',
         'ALPHA_VANTAGE_API_KEY',
         'FMP_API_KEY',

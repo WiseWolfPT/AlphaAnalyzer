@@ -2,7 +2,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { TrendingUp, TrendingDown, Calendar, DollarSign, Target, AlertCircle } from "lucide-react";
-import { LineChart, Line, ResponsiveContainer, Tooltip, XAxis, YAxis, CartesianGrid, BarChart, Bar, ComposedChart, Area, AreaChart } from "@/components/ui/lightweight-chart";
+import { LineChart, ResponsiveContainer, XAxis, YAxis, CartesianGrid, BarChart, AreaChart } from "@/components/ui/lightweight-chart";
+import { Line, Tooltip, Bar, Area } from "recharts";
 import { cn } from "@/lib/utils";
 import type { MockStock } from "@/lib/mock-api";
 
@@ -83,7 +84,7 @@ export function EarningsTrends({ stock }: EarningsTrendsProps) {
         <Card className="bg-card/50 backdrop-blur-sm border border-border/50">
           <CardContent className="p-4">
             <div className="flex items-center gap-2 mb-2">
-              <TrendingUp className="h-4 w-4 text-chartreuse-dark" />
+              <TrendingUp className="h-4 w-4 text-teya-green-dark" />
               <span className="text-sm text-muted-foreground">EPS Growth</span>
             </div>
             <div className="text-2xl font-bold">{epsGrowth.toFixed(1)}%</div>
@@ -190,7 +191,7 @@ export function EarningsTrends({ stock }: EarningsTrendsProps) {
                 <AreaChart data={earningsData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
                   <defs>
                     <linearGradient id="revenueGradient" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#D8F22D" stopOpacity={0.3}/>
+                      <stop offset="5%" stopColor="#F4FA4E" stopOpacity={0.3}/>
                       <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
                     </linearGradient>
                   </defs>
@@ -214,14 +215,14 @@ export function EarningsTrends({ stock }: EarningsTrendsProps) {
                   <Area 
                     type="monotone" 
                     dataKey="revenue" 
-                    stroke="#D8F22D" 
+                    stroke="#F4FA4E" 
                     strokeWidth={3}
                     fill="url(#revenueGradient)"
                   />
                 </AreaChart>
               </ResponsiveContainer>
             </div>
-            <div className="mt-4 p-3 bg-chartreuse/10 rounded-lg">
+            <div className="mt-4 p-3 bg-teya-green/10 rounded-lg">
               <div className="flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">8-Quarter Growth</span>
                 <span className={cn(

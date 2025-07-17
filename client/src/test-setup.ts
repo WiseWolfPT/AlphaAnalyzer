@@ -3,8 +3,12 @@
  * International Markets Testing Environment (USA/EU)
  */
 
+import { config } from 'dotenv';
 import '@testing-library/jest-dom';
 import { vi } from 'vitest';
+
+// Carregar .env antes de tudo para testes
+config();
 
 // Mock environment variables for tests
 Object.assign(process.env, {

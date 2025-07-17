@@ -13,6 +13,10 @@ import stocksRouter from "./routes/stocks";
 import transcriptsRouter from "./routes/transcripts";
 import apiProxyRouter from "./routes/api-proxy";
 import { imageProxyRouter } from "./routes/image-proxy";
+import cronRouter from "./routes/cron";
+import aiAnalysisRouter from "./routes/ai-analysis";
+import portfoliosRouter from "./routes/portfolios";
+import earningsCalendarRouter from "./routes/earnings-calendar";
 // REMOVED: Cache and alerts imports due to startup issues
 // import cacheAdminRouter from "./routes/cache-admin";
 // import { alertsRouter } from "./routes/alerts";
@@ -21,6 +25,10 @@ import { imageProxyRouter } from "./routes/image-proxy";
 // import circuitBreakerRouter from "./routes/circuit-breaker"; // TODO: Create this file
 import { authMiddleware } from "./middleware/auth-middleware";
 import { validateRequest, validationSchemas } from "./security/security-middleware";
+import { 
+  apiSecurityMiddleware, 
+  adminSecurityMiddleware 
+} from "./middleware/api-security";
 
 // SECURITY FIX: Add API versioning for backward compatibility
 const API_VERSION = 'v1';
@@ -117,7 +125,9 @@ export async function registerRoutes(app: Express, server: Server): Promise<void
         "/api/subscriptions",
         "/api/admin",
         "/api/transcripts",
+        "/api/portfolios",
         "/api/proxy",
+        "/api/ai",
         // "/api/alerts", // REMOVED: Due to startup issues
         "/api/push",
         "/api/circuit-breaker"
@@ -127,7 +137,8 @@ export async function registerRoutes(app: Express, server: Server): Promise<void
 
   // SECURITY FIX: Register all route modules with proper authentication
   app.use("/api/auth", authRouter);
-  app.use("/api/admin", adminRouter);
+  app.use("/api/admin", adminSecurityMiddleware, adminRouter);
+  app.use("/api/cron", cronRouter);
   // REMOVED: Cache admin router due to startup issues
   // app.use("/api/admin/cache", cacheAdminRouter);
   app.use("/api/subscriptions", subscriptionsRouter);
@@ -135,6 +146,15 @@ export async function registerRoutes(app: Express, server: Server): Promise<void
   
   // ROADMAP V4: Public transcripts routes
   app.use("/api/transcripts", transcriptsRouter);
+  
+  // PHASE 3: Portfolio Management CRUD routes
+  app.use("/api/portfolios", portfoliosRouter);
+  
+  // PHASE 3: AI Analysis routes for OpenAI-powered transcript analysis
+  app.use("/api/ai", aiAnalysisRouter);
+  
+  // FASE 3.7: Earnings Calendar with real API data (Alpha Vantage/FMP)
+  app.use("/api/earnings", earningsCalendarRouter);
   
   // WAVE 4: API proxy routes for secure external API access
   app.use("/api/proxy", apiProxyRouter);
@@ -156,7 +176,7 @@ export async function registerRoutes(app: Express, server: Server): Promise<void
   app.use(`/api/${API_VERSION}/valuation`, enhancedValuationRouter);
   
   // Maintain backward compatibility
-  app.use("/api/market-data", marketDataRouter);
+  app.use("/api/market-data", apiSecurityMiddleware, marketDataRouter);
   
   // Stock data routes
   app.use("/api", stocksRouter);
@@ -215,7 +235,7 @@ export async function registerRoutes(app: Express, server: Server): Promise<void
     }
   });
 
-  app.post("/api/stocks", authService.authenticate(), async (req, res) => {
+  app.post("/api/stocks", authService.authenticate(), apiSecurityMiddleware, async (req, res) => {
     try {
       const stockData = insertStockSchema.parse(req.body);
       const stock = await storage.createStock(stockData);
@@ -340,6 +360,7 @@ export async function registerRoutes(app: Express, server: Server): Promise<void
   // Adam Khoo intrinsic value calculation
   app.post("/api/intrinsic-values/calculate", 
     authService.authenticate(), 
+    apiSecurityMiddleware,
     validateRequest(routeValidationSchemas.calculateIntrinsicValue),
     async (req, res) => {
     try {
@@ -439,8 +460,10 @@ export async function registerRoutes(app: Express, server: Server): Promise<void
     }
   });
 
-  // Earnings routes - SECURITY FIX: Public data but add optional auth for rate limiting
-  app.get("/api/earnings", authService.optionalAuth(), async (req, res) => {
+  // DEPRECATED: Old earnings routes - moved to dedicated earnings-calendar router in FASE 3.7
+  // Keeping commented for reference - now handled by /api/earnings routes above
+  /*
+  app.get("/api/earnings-old", authService.optionalAuth(), async (req, res) => {
     try {
       const limit = parseInt(req.query.limit as string) || 50;
       const earnings = await storage.getEarnings(limit);
@@ -450,7 +473,7 @@ export async function registerRoutes(app: Express, server: Server): Promise<void
     }
   });
 
-  app.get("/api/earnings/:symbol", authService.optionalAuth(), async (req, res) => {
+  app.get("/api/earnings-old/:symbol", authService.optionalAuth(), async (req, res) => {
     try {
       const symbol = req.params.symbol.toUpperCase();
       const earnings = await storage.getEarningsForStock(symbol);
@@ -459,6 +482,7 @@ export async function registerRoutes(app: Express, server: Server): Promise<void
       res.status(500).json({ message: "Failed to fetch earnings for stock" });
     }
   });
+  */
 
   // Market indices endpoint (simulated) - SECURITY FIX: Public data but add optional auth for rate limiting
   app.get("/api/market-indices", authService.optionalAuth(), async (req, res) => {

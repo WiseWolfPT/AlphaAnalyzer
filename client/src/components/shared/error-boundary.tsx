@@ -3,6 +3,9 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle, RefreshCw, Home } from "lucide-react";
+// Temporarily disable monitoring imports
+// import { captureErrorForSession } from "@/lib/logrocket";
+// import { reportError } from "@/lib/sentry";
 
 interface ErrorBoundaryState {
   hasError: boolean;
@@ -39,8 +42,20 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
       console.error('Error caught by boundary:', error, errorInfo);
     }
 
-    // In production, you could send this to an error reporting service
-    // sendErrorToService(error, errorInfo);
+    // Temporarily disable monitoring services
+    // try {
+    //   // Send to Sentry with React context
+    //   reportError(error, {
+    //     component_stack: errorInfo.componentStack,
+    //     error_boundary: 'ErrorBoundary',
+    //     timestamp: new Date().toISOString(),
+    //   });
+
+    //   // Send to LogRocket with session context
+    //   captureErrorForSession(error, errorInfo);
+    // } catch (monitoringError) {
+    //   console.error('Failed to send error to monitoring services:', monitoringError);
+    // }
   }
 
   handleRetry = () => {

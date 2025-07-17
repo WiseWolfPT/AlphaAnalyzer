@@ -44,7 +44,7 @@ export function StockHeader({
             onError={(e) => {
               const target = e.target as HTMLImageElement;
               target.style.display = 'none';
-              target.parentElement!.innerHTML = `<div class="text-xl font-bold text-chartreuse">${symbol[0]}</div>`;
+              target.parentElement!.innerHTML = `<div class="text-xl font-bold text-teya-green">${symbol[0]}</div>`;
             }}
           />
         </div>
@@ -68,10 +68,10 @@ export function StockHeader({
 
       {/* Line 3: Sector + Earnings */}
       <div className="flex items-center justify-between">
-        <Badge variant="outline" className="border-chartreuse/30 text-chartreuse w-fit text-sm">
+        <Badge variant="outline" className="border-teya-green/30 text-teya-green w-fit text-sm">
           {company.sector}
         </Badge>
-        <Badge variant="outline" className="border-chartreuse/30 text-chartreuse text-sm">
+        <Badge variant="outline" className="border-teya-green/30 text-teya-green text-sm">
           Earnings: {company.earningsDate}
         </Badge>
       </div>
@@ -85,8 +85,8 @@ export function StockHeader({
           className={cn(
             "gap-2",
             isInWatchlist 
-              ? "bg-chartreuse/10 border-chartreuse/30 text-chartreuse" 
-              : "border-chartreuse/20 hover:bg-chartreuse/10"
+              ? "bg-teya-green/10 border-teya-green/30 text-teya-green" 
+              : "border-teya-green/20 hover:bg-teya-green/10"
           )}
         >
           {isInWatchlist ? <Star className="w-4 h-4 fill-current" /> : <Plus className="w-4 h-4" />}

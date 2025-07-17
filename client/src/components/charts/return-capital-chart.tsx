@@ -1,5 +1,6 @@
 // Return of Capital Chart - Pink/Salmon bars showing return on capital metrics
-import { BarChart, Bar, ResponsiveContainer, Tooltip, XAxis, YAxis } from "@/components/ui/lightweight-chart";
+import { BarChart, ResponsiveContainer, XAxis, YAxis } from "@/components/ui/lightweight-chart";
+import { Bar, Tooltip } from "recharts";
 import { ChartContainer } from "./chart-container";
 
 interface ReturnCapitalChartProps {

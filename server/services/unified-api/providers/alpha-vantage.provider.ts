@@ -81,9 +81,8 @@ export class AlphaVantageProvider extends BaseMarketDataProvider {
 
   async getPrice(symbol: string): Promise<PriceData> {
     try {
-      // Return mock data in demo mode
       if (this.isDemo) {
-        return this.getMockPriceData(symbol);
+        throw new Error('Alpha Vantage API key não configurado. Configure ALPHA_VANTAGE_API_KEY para obter dados reais.');
       }
 
       const response = await this.client.get('/', {

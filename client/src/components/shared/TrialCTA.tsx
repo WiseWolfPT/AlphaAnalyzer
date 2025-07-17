@@ -17,7 +17,7 @@ export function TrialCTA({
   const baseClasses = "font-semibold transition-all duration-200";
   
   const variants = {
-    primary: "bg-gradient-to-r from-chartreuse via-chartreuse-dark to-chartreuse hover:from-chartreuse-dark hover:via-chartreuse hover:to-chartreuse-dark text-rich-black shadow-lg shadow-chartreuse/30 hover:shadow-chartreuse/50 hover:scale-105 border-0",
+    primary: "bg-gradient-to-r from-teya-green via-teya-green-dark to-teya-green hover:from-teya-green-dark hover:via-teya-green hover:to-teya-green-dark text-rich-black shadow-lg shadow-teya-green/30 hover:shadow-teya-green/50 hover:scale-105 border-0",
     secondary: "bg-gray-800 hover:bg-gray-900 text-white"
   };
 

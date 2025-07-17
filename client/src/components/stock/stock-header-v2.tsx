@@ -67,7 +67,7 @@ export function StockHeaderV2({
             onError={(e) => {
               const target = e.target as HTMLImageElement;
               target.style.display = 'none';
-              target.parentElement!.innerHTML = `<div class="text-xl font-bold text-chartreuse">${symbol[0]}</div>`;
+              target.parentElement!.innerHTML = `<div class="text-xl font-bold text-teya-green">${symbol[0]}</div>`;
             }}
           />
         </div>
@@ -102,7 +102,7 @@ export function StockHeaderV2({
 
       {/* Line 3: Sector + Earnings */}
       <div className="flex items-center gap-6">
-        <Badge variant="outline" className="border-chartreuse/30 text-chartreuse w-fit text-sm">
+        <Badge variant="outline" className="border-teya-green/30 text-teya-green w-fit text-sm">
           {company.sector}
         </Badge>
         <div className="flex items-center gap-1.5 px-3 py-1.5 bg-amber-500/15 text-amber-600 dark:text-amber-400 rounded-lg text-sm font-medium border border-amber-500/20">

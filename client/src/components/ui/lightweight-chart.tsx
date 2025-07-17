@@ -426,17 +426,13 @@ export const LineChart = LightweightLineChart;
 export const AreaChart = LightweightPriceChart; // Area chart with price styling
 export const PieChart = LightweightPieChart;
 
-// Export empty components for unused Recharts elements
-export const Bar = () => null;
-export const Line = () => null;
-export const Area = () => null;
-export const Pie = () => null;
+// Export empty components for unused Recharts elements (avoiding conflicts with chart.js imports)
 export const XAxis = () => null;
 export const YAxis = () => null;
-export const Tooltip = () => null;
 export const CartesianGrid = () => null;
 export const Cell = () => null;
-export const Legend = () => null;
+// Note: Tooltip, Legend, Line, Bar, Pie, Area not exported to avoid conflicts with chart.js imports
+// Components importing these should use recharts directly or create custom implementations
 export const ComposedChart = LightweightLineChart;
 
 export {

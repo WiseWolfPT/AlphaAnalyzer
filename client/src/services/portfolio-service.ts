@@ -33,6 +33,27 @@ export interface TransactionInput {
   executedAt: Date;
 }
 
+export interface PortfolioCreateInput {
+  name: string;
+  description?: string;
+  currency?: string;
+  is_default?: boolean;
+}
+
+export interface PortfolioUpdateInput {
+  name?: string;
+  description?: string;
+  currency?: string;
+  is_default?: boolean;
+}
+
+export interface CashTransactionInput {
+  type: 'deposit' | 'withdrawal';
+  amount: number;
+  description?: string;
+  date: string;
+}
+
 export interface CSVTransaction {
   symbol: string;
   type: 'buy' | 'sell' | 'dividend';
@@ -45,9 +66,264 @@ export interface CSVTransaction {
 
 export class PortfolioService {
   private marketData: MarketDataOrchestrator;
+  private apiBaseUrl: string;
 
   constructor(marketData?: MarketDataOrchestrator) {
     this.marketData = marketData || new MarketDataOrchestrator();
+    this.apiBaseUrl = '/api/portfolios';
+  }
+
+  /**
+   * API Methods for Portfolio CRUD
+   */
+
+  async getAllPortfolios(): Promise<Portfolio[]> {
+    try {
+      const response = await fetch(this.apiBaseUrl);
+      
+      if (!response.ok) {
+        throw new Error(`Failed to fetch portfolios: ${response.statusText}`);
+      }
+      
+      const result = await response.json();
+      return result.data || [];
+    } catch (error) {
+      console.error('Error fetching portfolios:', error);
+      throw error;
+    }
+  }
+
+  async getPortfolioById(id: string): Promise<Portfolio | null> {
+    try {
+      const response = await fetch(`${this.apiBaseUrl}/${id}`);
+      
+      if (!response.ok) {
+        if (response.status === 404) return null;
+        throw new Error(`Failed to fetch portfolio: ${response.statusText}`);
+      }
+      
+      const result = await response.json();
+      return result.data;
+    } catch (error) {
+      console.error('Error fetching portfolio:', error);
+      throw error;
+    }
+  }
+
+  async createPortfolio(data: PortfolioCreateInput): Promise<Portfolio> {
+    try {
+      const response = await fetch(this.apiBaseUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+      });
+      
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to create portfolio');
+      }
+      
+      const result = await response.json();
+      return result.data;
+    } catch (error) {
+      console.error('Error creating portfolio:', error);
+      throw error;
+    }
+  }
+
+  async updatePortfolio(id: string, data: PortfolioUpdateInput): Promise<Portfolio> {
+    try {
+      const response = await fetch(`${this.apiBaseUrl}/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+      });
+      
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to update portfolio');
+      }
+      
+      const result = await response.json();
+      return result.data;
+    } catch (error) {
+      console.error('Error updating portfolio:', error);
+      throw error;
+    }
+  }
+
+  async deletePortfolio(id: string): Promise<boolean> {
+    try {
+      const response = await fetch(`${this.apiBaseUrl}/${id}`, {
+        method: 'DELETE'
+      });
+      
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to delete portfolio');
+      }
+      
+      return true;
+    } catch (error) {
+      console.error('Error deleting portfolio:', error);
+      throw error;
+    }
+  }
+
+  async getPortfolioHoldings(portfolioId: string): Promise<PortfolioHolding[]> {
+    try {
+      const response = await fetch(`${this.apiBaseUrl}/${portfolioId}/holdings`);
+      
+      if (!response.ok) {
+        throw new Error(`Failed to fetch holdings: ${response.statusText}`);
+      }
+      
+      const result = await response.json();
+      return result.data || [];
+    } catch (error) {
+      console.error('Error fetching holdings:', error);
+      throw error;
+    }
+  }
+
+  async getPortfolioTransactions(portfolioId: string): Promise<Transaction[]> {
+    try {
+      const response = await fetch(`${this.apiBaseUrl}/${portfolioId}/transactions`);
+      
+      if (!response.ok) {
+        throw new Error(`Failed to fetch transactions: ${response.statusText}`);
+      }
+      
+      const result = await response.json();
+      return result.data || [];
+    } catch (error) {
+      console.error('Error fetching transactions:', error);
+      throw error;
+    }
+  }
+
+  async addTransaction(portfolioId: string, transaction: Omit<TransactionInput, 'portfolioId'>): Promise<Transaction> {
+    try {
+      const transactionData = {
+        symbol: transaction.stockSymbol,
+        type: transaction.type,
+        quantity: transaction.quantity,
+        price: transaction.price,
+        fees: transaction.fees,
+        notes: transaction.notes,
+        date: transaction.executedAt.toISOString().split('T')[0] // Convert to YYYY-MM-DD format
+      };
+
+      const response = await fetch(`${this.apiBaseUrl}/${portfolioId}/transactions`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(transactionData)
+      });
+      
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to add transaction');
+      }
+      
+      const result = await response.json();
+      return result.data;
+    } catch (error) {
+      console.error('Error adding transaction:', error);
+      throw error;
+    }
+  }
+
+  async addCashTransaction(portfolioId: string, cashTransaction: CashTransactionInput): Promise<any> {
+    try {
+      const response = await fetch(`${this.apiBaseUrl}/${portfolioId}/cash-transactions`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(cashTransaction)
+      });
+      
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to add cash transaction');
+      }
+      
+      const result = await response.json();
+      return result.data;
+    } catch (error) {
+      console.error('Error adding cash transaction:', error);
+      throw error;
+    }
+  }
+
+  async getPortfolioPerformance(portfolioId: string, days: number = 30): Promise<any> {
+    try {
+      const response = await fetch(`${this.apiBaseUrl}/${portfolioId}/performance?days=${days}`);
+      
+      if (!response.ok) {
+        throw new Error(`Failed to fetch performance: ${response.statusText}`);
+      }
+      
+      const result = await response.json();
+      return result.data;
+    } catch (error) {
+      console.error('Error fetching performance:', error);
+      throw error;
+    }
+  }
+
+  async getPortfolioSummary(portfolioId: string): Promise<any> {
+    try {
+      const response = await fetch(`${this.apiBaseUrl}/${portfolioId}/summary`);
+      
+      if (!response.ok) {
+        throw new Error(`Failed to fetch summary: ${response.statusText}`);
+      }
+      
+      const result = await response.json();
+      return result.data;
+    } catch (error) {
+      console.error('Error fetching summary:', error);
+      throw error;
+    }
+  }
+
+  async getPortfolioAnalysis(portfolioId: string, days: number = 30): Promise<any> {
+    try {
+      const response = await fetch(`${this.apiBaseUrl}/${portfolioId}/analysis?days=${days}`);
+      
+      if (!response.ok) {
+        throw new Error(`Failed to fetch analysis: ${response.statusText}`);
+      }
+      
+      const result = await response.json();
+      return result.data;
+    } catch (error) {
+      console.error('Error fetching analysis:', error);
+      throw error;
+    }
+  }
+
+  async getBenchmarkComparison(portfolioId: string, benchmark: string = 'SPY'): Promise<any> {
+    try {
+      const response = await fetch(`${this.apiBaseUrl}/${portfolioId}/benchmark?benchmark=${benchmark}`);
+      
+      if (!response.ok) {
+        throw new Error(`Failed to fetch benchmark comparison: ${response.statusText}`);
+      }
+      
+      const result = await response.json();
+      return result.data;
+    } catch (error) {
+      console.error('Error fetching benchmark comparison:', error);
+      throw error;
+    }
   }
 
   /**

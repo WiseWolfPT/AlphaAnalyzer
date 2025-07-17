@@ -1,5 +1,6 @@
 // EBITDA Chart - Blue bars showing quarterly EBITDA
-import { BarChart, Bar, ResponsiveContainer, Tooltip, XAxis, YAxis } from "@/components/ui/lightweight-chart";
+import { BarChart, ResponsiveContainer, XAxis, YAxis } from "@/components/ui/lightweight-chart";
+import { Bar, Tooltip } from "recharts";
 import { ChartContainer } from "./chart-container";
 
 interface EbitdaChartProps {
@@ -30,7 +31,7 @@ export function EbitdaChart({ data }: EbitdaChartProps) {
         <div className="bg-background border border-border rounded-lg p-3 shadow-lg">
           <p className="text-sm font-medium">{label}</p>
           <p className="text-sm text-muted-foreground">
-            <span className="inline-block w-3 h-3 bg-chartreuse rounded mr-2"></span>
+            <span className="inline-block w-3 h-3 bg-teya-green rounded mr-2"></span>
             EBITDA: <span className="font-semibold text-foreground">${payload[0].value.toFixed(0)}M</span>
           </p>
         </div>
@@ -67,7 +68,7 @@ export function EbitdaChart({ data }: EbitdaChartProps) {
           <Tooltip content={<CustomTooltip />} />
           <Bar 
             dataKey="value" 
-            fill="#D8F22D" 
+            fill="#F4FA4E" 
             radius={[2, 2, 0, 0]}
           />
         </BarChart>

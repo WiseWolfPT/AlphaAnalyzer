@@ -11,26 +11,29 @@ import type {
   PortfolioPerformance,
   CashTransaction,
   Subscription,
+  Transcript,
   InsertWatchlist,
   InsertWatchlistItem,
   InsertPortfolio,
   InsertTransaction,
   InsertDividend,
   InsertCashTransaction,
+  InsertTranscript,
   UpdateWatchlist,
   UpdatePortfolio,
   UpdateTransaction,
   UpdateHolding,
-  UpdateSubscription
+  UpdateSubscription,
+  UpdateTranscript
 } from '../../shared/types/database';
 
 // Supabase configuration
 const supabaseUrl = process.env.SUPABASE_URL;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_KEY;
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 // Validate required environment variables
 if (!supabaseUrl || !supabaseServiceKey) {
-  console.error('SUPABASE_URL and SUPABASE_SERVICE_KEY must be set in environment variables');
+  console.error('SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY must be set in environment variables');
 }
 
 // Create admin client with service role key (bypasses RLS)
@@ -626,72 +629,288 @@ export const db = {
 
       return true;
     }
-  }
-};
-
-// Helper functions
-export const helpers = {
-  async getUserWithSubscription(userId: string) {
-    const [user, subscription] = await Promise.all([
-      db.users.getById(userId),
-      db.subscriptions.getByUserId(userId)
-    ]);
-
-    return { user, subscription };
   },
 
-  async getPortfolioSummary(portfolioId: string) {
-    const { data, error } = await supabaseAdmin
-      .from('portfolio_summary')
-      .select('*')
-      .eq('portfolio_id', portfolioId)
-      .single();
+  // Transcript operations
+  transcripts: {
+    async getAll(filter: {
+      ticker?: string;
+      status?: string;
+      year?: number;
+      quarter?: string;
+      limit?: number;
+      offset?: number;
+    } = {}): Promise<{ data: Transcript[], total: number }> {
+      let query = supabaseAdmin
+        .from('transcripts')
+        .select('*', { count: 'exact' });
 
-    if (error) {
-      console.error('Error fetching portfolio summary:', error);
-      return null;
+      // Apply filters
+      if (filter.ticker) {
+        query = query.ilike('ticker', `%${filter.ticker}%`);
+      }
+      if (filter.status) {
+        query = query.eq('status', filter.status);
+      }
+      if (filter.year) {
+        query = query.eq('year', filter.year);
+      }
+      if (filter.quarter) {
+        query = query.eq('quarter', filter.quarter);
+      }
+
+      // Apply pagination
+      const offset = filter.offset || 0;
+      const limit = filter.limit || 50;
+      query = query.range(offset, offset + limit - 1);
+
+      // Order by created_at desc
+      query = query.order('created_at', { ascending: false });
+
+      const { data, error, count } = await query;
+
+      if (error) {
+        console.error('Error fetching transcripts:', error);
+        return { data: [], total: 0 };
+      }
+
+      return {
+        data: data || [],
+        total: count || 0
+      };
+    },
+
+    async getById(id: number): Promise<Transcript | null> {
+      const { data, error } = await supabaseAdmin
+        .from('transcripts')
+        .select('*')
+        .eq('id', id)
+        .single();
+
+      if (error) {
+        console.error('Error fetching transcript:', error);
+        return null;
+      }
+
+      return data;
+    },
+
+    async create(transcript: InsertTranscript): Promise<Transcript | null> {
+      const { data, error } = await supabaseAdmin
+        .from('transcripts')
+        .insert({
+          ...transcript,
+          ticker: transcript.ticker.toUpperCase(),
+          view_count: 0,
+          status: transcript.status || 'pending'
+        })
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Error creating transcript:', error);
+        return null;
+      }
+
+      return data;
+    },
+
+    async update(id: number, updates: UpdateTranscript): Promise<Transcript | null> {
+      // Set published_at when status changes to published
+      const updateData = { ...updates };
+      if (updates.status === 'published') {
+        const { data: current } = await supabaseAdmin
+          .from('transcripts')
+          .select('status')
+          .eq('id', id)
+          .single();
+
+        if (current && current.status !== 'published') {
+          updateData.published_at = new Date().toISOString();
+        }
+      }
+
+      const { data, error } = await supabaseAdmin
+        .from('transcripts')
+        .update(updateData)
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Error updating transcript:', error);
+        return null;
+      }
+
+      return data;
+    },
+
+    async delete(id: number): Promise<boolean> {
+      const { error } = await supabaseAdmin
+        .from('transcripts')
+        .delete()
+        .eq('id', id);
+
+      if (error) {
+        console.error('Error deleting transcript:', error);
+        return false;
+      }
+
+      return true;
+    },
+
+    async incrementViewCount(id: number): Promise<void> {
+      const { error } = await supabaseAdmin.rpc('increment_transcript_views', {
+        transcript_id: id
+      });
+
+      if (error) {
+        console.error('Error incrementing view count:', error);
+      }
+    },
+
+    async getStats(): Promise<{
+      total: number;
+      byStatus: Record<string, number>;
+      byYear: Record<number, number>;
+      totalViews: number;
+      averageViews: number;
+    }> {
+      const { data: stats, error } = await supabaseAdmin.rpc('get_transcript_stats');
+
+      if (error) {
+        console.error('Error fetching transcript stats:', error);
+        return {
+          total: 0,
+          byStatus: {},
+          byYear: {},
+          totalViews: 0,
+          averageViews: 0
+        };
+      }
+
+      return stats || {
+        total: 0,
+        byStatus: {},
+        byYear: {},
+        totalViews: 0,
+        averageViews: 0
+      };
+    },
+
+    async search(query: string, limit: number = 10): Promise<Transcript[]> {
+      const searchTerm = `%${query.toLowerCase()}%`;
+      
+      const { data, error } = await supabaseAdmin
+        .from('transcripts')
+        .select('*')
+        .or(`ticker.ilike.${searchTerm},company_name.ilike.${searchTerm},ai_summary.ilike.${searchTerm}`)
+        .limit(limit);
+
+      if (error) {
+        console.error('Error searching transcripts:', error);
+        return [];
+      }
+
+      return data || [];
+    },
+
+    async getRecent(limit: number = 5): Promise<Transcript[]> {
+      const { data, error } = await supabaseAdmin
+        .from('transcripts')
+        .select('*')
+        .eq('status', 'published')
+        .order('published_at', { ascending: false })
+        .limit(limit);
+
+      if (error) {
+        console.error('Error fetching recent transcripts:', error);
+        return [];
+      }
+
+      return data || [];
+    },
+
+    async getPending(): Promise<Transcript[]> {
+      const { data, error } = await supabaseAdmin
+        .from('transcripts')
+        .select('*')
+        .in('status', ['pending', 'review'])
+        .order('created_at', { ascending: true });
+
+      if (error) {
+        console.error('Error fetching pending transcripts:', error);
+        return [];
+      }
+
+      return data || [];
     }
-
-    return data;
   },
 
-  async refreshPortfolioSummary() {
-    const { error } = await supabaseAdmin.rpc('refresh_portfolio_summary');
+  // Helper operations
+  helpers: {
+    async getUserWithSubscription(userId: string) {
+      const [user, subscription] = await Promise.all([
+        db.users.getById(userId),
+        db.subscriptions.getByUserId(userId)
+      ]);
 
-    if (error) {
-      console.error('Error refreshing portfolio summary:', error);
-      return false;
+      return { user, subscription };
+    },
+
+    async getPortfolioSummary(portfolioId: string) {
+      const { data, error } = await supabaseAdmin
+        .from('portfolio_summary')
+        .select('*')
+        .eq('portfolio_id', portfolioId)
+        .single();
+
+      if (error) {
+        console.error('Error fetching portfolio summary:', error);
+        return null;
+      }
+
+      return data;
+    },
+
+    async refreshPortfolioSummary() {
+      const { error } = await supabaseAdmin.rpc('refresh_portfolio_summary');
+
+      if (error) {
+        console.error('Error refreshing portfolio summary:', error);
+        return false;
+      }
+
+      return true;
+    },
+
+    async calculateHoldings(portfolioId: string) {
+      const { data, error } = await supabaseAdmin.rpc('calculate_holdings', {
+        p_portfolio_id: portfolioId
+      });
+
+      if (error) {
+        console.error('Error calculating holdings:', error);
+        return [];
+      }
+
+      return data || [];
+    },
+
+    async updatePortfolioHoldings(portfolioId: string) {
+      const { error } = await supabaseAdmin.rpc('update_portfolio_holdings', {
+        p_portfolio_id: portfolioId
+      });
+
+      if (error) {
+        console.error('Error updating portfolio holdings:', error);
+        return false;
+      }
+
+      return true;
     }
-
-    return true;
-  },
-
-  async calculateHoldings(portfolioId: string) {
-    const { data, error } = await supabaseAdmin.rpc('calculate_holdings', {
-      p_portfolio_id: portfolioId
-    });
-
-    if (error) {
-      console.error('Error calculating holdings:', error);
-      return [];
-    }
-
-    return data || [];
-  },
-
-  async updatePortfolioHoldings(portfolioId: string) {
-    const { error } = await supabaseAdmin.rpc('update_portfolio_holdings', {
-      p_portfolio_id: portfolioId
-    });
-
-    if (error) {
-      console.error('Error updating portfolio holdings:', error);
-      return false;
-    }
-
-    return true;
   }
 };
 
 // Export types for use in other modules
-export type { Database, User, Watchlist, WatchlistItem, Portfolio, Transaction, Holding, Dividend, Subscription };
+export type { Database, User, Watchlist, WatchlistItem, Portfolio, Transaction, Holding, Dividend, Subscription, Transcript };

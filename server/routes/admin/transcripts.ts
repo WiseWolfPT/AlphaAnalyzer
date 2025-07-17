@@ -255,7 +255,7 @@ router.put('/:id', async (req: Request, res: Response) => {
     }
     
     const data = transcriptUpdateSchema.parse({ ...req.body, id });
-    const transcript = await transcriptService.updateTranscript(data);
+    const transcript = await transcriptService.updateTranscript(id, data);
     
     if (!transcript) {
       return res.status(404).json({
@@ -348,8 +348,7 @@ router.post('/:id/publish', async (req: Request, res: Response) => {
       });
     }
     
-    const transcript = await transcriptService.updateTranscript({
-      id,
+    const transcript = await transcriptService.updateTranscript(id, {
       status: 'published'
     });
     

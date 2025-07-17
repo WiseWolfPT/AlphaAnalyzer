@@ -284,7 +284,7 @@ export function OnboardingFlow({ isOpen, onClose, onComplete }: OnboardingFlowPr
               <div className="text-center">
                 <Button 
                   onClick={handleAction}
-                  className="bg-gradient-to-r from-chartreuse via-chartreuse-dark to-chartreuse hover:from-chartreuse-dark hover:via-chartreuse hover:to-chartreuse-dark text-rich-black font-semibold"
+                  className="bg-gradient-to-r from-teya-green via-teya-green-dark to-teya-green hover:from-teya-green-dark hover:via-teya-green hover:to-teya-green-dark text-rich-black font-semibold"
                 >
                   <Play className="h-4 w-4 mr-2" />
                   {currentStepData.action.label}

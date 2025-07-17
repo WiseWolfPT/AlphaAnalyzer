@@ -119,7 +119,7 @@ const COMPANY_DOMAINS: Record<string, string> = {
  * Brand colors for companies (used for fallback logos)
  */
 const COMPANY_COLORS: Record<string, string> = {
-  'AAPL': '#000000',
+  'AAPL': '#151515',
   'MSFT': '#00A4EF',
   'GOOGL': '#4285F4',
   'GOOG': '#4285F4',
@@ -141,7 +141,7 @@ const COMPANY_COLORS: Record<string, string> = {
   'NFLX': '#E50914',
   'CRM': '#00A1E0',
   'ADBE': '#FF0000',
-  'CMCSA': '#000000',
+  'CMCSA': '#151515',
   'VZ': '#ED1C24',
   'KO': '#F40009',
   'PEP': '#004B93',
@@ -150,7 +150,7 @@ const COMPANY_COLORS: Record<string, string> = {
   'IBM': '#054ADA',
   'ORCL': '#F80000',
   'QCOM': '#3253DC',
-  'NKE': '#000000',
+  'NKE': '#151515',
   'MRK': '#0099CC',
   'XOM': '#FF1900',
   'CVX': '#1F5582',

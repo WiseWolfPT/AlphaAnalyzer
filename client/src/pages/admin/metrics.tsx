@@ -204,7 +204,7 @@ export default function MetricsDashboard() {
     return (
       <MainLayout>
         <div className="flex items-center justify-center min-h-screen">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-chartreuse"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teya-green"></div>
         </div>
       </MainLayout>
     );
@@ -217,7 +217,7 @@ export default function MetricsDashboard() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold flex items-center gap-2">
-              <Activity className="w-8 h-8 text-chartreuse" />
+              <Activity className="w-8 h-8 text-teya-green" />
               API Metrics Dashboard
             </h1>
             <p className="text-muted-foreground">

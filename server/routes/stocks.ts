@@ -100,9 +100,10 @@ router.get('/stocks/:symbol/financials', authMiddleware.instance.authenticate(),
     const statements = await alphaVantageService.getIncomeStatement(symbol, period);
     
     if (!statements || statements.length === 0) {
-      // Return mock data for demo
-      const mockStatements = generateMockFinancials(symbol, period);
-      return res.json({ statements: mockStatements });
+      return res.status(503).json({ 
+        error: 'Dados financeiros temporariamente indisponíveis',
+        message: `Não foi possível obter demonstrativos financeiros para ${symbol}. Tente novamente em alguns minutos.`
+      });
     }
     
     // REMOVED: Cache set due to startup issues
@@ -137,9 +138,10 @@ router.get('/stocks/:symbol/prices', authMiddleware.instance.authenticate(), asy
     const prices = await alphaVantageService.getDailyPrices(symbol, startDate, endDate);
     
     if (!prices || prices.length === 0) {
-      // Return mock data for demo
-      const mockPrices = generateMockPrices(symbol, days);
-      return res.json({ prices: mockPrices });
+      return res.status(503).json({ 
+        error: 'Dados históricos temporariamente indisponíveis',
+        message: `Não foi possível obter preços históricos para ${symbol}. Tente novamente em alguns minutos.`
+      });
     }
     
     // REMOVED: Cache set due to startup issues
@@ -168,21 +170,10 @@ router.get('/stocks/:symbol/metrics', authMiddleware.instance.authenticate(), as
     const metrics = await finnhubService.getBasicFinancials(symbol);
     
     if (!metrics) {
-      // Return mock data for demo
-      const mockMetrics = {
-        pe: 28.5,
-        ps: 7.8,
-        pb: 45.2,
-        evToEbitda: 21.3,
-        roe: 0.175,
-        roa: 0.087,
-        currentRatio: 1.05,
-        debtToEquity: 1.75,
-        grossMargin: 0.381,
-        operatingMargin: 0.297,
-        netMargin: 0.253
-      };
-      return res.json(mockMetrics);
+      return res.status(503).json({ 
+        error: 'Métricas financeiras temporariamente indisponíveis',
+        message: `Não foi possível obter métricas financeiras para ${symbol}. Tente novamente em alguns minutos.`
+      });
     }
     
     // Cache for 1 hour

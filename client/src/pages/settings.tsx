@@ -363,7 +363,7 @@ export default function Settings() {
                   </div>
                   <Button 
                     onClick={() => setLocation('/subscription-success')}
-                    className="bg-gradient-to-r from-chartreuse via-chartreuse-dark to-chartreuse hover:from-chartreuse-dark hover:via-chartreuse hover:to-chartreuse-dark text-rich-black font-semibold"
+                    className="bg-gradient-to-r from-teya-green via-teya-green-dark to-teya-green hover:from-teya-green-dark hover:via-teya-green hover:to-teya-green-dark text-rich-black font-semibold"
                   >
                     Upgrade to Pro
                   </Button>

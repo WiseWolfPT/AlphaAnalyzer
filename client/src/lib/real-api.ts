@@ -1,7 +1,6 @@
 // Real API service with intelligent caching and rotation
 import { apiRotation } from './api-rotation';
-import { mockStocks } from './mock-api';
-import type { MockStock } from './mock-api';
+import type { Stock } from '@shared/schema';
 
 interface RealStockQuote {
   symbol: string;
@@ -33,9 +32,9 @@ interface RealFinancials {
 }
 
 export class RealAPIService {
-  private fallbackToMock = true; // Enable graceful fallback to mock data
+  // Mock fallback removed - using real API data only
 
-  async getStockQuote(symbol: string): Promise<MockStock | null> {
+  async getStockQuote(symbol: string): Promise<Stock | null> {
     try {
       // Try to get real data first
       const realData = await apiRotation.makeAPICall<any>(
@@ -51,16 +50,12 @@ export class RealAPIService {
       console.warn(`Failed to get real data for ${symbol}:`, error);
     }
 
-    // Fallback to mock data
-    if (this.fallbackToMock) {
-      console.log(`📦 Falling back to mock data for ${symbol}`);
-      return mockStocks.find(stock => stock.symbol === symbol) || null;
-    }
-
+    // No mock fallback - return null if no real data
+    console.warn(`❌ No real data available for ${symbol}`);
     return null;
   }
 
-  async getCompanyProfile(symbol: string): Promise<Partial<MockStock> | null> {
+  async getCompanyProfile(symbol: string): Promise<Partial<Stock> | null> {
     try {
       const realData = await apiRotation.makeAPICall<any>(
         '/profile', 
@@ -80,16 +75,8 @@ export class RealAPIService {
       console.warn(`Failed to get company profile for ${symbol}:`, error);
     }
 
-    // Fallback to mock data
-    if (this.fallbackToMock) {
-      const mockStock = mockStocks.find(stock => stock.symbol === symbol);
-      return mockStock ? {
-        symbol: mockStock.symbol,
-        name: mockStock.name,
-        sector: mockStock.sector
-      } : null;
-    }
-
+    // No mock fallback - return null if no real data
+    console.warn(`❌ No company profile available for ${symbol}`);
     return null;
   }
 
@@ -108,11 +95,8 @@ export class RealAPIService {
       console.warn(`Failed to get financials for ${symbol}:`, error);
     }
 
-    // Generate mock financials for fallback
-    if (this.fallbackToMock) {
-      return this.generateMockFinancials(symbol);
-    }
-
+    // No mock fallback - return null if no real data
+    console.warn(`❌ No financials available for ${symbol}`);
     return null;
   }
 
@@ -134,101 +118,41 @@ export class RealAPIService {
       console.warn(`Failed to get historical data for ${symbol}:`, error);
     }
 
-    // Generate mock historical data
-    if (this.fallbackToMock) {
-      return this.generateMockHistorical(symbol, period);
-    }
-
+    // No mock fallback - return null if no real data
+    console.warn(`❌ No historical data available for ${symbol}`);
     return null;
   }
 
-  private transformToMockFormat(symbol: string, realData: any): MockStock {
-    // Find existing mock data for fallback values
-    const existingMock = mockStocks.find(stock => stock.symbol === symbol);
-    
+  private transformToMockFormat(symbol: string, realData: any): Stock {
     return {
+      id: 0, // Will be assigned by database
       symbol,
-      name: realData.name || existingMock?.name || `${symbol} Corp`,
-      price: realData.price?.toString() || realData.c?.toString() || existingMock?.price || '100.00',
-      change: realData.change?.toString() || realData.d?.toString() || existingMock?.change || '0.00',
-      changePercent: realData.changesPercentage?.toString() || realData.dp?.toString() || existingMock?.changePercent || '0.00',
-      sector: realData.sector || existingMock?.sector || 'Technology',
-      marketCap: realData.marketCap || existingMock?.marketCap || 'N/A',
-      eps: realData.eps?.toString() || existingMock?.eps || 'N/A',
-      peRatio: realData.pe?.toString() || existingMock?.peRatio || 'N/A',
-      intrinsicValue: existingMock?.intrinsicValue,
-      valuation: existingMock?.valuation,
-      logo: existingMock?.logo || null
+      name: realData.name || `${symbol} Corp`,
+      price: realData.price?.toString() || realData.c?.toString() || '100.00',
+      change: realData.change?.toString() || realData.d?.toString() || '0.00',
+      changePercent: realData.changesPercentage?.toString() || realData.dp?.toString() || '0.00',
+      sector: realData.sector || 'Technology',
+      industry: realData.industry || null,
+      marketCap: realData.marketCap || 'N/A',
+      eps: realData.eps?.toString() || 'N/A',
+      peRatio: realData.pe?.toString() || 'N/A',
+      logo: null,
+      lastUpdated: new Date()
     };
   }
 
   private transformFinancials(symbol: string, realData: any): RealFinancials {
-    // Transform real API response to our format
+    // Transform real API response to our format - no mock fallback
     return {
       symbol,
-      revenue: realData.revenue || this.generateMockQuarterlyData(80000, 120000),
-      netIncome: realData.netIncome || this.generateMockQuarterlyData(15000, 25000),
-      eps: realData.eps || this.generateMockQuarterlyData(3, 8),
-      freeCashFlow: realData.freeCashFlow || this.generateMockQuarterlyData(20000, 40000)
+      revenue: realData.revenue || [],
+      netIncome: realData.netIncome || [],
+      eps: realData.eps || [],
+      freeCashFlow: realData.freeCashFlow || []
     };
   }
 
-  private generateMockFinancials(symbol: string): RealFinancials {
-    return {
-      symbol,
-      revenue: this.generateMockQuarterlyData(80000, 120000),
-      netIncome: this.generateMockQuarterlyData(15000, 25000),
-      eps: this.generateMockQuarterlyData(3, 8),
-      freeCashFlow: this.generateMockQuarterlyData(20000, 40000)
-    };
-  }
-
-  private generateMockQuarterlyData(min: number, max: number): Array<{ quarter: string; value: number }> {
-    const quarters = ['Q1 2023', 'Q2 2023', 'Q3 2023', 'Q4 2023', 'Q1 2024'];
-    return quarters.map(quarter => ({
-      quarter,
-      value: Math.floor(Math.random() * (max - min) + min)
-    }));
-  }
-
-  private generateMockHistorical(symbol: string, period: string): Array<{date: string, price: number}> {
-    const mockStock = mockStocks.find(stock => stock.symbol === symbol);
-    const basePrice = parseFloat(mockStock?.price || '100');
-    
-    const periods: Record<string, number> = {
-      '1D': 1,
-      '1W': 7,
-      '1M': 30,
-      '3M': 90,
-      '6M': 180,
-      '1Y': 365
-    };
-
-    const days = periods[period] || 30;
-    const data = [];
-    let currentPrice = basePrice;
-
-    for (let i = days; i >= 0; i--) {
-      const date = new Date();
-      date.setDate(date.getDate() - i);
-      
-      // Add realistic price movement
-      const change = (Math.random() - 0.5) * (basePrice * 0.02);
-      currentPrice = Math.max(currentPrice + change, basePrice * 0.8);
-      
-      data.push({
-        date: date.toISOString().split('T')[0],
-        price: parseFloat(currentPrice.toFixed(2))
-      });
-    }
-
-    return data;
-  }
-
-  // Configuration methods
-  enableFallback(enabled: boolean): void {
-    this.fallbackToMock = enabled;
-  }
+  // Mock methods removed - using real API data only
 
   getAPIStats() {
     return apiRotation.getUsageStats();

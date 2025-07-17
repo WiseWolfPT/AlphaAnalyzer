@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Deployment</title>
+</head>
+<body>
+    <h1>Testing Alfalyzer Deployment</h1>
+    <div id="status"></div>
+    
+    <script>
+        const deploymentUrl = 'https://public-19yw5fvtd-antonios-projects-f9cd3cd0.vercel.app';
+        const statusDiv = document.getElementById('status');
+        
+        // Test 1: Check if page loads
+        fetch(deploymentUrl)
+            .then(response => {
+                statusDiv.innerHTML += `<p>✅ Page loads: ${response.status} ${response.statusText}</p>`;
+                return response.text();
+            })
+            .then(html => {
+                // Test 2: Check if it contains root div
+                if (html.includes('id="root"')) {
+                    statusDiv.innerHTML += '<p>✅ Root element found</p>';
+                } else {
+                    statusDiv.innerHTML += '<p>❌ Root element NOT found</p>';
+                }
+                
+                // Test 3: Check if JavaScript is loaded
+                if (html.includes('index-') && html.includes('.js')) {
+                    statusDiv.innerHTML += '<p>✅ JavaScript bundle found</p>';
+                } else {
+                    statusDiv.innerHTML += '<p>❌ JavaScript bundle NOT found</p>';
+                }
+                
+                // Test 4: Open browser console to check for errors
+                statusDiv.innerHTML += '<p>⚠️ Open the deployed site and check browser console for errors</p>';
+                statusDiv.innerHTML += `<p><a href="${deploymentUrl}" target="_blank">Open Deployed Site</a></p>`;
+            })
+            .catch(error => {
+                statusDiv.innerHTML += `<p>❌ Error: ${error}</p>`;
+            });
+    </script>
+</body>
+</html>

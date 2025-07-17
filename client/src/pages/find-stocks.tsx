@@ -202,7 +202,7 @@ export default function FindStocks() {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
-                <Search className="w-8 h-8 text-chartreuse" />
+                <Search className="w-8 h-8 text-teya-green" />
                 🔍 Find Stocks
               </h1>
               <p className="text-muted-foreground">
@@ -214,7 +214,7 @@ export default function FindStocks() {
                 variant={viewMode === 'grid' ? 'default' : 'outline'}
                 size="sm"
                 onClick={() => setViewMode('grid')}
-                className={viewMode === 'grid' ? 'bg-chartreuse hover:bg-chartreuse-dark text-black' : ''}
+                className={viewMode === 'grid' ? 'bg-teya-green hover:bg-teya-green-dark text-black' : ''}
               >
                 <Grid3X3 className="w-4 h-4" />
               </Button>
@@ -222,7 +222,7 @@ export default function FindStocks() {
                 variant={viewMode === 'list' ? 'default' : 'outline'}
                 size="sm"
                 onClick={() => setViewMode('list')}
-                className={viewMode === 'list' ? 'bg-chartreuse hover:bg-chartreuse-dark text-black' : ''}
+                className={viewMode === 'list' ? 'bg-teya-green hover:bg-teya-green-dark text-black' : ''}
               >
                 <List className="w-4 h-4" />
               </Button>
@@ -230,7 +230,7 @@ export default function FindStocks() {
           </div>
 
           {/* Search Section */}
-          <Card className="border-chartreuse/20">
+          <Card className="border-teya-green/20">
             <CardContent className="p-6">
               <div className="space-y-4">
                 <div className="relative">
@@ -240,34 +240,34 @@ export default function FindStocks() {
                     placeholder="Search stocks by symbol, name, or sector..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full pl-10 pr-4 py-3 border border-chartreuse/20 rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-chartreuse/50 focus:border-chartreuse"
+                    className="w-full pl-10 pr-4 py-3 border border-teya-green/20 rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-teya-green/50 focus:border-teya-green"
                   />
                 </div>
                 <div className="flex flex-wrap gap-2">
                   <Badge 
                     variant="outline" 
-                    className="cursor-pointer border-chartreuse/30 hover:bg-chartreuse/10"
+                    className="cursor-pointer border-teya-green/30 hover:bg-teya-green/10"
                     onClick={() => setSearchQuery('Technology')}
                   >
                     Technology
                   </Badge>
                   <Badge 
                     variant="outline" 
-                    className="cursor-pointer border-chartreuse/30 hover:bg-chartreuse/10"
+                    className="cursor-pointer border-teya-green/30 hover:bg-teya-green/10"
                     onClick={() => setSearchQuery('Healthcare')}
                   >
                     Healthcare
                   </Badge>
                   <Badge 
                     variant="outline" 
-                    className="cursor-pointer border-chartreuse/30 hover:bg-chartreuse/10"
+                    className="cursor-pointer border-teya-green/30 hover:bg-teya-green/10"
                     onClick={() => setSearchQuery('Financial')}
                   >
                     Financial
                   </Badge>
                   <Badge 
                     variant="outline" 
-                    className="cursor-pointer border-chartreuse/30 hover:bg-chartreuse/10"
+                    className="cursor-pointer border-teya-green/30 hover:bg-teya-green/10"
                     onClick={() => setSearchQuery('Consumer')}
                   >
                     Consumer
@@ -276,7 +276,7 @@ export default function FindStocks() {
                     variant="ghost" 
                     size="sm"
                     onClick={() => setSearchQuery('')}
-                    className="text-chartreuse hover:bg-chartreuse/10"
+                    className="text-teya-green hover:bg-teya-green/10"
                   >
                     Clear
                   </Button>
@@ -311,7 +311,7 @@ export default function FindStocks() {
             {filteredStocks.map((stock) => (
               <Card 
                 key={stock.id}
-                className="group hover:shadow-lg transition-all duration-200 cursor-pointer border-border/50 hover:border-chartreuse/30 overflow-hidden"
+                className="group hover:shadow-lg transition-all duration-200 cursor-pointer border-border/50 hover:border-teya-green/30 overflow-hidden"
                 onClick={() => handleStockSelect(stock.symbol)}
               >
                 <CardContent className="p-4">
@@ -363,7 +363,7 @@ export default function FindStocks() {
               </p>
               <Button 
                 onClick={() => setSearchQuery('')}
-                className="bg-chartreuse hover:bg-chartreuse-dark text-black"
+                className="bg-teya-green hover:bg-teya-green-dark text-black"
               >
                 Show All Stocks
               </Button>
@@ -372,7 +372,7 @@ export default function FindStocks() {
         </div>
 
         {/* Quick Actions */}
-        <Card className="border-chartreuse/20 bg-gradient-to-r from-chartreuse/5 to-transparent">
+        <Card className="border-teya-green/20 bg-gradient-to-r from-teya-green/5 to-transparent">
           <CardContent className="p-6">
             <div className="flex flex-col md:flex-row items-center justify-between gap-4">
               <div>
@@ -385,13 +385,13 @@ export default function FindStocks() {
                 <Button 
                   variant="outline" 
                   onClick={() => setLocation('/intrinsic-value')}
-                  className="border-chartreuse/20 hover:bg-chartreuse/10"
+                  className="border-teya-green/20 hover:bg-teya-green/10"
                 >
                   Value Calculator
                 </Button>
                 <Button 
                   onClick={() => setLocation('/help')}
-                  className="bg-chartreuse hover:bg-chartreuse-dark text-black"
+                  className="bg-teya-green hover:bg-teya-green-dark text-black"
                 >
                   Get Help
                 </Button>

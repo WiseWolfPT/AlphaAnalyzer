@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test React App</title>
+</head>
+<body>
+    <div id="root"></div>
+    <script>
+        // Simple test to check if the issue is with React mounting
+        const root = document.getElementById('root');
+        root.innerHTML = '<h1>If you see this, HTML and JavaScript are working!</h1>';
+        
+        // Log environment info
+        console.log('Test page loaded successfully');
+        console.log('Root element:', root);
+    </script>
+</body>
+</html>

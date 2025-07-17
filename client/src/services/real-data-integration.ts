@@ -1,6 +1,5 @@
 // Real Data Integration Service - Primary gateway for all stock data
 import { realAPI } from '@/lib/real-api';
-import { mockStocks, type MockStock } from '@/lib/mock-api';
 import { cacheManager } from '@/lib/cache-manager';
 
 // Import services with error handling using dynamic imports
@@ -52,7 +51,7 @@ export interface MarketIndices {
 }
 
 class RealDataIntegrationService {
-  private useMockFallback = true;
+  // Mock fallback removed - using real API data only
   private apiPriority: ('finnhub' | 'alphavantage' | 'realapi')[] = ['finnhub', 'realapi', 'alphavantage'];
   private hasValidApiKeys = false;
   
@@ -115,18 +114,7 @@ class RealDataIntegrationService {
     // Load services if not already loaded
     await loadServices();
 
-    // Fallback to mock data when server is not available
-    if (this.useMockFallback) {
-      console.log(`📦 Falling back to mock data for ${symbol}`);
-      const mockStock = this.getMockStock(symbol);
-      if (mockStock) {
-        const quote = this.convertMockToQuote(mockStock);
-        quote.source = 'mock';
-        // Cache mock data for 5 minutes
-        cacheManager.set(cacheKey, quote, 'quote', 300000);
-        return quote;
-      }
-    }
+    // No more mock fallback - fail cleanly if no real data available
 
     console.error(`❌ No data available for ${symbol}`);
     return null;
@@ -301,32 +289,14 @@ class RealDataIntegrationService {
       const mockStock = await realAPI.getStockQuote(symbol);
       if (!mockStock) return null;
 
-      return this.convertMockToQuote(mockStock);
+      return mockStock;
     } catch (error) {
       console.error(`Real API error for ${symbol}:`, error);
       throw error;
     }
   }
 
-  private getMockStock(symbol: string): MockStock | null {
-    return mockStocks.find(stock => stock.symbol === symbol.toUpperCase()) || null;
-  }
-
-  private convertMockToQuote(mockStock: MockStock): StockQuote {
-    return {
-      symbol: mockStock.symbol,
-      name: mockStock.name,
-      price: mockStock.price,
-      change: mockStock.change,
-      changePercent: mockStock.changePercent,
-      sector: mockStock.sector || 'Technology',
-      marketCap: mockStock.marketCap || 'N/A',
-      eps: mockStock.eps || 'N/A',
-      peRatio: mockStock.peRatio || 'N/A',
-      logo: mockStock.logo,
-      lastUpdated: new Date()
-    };
-  }
+  // Mock methods removed - using real API data only
 
   // Market indices with real data simulation
   async getMarketIndices(): Promise<MarketIndices> {
@@ -370,7 +340,7 @@ class RealDataIntegrationService {
 
   // Configuration methods
   setMockFallback(enabled: boolean): void {
-    this.useMockFallback = enabled;
+    // Mock fallback removed - method deprecated
     console.log(`🔧 Mock fallback ${enabled ? 'enabled' : 'disabled'}`);
   }
 

@@ -74,17 +74,24 @@ export class StripeService {
   private validateEnvironmentVariables(): void {
     const requiredVars = [
       'STRIPE_SECRET_KEY',
-      'STRIPE_PUBLISHABLE_KEY',
       'STRIPE_WEBHOOK_SECRET',
-      'STRIPE_MONTHLY_PRICE_ID',
-      'STRIPE_ANNUAL_PRICE_ID',
-      'CLIENT_URL',
     ];
 
     const missing = requiredVars.filter(varName => !process.env[varName]);
     
     if (missing.length > 0) {
       throw new Error(`Missing required environment variables: ${missing.join(', ')}`);
+    }
+
+    // Set default values for development
+    if (!process.env.CLIENT_URL) {
+      process.env.CLIENT_URL = 'http://localhost:3000';
+    }
+    if (!process.env.STRIPE_MONTHLY_PRICE_ID) {
+      process.env.STRIPE_MONTHLY_PRICE_ID = 'price_dev_monthly_placeholder';
+    }
+    if (!process.env.STRIPE_ANNUAL_PRICE_ID) {
+      process.env.STRIPE_ANNUAL_PRICE_ID = 'price_dev_annual_placeholder';
     }
   }
 

@@ -1,234 +1,203 @@
 /**
- * Exchange Rate Service - Wave 3 Implementation
- * 
- * Dynamic currency exchange rate service for USD/EUR conversion
- * Replaces static rates with live API integration
+ * Exchange Rate Service
+ * Handles fetching and caching of currency exchange rates
  */
 
-import { CacheManager } from '@/lib/cache-manager';
+import type { Currency, ExchangeRates } from '@/stores/app-store';
 
-export interface ExchangeRates {
-  base: string;
-  date: string;
-  rates: Record<string, number>;
-  timestamp: number;
+export interface ExchangeRateResponse {
+  rates: ExchangeRates;
+  timestamp: string;
+  base: Currency;
 }
 
-export interface ExchangeRateProvider {
-  name: string;
-  baseUrl: string;
-  apiKey?: string;
-  free: boolean;
-  rateLimit: string;
-}
-
-export class ExchangeRateService {
-  private cache: CacheManager;
-  private providers: ExchangeRateProvider[];
-  private currentProviderIndex: number = 0;
-  private cacheKey = 'exchange-rates';
-  private cacheDuration = 60 * 60 * 1000; // 1 hour cache
-
-  constructor(cache?: CacheManager) {
-    this.cache = cache || new CacheManager();
-    this.providers = this.initializeProviders();
-  }
-
-  private initializeProviders(): ExchangeRateProvider[] {
-    return [
-      {
-        name: 'exchangerate-api.com',
-        baseUrl: 'https://api.exchangerate-api.com/v4/latest',
-        free: true,
-        rateLimit: '1500 requests/month'
-      },
-      {
-        name: 'fixer.io',
-        baseUrl: 'https://api.fixer.io/latest',
-        free: true,
-        rateLimit: '100 requests/month'
-      },
-      {
-        name: 'European Central Bank',
-        baseUrl: 'https://api.exchangerate.host/latest',
-        free: true,
-        rateLimit: 'No limit'
-      },
-      {
-        name: 'currencyapi.com',
-        baseUrl: 'https://api.currencyapi.com/v3/latest',
-        free: true,
-        rateLimit: '300 requests/month'
-      }
-    ];
-  }
+class ExchangeRateService {
+  private readonly baseUrl = 'https://api.exchangerate-api.com/v4/latest';
+  private readonly fallbackUrl = 'https://api.fixer.io/latest';
+  private cache: Map<string, { rates: ExchangeRates; timestamp: number }> = new Map();
+  private readonly cacheExpiry = 60 * 60 * 1000; // 1 hour
 
   /**
-   * Get current exchange rates with automatic provider fallback
+   * Fetch exchange rates from primary API
    */
-  async getExchangeRates(baseCurrency: string = 'USD'): Promise<ExchangeRates | null> {
-    // Check cache first
-    const cacheKey = `${this.cacheKey}:${baseCurrency}`;
-    const cached = await this.cache.getAsync(cacheKey);
+  async fetchRates(baseCurrency: Currency = 'USD'): Promise<ExchangeRateResponse> {
+    const cacheKey = `rates-${baseCurrency}`;
+    const cached = this.cache.get(cacheKey);
     
-    if (cached && this.isCacheValid(cached as ExchangeRates)) {
-      console.log(`💰 Using cached exchange rates for ${baseCurrency}`);
-      return cached as ExchangeRates;
+    // Return cached data if still valid
+    if (cached && Date.now() - cached.timestamp < this.cacheExpiry) {
+      return {
+        rates: cached.rates,
+        timestamp: new Date(cached.timestamp).toISOString(),
+        base: baseCurrency,
+      };
     }
 
-    // Try each provider in order
-    for (let i = 0; i < this.providers.length; i++) {
-      const providerIndex = (this.currentProviderIndex + i) % this.providers.length;
-      const provider = this.providers[providerIndex];
+    try {
+      // Try primary API first
+      const response = await this.fetchFromPrimary(baseCurrency);
+      
+      // Cache the response
+      this.cache.set(cacheKey, {
+        rates: response.rates,
+        timestamp: Date.now(),
+      });
+      
+      return response;
+    } catch (error) {
+      console.warn('Primary exchange rate API failed, trying fallback:', error);
       
       try {
-        console.log(`🔄 Fetching exchange rates from ${provider.name}...`);
-        const rates = await this.fetchFromProvider(provider, baseCurrency);
+        // Try fallback API
+        const response = await this.fetchFromFallback(baseCurrency);
         
-        if (rates) {
-          // Cache successful result
-          await this.cache.setAsync(cacheKey, rates, this.cacheDuration);
-          
-          // Update current provider for next request
-          this.currentProviderIndex = providerIndex;
-          
-          console.log(`✅ Exchange rates fetched successfully from ${provider.name}`);
-          return rates;
-        }
-      } catch (error) {
-        console.warn(`❌ Provider ${provider.name} failed:`, error);
-        continue;
-      }
-    }
-
-    console.error('❌ All exchange rate providers failed, using fallback rates');
-    return this.getFallbackRates(baseCurrency);
-  }
-
-  /**
-   * Fetch rates from a specific provider
-   */
-  private async fetchFromProvider(
-    provider: ExchangeRateProvider, 
-    baseCurrency: string
-  ): Promise<ExchangeRates | null> {
-    const url = `${provider.baseUrl}/${baseCurrency}`;
-    
-    try {
-      const response = await fetch(url, {
-        method: 'GET',
-        headers: {
-          'Accept': 'application/json',
-          'User-Agent': 'Alfalyzer/1.0'
-        }
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-      }
-
-      const data = await response.json();
-      
-      // Normalize response format across providers
-      return this.normalizeResponse(data, provider.name, baseCurrency);
-      
-    } catch (error) {
-      console.error(`Provider ${provider.name} request failed:`, error);
-      return null;
-    }
-  }
-
-  /**
-   * Normalize different provider response formats
-   */
-  private normalizeResponse(
-    data: any, 
-    providerName: string, 
-    baseCurrency: string
-  ): ExchangeRates | null {
-    try {
-      switch (providerName) {
-        case 'exchangerate-api.com':
-        case 'European Central Bank':
+        // Cache the response
+        this.cache.set(cacheKey, {
+          rates: response.rates,
+          timestamp: Date.now(),
+        });
+        
+        return response;
+      } catch (fallbackError) {
+        console.error('All exchange rate APIs failed:', fallbackError);
+        
+        // Return cached data if available, even if expired
+        if (cached) {
+          console.warn('Using expired cached exchange rates');
           return {
-            base: data.base || baseCurrency,
-            date: data.date || new Date().toISOString().split('T')[0],
-            rates: data.rates || {},
-            timestamp: Date.now()
-          };
-
-        case 'fixer.io':
-          return {
-            base: data.base || baseCurrency,
-            date: data.date || new Date().toISOString().split('T')[0],
-            rates: data.rates || {},
-            timestamp: Date.now()
-          };
-
-        case 'currencyapi.com':
-          // CurrencyAPI has a different structure
-          const rates: Record<string, number> = {};
-          if (data.data) {
-            Object.entries(data.data).forEach(([currency, info]: [string, any]) => {
-              rates[currency] = info.value;
-            });
-          }
-          return {
+            rates: cached.rates,
+            timestamp: new Date(cached.timestamp).toISOString(),
             base: baseCurrency,
-            date: new Date().toISOString().split('T')[0],
-            rates,
-            timestamp: Date.now()
           };
-
-        default:
-          console.warn(`Unknown provider format: ${providerName}`);
-          return null;
+        }
+        
+        // Return default rates as last resort
+        return this.getDefaultRates(baseCurrency);
       }
-    } catch (error) {
-      console.error(`Failed to normalize response from ${providerName}:`, error);
-      return null;
     }
   }
 
   /**
-   * Check if cached rates are still valid
+   * Fetch from primary API (exchangerate-api.com)
    */
-  private isCacheValid(rates: ExchangeRates): boolean {
-    const ageInMs = Date.now() - rates.timestamp;
-    return ageInMs < this.cacheDuration;
+  private async fetchFromPrimary(baseCurrency: Currency): Promise<ExchangeRateResponse> {
+    const response = await fetch(`${this.baseUrl}/${baseCurrency}`, {
+      headers: {
+        'Accept': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    
+    if (!data.rates) {
+      throw new Error('Invalid response format from exchange rate API');
+    }
+
+    return {
+      rates: this.normalizeRates(data.rates, baseCurrency),
+      timestamp: new Date().toISOString(),
+      base: baseCurrency,
+    };
   }
 
   /**
-   * Fallback rates when all providers fail
+   * Fetch from fallback API (fixer.io)
    */
-  private getFallbackRates(baseCurrency: string): ExchangeRates {
-    console.log(`🔄 Using fallback exchange rates for ${baseCurrency}`);
-    
-    // Static rates as fallback (should be updated periodically)
-    const fallbackRates: Record<string, Record<string, number>> = {
-      'USD': {
-        'EUR': 0.92,
-        'GBP': 0.79,
-        'CHF': 0.88,
-        'CAD': 1.36,
-        'AUD': 1.52,
-        'JPY': 149.50
+  private async fetchFromFallback(baseCurrency: Currency): Promise<ExchangeRateResponse> {
+    // SECURITY: API key moved to backend - use proxy endpoint instead
+  const apiKey = null; // API key handled by backend
+    const url = apiKey 
+      ? `${this.fallbackUrl}?access_key=${apiKey}&base=${baseCurrency}`
+      : `${this.fallbackUrl}/${baseCurrency}`;
+
+    const response = await fetch(url, {
+      headers: {
+        'Accept': 'application/json',
       },
-      'EUR': {
-        'USD': 1.08,
-        'GBP': 0.86,
-        'CHF': 0.96,
-        'CAD': 1.47,
-        'AUD': 1.65,
-        'JPY': 162.30
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    
+    if (!data.rates) {
+      throw new Error('Invalid response format from fallback exchange rate API');
+    }
+
+    return {
+      rates: this.normalizeRates(data.rates, baseCurrency),
+      timestamp: new Date().toISOString(),
+      base: baseCurrency,
+    };
+  }
+
+  /**
+   * Normalize exchange rates to ensure all supported currencies are present
+   */
+  private normalizeRates(rates: any, baseCurrency: Currency): ExchangeRates {
+    const supportedCurrencies: Currency[] = ['USD', 'EUR', 'GBP', 'JPY'];
+    const normalizedRates: ExchangeRates = {};
+
+    // Add base currency with rate 1
+    normalizedRates[baseCurrency] = 1;
+
+    // Add other currencies
+    supportedCurrencies.forEach(currency => {
+      if (currency !== baseCurrency) {
+        normalizedRates[currency] = rates[currency] || this.getFallbackRate(baseCurrency, currency);
       }
+    });
+
+    return normalizedRates;
+  }
+
+  /**
+   * Get fallback exchange rate for currency pairs
+   */
+  private getFallbackRate(fromCurrency: Currency, toCurrency: Currency): number {
+    // These are approximate rates for fallback purposes
+    const fallbackRates: Record<string, number> = {
+      'USD-EUR': 0.85,
+      'USD-GBP': 0.73,
+      'USD-JPY': 110,
+      'EUR-USD': 1.18,
+      'EUR-GBP': 0.86,
+      'EUR-JPY': 129,
+      'GBP-USD': 1.37,
+      'GBP-EUR': 1.16,
+      'GBP-JPY': 151,
+      'JPY-USD': 0.0091,
+      'JPY-EUR': 0.0077,
+      'JPY-GBP': 0.0066,
+    };
+
+    const key = `${fromCurrency}-${toCurrency}`;
+    return fallbackRates[key] || 1;
+  }
+
+  /**
+   * Get default exchange rates when all APIs fail
+   */
+  private getDefaultRates(baseCurrency: Currency): ExchangeRateResponse {
+    console.warn('Using default exchange rates - may be outdated');
+    
+    const defaultRates: Record<Currency, ExchangeRates> = {
+      USD: { USD: 1, EUR: 0.85, GBP: 0.73, JPY: 110 },
+      EUR: { USD: 1.18, EUR: 1, GBP: 0.86, JPY: 129 },
+      GBP: { USD: 1.37, EUR: 1.16, GBP: 1, JPY: 151 },
+      JPY: { USD: 0.0091, EUR: 0.0077, GBP: 0.0066, JPY: 1 },
     };
 
     return {
+      rates: defaultRates[baseCurrency],
+      timestamp: new Date().toISOString(),
       base: baseCurrency,
-      date: new Date().toISOString().split('T')[0],
-      rates: fallbackRates[baseCurrency] || {},
-      timestamp: Date.now()
     };
   }
 
@@ -236,83 +205,70 @@ export class ExchangeRateService {
    * Convert amount between currencies
    */
   async convertCurrency(
-    amount: number, 
-    fromCurrency: string, 
-    toCurrency: string
+    amount: number,
+    fromCurrency: Currency,
+    toCurrency: Currency
   ): Promise<number> {
-    if (fromCurrency === toCurrency) {
-      return amount;
-    }
+    if (fromCurrency === toCurrency) return amount;
 
-    try {
-      const rates = await this.getExchangeRates(fromCurrency);
-      
-      if (!rates || !rates.rates[toCurrency]) {
-        console.warn(`No exchange rate found for ${fromCurrency} to ${toCurrency}`);
-        return amount; // Return original amount if conversion fails
-      }
-
-      const convertedAmount = amount * rates.rates[toCurrency];
-      console.debug(`💱 Converted ${amount} ${fromCurrency} to ${convertedAmount.toFixed(4)} ${toCurrency}`);
-      
-      return convertedAmount;
-    } catch (error) {
-      console.error('Currency conversion failed:', error);
-      return amount;
-    }
-  }
-
-  /**
-   * Get specific exchange rate between two currencies
-   */
-  async getExchangeRate(fromCurrency: string, toCurrency: string): Promise<number | null> {
-    if (fromCurrency === toCurrency) {
-      return 1;
-    }
-
-    try {
-      const rates = await this.getExchangeRates(fromCurrency);
-      return rates?.rates[toCurrency] || null;
-    } catch (error) {
-      console.error(`Failed to get exchange rate ${fromCurrency}/${toCurrency}:`, error);
-      return null;
-    }
-  }
-
-  /**
-   * Warm cache with popular currency pairs
-   */
-  async warmCache(): Promise<void> {
-    const popularBases = ['USD', 'EUR'];
+    const { rates } = await this.fetchRates('USD');
     
-    await Promise.allSettled(
-      popularBases.map(base => this.getExchangeRates(base))
-    );
+    const fromRate = rates[fromCurrency];
+    const toRate = rates[toCurrency];
     
-    console.log('💰 Exchange rate cache warmed for popular currencies');
+    if (!fromRate || !toRate) {
+      throw new Error(`Exchange rate not available for ${fromCurrency} → ${toCurrency}`);
+    }
+
+    // Convert via USD
+    const usdAmount = amount / fromRate;
+    return usdAmount * toRate;
   }
 
   /**
-   * Force refresh rates (bypass cache)
+   * Get exchange rate between two currencies
    */
-  async forceRefresh(baseCurrency: string = 'USD'): Promise<ExchangeRates | null> {
-    const cacheKey = `${this.cacheKey}:${baseCurrency}`;
-    await this.cache.deleteAsync(cacheKey);
-    return this.getExchangeRates(baseCurrency);
+  async getExchangeRate(fromCurrency: Currency, toCurrency: Currency): Promise<number> {
+    if (fromCurrency === toCurrency) return 1;
+
+    const { rates } = await this.fetchRates('USD');
+    
+    const fromRate = rates[fromCurrency];
+    const toRate = rates[toCurrency];
+    
+    if (!fromRate || !toRate) {
+      throw new Error(`Exchange rate not available for ${fromCurrency} → ${toCurrency}`);
+    }
+
+    return toRate / fromRate;
   }
 
   /**
-   * Get service status and provider info
+   * Clear cache (useful for testing or manual refresh)
    */
-  getStatus(): {
-    currentProvider: string;
-    totalProviders: number;
-    cacheStatus: string;
-  } {
-    return {
-      currentProvider: this.providers[this.currentProviderIndex]?.name || 'None',
-      totalProviders: this.providers.length,
-      cacheStatus: 'Active'
-    };
+  clearCache(): void {
+    this.cache.clear();
+  }
+
+  /**
+   * Get cache status for debugging
+   */
+  getCacheStatus(): { [key: string]: { timestamp: number; age: number } } {
+    const status: { [key: string]: { timestamp: number; age: number } } = {};
+    
+    this.cache.forEach((value, key) => {
+      status[key] = {
+        timestamp: value.timestamp,
+        age: Date.now() - value.timestamp,
+      };
+    });
+    
+    return status;
   }
 }
+
+// Export singleton instance
+export const exchangeRateService = new ExchangeRateService();
+
+// Export types for external use
+export type { ExchangeRateResponse };

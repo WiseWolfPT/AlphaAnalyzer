@@ -74,12 +74,12 @@ export function InstallBanner({ className }: InstallBannerProps) {
   }
 
   return (
-    <Card className={`fixed bottom-4 left-4 right-4 md:left-auto md:w-96 z-50 bg-gradient-to-r from-chartreuse/10 to-emerald-500/10 border-chartreuse/30 ${className}`}>
+    <Card className={`fixed bottom-4 left-4 right-4 md:left-auto md:w-96 z-50 bg-gradient-to-r from-teya-green/10 to-emerald-500/10 border-teya-green/30 ${className}`}>
       <CardContent className="p-4">
         <div className="flex items-start space-x-3">
           <div className="flex-shrink-0">
-            <div className="w-10 h-10 bg-chartreuse/20 rounded-lg flex items-center justify-center">
-              <Smartphone className="w-5 h-5 text-chartreuse" />
+            <div className="w-10 h-10 bg-teya-green/20 rounded-lg flex items-center justify-center">
+              <Smartphone className="w-5 h-5 text-teya-green" />
             </div>
           </div>
           
@@ -99,7 +99,7 @@ export function InstallBanner({ className }: InstallBannerProps) {
                 size="sm"
                 onClick={handleInstall}
                 disabled={isInstalling}
-                className="bg-chartreuse text-black hover:bg-chartreuse/90 text-xs h-8"
+                className="bg-teya-green text-black hover:bg-teya-green/90 text-xs h-8"
               >
                 <Download className="w-3 h-3 mr-1" />
                 {isInstalling ? 'Instalando...' : 'Instalar'}

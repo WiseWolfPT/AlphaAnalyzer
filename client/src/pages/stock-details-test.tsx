@@ -34,17 +34,17 @@ export default function StockDetailsTest() {
   }
 
   return (
-    <div style={{ padding: '20px', fontFamily: 'Arial, sans-serif' }}>
-      <h1>Stock Details Test - {symbol}</h1>
-      <div style={{ backgroundColor: '#f5f5f5', padding: '15px', borderRadius: '8px', marginTop: '20px' }}>
-        <h2>Real Stock Data</h2>
-        <p><strong>Symbol:</strong> {stockData.symbol}</p>
-        <p><strong>Name:</strong> {stockData.name}</p>
-        <p><strong>Price:</strong> ${stockData.price}</p>
-        <p><strong>Change:</strong> {stockData.change}</p>
-        <p><strong>Change %:</strong> {stockData.changePercent}%</p>
-        <p><strong>Source:</strong> {stockData.source}</p>
-        <p><strong>Last Updated:</strong> {new Date(stockData.lastUpdated).toLocaleString()}</p>
+    <div className="p-6">
+      <h1 className="heading-section mb-6">Stock Details Test - {symbol}</h1>
+      <div className="bg-card border border-border p-6 rounded-lg mt-6">
+        <h2 className="heading-subsection mb-4">Real Stock Data</h2>
+        <p className="text-body mb-2"><span className="text-label">Symbol:</span> {stockData.symbol}</p>
+        <p className="text-body mb-2"><span className="text-label">Name:</span> {stockData.name}</p>
+        <p className="text-body mb-2"><span className="text-label">Price:</span> <span className="text-metric">${stockData.price}</span></p>
+        <p className="text-body mb-2"><span className="text-label">Change:</span> {stockData.change}</p>
+        <p className="text-body mb-2"><span className="text-label">Change %:</span> {stockData.changePercent}%</p>
+        <p className="text-body mb-2"><span className="text-label">Source:</span> {stockData.source}</p>
+        <p className="text-caption"><span className="text-label">Last Updated:</span> {new Date(stockData.lastUpdated).toLocaleString()}</p>
       </div>
       
       <div style={{ marginTop: '20px' }}>

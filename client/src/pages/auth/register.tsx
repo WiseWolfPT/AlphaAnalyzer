@@ -109,8 +109,8 @@ export default function RegisterPage() {
       <div className="min-h-screen flex items-center justify-center px-8 py-12">
         <Card className="w-full max-w-md">
           <CardHeader className="text-center">
-            <div className="mx-auto w-16 h-16 bg-chartreuse/10 rounded-full flex items-center justify-center mb-4">
-              <Shield className="h-8 w-8 text-chartreuse" />
+            <div className="mx-auto w-16 h-16 bg-teya-green/10 rounded-full flex items-center justify-center mb-4">
+              <Shield className="h-8 w-8 text-teya-green" />
             </div>
             <CardTitle className="text-2xl">Conta Criada! 🎉</CardTitle>
             <CardDescription>
@@ -137,16 +137,16 @@ export default function RegisterPage() {
   return (
     <div className="min-h-screen flex">
       {/* Left side - Branding */}
-      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-chartreuse/10 to-chartreuse/5 flex-col justify-center px-12">
+      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-teya-green/10 to-teya-green/5 flex-col justify-center px-12">
         <div className="max-w-lg">
           <div className="flex items-center space-x-2 mb-8">
-            <TrendingUp className="h-8 w-8 text-chartreuse" />
+            <TrendingUp className="h-8 w-8 text-teya-green" />
             <span className="text-2xl font-bold">Alfalyzer</span>
           </div>
           
           <h1 className="text-4xl font-bold mb-6">
             Comece a investir nos
-            <span className="text-chartreuse"> mercados globais</span>
+            <span className="text-teya-green"> mercados globais</span>
           </h1>
           
           <p className="text-xl text-muted-foreground mb-8">
@@ -156,15 +156,15 @@ export default function RegisterPage() {
           
           <div className="space-y-4">
             <div className="flex items-center space-x-3">
-              <div className="w-2 h-2 bg-chartreuse rounded-full"></div>
+              <div className="w-2 h-2 bg-teya-green rounded-full"></div>
               <span>Conta gratuita com funcionalidades básicas</span>
             </div>
             <div className="flex items-center space-x-3">
-              <div className="w-2 h-2 bg-chartreuse rounded-full"></div>
+              <div className="w-2 h-2 bg-teya-green rounded-full"></div>
               <span>Configuração automática para mercado português</span>
             </div>
             <div className="flex items-center space-x-3">
-              <div className="w-2 h-2 bg-chartreuse rounded-full"></div>
+              <div className="w-2 h-2 bg-teya-green rounded-full"></div>
               <span>Interface em português, dados em EUR/USD</span>
             </div>
           </div>
