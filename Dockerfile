@@ -15,7 +15,15 @@ RUN apk add --no-cache \
     python3 \
     make \
     g++ \
-    nginx
+    nginx \
+    cairo-dev \
+    pango-dev \
+    jpeg-dev \
+    giflib-dev \
+    librsvg-dev \
+    pixman-dev \
+    libc6-compat \
+    pkgconfig
 
 # Copy package files
 COPY package*.json ./
@@ -53,7 +61,18 @@ FROM node:18-alpine AS production
 WORKDIR /app
 
 # Install production dependencies only
-RUN apk add --no-cache curl bash nginx
+RUN apk add --no-cache \
+    curl \
+    bash \
+    nginx \
+    cairo-dev \
+    pango-dev \
+    jpeg-dev \
+    giflib-dev \
+    librsvg-dev \
+    pixman-dev \
+    libc6-compat \
+    pkgconfig
 
 # Copy package files
 COPY package*.json ./
