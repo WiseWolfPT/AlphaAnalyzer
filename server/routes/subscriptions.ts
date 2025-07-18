@@ -8,6 +8,25 @@ import { z } from 'zod';
 
 const router = Router();
 
+// Middleware to check if Stripe is configured
+const checkStripeConfigured = (req: Request, res: Response, next: any) => {
+  if (!stripeService) {
+    return res.status(503).json({
+      error: 'Payment service not configured',
+      message: 'Payment features are currently unavailable'
+    });
+  }
+  next();
+};
+
+// Apply to all routes except the plans endpoint
+router.use((req, res, next) => {
+  if (req.path === '/plans') {
+    return next();
+  }
+  checkStripeConfigured(req, res, next);
+});
+
 // Rate limiting for subscription endpoints
 const subscriptionRateLimit = rateLimitMiddleware.endpointRateLimit('/api/subscriptions', {
   'free': 20,
@@ -34,6 +53,28 @@ const updateSubscriptionSchema = z.object({
 router.get('/plans', authMiddleware.instance.optionalAuth(), async (req: Request, res: Response) => {
   try {
     const plans = SUBSCRIPTION_PLANS.filter(plan => plan.id !== 'whop-trial');
+    
+    if (!stripeService) {
+      // Return plans without Stripe data
+      res.json({
+        success: true,
+        data: {
+          plans: plans.map(plan => ({
+            ...plan,
+            stripeData: {
+              priceId: null,
+              isActive: false,
+            },
+          })),
+          config: {
+            publishableKey: null,
+            isConfigured: false,
+          },
+        },
+      });
+      return;
+    }
+    
     const priceIds = stripeService.getPriceIds();
     
     const plansWithPriceIds = plans.map(plan => ({

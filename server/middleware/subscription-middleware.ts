@@ -108,6 +108,19 @@ export const attachSubscriptionInfo = async (
     }
 
     // Get user's Stripe customer and subscription
+    if (!stripeService) {
+      // If Stripe is not configured, treat as free tier
+      req.subscription = {
+        plan: 'free',
+        status: 'active',
+        features: SUBSCRIPTION_FEATURES.free,
+        cancelAtPeriodEnd: false,
+        currentPeriodEnd: null,
+        trialEnd: null,
+      };
+      return next();
+    }
+
     const customer = await stripeService.createOrGetCustomer(
       req.user.email,
       req.user.name,
@@ -309,6 +322,21 @@ export const getSubscriptionInfo = async (userId: string, userEmail: string): Pr
   expiresAt?: Date;
 }> => {
   try {
+    if (!stripeService) {
+      // If Stripe is not configured, return free tier
+      return {
+        plan: 'free',
+        status: 'active',
+        features: SUBSCRIPTION_FEATURES.free,
+        cancelAtPeriodEnd: false,
+        currentPeriodEnd: null,
+        trialEnd: null,
+        stripeCustomerId: null,
+        stripeSubscriptionId: null,
+        isActive: true,
+      };
+    }
+
     const customer = await stripeService.createOrGetCustomer(userEmail, undefined, userId);
     const subscriptions = await stripeService.getCustomerSubscriptions(customer.id);
     const activeSubscription = subscriptions.find(sub => 

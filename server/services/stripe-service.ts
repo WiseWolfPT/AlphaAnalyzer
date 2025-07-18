@@ -2,11 +2,12 @@ import Stripe from 'stripe';
 import { Request, Response } from 'express';
 import { SUBSCRIPTION_PLANS, type UserSubscription, type SubscriptionPlan } from '@shared/subscription-schema';
 
-// Initialize Stripe with environment variables
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+// Initialize Stripe with environment variables (optional in production)
+const stripeKey = process.env.STRIPE_SECRET_KEY;
+const stripe = stripeKey ? new Stripe(stripeKey, {
   apiVersion: '2024-06-20',
   typescript: true,
-});
+}) : null;
 
 // Production environment configuration
 const STRIPE_CONFIG = {
@@ -57,11 +58,12 @@ export interface WebhookEvent {
  */
 export class StripeService {
   private static instance: StripeService;
-  private stripe: Stripe;
+  private stripe: Stripe | null;
+  private isConfigured: boolean;
 
   private constructor() {
     this.stripe = stripe;
-    this.validateEnvironmentVariables();
+    this.isConfigured = this.checkConfiguration();
   }
 
   public static getInstance(): StripeService {
@@ -71,7 +73,7 @@ export class StripeService {
     return StripeService.instance;
   }
 
-  private validateEnvironmentVariables(): void {
+  private checkConfiguration(): boolean {
     const requiredVars = [
       'STRIPE_SECRET_KEY',
       'STRIPE_WEBHOOK_SECRET',
@@ -80,7 +82,16 @@ export class StripeService {
     const missing = requiredVars.filter(varName => !process.env[varName]);
     
     if (missing.length > 0) {
-      throw new Error(`Missing required environment variables: ${missing.join(', ')}`);
+      console.warn(`⚠️ Stripe not configured. Missing: ${missing.join(', ')}. Payment features disabled.`);
+      return false;
+    }
+    
+    return true;
+  }
+
+  private validateEnvironmentVariables(): void {
+    if (!this.isConfigured) {
+      throw new Error('Stripe is not configured. Payment features are disabled.');
     }
 
     // Set default values for development
@@ -533,4 +544,5 @@ export interface WebhookHandlers {
 }
 
 // Export singleton instance
-export const stripeService = StripeService.getInstance();
+// Only create instance if Stripe is configured
+export const stripeService = process.env.STRIPE_SECRET_KEY ? StripeService.getInstance() : null;
