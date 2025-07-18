@@ -10,10 +10,18 @@ if (isProduction) {
   // (Supabase will be used directly by services)
   console.log('🔶 Running in production mode - SQLite disabled');
   db = {
-    select: () => ({ from: () => ({ where: () => Promise.resolve([]) }) }),
+    select: () => ({ 
+      from: () => ({ 
+        where: () => Promise.resolve([]),
+        limit: () => Promise.resolve([]),
+        orderBy: () => ({ limit: () => Promise.resolve([]) })
+      }) 
+    }),
     insert: () => ({ values: () => Promise.resolve() }),
     update: () => ({ set: () => ({ where: () => Promise.resolve() }) }),
     delete: () => ({ where: () => Promise.resolve() }),
+    // Add limit method at root level (for db.limit() calls)
+    limit: () => Promise.resolve([]),
   };
 } else {
   // Development mode - use SQLite
