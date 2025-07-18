@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { OptimizedImage } from "@/components/ui/optimized-image";
-import { trackFinancialAction } from "@/lib/logrocket";
+// import { trackFinancialAction } from "@/lib/logrocket";
 import { 
   BarChart3, 
   Target, 
@@ -146,12 +146,12 @@ export const UnifiedStockCard = memo(function UnifiedStockCard({
   // Event handlers with LogRocket tracking
   const handleCardClick = useCallback(() => {
     // Track stock card click in LogRocket
-    trackFinancialAction('stock_card_clicked', stockSymbol, {
-      variant,
-      has_price: !!stock?.current_price,
-      current_price: stock?.current_price,
-      change_percent: calculations.changePercent,
-    });
+    // trackFinancialAction('stock_card_clicked', stockSymbol, {
+    //   variant,
+    //   has_price: !!stock?.current_price,
+    //   current_price: stock?.current_price,
+    //   change_percent: calculations.changePercent,
+    // });
     
     setLocation(`/stock/${stockSymbol}/charts`);
   }, [stockSymbol, setLocation, variant, stock, calculations]);
@@ -161,10 +161,10 @@ export const UnifiedStockCard = memo(function UnifiedStockCard({
     e.stopPropagation();
     
     // Track quick info click
-    trackFinancialAction('stock_quick_info_clicked', stockSymbol, {
-      variant,
-      action: 'quick_info',
-    });
+    // trackFinancialAction('stock_quick_info_clicked', stockSymbol, {
+    //   variant,
+    //   action: 'quick_info',
+    // });
     
     onQuickInfoClick?.();
   }, [onQuickInfoClick, stockSymbol, variant]);
@@ -174,10 +174,10 @@ export const UnifiedStockCard = memo(function UnifiedStockCard({
     e.stopPropagation();
     
     // Track performance click
-    trackFinancialAction('stock_performance_clicked', stockSymbol, {
-      variant,
-      action: 'performance',
-    });
+    // trackFinancialAction('stock_performance_clicked', stockSymbol, {
+    //   variant,
+    //   action: 'performance',
+    // });
     
     onPerformanceClick?.();
   }, [onPerformanceClick, stockSymbol, variant]);
@@ -187,10 +187,10 @@ export const UnifiedStockCard = memo(function UnifiedStockCard({
     e.stopPropagation();
     
     // Track stock removal
-    trackFinancialAction('stock_removed', stockSymbol, {
-      variant,
-      action: 'remove',
-    });
+    // trackFinancialAction('stock_removed', stockSymbol, {
+    //   variant,
+    //   action: 'remove',
+    // });
     
     onRemove?.(stockSymbol);
   }, [onRemove, stockSymbol, variant]);

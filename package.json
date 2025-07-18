@@ -217,8 +217,6 @@
     "idb": "^8.0.3",
     "input-otp": "^1.4.2",
     "jsonwebtoken": "^9.0.2",
-    "logrocket": "^10.1.0",
-    "logrocket-react": "^6.0.3",
     "lottie-react": "^2.4.1",
     "lru-cache": "^11.1.0",
     "lucide-react": "^0.453.0",

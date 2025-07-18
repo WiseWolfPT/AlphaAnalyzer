@@ -14,7 +14,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { trackAdminAction } from '@/lib/logrocket';
+// import { trackAdminAction } from '@/lib/logrocket';
 import { 
   FileText, 
   Search, 
@@ -125,11 +125,11 @@ export function TranscriptManagement() {
 
       if (response.data.success) {
         // Track admin action in LogRocket
-        trackAdminAction('transcript_status_updated', 'transcript', {
-          transcript_id: id,
-          new_status: status,
-          previous_status: transcripts.find(t => t.id === id)?.status,
-        });
+        // trackAdminAction('transcript_status_updated', 'transcript', {
+        //   transcript_id: id,
+        //   new_status: status,
+        //   previous_status: transcripts.find(t => t.id === id)?.status,
+        // });
 
         fetchTranscripts();
         fetchStats();
@@ -158,12 +158,12 @@ export function TranscriptManagement() {
 
       if (response.data.success) {
         // Track admin action in LogRocket
-        trackAdminAction('transcript_deleted', 'transcript', {
-          transcript_id: id,
-          ticker: transcript?.ticker,
-          company_name: transcript?.company_name,
-          status: transcript?.status,
-        });
+        // trackAdminAction('transcript_deleted', 'transcript', {
+        //   transcript_id: id,
+        //   ticker: transcript?.ticker,
+        //   company_name: transcript?.company_name,
+        //   status: transcript?.status,
+        // });
 
         fetchTranscripts();
         fetchStats();
@@ -188,13 +188,13 @@ export function TranscriptManagement() {
 
       if (response.data.success) {
         // Track admin action in LogRocket
-        trackAdminAction('transcript_published', 'transcript', {
-          transcript_id: id,
-          ticker: transcript?.ticker,
-          company_name: transcript?.company_name,
-          quarter: transcript?.quarter,
-          year: transcript?.year,
-        });
+        // trackAdminAction('transcript_published', 'transcript', {
+        //   transcript_id: id,
+        //   ticker: transcript?.ticker,
+        //   company_name: transcript?.company_name,
+        //   quarter: transcript?.quarter,
+        //   year: transcript?.year,
+        // });
 
         fetchTranscripts();
         fetchStats();
