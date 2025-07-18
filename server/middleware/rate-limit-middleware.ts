@@ -73,12 +73,30 @@ export class RateLimitMiddleware {
 
   private async initializeRedis(redisUrl: string) {
     try {
-      this.redisClient = createClient({ url: redisUrl });
+      // Skip Redis in production if not properly configured
+      if (process.env.NODE_ENV === 'production' && redisUrl === 'redis://localhost:6379') {
+        console.warn('⚠️ Rate limit middleware: Redis not configured for production, using memory only');
+        return;
+      }
+      
+      this.redisClient = createClient({ 
+        url: redisUrl,
+        socket: {
+          reconnectStrategy: (retries) => Math.min(retries * 50, 1000),
+          connectTimeout: 10000
+        }
+      });
+      
+      this.redisClient.on('error', (err) => {
+        console.error('❌ Rate limit Redis error:', err.message);
+      });
+      
       await this.redisClient.connect();
-      console.log('Rate limiting Redis client connected');
+      console.log('✅ Rate limiting Redis client connected');
     } catch (error) {
       console.error('Failed to connect to Redis for rate limiting:', error);
       console.log('Falling back to in-memory rate limiting');
+      this.redisClient = undefined;
     }
   }
 

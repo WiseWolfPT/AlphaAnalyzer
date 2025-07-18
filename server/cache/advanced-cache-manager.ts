@@ -222,12 +222,14 @@ export class AdvancedCacheManager extends EventEmitter {
         return this.handleCacheHit(memCached, key, fetcher, options);
       }
 
-      // Check Redis cache (L2)
-      const redisCached = await this.getFromRedis(key);
-      if (redisCached) {
-        // Promote to memory cache
-        this.memoryCache.set(key, redisCached);
-        return this.handleCacheHit(redisCached, key, fetcher, options);
+      // Check Redis cache (L2) only if Redis is available
+      if (this.redis) {
+        const redisCached = await this.getFromRedis(key);
+        if (redisCached) {
+          // Promote to memory cache
+          this.memoryCache.set(key, redisCached);
+          return this.handleCacheHit(redisCached, key, fetcher, options);
+        }
       }
 
       // Cache miss - fetch data
@@ -306,7 +308,7 @@ export class AdvancedCacheManager extends EventEmitter {
       await this.setInRedis(key, entry, config.ttl);
 
       // Publish update for other instances
-      if (options.dataType === 'quote' && options.symbol) {
+      if (this.redis && options.dataType === 'quote' && options.symbol) {
         await this.redis.publish('quotes:update', JSON.stringify({
           symbol: options.symbol,
           data,
@@ -360,6 +362,10 @@ export class AdvancedCacheManager extends EventEmitter {
   }
 
   private async getFromRedis(key: string): Promise<CacheEntry<any> | null> {
+    if (!this.redis) {
+      return null;
+    }
+    
     try {
       const data = await this.redis.get(key);
       return data && typeof data === 'string' ? JSON.parse(data) : null;
@@ -370,6 +376,10 @@ export class AdvancedCacheManager extends EventEmitter {
   }
 
   private async setInRedis(key: string, entry: CacheEntry<any>, ttl: number): Promise<void> {
+    if (!this.redis) {
+      return;
+    }
+    
     try {
       await this.redis.setEx(key, Math.floor(ttl / 1000), JSON.stringify(entry));
     } catch (error) {
@@ -440,7 +450,9 @@ export class AdvancedCacheManager extends EventEmitter {
       .slice(0, 20);
 
     // Store in Redis for other instances
-    await this.redis.set('popular:stocks', JSON.stringify(scores));
+    if (this.redis) {
+      await this.redis.set('popular:stocks', JSON.stringify(scores));
+    }
     
     this.emit('popularStocksUpdated', scores);
   }
@@ -451,13 +463,15 @@ export class AdvancedCacheManager extends EventEmitter {
 
     // Clean memory cache (LRU handles this automatically)
     
-    // Clean Redis entries
-    const keys = await this.redis.keys('cache:*');
-    for (const key of keys) {
-      const entry = await this.getFromRedis(key);
-      if (entry && entry.expiry < now) {
-        await this.redis.del(key);
-        cleaned++;
+    // Clean Redis entries if Redis is available
+    if (this.redis) {
+      const keys = await this.redis.keys('cache:*');
+      for (const key of keys) {
+        const entry = await this.getFromRedis(key);
+        if (entry && entry.expiry < now) {
+          await this.redis.del(key);
+          cleaned++;
+        }
       }
     }
 
@@ -467,6 +481,10 @@ export class AdvancedCacheManager extends EventEmitter {
   }
 
   private async syncStatsToRedis(): Promise<void> {
+    if (!this.redis) {
+      return;
+    }
+    
     const stats = {
       ...this.stats,
       timestamp: Date.now(),
@@ -477,6 +495,10 @@ export class AdvancedCacheManager extends EventEmitter {
   }
 
   private async warmPopularStocks(): Promise<void> {
+    if (!this.redis) {
+      return;
+    }
+    
     try {
       const popularData = await this.redis.get('popular:stocks');
       if (!popularData || typeof popularData !== 'string') return;
@@ -536,6 +558,10 @@ export class AdvancedCacheManager extends EventEmitter {
   }
 
   async getGlobalStats(): Promise<any> {
+    if (!this.redis) {
+      return [];
+    }
+    
     const allStats = await this.redis.hGetAll('cache:stats');
     return Object.entries(allStats).map(([instance, data]) => ({
       instance,
@@ -552,7 +578,9 @@ export class AdvancedCacheManager extends EventEmitter {
     }
 
     // Notify other instances
-    await this.redis.publish('cache:invalidate', JSON.stringify({ pattern }));
+    if (this.redis) {
+      await this.redis.publish('cache:invalidate', JSON.stringify({ pattern }));
+    }
   }
 
   async warmCache(symbols: string[]): Promise<void> {
@@ -563,7 +591,9 @@ export class AdvancedCacheManager extends EventEmitter {
   }
 
   async close(): Promise<void> {
-    await this.redis.quit();
+    if (this.redis) {
+      await this.redis.quit();
+    }
     this.memoryCache.clear();
     this.removeAllListeners();
   }
