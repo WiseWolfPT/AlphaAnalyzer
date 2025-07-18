@@ -117,8 +117,8 @@ COPY . .
 # Build frontend
 RUN npm run build:client
 
-# Remove dev dependencies
-RUN npm prune --production
+# Don't remove dependencies - tsx is needed for production
+# RUN npm prune --production
 
 # Expose port
 EXPOSE 3001
@@ -126,8 +126,8 @@ EXPOSE 3001
 ENV NODE_ENV=production
 ENV PORT=3001
 
-# Start directly without entrypoint script
-CMD ["npm", "run", "backend"]
+# Use the start script instead of backend
+CMD ["npm", "run", "start"]
 
 # Multi-Access Development (default)
 FROM development AS multi-access
