@@ -115,21 +115,23 @@ RUN npm ci --ignore-scripts
 COPY . .
 
 # Build frontend
-RUN echo "Current directory: $(pwd)" && \
+RUN echo "===== BUILD PHASE START =====" && \
+    echo "Current directory: $(pwd)" && \
     echo "Files in current directory:" && \
     ls -la && \
     echo "Running build:client..." && \
     npm run build:client && \
     echo "Build completed. Checking dist directory..." && \
+    echo "===== FINDING ALL index.html FILES =====" && \
     find . -name "index.html" -type f | head -10 && \
-    echo "Checking common output locations..." && \
-    ls -la dist/ 2>/dev/null || echo "No /app/dist" && \
-    ls -la dist/public/ 2>/dev/null || echo "No /app/dist/public" && \
-    ls -la client/dist/ 2>/dev/null || echo "No /app/client/dist" && \
-    echo "Final dist/public contents:" && \
-    ls -la dist/public/ 2>/dev/null || echo "No dist/public" && \
-    echo "Looking for assets directory:" && \
-    find . -type d -name "assets" | head -5
+    echo "===== CHECKING BUILD OUTPUT LOCATIONS =====" && \
+    echo "Checking /app/dist:" && \
+    ls -la /app/dist/ 2>/dev/null || echo "No /app/dist" && \
+    echo "Checking /app/dist/public:" && \
+    ls -la /app/dist/public/ 2>/dev/null || echo "No /app/dist/public" && \
+    echo "Checking /app/dist/public/assets (first 5 files):" && \
+    ls -la /app/dist/public/assets/ 2>/dev/null | head -5 || echo "No /app/dist/public/assets" && \
+    echo "===== BUILD PHASE COMPLETE ====="
 
 # Don't remove dependencies - tsx is needed for production
 # RUN npm prune --production
