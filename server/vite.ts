@@ -84,36 +84,59 @@ export function serveStatic(app: Express) {
     ? path.resolve(process.cwd(), "client", "dist")
     : path.resolve(import.meta.dirname || process.cwd(), "..", "client", "dist");
 
-  if (!fs.existsSync(distPath)) {
-    // Try alternative paths
+  // Check for index.html in various locations
+  const indexPaths = [
+    path.resolve(distPath, "index.html"),
+    path.resolve(distPath, "public", "index.html"),
+    path.resolve(process.cwd(), "dist", "index.html"),
+    path.resolve("/app", "dist", "index.html"),
+    path.resolve("/app", "client", "dist", "public", "index.html")
+  ];
+
+  let indexPath: string | null = null;
+  let staticPath: string | null = null;
+
+  for (const testPath of indexPaths) {
+    if (fs.existsSync(testPath)) {
+      indexPath = testPath;
+      staticPath = path.dirname(testPath);
+      console.log(`✅ Found index.html at: ${indexPath}`);
+      break;
+    }
+  }
+
+  if (!indexPath || !staticPath) {
+    // Try alternative paths for the dist directory
     const alternativePaths = [
       path.resolve(process.cwd(), "dist"),
       path.resolve(process.cwd(), "public"),
       path.resolve(process.cwd(), "..", "client", "dist"),
-      path.resolve("/app", "client", "dist")
+      path.resolve("/app", "client", "dist"),
+      path.resolve("/app", "dist")
     ];
     
     for (const altPath of alternativePaths) {
-      if (fs.existsSync(altPath)) {
-        console.log(`📁 Found client dist at: ${altPath}`);
-        app.use(express.static(altPath));
-        app.use("*", (_req, res) => {
-          res.sendFile(path.resolve(altPath, "index.html"));
-        });
-        return;
+      const altIndexPath = path.resolve(altPath, "index.html");
+      if (fs.existsSync(altIndexPath)) {
+        indexPath = altIndexPath;
+        staticPath = altPath;
+        console.log(`✅ Found index.html at: ${indexPath}`);
+        break;
       }
     }
-    
+  }
+
+  if (!indexPath || !staticPath) {
     throw new Error(
-      `Could not find the build directory. Tried: ${distPath} and ${alternativePaths.join(", ")}`,
+      `Could not find index.html. Searched in: ${indexPaths.join(", ")}`,
     );
   }
 
-  console.log(`📁 Serving static files from: ${distPath}`);
-  app.use(express.static(distPath));
+  console.log(`📁 Serving static files from: ${staticPath}`);
+  app.use(express.static(staticPath));
 
   // fall through to index.html if the file doesn't exist
   app.use("*", (_req, res) => {
-    res.sendFile(path.resolve(distPath, "index.html"));
+    res.sendFile(indexPath);
   });
 }
