@@ -107,6 +107,7 @@ export const originValidationMiddleware = (
   res: Response,
   next: NextFunction
 ) => {
+  // Build allowed origins dynamically including environment variables
   const allowedOrigins = [
     'http://localhost:5173',
     'http://localhost:3000',
@@ -114,11 +115,36 @@ export const originValidationMiddleware = (
     'https://alfalyzer.com'
   ];
   
+  // Add Koyeb domains from environment
+  if (process.env.KOYEB_APP_URL) {
+    allowedOrigins.push(process.env.KOYEB_APP_URL);
+    // Add both http and https versions
+    if (process.env.KOYEB_APP_URL.startsWith('http://')) {
+      allowedOrigins.push(process.env.KOYEB_APP_URL.replace('http://', 'https://'));
+    } else if (process.env.KOYEB_APP_URL.startsWith('https://')) {
+      allowedOrigins.push(process.env.KOYEB_APP_URL.replace('https://', 'http://'));
+    }
+  }
+  
+  if (process.env.APP_URL) {
+    allowedOrigins.push(process.env.APP_URL);
+  }
+  
+  if (process.env.FRONTEND_ORIGIN) {
+    allowedOrigins.push(process.env.FRONTEND_ORIGIN);
+  }
+  
   const origin = req.headers.origin;
   const referer = req.headers.referer;
   
+  // Allow requests without origin header (same-origin / direct browser access)
+  if (!origin && !referer) {
+    return next();
+  }
+  
   // Verificar se a origem é permitida
   if (origin && !allowedOrigins.includes(origin)) {
+    console.warn(`🚫 Origin validation failed: ${origin} not in allowed list`);
     return res.status(403).json({
       error: 'Forbidden origin',
       message: 'Request origin not allowed'
@@ -128,6 +154,7 @@ export const originValidationMiddleware = (
   // Verificar referer para requisições POST/PUT/DELETE
   if (['POST', 'PUT', 'DELETE'].includes(req.method)) {
     if (!referer || !allowedOrigins.some(allowed => referer.startsWith(allowed))) {
+      console.warn(`🚫 Referer validation failed for ${req.method}: ${referer}`);
       return res.status(403).json({
         error: 'Invalid referer',
         message: 'Request referer validation failed'

@@ -400,7 +400,21 @@ export const corsConfig = {
   origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
     // SECURITY FIX: Environment-specific allowed origins from FRONTEND_ORIGIN
     const frontendOrigin = process.env.FRONTEND_ORIGIN;
-    const productionOrigins = frontendOrigin ? [frontendOrigin] : [];
+    const koyebDomain = process.env.KOYEB_APP_URL || process.env.APP_URL;
+    
+    // Build production origins list
+    const productionOrigins = [];
+    if (frontendOrigin) productionOrigins.push(frontendOrigin);
+    if (koyebDomain) {
+      // Add both http and https versions of Koyeb domain
+      productionOrigins.push(koyebDomain);
+      if (koyebDomain.startsWith('http://')) {
+        productionOrigins.push(koyebDomain.replace('http://', 'https://'));
+      } else if (koyebDomain.startsWith('https://')) {
+        productionOrigins.push(koyebDomain.replace('https://', 'http://'));
+      }
+    }
+    
     const developmentOrigins = [
       'http://localhost:3000',
       'http://localhost:8080',
@@ -412,14 +426,10 @@ export const corsConfig = {
       ? productionOrigins 
       : [...developmentOrigins, ...productionOrigins];
     
-    // SECURITY FIX: Be more restrictive with no-origin requests in production
+    // SECURITY FIX: Allow no-origin requests (direct browser access) in production for same-origin
     if (!origin) {
-      if (process.env.NODE_ENV === 'production') {
-        // Only allow no-origin requests for specific endpoints in production
-        return callback(new Error('Origin header required in production'), false);
-      }
-      // Allow no-origin requests in development (useful for testing)
-      console.log('🔧 CORS: Allowing no-origin request in development');
+      // In production, allow no-origin for same-origin requests (browser direct access)
+      console.log('🔧 CORS: No origin header - allowing for same-origin access');
       return callback(null, true);
     }
     
