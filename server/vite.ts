@@ -78,6 +78,10 @@ export async function setupVite(app: Express, server: Server) {
 }
 
 export function serveStatic(app: Express) {
+  console.log('🔍 Setting up static file serving...');
+  console.log('📍 Current directory:', process.cwd());
+  console.log('🌍 Environment:', process.env.NODE_ENV);
+  
   // In production, the server runs from /app/server
   // The client dist is at /app/client/dist
   const distPath = process.env.NODE_ENV === 'production' 
@@ -93,10 +97,13 @@ export function serveStatic(app: Express) {
     path.resolve("/app", "client", "dist", "public", "index.html")
   ];
 
+  console.log('🔍 Searching for index.html in:', indexPaths);
+
   let indexPath: string | null = null;
   let staticPath: string | null = null;
 
   for (const testPath of indexPaths) {
+    console.log(`🔍 Checking: ${testPath} - ${fs.existsSync(testPath) ? '✅ EXISTS' : '❌ NOT FOUND'}`);
     if (fs.existsSync(testPath)) {
       indexPath = testPath;
       staticPath = path.dirname(testPath);
@@ -115,8 +122,11 @@ export function serveStatic(app: Express) {
       path.resolve("/app", "dist")
     ];
     
+    console.log('🔍 Trying alternative paths:', alternativePaths);
+    
     for (const altPath of alternativePaths) {
       const altIndexPath = path.resolve(altPath, "index.html");
+      console.log(`🔍 Checking alt: ${altIndexPath} - ${fs.existsSync(altIndexPath) ? '✅ EXISTS' : '❌ NOT FOUND'}`);
       if (fs.existsSync(altIndexPath)) {
         indexPath = altIndexPath;
         staticPath = altPath;
@@ -127,16 +137,44 @@ export function serveStatic(app: Express) {
   }
 
   if (!indexPath || !staticPath) {
+    console.error('❌ Could not find index.html anywhere!');
+    console.log('📂 Directory listing of /app:');
+    try {
+      const files = fs.readdirSync('/app');
+      files.forEach(file => console.log(`  - ${file}`));
+    } catch (e) {
+      console.log('  (Could not list directory)');
+    }
+    
     throw new Error(
       `Could not find index.html. Searched in: ${indexPaths.join(", ")}`,
     );
   }
 
   console.log(`📁 Serving static files from: ${staticPath}`);
-  app.use(express.static(staticPath));
+  
+  // Serve static files for specific extensions
+  app.use(express.static(staticPath, {
+    extensions: ['html', 'js', 'css', 'png', 'jpg', 'jpeg', 'gif', 'svg', 'ico'],
+    index: false // Don't serve index.html automatically
+  }));
 
-  // fall through to index.html if the file doesn't exist
-  app.use("*", (_req, res) => {
+  // Log all incoming requests for debugging
+  app.use((req, res, next) => {
+    if (!req.path.startsWith('/api/')) {
+      console.log(`📥 Static request: ${req.method} ${req.path}`);
+    }
+    next();
+  });
+
+  // Serve index.html for all non-API routes
+  app.get('*', (req, res, next) => {
+    // Skip API routes
+    if (req.path.startsWith('/api/')) {
+      return next();
+    }
+    
+    console.log(`📄 Serving index.html for: ${req.path}`);
     res.sendFile(indexPath);
   });
 }
