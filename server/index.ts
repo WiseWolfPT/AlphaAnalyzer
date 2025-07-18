@@ -428,12 +428,12 @@ async function initializeMarketDataServices() {
     app.use(errorHandler);
 
     // Setup Vite AFTER everything else
-    // if (process.env.NODE_ENV === "development") {
-    //   console.log('Setting up Vite development server...');
-    //   await setupVite(app, server);
-    // } else {
-    //   serveStatic(app);
-    // }
+    if (process.env.NODE_ENV === "development") {
+      console.log('Setting up Vite development server...');
+      await setupVite(app, server);
+    } else {
+      serveStatic(app);
+    }
 
     const port = Number(env.PORT) || 3001;
     
