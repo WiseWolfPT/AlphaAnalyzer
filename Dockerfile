@@ -105,16 +105,11 @@ FROM node:18-alpine AS koyeb
 
 WORKDIR /app
 
-# Install only essential dependencies
-RUN apk add --no-cache \
-    curl \
-    bash
-
-# Copy package files
+# Copy package files first
 COPY package*.json ./
 
-# Install production dependencies (skip postinstall)
-RUN npm ci --only=production --ignore-scripts && npm cache clean --force
+# Install ALL dependencies (needed for build)
+RUN npm ci --ignore-scripts
 
 # Copy all application files
 COPY . .
@@ -122,9 +117,8 @@ COPY . .
 # Build frontend
 RUN npm run build:client
 
-# Copy Koyeb entrypoint
-COPY docker/entrypoint-koyeb.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
+# Remove dev dependencies
+RUN npm prune --production
 
 # Expose port
 EXPOSE 3001
@@ -132,7 +126,8 @@ EXPOSE 3001
 ENV NODE_ENV=production
 ENV PORT=3001
 
-ENTRYPOINT ["/entrypoint.sh"]
+# Start directly without entrypoint script
+CMD ["npm", "run", "backend"]
 
 # Multi-Access Development (default)
 FROM development AS multi-access
