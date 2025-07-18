@@ -342,8 +342,14 @@ export const withRetry = async <T>(
 
 // 404 handler for undefined routes
 export const notFoundHandler = (req: Request, res: Response, next: NextFunction): void => {
-  const error = createNotFoundError(`Route ${req.method} ${req.originalUrl}`);
-  next(error);
+  // Only handle API routes as 404
+  if (req.originalUrl.startsWith('/api/')) {
+    const error = createNotFoundError(`Route ${req.method} ${req.originalUrl}`);
+    next(error);
+  } else {
+    // For non-API routes, let them pass through (handled by static file server)
+    next();
+  }
 };
 
 // Graceful shutdown error handler

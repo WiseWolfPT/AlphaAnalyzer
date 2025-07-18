@@ -418,7 +418,15 @@ async function initializeMarketDataServices() {
     app.use('/api/intrinsic-values', financialDataSecurity);
     app.use('/api/earnings', financialDataSecurity);
 
-    // Add 404 handler for undefined routes
+    // Setup static file serving BEFORE error handlers
+    if (process.env.NODE_ENV === "development") {
+      console.log('Setting up Vite development server...');
+      await setupVite(app, server);
+    } else {
+      serveStatic(app);
+    }
+
+    // Add 404 handler for undefined routes (AFTER static file serving)
     app.use(notFoundHandler);
 
     // Setup Sentry error handler BEFORE other error middleware
@@ -426,14 +434,6 @@ async function initializeMarketDataServices() {
 
     // Global error handling middleware (must be last)
     app.use(errorHandler);
-
-    // Setup Vite AFTER everything else
-    if (process.env.NODE_ENV === "development") {
-      console.log('Setting up Vite development server...');
-      await setupVite(app, server);
-    } else {
-      serveStatic(app);
-    }
 
     const port = Number(env.PORT) || 3001;
     
