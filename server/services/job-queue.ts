@@ -104,7 +104,6 @@ export class JobQueue {
       .select('*')
       .eq('status', 'pending')
       .lte('scheduled_for', new Date().toISOString())
-      .lt('retry_count', supabase.rpc('max_retries'))
       .order('priority', { ascending: false })
       .order('created_at', { ascending: true });
 
@@ -119,7 +118,10 @@ export class JobQueue {
       return [];
     }
     
-    return jobs || [];
+    // Filter out jobs that have exceeded their max retries
+    const eligibleJobs = (jobs || []).filter(job => job.retry_count < job.max_retries);
+    
+    return eligibleJobs;
   }
 
   /**

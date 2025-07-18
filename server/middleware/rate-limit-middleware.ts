@@ -416,7 +416,7 @@ export class RateLimitMiddleware {
 // Export singleton instance
 export const rateLimitMiddleware = new RateLimitMiddleware({
   redisUrl: process.env.REDIS_URL,
-  enableDistributed: process.env.NODE_ENV === 'production',
+  enableDistributed: false, // Disable Redis for now to prevent connection errors
   whitelistedIPs: process.env.WHITELISTED_IPS?.split(',') || [],
 });
 
