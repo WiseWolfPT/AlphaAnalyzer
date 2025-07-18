@@ -1,9 +1,9 @@
 import { createClient } from '@supabase/supabase-js';
+import { supabaseConfig } from '../config/supabase-config';
 
 // Initialize Supabase client for rate limiting
-const supabaseUrl = process.env.SUPABASE_URL!;
-const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
-const supabase = createClient(supabaseUrl, supabaseKey);
+const config = supabaseConfig.getConfig();
+const supabase = config ? createClient(config.url, config.key) : null;
 
 export interface RateLimitResult {
   allowed: boolean;
@@ -55,11 +55,27 @@ export interface ApiCallOptions {
 export class RateLimitTracker {
   private readonly alertThreshold = 80; // Alert when usage hits 80%
   private readonly warningThreshold = 90; // Warning when usage hits 90%
+  
+  private isSupabaseAvailable(): boolean {
+    return supabase !== null;
+  }
 
   /**
    * Check if an API call is allowed for the given provider/endpoint
    */
   async checkLimit(provider: string, endpoint: string): Promise<RateLimitResult> {
+    // If Supabase is not configured, allow all requests
+    if (!supabase) {
+      return {
+        allowed: true,
+        used: 0,
+        dailyLimit: 1000,
+        remaining: 1000,
+        usagePercent: 0,
+        resetAt: new Date(Date.now() + 24 * 60 * 60 * 1000)
+      };
+    }
+
     try {
       const { data, error } = await supabase.rpc('check_api_limit', {
         p_provider: provider,
