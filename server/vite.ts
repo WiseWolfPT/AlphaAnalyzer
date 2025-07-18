@@ -130,6 +130,16 @@ export function serveStatic(app: Express) {
     if (fs.existsSync(assetsPath)) {
       const assetFiles = fs.readdirSync(assetsPath);
       console.log(`📂 Assets directory contains ${assetFiles.length} files`);
+      console.log(`📂 First 5 asset files: ${assetFiles.slice(0, 5).join(', ')}`);
+    } else {
+      console.error(`❌ CRITICAL: Assets directory NOT FOUND at: ${assetsPath}`);
+      console.error(`❌ This explains the 500 errors - assets are missing!`);
+      
+      // Try to find where assets might be
+      console.log(`🔍 Searching for assets in parent directories...`);
+      const parentDir = path.dirname(staticPath);
+      const parentFiles = fs.readdirSync(parentDir);
+      console.log(`📂 Parent directory (${parentDir}) contains: ${parentFiles.join(', ')}`);
     }
   } catch (e) {
     console.error('❌ Error listing directory contents:', e);
