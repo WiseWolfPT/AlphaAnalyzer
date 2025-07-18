@@ -78,155 +78,73 @@ export async function setupVite(app: Express, server: Server) {
 }
 
 export function serveStatic(app: Express) {
-  console.log('🔍 Setting up static file serving...');
-  console.log('📍 Current directory:', process.cwd());
-  console.log('🌍 Environment:', process.env.NODE_ENV);
-  
-  // In production, the server runs from /app/server
-  // The client dist is at /app/client/dist
-  const distPath = process.env.NODE_ENV === 'production' 
-    ? path.resolve(process.cwd(), "client", "dist")
-    : path.resolve(import.meta.dirname || process.cwd(), "..", "client", "dist");
+  // Simplified path resolution for production
+  const staticPath = path.resolve(process.cwd(), 'dist', 'public');
+  const indexPath = path.resolve(staticPath, 'index.html');
 
-  // Check for index.html in various locations
-  const indexPaths = [
-    path.resolve(distPath, "index.html"),
-    path.resolve(distPath, "public", "index.html"),
-    path.resolve(process.cwd(), "dist", "index.html"),
-    path.resolve(process.cwd(), "dist", "public", "index.html"),
-    path.resolve("/app", "dist", "index.html"),
-    path.resolve("/app", "dist", "public", "index.html"),
-    path.resolve("/app", "client", "dist", "index.html"),
-    path.resolve("/app", "client", "dist", "public", "index.html")
-  ];
+  console.log(`[Static] Serving static files from: ${staticPath}`);
+  console.log(`[Static] Index.html expected at: ${indexPath}`);
 
-  console.log('🔍 Searching for index.html in:', indexPaths);
-
-  let indexPath: string | null = null;
-  let staticPath: string | null = null;
-
-  for (const testPath of indexPaths) {
-    console.log(`🔍 Checking: ${testPath} - ${fs.existsSync(testPath) ? '✅ EXISTS' : '❌ NOT FOUND'}`);
-    if (fs.existsSync(testPath)) {
-      indexPath = testPath;
-      staticPath = path.dirname(testPath);
-      console.log(`✅ Found index.html at: ${indexPath}`);
-      break;
+  // Verify index.html exists
+  if (!fs.existsSync(indexPath)) {
+    console.error(`[Static] ERROR: index.html not found at ${indexPath}`);
+    console.error('[Static] Check build configuration (vite.config.ts) and deployment script');
+    
+    // Debug directory structure
+    try {
+      const parentDir = path.dirname(staticPath);
+      console.log(`[Static] Parent directory '${parentDir}' contents:`, fs.readdirSync(parentDir));
+      if (fs.existsSync(staticPath)) {
+        console.log(`[Static] Static directory '${staticPath}' contents:`, fs.readdirSync(staticPath));
+      }
+    } catch (e) {
+      console.error('[Static] Could not list directories for debugging:', e.message);
     }
-  }
-
-  if (!indexPath || !staticPath) {
-    // Try alternative paths for the dist directory
-    const alternativePaths = [
-      path.resolve(process.cwd(), "dist"),
-      path.resolve(process.cwd(), "public"),
-      path.resolve(process.cwd(), "..", "client", "dist"),
-      path.resolve("/app", "client", "dist"),
-      path.resolve("/app", "dist")
+    
+    // Try to find index.html in alternative locations for debugging
+    const searchPaths = [
+      '/app/dist/public',
+      '/app/dist',
+      '/app/client/dist/public',
+      '/app/client/dist'
     ];
     
-    console.log('🔍 Trying alternative paths:', alternativePaths);
-    
-    for (const altPath of alternativePaths) {
-      const altIndexPath = path.resolve(altPath, "index.html");
-      console.log(`🔍 Checking alt: ${altIndexPath} - ${fs.existsSync(altIndexPath) ? '✅ EXISTS' : '❌ NOT FOUND'}`);
-      if (fs.existsSync(altIndexPath)) {
-        indexPath = altIndexPath;
-        staticPath = altPath;
-        console.log(`✅ Found index.html at: ${indexPath}`);
-        break;
+    console.log('[Static] Searching for index.html in alternative locations:');
+    for (const searchPath of searchPaths) {
+      const testPath = path.join(searchPath, 'index.html');
+      if (fs.existsSync(testPath)) {
+        console.log(`[Static] Found index.html at: ${testPath}`);
+        console.log(`[Static] Update staticPath to: ${searchPath}`);
       }
     }
+    
+    return; // Don't continue if essential files aren't there
   }
 
-  if (!indexPath || !staticPath) {
-    console.error('❌ Could not find index.html anywhere!');
-    console.log('📂 Directory listing of /app:');
-    try {
-      const files = fs.readdirSync('/app');
-      files.forEach(file => console.log(`  - ${file}`));
-    } catch (e) {
-      console.log('  (Could not list directory)');
-    }
-    
-    console.log('📂 Directory listing of /app/client:');
-    try {
-      const clientFiles = fs.readdirSync('/app/client');
-      clientFiles.forEach(file => console.log(`  - ${file}`));
-    } catch (e) {
-      console.log('  (Could not list /app/client directory)');
-    }
-    
-    console.log('📂 Directory listing of /app/client/dist:');
-    try {
-      const distFiles = fs.readdirSync('/app/client/dist');
-      distFiles.forEach(file => console.log(`  - ${file}`));
-    } catch (e) {
-      console.log('  (Could not list /app/client/dist directory - build may have failed)');
-    }
-    
-    throw new Error(
-      `Could not find index.html. Searched in: ${indexPaths.join(", ")}`,
-    );
-  }
-
-  console.log(`📁 Serving static files from: ${staticPath}`);
-  
-  // Serve static files with proper configuration
+  // 1. Serve static assets (JS, CSS, images) from the static directory
   app.use(express.static(staticPath, {
-    extensions: ['html', 'js', 'css', 'png', 'jpg', 'jpeg', 'gif', 'svg', 'ico'],
-    index: false, // Don't serve index.html automatically
-    setHeaders: (res, path) => {
-      // Set proper MIME types for JavaScript modules
-      if (path.endsWith('.js') || path.endsWith('.mjs')) {
+    // Cache assets with hash in filename for 1 year
+    setHeaders: (res, filePath) => {
+      if (path.basename(filePath).match(/(\.[a-f0-9]{8,}\.)/)) {
+        res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+      }
+      // Set proper MIME type for JavaScript
+      if (filePath.endsWith('.js') || filePath.endsWith('.mjs')) {
         res.setHeader('Content-Type', 'application/javascript');
       }
-      // Set cache headers for production
-      if (process.env.NODE_ENV === 'production') {
-        if (path.includes('/assets/')) {
-          // Cache immutable assets for 1 year
-          res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
-        } else {
-          // Cache other static files for 1 hour
-          res.setHeader('Cache-Control', 'public, max-age=3600');
-        }
-      }
-    }
+    },
   }));
 
-  // Log all incoming requests for debugging
-  app.use((req, res, next) => {
-    if (!req.path.startsWith('/api/')) {
-      const fullPath = path.join(staticPath, req.path);
-      const exists = fs.existsSync(fullPath);
-      console.log(`📥 Static request: ${req.method} ${req.path} -> ${fullPath} (${exists ? '✅ EXISTS' : '❌ NOT FOUND'})`);
-      
-      // If file doesn't exist and it's an asset request, log more details
-      if (!exists && (req.path.includes('/assets/') || req.path.endsWith('.js') || req.path.endsWith('.css'))) {
-        console.log(`❌ Asset not found: ${req.path}`);
-        console.log(`  Looking in: ${staticPath}`);
-        
-        // Try to list what's actually in the assets directory
-        const assetsPath = path.join(staticPath, 'assets');
-        if (fs.existsSync(assetsPath)) {
-          const files = fs.readdirSync(assetsPath).slice(0, 5);
-          console.log(`  Assets directory contains: ${files.join(', ')}...`);
-        } else {
-          console.log(`  ❌ No assets directory found at ${assetsPath}`);
-        }
-      }
-    }
-    next();
-  });
-
-  // Serve index.html for all non-API routes
+  // 2. Serve index.html as fallback for all other GET routes (client-side routing)
+  // This handler will only be reached if express.static above doesn't find a file
   app.get('*', (req, res, next) => {
-    // Skip API routes
-    if (req.path.startsWith('/api/')) {
+    // Explicitly ignore API routes AND asset requests
+    if (req.path.startsWith('/api/') || req.path.includes('/assets/')) {
       return next();
     }
     
-    console.log(`📄 Serving index.html for: ${req.path}`);
+    // For all other routes, serve the SPA
+    console.log(`[Static] Serving index.html for SPA route: ${req.path}`);
     res.sendFile(indexPath);
   });
 }
