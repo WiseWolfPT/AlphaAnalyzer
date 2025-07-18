@@ -1,0 +1,19 @@
+# Simple Dockerfile for Fly.io
+FROM node:18-alpine
+
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+
+# Install production dependencies
+RUN npm ci --only=production
+
+# Copy application code
+COPY . .
+
+# The PORT env var is set by Fly.io
+EXPOSE 3001
+
+# Start the backend
+CMD ["npm", "run", "backend:prod"]
