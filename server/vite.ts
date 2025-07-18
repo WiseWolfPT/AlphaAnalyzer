@@ -94,6 +94,7 @@ export function serveStatic(app: Express) {
     path.resolve(distPath, "public", "index.html"),
     path.resolve(process.cwd(), "dist", "index.html"),
     path.resolve("/app", "dist", "index.html"),
+    path.resolve("/app", "client", "dist", "index.html"),
     path.resolve("/app", "client", "dist", "public", "index.html")
   ];
 
@@ -144,6 +145,22 @@ export function serveStatic(app: Express) {
       files.forEach(file => console.log(`  - ${file}`));
     } catch (e) {
       console.log('  (Could not list directory)');
+    }
+    
+    console.log('📂 Directory listing of /app/client:');
+    try {
+      const clientFiles = fs.readdirSync('/app/client');
+      clientFiles.forEach(file => console.log(`  - ${file}`));
+    } catch (e) {
+      console.log('  (Could not list /app/client directory)');
+    }
+    
+    console.log('📂 Directory listing of /app/client/dist:');
+    try {
+      const distFiles = fs.readdirSync('/app/client/dist');
+      distFiles.forEach(file => console.log(`  - ${file}`));
+    } catch (e) {
+      console.log('  (Could not list /app/client/dist directory - build may have failed)');
     }
     
     throw new Error(
