@@ -100,6 +100,40 @@ ENV NODE_ENV=production
 ENTRYPOINT ["/entrypoint.sh"]
 CMD ["start"]
 
+# Koyeb Production Stage
+FROM node:18-alpine AS koyeb
+
+WORKDIR /app
+
+# Install only essential dependencies
+RUN apk add --no-cache \
+    curl \
+    bash
+
+# Copy package files
+COPY package*.json ./
+
+# Install production dependencies
+RUN npm ci --only=production && npm cache clean --force
+
+# Copy all application files
+COPY . .
+
+# Build frontend
+RUN npm run build:client
+
+# Copy Koyeb entrypoint
+COPY docker/entrypoint-koyeb.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+# Expose port
+EXPOSE 3001
+
+ENV NODE_ENV=production
+ENV PORT=3001
+
+ENTRYPOINT ["/entrypoint.sh"]
+
 # Multi-Access Development (default)
 FROM development AS multi-access
 
