@@ -172,16 +172,49 @@ export function serveStatic(app: Express) {
 
   console.log(`📁 Serving static files from: ${staticPath}`);
   
-  // Serve static files for specific extensions
+  // Serve static files with proper configuration
   app.use(express.static(staticPath, {
     extensions: ['html', 'js', 'css', 'png', 'jpg', 'jpeg', 'gif', 'svg', 'ico'],
-    index: false // Don't serve index.html automatically
+    index: false, // Don't serve index.html automatically
+    setHeaders: (res, path) => {
+      // Set proper MIME types for JavaScript modules
+      if (path.endsWith('.js') || path.endsWith('.mjs')) {
+        res.setHeader('Content-Type', 'application/javascript');
+      }
+      // Set cache headers for production
+      if (process.env.NODE_ENV === 'production') {
+        if (path.includes('/assets/')) {
+          // Cache immutable assets for 1 year
+          res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+        } else {
+          // Cache other static files for 1 hour
+          res.setHeader('Cache-Control', 'public, max-age=3600');
+        }
+      }
+    }
   }));
 
   // Log all incoming requests for debugging
   app.use((req, res, next) => {
     if (!req.path.startsWith('/api/')) {
-      console.log(`📥 Static request: ${req.method} ${req.path}`);
+      const fullPath = path.join(staticPath, req.path);
+      const exists = fs.existsSync(fullPath);
+      console.log(`📥 Static request: ${req.method} ${req.path} -> ${fullPath} (${exists ? '✅ EXISTS' : '❌ NOT FOUND'})`);
+      
+      // If file doesn't exist and it's an asset request, log more details
+      if (!exists && (req.path.includes('/assets/') || req.path.endsWith('.js') || req.path.endsWith('.css'))) {
+        console.log(`❌ Asset not found: ${req.path}`);
+        console.log(`  Looking in: ${staticPath}`);
+        
+        // Try to list what's actually in the assets directory
+        const assetsPath = path.join(staticPath, 'assets');
+        if (fs.existsSync(assetsPath)) {
+          const files = fs.readdirSync(assetsPath).slice(0, 5);
+          console.log(`  Assets directory contains: ${files.join(', ')}...`);
+        } else {
+          console.log(`  ❌ No assets directory found at ${assetsPath}`);
+        }
+      }
     }
     next();
   });

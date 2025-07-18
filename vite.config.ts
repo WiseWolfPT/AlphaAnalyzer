@@ -18,6 +18,9 @@ const getHMRPort = () => {
 };
 
 export default defineConfig({
+  // Set base URL for production builds
+  base: process.env.NODE_ENV === 'production' ? '/' : '/',
+  
   plugins: [
     react({
       jsxRuntime: 'automatic',

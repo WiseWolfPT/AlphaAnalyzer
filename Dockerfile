@@ -125,7 +125,11 @@ RUN echo "Current directory: $(pwd)" && \
     echo "Checking common output locations..." && \
     ls -la dist/ 2>/dev/null || echo "No /app/dist" && \
     ls -la dist/public/ 2>/dev/null || echo "No /app/dist/public" && \
-    ls -la client/dist/ 2>/dev/null || echo "No /app/client/dist"
+    ls -la client/dist/ 2>/dev/null || echo "No /app/client/dist" && \
+    echo "Final dist/public contents:" && \
+    ls -la dist/public/ 2>/dev/null || echo "No dist/public" && \
+    echo "Looking for assets directory:" && \
+    find . -type d -name "assets" | head -5
 
 # Don't remove dependencies - tsx is needed for production
 # RUN npm prune --production
