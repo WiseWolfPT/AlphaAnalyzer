@@ -43,3 +43,5 @@ workspace/
 .env
 
 .env.status.json
+test-deploy/
+zen-mcp-server/
