@@ -142,6 +142,15 @@ export const originValidationMiddleware = (
     return next();
   }
   
+  // KOYEB FIX: Check for dynamic Koyeb subdomains
+  if (process.env.NODE_ENV === 'production' && origin) {
+    const koyebPattern = /^https:\/\/crucial-ivonne-alfalyzer-[a-z0-9]+\.koyeb\.app$/;
+    if (koyebPattern.test(origin)) {
+      console.log(`✅ Origin validation: Allowing Koyeb subdomain: ${origin}`);
+      return next();
+    }
+  }
+  
   // Verificar se a origem é permitida
   if (origin && !allowedOrigins.includes(origin)) {
     console.warn(`🚫 Origin validation failed: ${origin} not in allowed list`);
@@ -151,8 +160,16 @@ export const originValidationMiddleware = (
     });
   }
   
-  // Verificar referer para requisições POST/PUT/DELETE
+  // KOYEB FIX: Check referer for dynamic Koyeb subdomains
   if (['POST', 'PUT', 'DELETE'].includes(req.method)) {
+    if (process.env.NODE_ENV === 'production' && referer) {
+      const koyebPattern = /^https:\/\/crucial-ivonne-alfalyzer-[a-z0-9]+\.koyeb\.app/;
+      if (koyebPattern.test(referer)) {
+        console.log(`✅ Referer validation: Allowing Koyeb subdomain: ${referer}`);
+        return next();
+      }
+    }
+    
     if (!referer || !allowedOrigins.some(allowed => referer.startsWith(allowed))) {
       console.warn(`🚫 Referer validation failed for ${req.method}: ${referer}`);
       return res.status(403).json({
