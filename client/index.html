@@ -9,9 +9,55 @@
     <meta name="theme-color" content="#84cc16" />
     <meta name="description" content="Professional stock analytics platform for Portuguese investors accessing USA and EU markets" />
     <meta name="keywords" content="stocks, investment, portugal, usa markets, eu markets, portfolio, analysis" />
+    <!-- Fallback styles to prevent black screen -->
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        min-height: 100vh;
+        background-color: #f5f5f5;
+        color: #333;
+      }
+      
+      body.dark {
+        background-color: #151515;
+        color: #e4e7eb;
+      }
+      
+      #root {
+        min-height: 100vh;
+      }
+      
+      /* Loading fallback */
+      .alfalyzer-loading {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        background-color: inherit;
+      }
+      
+      .alfalyzer-loading-spinner {
+        width: 48px;
+        height: 48px;
+        border: 4px solid #e5e7eb;
+        border-top-color: #F4FA4E;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+      
+      @keyframes spin {
+        to { transform: rotate(360deg); }
+      }
+    </style>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <!-- Fallback loading indicator -->
+      <div class="alfalyzer-loading">
+        <div class="alfalyzer-loading-spinner"></div>
+      </div>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

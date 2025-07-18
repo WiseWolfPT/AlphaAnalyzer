@@ -33,6 +33,10 @@ export function ThemeProvider({
   useEffect(() => {
     const root = window.document.documentElement;
 
+    // Debug theme application
+    console.log('[ThemeProvider] Applying theme:', theme);
+    console.log('[ThemeProvider] Before - HTML classes:', root.className);
+
     root.classList.remove("light", "dark");
 
     if (theme === "system") {
@@ -42,10 +46,16 @@ export function ThemeProvider({
         : "light";
 
       root.classList.add(systemTheme);
+      console.log('[ThemeProvider] Applied system theme:', systemTheme);
       return;
     }
 
     root.classList.add(theme);
+    console.log('[ThemeProvider] After - HTML classes:', root.className);
+    
+    // Force body to inherit theme
+    document.body.classList.remove("light", "dark");
+    document.body.classList.add(theme);
   }, [theme]);
 
   const value = {

@@ -483,8 +483,8 @@ function App() {
     // Warm up cache with popular symbols during idle time
     warmupCache();
     
-    // Start Web Vitals tracking
-    performanceMonitor.trackWebVitals();
+    // Start Web Vitals tracking (temporarily disabled)
+    // performanceMonitor.trackWebVitals();
     
     // Log loading metrics after initial render
     const logMetrics = () => {
@@ -497,24 +497,24 @@ function App() {
         if (metrics.slowComponents.length > 0) {
           console.warn('🐌 Slow Components:', metrics.slowComponents);
           
-          // Track slow components in Sentry
-          metrics.slowComponents.forEach(component => {
-            performanceMonitor.trackComponentPerformance(component.name, component.loadTime);
-          });
+          // Track slow components in Sentry (temporarily disabled)
+          // metrics.slowComponents.forEach(component => {
+          //   performanceMonitor.trackComponentPerformance(component.name, component.loadTime);
+          // });
         }
         
         console.table(metrics.components);
         console.groupEnd();
         
-        // Send overall metrics to Sentry
-        if (metrics.averageLoadTime > 2000) {
-          performanceMonitor.trackFinancialAction(
-            'app_initialization',
-            'alfalyzer',
-            metrics.averageLoadTime,
-            true
-          );
-        }
+        // Send overall metrics to Sentry (temporarily disabled)
+        // if (metrics.averageLoadTime > 2000) {
+        //   performanceMonitor.trackFinancialAction(
+        //     'app_initialization',
+        //     'alfalyzer',
+        //     metrics.averageLoadTime,
+        //     true
+        //   );
+        // }
       }
     };
     
@@ -536,15 +536,15 @@ function App() {
             console.log('📈 Navigation Performance:', navigationData);
           }
           
-          // Track in Sentry if slow
-          if (navigationData.totalTime > 3000) {
-            performanceMonitor.trackFinancialAction(
-              'navigation_slow',
-              'app_load',
-              navigationData.totalTime,
-              true
-            );
-          }
+          // Track in Sentry if slow (temporarily disabled)
+          // if (navigationData.totalTime > 3000) {
+          //   performanceMonitor.trackFinancialAction(
+          //     'navigation_slow',
+          //     'app_load',
+          //     navigationData.totalTime,
+          //     true
+          //   );
+          // }
         }
       });
     });
