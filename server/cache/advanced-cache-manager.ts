@@ -95,12 +95,41 @@ export class AdvancedCacheManager extends EventEmitter {
     super();
     
     // Initialize Redis connection
-    this.redis = createClient({
-      url: process.env.REDIS_URL || 'redis://localhost:6379',
-      socket: {
-        reconnectStrategy: (retries) => Math.min(retries * 50, 1000)
-      }
-    });
+    const redisUrl = process.env.REDIS_URL || 'redis://localhost:6379';
+    
+    console.log('🔍 Redis URL:', redisUrl ? 'Configured' : 'Not configured');
+    
+    // Skip Redis in production if not properly configured
+    if (process.env.NODE_ENV === 'production' && redisUrl === 'redis://localhost:6379') {
+      console.warn('⚠️ Advanced cache manager: Redis not configured for production, using memory only');
+      this.redis = null as any;
+    } else {
+      this.redis = createClient({
+        url: redisUrl,
+        socket: {
+          reconnectStrategy: (retries) => Math.min(retries * 50, 1000),
+          connectTimeout: 10000,
+          commandsQueueMaxLength: 100
+        }
+      });
+      
+      // Handle Redis errors
+      this.redis.on('error', (err) => {
+        console.error('❌ Redis Client Error:', err.message);
+      });
+      
+      this.redis.on('connect', () => {
+        console.log('🔗 Redis Client Connected');
+      });
+      
+      this.redis.on('ready', () => {
+        console.log('✅ Redis Client Ready');
+      });
+      
+      this.redis.on('end', () => {
+        console.log('🔌 Redis Client Disconnected');
+      });
+    }
 
     // Initialize memory cache with 500MB limit
     this.memoryCache = new LRUCache<string, CacheEntry<any>>({
@@ -133,6 +162,11 @@ export class AdvancedCacheManager extends EventEmitter {
   }
 
   private async connectRedis(): Promise<void> {
+    if (!this.redis) {
+      console.log('⚠️ Redis connection skipped - using memory cache only');
+      return;
+    }
+    
     try {
       await this.redis.connect();
       console.log('✅ Redis connected successfully');
