@@ -679,8 +679,9 @@ async function initializeMarketDataServices() {
     }
 
     // SIMPLIFIED: Start with single server instance
-    console.log(`🔄 Starting server on localhost:${port}...`);
-    server.listen(port, '127.0.0.1', () => {
+    const host = process.env.NODE_ENV === 'production' ? '0.0.0.0' : '127.0.0.1';
+    console.log(`🔄 Starting server on ${host}:${port}...`);
+    server.listen(port, host, () => {
       console.log(`🚀 MAIN SERVER ACTIVE!`);
       console.log(`📱 Local:    http://localhost:${port}`);
       console.log(`🔧 API:      http://localhost:${port}/api/stocks`);
@@ -702,7 +703,8 @@ async function initializeMarketDataServices() {
       // Test the server internally
       console.log('🔍 Testing internal connection...');
       import('node:http').then(http => {
-        http.get(`http://localhost:${port}/health`, (res) => {
+        const testHost = process.env.NODE_ENV === 'production' ? '0.0.0.0' : 'localhost';
+        http.get(`http://${testHost}:${port}/health`, (res) => {
           console.log('✅ Internal test successful, status:', res.statusCode);
         }).on('error', (err) => {
           console.log('⚠️  Internal test note:', err.message);
