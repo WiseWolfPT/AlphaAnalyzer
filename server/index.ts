@@ -3,7 +3,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 // Initialize Sentry BEFORE other imports
-import { initializeSentry, setupSentryMiddleware, setupSentryErrorHandler } from './lib/sentry';
+import { initializeSentry, setupSentryMiddleware, setupSentryErrorHandler } from './lib/sentry-index';
 initializeSentry();
 
 // Validate environment variables

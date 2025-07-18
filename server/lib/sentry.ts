@@ -3,9 +3,19 @@
  * Provides comprehensive error tracking and performance monitoring for Node.js
  */
 
-import * as Sentry from '@sentry/node';
-import { ProfilingIntegration } from '@sentry/profiling-node';
 import { Express } from 'express';
+
+// Try to import Sentry, but don't fail if it's not available
+let Sentry: any = null;
+let ProfilingIntegration: any = null;
+
+try {
+  Sentry = require('@sentry/node');
+  const profiling = require('@sentry/profiling-node');
+  ProfilingIntegration = profiling.ProfilingIntegration;
+} catch (error) {
+  console.log('Sentry not available in production - error monitoring disabled');
+}
 
 // Configuration
 const SENTRY_DSN = process.env.SENTRY_DSN;
@@ -13,6 +23,11 @@ const ENVIRONMENT = process.env.NODE_ENV || 'development';
 const RELEASE = process.env.APP_VERSION || '1.0.0';
 
 export function initializeSentry() {
+  // Check if Sentry is available
+  if (!Sentry) {
+    return;
+  }
+
   // Only initialize Sentry when DSN is provided
   if (!SENTRY_DSN) {
     console.warn('Sentry DSN not provided. Error monitoring disabled.');
@@ -94,6 +109,8 @@ export function initializeSentry() {
 
 // Express middleware integration
 export function setupSentryMiddleware(app: Express) {
+  if (!Sentry) return;
+  
   // The request handler must be the first middleware on the app
   app.use(Sentry.Handlers.requestHandler());
   
@@ -102,6 +119,8 @@ export function setupSentryMiddleware(app: Express) {
 }
 
 export function setupSentryErrorHandler(app: Express) {
+  if (!Sentry) return;
+  
   // The error handler must be before any other error middleware and after all controllers
   app.use(Sentry.Handlers.errorHandler({
     shouldHandleError(error) {
@@ -113,6 +132,8 @@ export function setupSentryErrorHandler(app: Express) {
 
 // Custom error reporting
 export function reportError(error: Error, context?: Record<string, any>, user?: { id: string; email?: string }) {
+  if (!Sentry) return;
+  
   Sentry.withScope((scope) => {
     if (user) {
       scope.setUser({ id: user.id });
@@ -136,6 +157,8 @@ export function trackApiError(
   statusCode?: number,
   responseTime?: number
 ) {
+  if (!Sentry) return;
+  
   Sentry.withScope((scope) => {
     scope.setTag('error_category', 'api');
     scope.setTag('api_provider', provider);
