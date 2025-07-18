@@ -53,6 +53,9 @@ function extractToken(req: Request): string | null {
  */
 async function verifySupabaseToken(token: string): Promise<{ user: User | null; error: string | null }> {
   try {
+    if (!supabaseAdmin) {
+      return { user: null, error: 'Supabase not configured' };
+    }
     const { data, error } = await supabaseAdmin.auth.getUser(token);
     
     if (error) {
@@ -300,6 +303,13 @@ export async function handleTokenRefresh(
   
   try {
     // Use Supabase to refresh the session
+    if (!supabaseAdmin) {
+      res.status(503).json({
+        error: 'SERVICE_UNAVAILABLE',
+        message: 'Authentication service not configured',
+      });
+      return;
+    }
     const { data, error } = await supabaseAdmin.auth.refreshSession({
       refresh_token: refreshToken,
     });

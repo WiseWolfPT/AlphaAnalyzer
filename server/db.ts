@@ -17,7 +17,12 @@ if (isProduction) {
         orderBy: () => ({ limit: () => Promise.resolve([]) })
       }) 
     }),
-    insert: () => ({ values: () => Promise.resolve() }),
+    insert: () => ({ 
+      values: () => ({ 
+        onConflictDoNothing: () => Promise.resolve(),
+        execute: () => Promise.resolve()
+      }) 
+    }),
     update: () => ({ set: () => ({ where: () => Promise.resolve() }) }),
     delete: () => ({ where: () => Promise.resolve() }),
     // Add limit method at root level (for db.limit() calls)

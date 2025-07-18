@@ -37,17 +37,19 @@ if (!supabaseUrl || !supabaseServiceKey) {
 }
 
 // Create admin client with service role key (bypasses RLS)
-export const supabaseAdmin = createClient<Database>(
-  supabaseUrl || '',
-  supabaseServiceKey || '',
-  {
-    auth: {
-      autoRefreshToken: false,
-      persistSession: false,
-      detectSessionInUrl: false
-    }
-  }
-);
+export const supabaseAdmin = (supabaseUrl && supabaseServiceKey) 
+  ? createClient<Database>(
+      supabaseUrl,
+      supabaseServiceKey,
+      {
+        auth: {
+          autoRefreshToken: false,
+          persistSession: false,
+          detectSessionInUrl: false
+        }
+      }
+    )
+  : null;
 
 // Create client with user context (respects RLS)
 export function createUserClient(userId: string): SupabaseClient<Database> {

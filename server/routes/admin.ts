@@ -19,6 +19,21 @@ const router = express.Router();
 // Apply rate limiting to all admin routes
 router.use(adminRateLimit());
 
+// Check if Supabase is configured
+const checkSupabase = (req: express.Request, res: express.Response, next: express.NextFunction) => {
+  if (!supabaseAdmin) {
+    console.warn('⚠️ Supabase not configured for admin routes');
+    return res.status(503).json({
+      error: 'SERVICE_UNAVAILABLE',
+      message: 'Database service not configured. Admin features are not available.'
+    });
+  }
+  next();
+};
+
+// Apply Supabase check to all routes that need it
+router.use(checkSupabase);
+
 // Mount admin sub-routes
 router.use('/auth', authRoutes);
 router.use('/transcripts', transcriptRoutes);
