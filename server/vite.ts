@@ -93,7 +93,9 @@ export function serveStatic(app: Express) {
     path.resolve(distPath, "index.html"),
     path.resolve(distPath, "public", "index.html"),
     path.resolve(process.cwd(), "dist", "index.html"),
+    path.resolve(process.cwd(), "dist", "public", "index.html"),
     path.resolve("/app", "dist", "index.html"),
+    path.resolve("/app", "dist", "public", "index.html"),
     path.resolve("/app", "client", "dist", "index.html"),
     path.resolve("/app", "client", "dist", "public", "index.html")
   ];

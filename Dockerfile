@@ -115,7 +115,17 @@ RUN npm ci --ignore-scripts
 COPY . .
 
 # Build frontend
-RUN npm run build:client
+RUN echo "Current directory: $(pwd)" && \
+    echo "Files in current directory:" && \
+    ls -la && \
+    echo "Running build:client..." && \
+    npm run build:client && \
+    echo "Build completed. Checking dist directory..." && \
+    find . -name "index.html" -type f | head -10 && \
+    echo "Checking common output locations..." && \
+    ls -la dist/ 2>/dev/null || echo "No /app/dist" && \
+    ls -la dist/public/ 2>/dev/null || echo "No /app/dist/public" && \
+    ls -la client/dist/ 2>/dev/null || echo "No /app/client/dist"
 
 # Don't remove dependencies - tsx is needed for production
 # RUN npm prune --production
