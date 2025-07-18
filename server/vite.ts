@@ -170,6 +170,21 @@ export function serveStatic(app: Express) {
     }
   }));
 
+  // TEMPORARY FIX: Try to serve assets from parent directory if not found
+  const parentPath = path.dirname(staticPath);
+  if (fs.existsSync(path.join(parentPath, 'assets'))) {
+    console.log(`🔧 TEMPORARY FIX: Also serving assets from parent: ${parentPath}`);
+    app.use('/assets', express.static(path.join(parentPath, 'assets'), {
+      setHeaders: (res, filePath) => {
+        if (filePath.endsWith('.js') || filePath.endsWith('.mjs')) {
+          res.setHeader('Content-Type', 'application/javascript; charset=UTF-8');
+        } else if (filePath.endsWith('.css')) {
+          res.setHeader('Content-Type', 'text/css; charset=UTF-8');
+        }
+      }
+    }));
+  }
+
   // Serve index.html for all non-API, non-asset routes (SPA fallback)
   app.get('*', (req, res, next) => {
     // Skip API routes AND asset requests

@@ -415,6 +415,16 @@ export const corsConfig = {
       }
     }
     
+    // KOYEB FIX: Dynamically handle Koyeb subdomains
+    // Allow any subdomain under crucial-ivonne-alfalyzer-*.koyeb.app
+    if (process.env.NODE_ENV === 'production' && origin) {
+      const koyebPattern = /^https:\/\/crucial-ivonne-alfalyzer-[a-z0-9]+\.koyeb\.app$/;
+      if (koyebPattern.test(origin)) {
+        console.log(`✅ CORS: Allowing Koyeb subdomain: ${origin}`);
+        return callback(null, true);
+      }
+    }
+    
     const developmentOrigins = [
       'http://localhost:3000',
       'http://localhost:8080',
