@@ -37,12 +37,17 @@ const STATS_RESET_INTERVAL = 60 * 60 * 1000; // 1 hour
  */
 export const ttfbMiddleware = () => {
   return (req: Request, res: Response, next: NextFunction) => {
+    // Skip static file requests to avoid header errors
+    if (!req.path.startsWith('/api/')) {
+      return next();
+    }
+    
     const startTime = Date.now();
     
     // Capture the original methods
     const originalSend = res.send;
     const originalJson = res.json;
-    const originalEnd = res.end;
+    const originalWrite = res.write;
     
     let responseStarted = false;
     
@@ -53,28 +58,36 @@ export const ttfbMiddleware = () => {
       
       const ttfb = Date.now() - startTime;
       
-      // Set X-Edge-TTFB header as specified in roadmap
-      res.setHeader('X-Edge-TTFB', ttfb.toString());
-      
-      // Determine if this was a cache hit
-      const isCacheHit = res.getHeader('X-Cache-Status') === 'HIT' || 
-                        res.getHeader('X-Cache') === 'HIT' ||
-                        req.path.includes('/api/market-data/') && ttfb < 100; // Heuristic for cache hits
-      
-      // Update statistics
-      updateTTFBStats(ttfb, isCacheHit);
-      
-      // Set additional performance headers
-      res.setHeader('X-Response-Time', ttfb.toString());
-      res.setHeader('X-Cache-Type', isCacheHit ? 'HIT' : 'MISS');
-      
-      // Log performance warnings
-      if (isCacheHit && ttfb > 300) {
-        console.warn(`⚠️ Cache hit TTFB exceeded 300ms: ${ttfb}ms for ${req.method} ${req.path}`);
-      }
-      
-      if (ttfb > 1000) {
-        console.warn(`🐌 Slow response detected: ${ttfb}ms for ${req.method} ${req.path}`);
+      try {
+        // Only set headers if they haven't been sent yet
+        if (!res.headersSent) {
+          // Set X-Edge-TTFB header as specified in roadmap
+          res.setHeader('X-Edge-TTFB', ttfb.toString());
+          
+          // Determine if this was a cache hit
+          const isCacheHit = res.getHeader('X-Cache-Status') === 'HIT' || 
+                            res.getHeader('X-Cache') === 'HIT' ||
+                            req.path.includes('/api/market-data/') && ttfb < 100; // Heuristic for cache hits
+          
+          // Set additional performance headers
+          res.setHeader('X-Response-Time', ttfb.toString());
+          res.setHeader('X-Cache-Type', isCacheHit ? 'HIT' : 'MISS');
+          
+          // Update statistics
+          updateTTFBStats(ttfb, isCacheHit);
+          
+          // Log performance warnings
+          if (isCacheHit && ttfb > 300) {
+            console.warn(`⚠️ Cache hit TTFB exceeded 300ms: ${ttfb}ms for ${req.method} ${req.path}`);
+          }
+          
+          if (ttfb > 1000) {
+            console.warn(`🐌 Slow response detected: ${ttfb}ms for ${req.method} ${req.path}`);
+          }
+        }
+      } catch (error) {
+        // Silently ignore header errors for already-sent responses
+        console.debug(`TTFB header skipped for ${req.path} - headers already sent`);
       }
     };
     
@@ -89,10 +102,16 @@ export const ttfbMiddleware = () => {
       return originalJson.call(this, data);
     };
     
-    res.end = function(chunk?: any, encoding?: any) {
+    res.write = function(chunk: any, encoding?: any) {
       calculateTTFB();
-      return originalEnd.call(this, chunk, encoding);
+      return originalWrite.call(this, chunk, encoding);
     };
+    
+    // Log TTFB after response completes (for monitoring only, no header setting)
+    res.on('finish', () => {
+      const totalTime = Date.now() - startTime;
+      console.log(`📊 TTFB for ${req.method} ${req.path}: ${totalTime}ms`);
+    });
     
     next();
   };

@@ -710,6 +710,32 @@ async function initializeMarketDataServices() {
           console.log('⚠️  Internal test note:', err.message);
         });
       });
+      
+      // Setup self-pings to prevent Koyeb sleep after 60 minutes
+      if (process.env.NODE_ENV === 'production' && process.env.ENABLE_SELF_PING !== 'false') {
+        import('node-cron').then(cron => {
+          import('axios').then(({ default: axios }) => {
+            // Schedule ping every 50 minutes (before 60 minute timeout)
+            cron.schedule('*/50 * * * *', async () => {
+              try {
+                const appUrl = process.env.KOYEB_APP_URL || process.env.APP_URL || `http://localhost:${port}`;
+                await axios.get(`${appUrl}/health`, { 
+                  timeout: 5000,
+                  headers: { 'User-Agent': 'Alfalyzer-Self-Ping' }
+                });
+                console.log('✅ Self-ping successful - keeping app awake');
+              } catch (err) {
+                console.error('❌ Self-ping failed:', err.message || err);
+              }
+            });
+            console.log('🏓 Self-ping scheduler activated (every 50 minutes)');
+          }).catch(err => {
+            console.warn('⚠️ Failed to setup self-ping - axios not available:', err);
+          });
+        }).catch(err => {
+          console.warn('⚠️ Failed to setup self-ping - node-cron not available:', err);
+        });
+      }
     });
     
     // Keep the complex binding logic as backup
