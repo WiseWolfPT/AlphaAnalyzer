@@ -1,21 +1,39 @@
-import Database from 'better-sqlite3';
-import { drizzle } from 'drizzle-orm/better-sqlite3';
 import * as schema from "@shared/schema";
 
-// For demo purposes, use SQLite
-const dbPath = process.env.DATABASE_PATH || './dev.db';
+// Check if we're in production
+const isProduction = process.env.NODE_ENV === 'production';
 
-// Inicializar SQLite com configurações de segurança
-const sqlite = new Database(dbPath);
+let db: any;
 
-// CRÍTICO: Ativar foreign keys para garantir integridade referencial
-sqlite.pragma('foreign_keys = ON');
+if (isProduction) {
+  // In production, create a mock db object that won't be used
+  // (Supabase will be used directly by services)
+  console.log('🔶 Running in production mode - SQLite disabled');
+  db = {
+    select: () => ({ from: () => ({ where: () => Promise.resolve([]) }) }),
+    insert: () => ({ values: () => Promise.resolve() }),
+    update: () => ({ set: () => ({ where: () => Promise.resolve() }) }),
+    delete: () => ({ where: () => Promise.resolve() }),
+  };
+} else {
+  // Development mode - use SQLite
+  const Database = require('better-sqlite3');
+  const { drizzle } = require('drizzle-orm/better-sqlite3');
+  
+  const dbPath = process.env.DATABASE_PATH || './dev.db';
+  const sqlite = new Database(dbPath);
 
-// Configurações adicionais de segurança e performance
-sqlite.pragma('journal_mode = WAL'); // Write-Ahead Logging para melhor concorrência
-sqlite.pragma('synchronous = NORMAL'); // Balancear performance e segurança
+  // CRÍTICO: Ativar foreign keys para garantir integridade referencial
+  sqlite.pragma('foreign_keys = ON');
 
-export const db = drizzle(sqlite, { schema });
+  // Configurações adicionais de segurança e performance
+  sqlite.pragma('journal_mode = WAL'); // Write-Ahead Logging para melhor concorrência
+  sqlite.pragma('synchronous = NORMAL'); // Balancear performance e segurança
+
+  db = drizzle(sqlite, { schema });
+}
+
+export { db };
 
 // Função segura para criar tabelas usando prepared statements
 function createTables() {
