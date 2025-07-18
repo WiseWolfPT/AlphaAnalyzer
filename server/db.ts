@@ -193,11 +193,22 @@ function createIndexes() {
   });
 }
 
-// Inicializar tabelas
-createTables();
+// Inicializar tabelas apenas em desenvolvimento
+if (!isProduction) {
+  createTables();
+}
 
 // Exportar funções utilitárias seguras para queries
-export const dbUtils = {
+export const dbUtils = isProduction ? {
+  // Mock implementations for production
+  insertStock: () => ({ lastInsertRowid: 0, changes: 0 }),
+  getStock: () => null,
+  logSecurityEvent: () => ({ lastInsertRowid: 0, changes: 0 }),
+  getAllStocks: () => [],
+  searchStocks: () => [],
+  updateStockPrice: () => ({ changes: 0 }),
+  deleteStock: () => ({ changes: 0 }),
+} : {
   // Função segura para inserir stock
   insertStock: (stock: {
     symbol: string;
