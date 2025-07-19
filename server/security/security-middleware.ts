@@ -153,6 +153,10 @@ export const securityHeaders = helmet({
         "'unsafe-eval'",
         "blob:",            // For worker scripts
         "data:",            // For data URIs
+        "https://unpkg.com",              // React CDN
+        "https://cdn.jsdelivr.net",       // Backup CDN
+        "https://cdnjs.cloudflare.com",   // Alternative CDN
+        "https://replit.com",             // Replit dev banner
       ],
       styleSrc: [
         "'self'", 
@@ -172,11 +176,16 @@ export const securityHeaders = helmet({
       ],
       connectSrc: [
         "'self'",
+        "wss:", // WebSocket connections
+        "ws:",  // WebSocket connections  
+        "https://*.koyeb.app",            // Koyeb API endpoints
+        "https://unpkg.com",              // CDN connections
+        "https://cdn.jsdelivr.net",       // CDN connections
+        "https://cdnjs.cloudflare.com",   // CDN connections
         // SECURITY: Financial API endpoints (backend proxy only)
-        "wss://localhost:*", // WebSocket connections in development
-        "ws://localhost:*", // WebSocket connections in development
-        ...(process.env.NODE_ENV === 'production' ? [
-          "wss:", // HTTPS WebSocket in production
+        ...(process.env.NODE_ENV === 'development' ? [
+          "wss://localhost:*", // WebSocket connections in development
+          "ws://localhost:*",  // WebSocket connections in development
         ] : [])
       ],
       objectSrc: ["'none'"], // Disable plugins completely
