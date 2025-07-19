@@ -143,60 +143,63 @@ export const rateLimiters = {
 
 // SECURITY FIX: Consolidated and enhanced security headers configuration
 export const securityHeaders = helmet({
-  // SECURITY FIX: Single, comprehensive Content Security Policy for financial applications
-  contentSecurityPolicy: {
-    directives: {
-      defaultSrc: ["'self'"],
-      scriptSrc: [
-        "'self'",
-        "'unsafe-inline'",
-        "'unsafe-eval'",
-        "blob:",            // For worker scripts
-        "data:",            // For data URIs
-        "https://unpkg.com",              // React CDN
-        "https://cdn.jsdelivr.net",       // Backup CDN
-        "https://cdnjs.cloudflare.com",   // Alternative CDN
-        "https://replit.com",             // Replit dev banner
-      ],
-      styleSrc: [
-        "'self'", 
-        "'unsafe-inline'", // Required for CSS-in-JS libraries like styled-components
-        "https://fonts.googleapis.com"
-      ],
-      fontSrc: [
-        "'self'", 
-        "https://fonts.gstatic.com",
-        "data:" // For base64 encoded fonts
-      ],
-      imgSrc: [
-        "'self'", 
-        "data:", 
-        "https:", // Allow HTTPS images from any domain
-        "blob:" // For dynamically generated images
-      ],
-      connectSrc: [
-        "'self'",
-        "wss:", // WebSocket connections
-        "ws:",  // WebSocket connections  
-        "https://*.koyeb.app",            // Koyeb API endpoints
-        "https://unpkg.com",              // CDN connections
-        "https://cdn.jsdelivr.net",       // CDN connections
-        "https://cdnjs.cloudflare.com",   // CDN connections
-        // SECURITY: Financial API endpoints (backend proxy only)
-        ...(process.env.NODE_ENV === 'development' ? [
-          "wss://localhost:*", // WebSocket connections in development
-          "ws://localhost:*",  // WebSocket connections in development
-        ] : [])
-      ],
-      objectSrc: ["'none'"], // Disable plugins completely
-      mediaSrc: ["'self'"],
-      frameSrc: ["'none'"], // Prevent clickjacking completely
-      baseUri: ["'self'"], // Prevent base tag injection
-      formAction: ["'self'"], // Restrict form submissions
-      workerSrc: ["'self'", "blob:"], // Allow service workers and web workers
-      manifestSrc: ["'self'"], // Allow PWA manifest
-    },
-  },
+  // TEMPORARILY DISABLE CSP TO DEBUG KOYEB DEPLOYMENT
+  contentSecurityPolicy: false,
+  
+  // ORIGINAL CSP CONFIGURATION (DISABLED FOR NOW):
+  // contentSecurityPolicy: {
+  //   directives: {
+  //     defaultSrc: ["'self'"],
+  //     scriptSrc: [
+  //       "'self'",
+  //       "'unsafe-inline'",
+  //       "'unsafe-eval'",
+  //       "blob:",            // For worker scripts
+  //       "data:",            // For data URIs
+  //       "https://unpkg.com",              // React CDN
+  //       "https://cdn.jsdelivr.net",       // Backup CDN
+  //       "https://cdnjs.cloudflare.com",   // Alternative CDN
+  //       "https://replit.com",             // Replit dev banner
+  //     ],
+  //     styleSrc: [
+  //       "'self'", 
+  //       "'unsafe-inline'", // Required for CSS-in-JS libraries like styled-components
+  //       "https://fonts.googleapis.com"
+  //     ],
+  //     fontSrc: [
+  //       "'self'", 
+  //       "https://fonts.gstatic.com",
+  //       "data:" // For base64 encoded fonts
+  //     ],
+  //     imgSrc: [
+  //       "'self'", 
+  //       "data:", 
+  //       "https:", // Allow HTTPS images from any domain
+  //       "blob:" // For dynamically generated images
+  //     ],
+  //     connectSrc: [
+  //       "'self'",
+  //       "wss:", // WebSocket connections
+  //       "ws:",  // WebSocket connections  
+  //       "https://*.koyeb.app",            // Koyeb API endpoints
+  //       "https://unpkg.com",              // CDN connections
+  //       "https://cdn.jsdelivr.net",       // CDN connections
+  //       "https://cdnjs.cloudflare.com",   // CDN connections
+  //       // SECURITY: Financial API endpoints (backend proxy only)
+  //       ...(process.env.NODE_ENV === 'development' ? [
+  //         "wss://localhost:*", // WebSocket connections in development
+  //         "ws://localhost:*",  // WebSocket connections in development
+  //       ] : [])
+  //     ],
+  //     objectSrc: ["'none'"], // Disable plugins completely
+  //     mediaSrc: ["'self'"],
+  //     frameSrc: ["'none'"], // Prevent clickjacking completely
+  //     baseUri: ["'self'"], // Prevent base tag injection
+  //     formAction: ["'self'"], // Restrict form submissions
+  //     workerSrc: ["'self'", "blob:"], // Allow service workers and web workers
+  //     manifestSrc: ["'self'"], // Allow PWA manifest
+  //   },
+  // },
   
   // SECURITY FIX: Enhanced HTTP Strict Transport Security
   hsts: {
