@@ -252,23 +252,13 @@ export function setupViewportPreloading() {
 }
 
 /**
- * CDN fallback for React in production
+ * CDN fallback for React in production - DISABLED
+ * React is now bundled by Vite to avoid CSP issues on Koyeb
  */
 export function setupCDNFallback() {
-  if (process.env.NODE_ENV === 'production') {
-    // Check if React is available from CDN
-    if (typeof window !== 'undefined' && !window.React) {
-      // Load React from CDN as fallback
-      const script = document.createElement('script');
-      script.src = 'https://unpkg.com/react@18/umd/react.production.min.js';
-      script.onload = () => {
-        const reactDomScript = document.createElement('script');
-        reactDomScript.src = 'https://unpkg.com/react-dom@18/umd/react-dom.production.min.js';
-        document.head.appendChild(reactDomScript);
-      };
-      document.head.appendChild(script);
-    }
-  }
+  // DISABLED: React is now bundled locally
+  // Previously loaded React from CDN but caused CSP violations on Koyeb
+  return;
 }
 
 // Initialize on module load
@@ -278,6 +268,6 @@ if (typeof window !== 'undefined') {
     setupIntelligentPreloading();
     preloadCriticalComponents();
     setupViewportPreloading();
-    setupCDNFallback();
+    // setupCDNFallback(); // DISABLED: React is now bundled locally
   }, 1000);
 }
