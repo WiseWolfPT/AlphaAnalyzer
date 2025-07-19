@@ -218,7 +218,9 @@ export default defineConfig({
       // DON'T externalize React - include it in the bundle
       external: [],
       output: {
-        // Aggressive chunk splitting with micro-bundles
+        // TEMPORARILY DISABLED: Manual chunking was causing initialization errors
+        // Let Vite handle chunking automatically
+        /*
         manualChunks: (id) => {
           // Filter out empty chunks that only contain monitoring or streaming utilities
           if (id.includes('web-vitals') && id.includes('node_modules')) {
@@ -838,6 +840,7 @@ export default defineConfig({
             return 'vendor-misc';
           }
         }
+        */
       }
     },
     
@@ -850,8 +853,14 @@ export default defineConfig({
     // Disable source maps in production for security and performance
     sourcemap: process.env.NODE_ENV === 'development',
     
-    // Temporarily disable minification to fix initialization errors
-    minify: false,
+    // Re-enable minification now that chunking is fixed
+    minify: 'terser',
+    terserOptions: {
+      compress: {
+        drop_console: true,
+        drop_debugger: true
+      }
+    },
     
     // Additional optimization settings
     target: 'es2020',
