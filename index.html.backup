@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, viewport-fit=cover" />
+    <title>Alfalyzer - Portuguese Investors International Markets Platform</title>
+    
+    <!-- Meta tags for PWA -->
+    <meta name="theme-color" content="#84cc16" />
+    <meta name="description" content="Professional stock analytics platform for Portuguese investors accessing USA and EU markets" />
+    <meta name="keywords" content="stocks, investment, portugal, usa markets, eu markets, portfolio, analysis" />
+    <script type="module" crossorigin src="/assets/index-C8iotRCA.js"></script>
+    <link rel="modulepreload" crossorigin href="/assets/vendor-utils-css-CCLGjX3k.js">
+    <link rel="modulepreload" crossorigin href="/assets/vendor-utils-debug-D4BiW94n.js">
+    <link rel="modulepreload" crossorigin href="/assets/critical-vendor-BacxicrL.js">
+    <link rel="modulepreload" crossorigin href="/assets/vendor-forms-extended-BchYUY9l.js">
+    <link rel="modulepreload" crossorigin href="/assets/dnd-extras-DoAxSJI1.js">
+    <link rel="modulepreload" crossorigin href="/assets/dnd-core-DdSVB5Z1.js">
+    <link rel="modulepreload" crossorigin href="/assets/vendor-ui-primitives-UW0TjOW3.js">
+    <link rel="modulepreload" crossorigin href="/assets/vendor-utils-variants-DjIrmv0J.js">
+    <link rel="modulepreload" crossorigin href="/assets/vendor-build-tools-D4EEkEdw.js">
+    <link rel="modulepreload" crossorigin href="/assets/vendor-anim-framer-core-CLX8O1eM.js">
+    <link rel="modulepreload" crossorigin href="/assets/vendor-anim-framer-gestures-wYNvJ9jK.js">
+    <link rel="modulepreload" crossorigin href="/assets/vendor-anim-framer-sHl3IwZO.js">
+    <link rel="modulepreload" crossorigin href="/assets/vendor-utils-colors-CSJN9Ka3.js">
+    <link rel="modulepreload" crossorigin href="/assets/charts-misc-LcaT6TE3.js">
+    <link rel="modulepreload" crossorigin href="/assets/charts-auto-CwZmYKuA.js">
+    <link rel="modulepreload" crossorigin href="/assets/charts-react-adapter-THnKI63z.js">
+    <link rel="modulepreload" crossorigin href="/assets/vendor-icons-navigation-lWKOsYez.js">
+    <link rel="modulepreload" crossorigin href="/assets/charts-components-basic-DusO7Ulx.js">
+    <link rel="modulepreload" crossorigin href="/assets/vendor-utils-react-CWdgxtnf.js">
+    <link rel="modulepreload" crossorigin href="/assets/vendor-ui-base-DBBiIDKN.js">
+    <link rel="modulepreload" crossorigin href="/assets/vendor-ui-layout-djgTiqFv.js">
+    <link rel="modulepreload" crossorigin href="/assets/vendor-utils-medium-Bq5SVKUC.js">
+    <link rel="modulepreload" crossorigin href="/assets/vendor-ui-inputs-wGF_rtQ9.js">
+    <link rel="modulepreload" crossorigin href="/assets/vendor-ui-dialogs-BA0_CWn_.js">
+    <link rel="modulepreload" crossorigin href="/assets/route-admin-C593torM.js">
+    <link rel="modulepreload" crossorigin href="/assets/vendor-validation-extended-BNoIwVxL.js">
+    <link rel="modulepreload" crossorigin href="/assets/vendor-utils-url-WQu6Ru6D.js">
+    <link rel="modulepreload" crossorigin href="/assets/vendor-service-supabase-Did4DdqJ.js">
+    <link rel="modulepreload" crossorigin href="/assets/vendor-utils-async-CGwwV-2U.js">
+    <link rel="modulepreload" crossorigin href="/assets/vendor-utils-crypto-De0M-Wq7.js">
+    <link rel="modulepreload" crossorigin href="/assets/vendor-utils-tiny-0NHkx1-x.js">
+    <link rel="modulepreload" crossorigin href="/assets/vendor-utils-immutable-sPtyWnbV.js">
+    <link rel="modulepreload" crossorigin href="/assets/vendor-react-internals-Bzy_bWhk.js">
+    <link rel="modulepreload" crossorigin href="/assets/dnd-sortable-dq5pbSBL.js">
+    <link rel="modulepreload" crossorigin href="/assets/charts-components-layout-DDXmcjCd.js">
+    <link rel="modulepreload" crossorigin href="/assets/route-auth-Cfln5DCC.js">
+    <link rel="modulepreload" crossorigin href="/assets/vendor-polyfills-node-zgSCoXxW.js">
+    <link rel="modulepreload" crossorigin href="/assets/charts-components-analysis-CfBtP7J5.js">
+    <link rel="modulepreload" crossorigin href="/assets/react-core-DQUHGum2.js">
+    <link rel="modulepreload" crossorigin href="/assets/vendor-state-query-D71f4CQh.js">
+    <link rel="modulepreload" crossorigin href="/assets/vendor-ui-menus-Bfozg2wS.js">
+    <link rel="modulepreload" crossorigin href="/assets/vendor-i18n-extended-CZ5TJmhd.js">
+    <link rel="modulepreload" crossorigin href="/assets/vendor-i18n-core-C6WSfcV1.js">
+    <link rel="modulepreload" crossorigin href="/assets/vendor-ui-floating-B88wq8LX.js">
+    <link rel="modulepreload" crossorigin href="/assets/route-charts-page-CYRaLWlx.js">
+    <link rel="modulepreload" crossorigin href="/assets/vendor-utils-date-math-Dt-08klP.js">
+    <link rel="modulepreload" crossorigin href="/assets/vendor-utils-date-CF9vq711.js">
+    <link rel="modulepreload" crossorigin href="/assets/vendor-utils-date-format-wqH-FUFd.js">
+    <link rel="modulepreload" crossorigin href="/assets/route-earnings-CZof07oW.js">
+    <link rel="modulepreload" crossorigin href="/assets/vendor-ui-feedback-Csz0qIMW.js">
+    <link rel="stylesheet" crossorigin href="/assets/index-DJnc5fAR.css">
+  </head>
+  <body>
+    <div id="root"></div>
+  </body>
+</html>
