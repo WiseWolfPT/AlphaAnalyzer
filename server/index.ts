@@ -83,46 +83,8 @@ setupSentryMiddleware(app);
 // CRITICAL: Health check endpoint MUST be before ALL middleware
 app.get('/health', healthCheckHandler);
 
-// Enhanced security headers with Content Security Policy
-app.use(helmet({
-  contentSecurityPolicy: {
-    directives: {
-      defaultSrc: ["'self'"],
-      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://fonts.gstatic.com"],
-      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://cdn.jsdelivr.net"],
-      imgSrc: ["'self'", "data:", "https:", "https://logo.clearbit.com"],
-      connectSrc: [
-        "'self'", 
-        "wss:", 
-        "https:",
-        env.SUPABASE_URL || "https://supabase.co",
-        "https://api.finnhub.io",
-        "https://api.twelvedata.com",
-        "https://www.alphavantage.co",
-        "https://financialmodelingprep.com",
-        "https://api.polygon.io"
-      ],
-      fontSrc: ["'self'", "https://fonts.gstatic.com"],
-      objectSrc: ["'none'"],
-      mediaSrc: ["'self'"],
-      frameSrc: ["'none'"],
-      childSrc: ["'none'"],
-      manifestSrc: ["'self'"],
-      workerSrc: ["'self'"]
-    }
-  },
-  hsts: {
-    maxAge: 31536000,
-    includeSubDomains: true,
-    preload: true
-  },
-  noSniff: true,
-  xssFilter: true,
-  referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
-  frameguard: { action: 'deny' },
-  dnsPrefetchControl: { allow: false },
-  permittedCrossDomainPolicies: false
-}));
+// Use security headers from security-middleware.ts instead of inline configuration
+app.use(securityHeaders);
 
 // Enable compression for all responses
 app.use(compression({
