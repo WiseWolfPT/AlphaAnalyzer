@@ -74,6 +74,11 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   const requestUrl = new URL(event.request.url);
   
+  // CRITICAL FIX: Skip non-http(s) protocols (like chrome-extension://)
+  if (!requestUrl.protocol.startsWith('http')) {
+    return;
+  }
+  
   // Skip non-GET requests
   if (event.request.method !== 'GET') {
     return;
