@@ -850,33 +850,8 @@ export default defineConfig({
     // Disable source maps in production for security and performance
     sourcemap: process.env.NODE_ENV === 'development',
     
-    // Enhanced minification settings
-    minify: 'terser',
-    terserOptions: {
-      compress: {
-        drop_console: process.env.NODE_ENV === 'production',
-        drop_debugger: true,
-        pure_funcs: process.env.NODE_ENV === 'production' ? ['console.log', 'console.warn'] : [],
-        unused: true,
-        dead_code: true,
-        // Disable aggressive optimizations that can cause initialization errors
-        side_effects: true,
-        keep_fargs: true,
-        keep_infinity: true
-      },
-      mangle: {
-        safari10: true,
-        // Keep class names to avoid initialization errors
-        keep_classnames: true,
-        keep_fnames: true
-      },
-      format: {
-        comments: false,
-        // Preserve some formatting for better debugging
-        beautify: false,
-        ascii_only: true
-      }
-    },
+    // Temporarily disable minification to fix initialization errors
+    minify: false,
     
     // Additional optimization settings
     target: 'es2020',
