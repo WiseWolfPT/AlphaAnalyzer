@@ -779,6 +779,10 @@ export default defineConfig({
             id.includes('transform') ||
             id.includes('preset')
           )) {
+            // Exclude build tools from production builds as they cause initialization errors
+            if (process.env.NODE_ENV === 'production') {
+              return null;
+            }
             return 'vendor-build-tools';
           }
           
@@ -850,18 +854,27 @@ export default defineConfig({
     minify: 'terser',
     terserOptions: {
       compress: {
-        drop_console: true,
+        drop_console: process.env.NODE_ENV === 'production',
         drop_debugger: true,
-        pure_funcs: ['console.log', 'console.warn'],
+        pure_funcs: process.env.NODE_ENV === 'production' ? ['console.log', 'console.warn'] : [],
         unused: true,
         dead_code: true,
-        side_effects: false
+        // Disable aggressive optimizations that can cause initialization errors
+        side_effects: true,
+        keep_fargs: true,
+        keep_infinity: true
       },
       mangle: {
-        safari10: true
+        safari10: true,
+        // Keep class names to avoid initialization errors
+        keep_classnames: true,
+        keep_fnames: true
       },
       format: {
-        comments: false
+        comments: false,
+        // Preserve some formatting for better debugging
+        beautify: false,
+        ascii_only: true
       }
     },
     

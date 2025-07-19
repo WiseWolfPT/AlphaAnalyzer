@@ -26,18 +26,32 @@ console.log('Initial DOM state:', {
   color: window.getComputedStyle(document.body).color
 });
 
-// Global error handler for vendor scripts
+// Global error handler for vendor scripts - MUST be before any code execution
 window.addEventListener('error', (event) => {
-  if (event.message && event.message.includes("Cannot access 's' before initialization")) {
+  if (event.message && (
+    event.message.includes("Cannot access") && event.message.includes("before initialization") ||
+    event.message.includes("vendor-build-tools")
+  )) {
     console.warn('Vendor script error caught, continuing app initialization:', event.message);
     event.preventDefault();
+    return false; // Prevent error propagation
   }
-});
+}, true); // Use capture phase
 
-const rootElement = document.getElementById("root");
-if (!rootElement) {
-  document.body.innerHTML = '<div style="padding: 20px; color: red; background: white;">Root element not found</div>';
-} else {
+// Initialize app with multiple fallback strategies
+const initializeApp = () => {
+  const rootElement = document.getElementById("root");
+  if (!rootElement) {
+    document.body.innerHTML = '<div style="padding: 20px; color: red; background: white;">Root element not found</div>';
+    return;
+  }
+
+  // Apply theme immediately
+  const savedTheme = localStorage.getItem('theme') || 'dark';
+  document.documentElement.classList.add(savedTheme);
+  document.body.classList.add(savedTheme);
+  console.log('Applied theme:', savedTheme);
+
   try {
     console.log('Rendering React app...');
     
@@ -47,18 +61,9 @@ if (!rootElement) {
       loadingElement.remove();
     }
     
+    // Create React root and render
     createRoot(rootElement).render(<App />);
     console.log('React app rendered successfully');
-    
-    // Ensure theme is applied after render
-    setTimeout(() => {
-      const htmlElement = document.documentElement;
-      if (!htmlElement.classList.contains('dark') && !htmlElement.classList.contains('light')) {
-        console.log('Theme not applied, forcing dark theme');
-        htmlElement.classList.add('dark');
-        document.body.classList.add('dark');
-      }
-    }, 100);
     
     // Initialize PWA features after React app is rendered
     initializePWA().then(() => {
@@ -68,6 +73,53 @@ if (!rootElement) {
     });
   } catch (error) {
     console.error('Failed to render React app:', error);
-    rootElement.innerHTML = `<div style="padding: 20px; color: red; background: white;">Render Error: ${error}</div>`;
+    // Show user-friendly error with reload option
+    rootElement.innerHTML = `
+      <div style="
+        display: flex; 
+        align-items: center; 
+        justify-content: center; 
+        min-height: 100vh; 
+        background: ${savedTheme === 'dark' ? '#151515' : '#f5f5f5'};
+        color: ${savedTheme === 'dark' ? '#e4e7eb' : '#333'};
+        font-family: system-ui, -apple-system, sans-serif;
+        text-align: center;
+        padding: 20px;
+      ">
+        <div>
+          <h1 style="color: #F4FA4E; margin-bottom: 16px; font-size: 24px;">
+            AlphaAnalyzer
+          </h1>
+          <p style="margin-bottom: 24px; opacity: 0.8;">
+            We're having trouble loading the application.
+          </p>
+          <button onclick="window.location.reload()" style="
+            background: #F4FA4E; 
+            color: #000; 
+            padding: 12px 24px; 
+            border: none; 
+            border-radius: 8px; 
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 16px;
+          ">
+            Reload Page
+          </button>
+          <p style="margin-top: 24px; font-size: 12px; opacity: 0.6;">
+            Error: ${error?.message || 'Unknown error'}
+          </p>
+        </div>
+      </div>
+    `;
   }
+};
+
+// Try to initialize app with delay to ensure all scripts are loaded
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', () => {
+    setTimeout(initializeApp, 150);
+  });
+} else {
+  // Document already loaded, initialize with small delay
+  setTimeout(initializeApp, 150);
 }
