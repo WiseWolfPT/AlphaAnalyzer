@@ -149,9 +149,10 @@ export const securityHeaders = helmet({
       defaultSrc: ["'self'"],
       scriptSrc: [
         "'self'",
-        "'unsafe-inline'", // Required for Vite in production
-        "'unsafe-eval'",   // Required for Vite module loading
-        // TODO: Implement nonces or hashes for better security
+        "'unsafe-inline'",
+        "'unsafe-eval'",
+        "blob:",            // For worker scripts
+        "data:",            // For data URIs
       ],
       styleSrc: [
         "'self'", 
@@ -183,6 +184,8 @@ export const securityHeaders = helmet({
       frameSrc: ["'none'"], // Prevent clickjacking completely
       baseUri: ["'self'"], // Prevent base tag injection
       formAction: ["'self'"], // Restrict form submissions
+      workerSrc: ["'self'", "blob:"], // Allow service workers and web workers
+      manifestSrc: ["'self'"], // Allow PWA manifest
     },
   },
   
@@ -607,7 +610,9 @@ export const securityErrorHandler = (
   res.status(status).json(errorResponse);
 };
 
-// Content Security Policy nonce generator
+// Content Security Policy nonce generator - DISABLED
+// This function was overriding the main CSP configuration
+/*
 export const generateCSPNonce = (req: express.Request, res: express.Response, next: express.NextFunction) => {
   const nonce = crypto.randomBytes(16).toString('base64');
   (res as any).locals.nonce = nonce;
@@ -616,3 +621,4 @@ export const generateCSPNonce = (req: express.Request, res: express.Response, ne
   );
   next();
 };
+*/
