@@ -149,8 +149,9 @@ export const securityHeaders = helmet({
       defaultSrc: ["'self'"],
       scriptSrc: [
         "'self'",
-        // SECURITY NOTE: Consider using nonces instead of unsafe-inline in production
-        process.env.NODE_ENV === 'development' ? "'unsafe-inline'" : "'self'",
+        "'unsafe-inline'", // Required for Vite in production
+        "'unsafe-eval'",   // Required for Vite module loading
+        // TODO: Implement nonces or hashes for better security
       ],
       styleSrc: [
         "'self'", 
