@@ -121,6 +121,10 @@ RUN echo "===== BUILD PHASE START =====" && \
     ls -la && \
     echo "Running build:client..." && \
     npm run build:client && \
+    echo "Copying additional required files..." && \
+    cp client/public/sw.js dist/public/sw.js && \
+    cp client/public/manifest.json dist/public/manifest.json && \
+    cp -r client/public/locales dist/public/ && \
     echo "Build completed. Checking dist directory..." && \
     echo "===== FINDING ALL index.html FILES =====" && \
     find . -name "index.html" -type f | head -10 && \

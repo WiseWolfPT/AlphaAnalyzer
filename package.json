@@ -130,6 +130,7 @@
     "ci:test": "npm test",
     "ci:build": "npm run build",
     "build:client": "vite build",
+    "build:production": "./scripts/build-production.sh",
     "build:server": "echo 'Server build not configured yet'",
     "type-check": "tsc --noEmit",
     "lint": "echo 'ESLint not configured yet'",
