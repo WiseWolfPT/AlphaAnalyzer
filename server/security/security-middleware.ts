@@ -439,6 +439,21 @@ export const corsConfig = {
         console.log(`✅ CORS: Allowing Koyeb subdomain: ${origin}`);
         return callback(null, true);
       }
+      
+      // VERCEL FIX: Dynamically handle Vercel preview and production URLs
+      // Patterns: https://alphaanalyzer.vercel.app, https://alphaanalyzer-*.vercel.app
+      const vercelPatterns = [
+        /^https:\/\/alphaanalyzer\.vercel\.app$/,
+        /^https:\/\/alphaanalyzer-[a-zA-Z0-9-]+\.vercel\.app$/,
+        /^https:\/\/[a-zA-Z0-9-]+\.vercel\.app$/ // Any Vercel app
+      ];
+      
+      for (const pattern of vercelPatterns) {
+        if (pattern.test(origin)) {
+          console.log(`✅ CORS: Allowing Vercel domain: ${origin}`);
+          return callback(null, true);
+        }
+      }
     }
     
     const developmentOrigins = [
@@ -521,7 +536,7 @@ export const securityErrorHandler = (
   err: any,
   req: express.Request,
   res: express.Response,
-  next: express.NextFunction
+  _next: express.NextFunction
 ) => {
   const isDevelopment = process.env.NODE_ENV === 'development';
   const requestId = (req as any).requestId || 'unknown';
