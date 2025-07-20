@@ -3,7 +3,7 @@
   "name": "alphaanalyzer-frontend",
   "buildCommand": "npm install && npm run build:client",
   "outputDirectory": "dist/public",
-  "installCommand": "npm install",
+  "installCommand": "npm install --legacy-peer-deps",
   "framework": null,
   "regions": ["iad1"],
   "public": false,
