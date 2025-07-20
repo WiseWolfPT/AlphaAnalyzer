@@ -1,10 +1,9 @@
 {
   "version": 2,
   "name": "alphaanalyzer-frontend",
+  "framework": "vite",
   "buildCommand": "cd client && npm install --legacy-peer-deps && npm run build",
   "installCommand": "npm install --legacy-peer-deps",
-  "outputDirectory": "client/dist",
-  "framework": null,
   "regions": ["iad1"],
   "public": false,
   "rewrites": [

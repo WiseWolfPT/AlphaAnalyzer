@@ -1,0 +1,15 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": false,
+    "module": "commonjs",
+    "target": "ES2021",
+    "outDir": "./dist",
+    "rootDir": "./server",
+    "resolveJsonModule": true,
+    "allowImportingTsExtensions": false,
+    "moduleResolution": "node"
+  },
+  "include": ["server/**/*", "shared/**/*"],
+  "exclude": ["node_modules", "client"]
+}
