@@ -2,19 +2,20 @@ import { Switch, Route } from "wouter";
 import { queryClient } from "./lib/query-client";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+import { QueryDebugWrapper } from "@/components/debug/query-debug-wrapper";
 import React, { useEffect, Suspense, lazy } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { ThemeProvider } from "@/hooks/use-theme";
 import { SupabaseAuthProvider } from "@/contexts/supabase-auth-context";
 import { ErrorBoundary } from "@/components/shared/error-boundary";
 import { DebugErrorBoundary } from "@/components/shared/debug-error-boundary";
+import { AppInitializer } from "@/components/app-initializer";
 // Temporarily disable monitoring
 // import { initializeMonitoring, FinancialWidgetErrorBoundary, performanceMonitor } from "@/lib/monitoring";
 
 // Temporary replacement for FinancialWidgetErrorBoundary
 const FinancialWidgetErrorBoundary = ({ children }: { children: React.ReactNode }) => <>{children}</>;
 import { createLazyComponent, getLoadingMetrics } from "@/lib/lazy-loader";
-import { usePrefetch } from "@/hooks/use-prefetch";
 
 // Currency Context imports
 import { CurrencyProvider } from './contexts/currency-context';
@@ -298,6 +299,7 @@ const StockHeaderTest = createLazyComponent(
   { name: 'StockHeaderTest' }
 );
 
+
 // Enhanced loading component with micro-bundle awareness
 const PageLoader = () => {
   const [loadingTime, setLoadingTime] = React.useState(0);
@@ -474,86 +476,8 @@ function Router() {
 }
 
 function App() {
-  const { warmupCache } = usePrefetch();
-  
-  useEffect(() => {
-    // Temporarily disable monitoring
-    // initializeMonitoring();
-    
-    // Warm up cache with popular symbols during idle time
-    warmupCache();
-    
-    // Start Web Vitals tracking (temporarily disabled)
-    // performanceMonitor.trackWebVitals();
-    
-    // Log loading metrics after initial render
-    const logMetrics = () => {
-      const metrics = getLoadingMetrics();
-      if (metrics.totalComponents > 0) {
-        console.group('🚀 Alfalyzer Performance Metrics');
-        console.log('📊 Average Load Time:', `${metrics.averageLoadTime.toFixed(2)}ms`);
-        console.log('📦 Total Components Loaded:', metrics.totalComponents);
-        
-        if (metrics.slowComponents.length > 0) {
-          console.warn('🐌 Slow Components:', metrics.slowComponents);
-          
-          // Track slow components in Sentry (temporarily disabled)
-          // metrics.slowComponents.forEach(component => {
-          //   performanceMonitor.trackComponentPerformance(component.name, component.loadTime);
-          // });
-        }
-        
-        console.table(metrics.components);
-        console.groupEnd();
-        
-        // Send overall metrics to Sentry (temporarily disabled)
-        // if (metrics.averageLoadTime > 2000) {
-        //   performanceMonitor.trackFinancialAction(
-        //     'app_initialization',
-        //     'alfalyzer',
-        //     metrics.averageLoadTime,
-        //     true
-        //   );
-        // }
-      }
-    };
-    
-    // Log metrics after components have had time to load
-    setTimeout(logMetrics, 5000);
-    
-    // Enhanced performance monitoring for production
-    const observer = new PerformanceObserver((list) => {
-      list.getEntries().forEach((entry) => {
-        if (entry.entryType === 'navigation') {
-          const navigationData = {
-            domContentLoaded: entry.domContentLoadedEventEnd - entry.domContentLoadedEventStart,
-            loadComplete: entry.loadEventEnd - entry.loadEventStart,
-            totalTime: entry.loadEventEnd - entry.fetchStart
-          };
-          
-          // Log to console in development
-          if (process.env.NODE_ENV === 'development') {
-            console.log('📈 Navigation Performance:', navigationData);
-          }
-          
-          // Track in Sentry if slow (temporarily disabled)
-          // if (navigationData.totalTime > 3000) {
-          //   performanceMonitor.trackFinancialAction(
-          //     'navigation_slow',
-          //     'app_load',
-          //     navigationData.totalTime,
-          //     true
-          //   );
-          // }
-        }
-      });
-    });
-    
-    observer.observe({ entryTypes: ['navigation'] });
-    
-    // Clean up observer
-    return () => observer.disconnect();
-  }, []);
+  console.log('🚀 App component rendering');
+  console.log('QueryClient instance at App render:', queryClient);
 
   return (
     <DebugErrorBoundary>
@@ -561,19 +485,23 @@ function App() {
         <FinancialWidgetErrorBoundary>
           <ErrorBoundary>
             <QueryClientProvider client={queryClient}>
-              <ThemeProvider defaultTheme="dark" storageKey="alfalyzer-theme">
-                <SupabaseAuthProvider>
-                  <Toaster />
-                  <Router />
-                  <ReactQueryDevtools 
-                    initialIsOpen={false} 
-                  buttonPosition="bottom-right"
-                  position="bottom"
-                />
-              </SupabaseAuthProvider>
-            </ThemeProvider>
-          </QueryClientProvider>
-        </ErrorBoundary>
+              <QueryDebugWrapper queryClient={queryClient}>
+                <AppInitializer>
+                  <ThemeProvider defaultTheme="dark" storageKey="alfalyzer-theme">
+                    <SupabaseAuthProvider>
+                      <Toaster />
+                      <Router />
+                      <ReactQueryDevtools 
+                        initialIsOpen={false} 
+                        buttonPosition="bottom-right"
+                        position="bottom"
+                      />
+                    </SupabaseAuthProvider>
+                  </ThemeProvider>
+                </AppInitializer>
+              </QueryDebugWrapper>
+            </QueryClientProvider>
+          </ErrorBoundary>
       </FinancialWidgetErrorBoundary>
     </CurrencyProvider>
     </DebugErrorBoundary>

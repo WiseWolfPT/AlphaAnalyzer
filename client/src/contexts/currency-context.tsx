@@ -47,9 +47,9 @@ export const CurrencyProvider = ({ children }: CurrencyProviderProps) => {
       case 'EUR':
         return 'pt-PT'; // Using pt-PT for European formatting conventions
       default:
-        return i18n.language; // Fallback to current i18n language
+        return 'en-US'; // Default fallback locale
     }
-  }, [i18n.language]);
+  }, []);
 
   const formatCurrency = useCallback((value: number, currencyCode?: Currency, locale?: string): string => {
     const targetCurrency = currencyCode || currentCurrency;
@@ -102,12 +102,13 @@ export const CurrencyProvider = ({ children }: CurrencyProviderProps) => {
     }
   }, [exchangeService]);
 
-  // Warm the cache on startup
+  // Prefetch exchange rates on startup for better performance
   useEffect(() => {
-    exchangeService.warmCache().catch(error => {
-      console.debug('Exchange rate cache warming failed:', error);
+    // Prefetch USD rates as they're commonly used
+    exchangeService.fetchRates('USD').catch(error => {
+      console.debug('Initial exchange rate fetch failed:', error);
     });
-  }, [exchangeService]);
+  }, []);
 
   return (
     <CurrencyContext.Provider value={{ 
