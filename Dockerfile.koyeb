@@ -6,8 +6,11 @@ WORKDIR /app
 # Install Python and build dependencies for canvas
 RUN apk add --no-cache python3 make g++ cairo-dev pango-dev jpeg-dev giflib-dev
 
-# Copy only the server package.json to avoid canvas dependency
+# Copy server file
 COPY server/simple-server.ts ./server/simple-server.ts
+
+# Create empty .env to avoid dotenv warning
+RUN touch .env
 
 # Create a minimal package.json
 RUN echo '{ \

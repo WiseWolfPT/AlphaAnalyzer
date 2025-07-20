@@ -66,9 +66,9 @@ app.get('/api/stocks/:symbol/price', async (req, res) => {
   }
 });
 
-// Market data proxy endpoints
-app.get('/api/market-data/alpha-vantage/*', async (req, res) => {
-  const path = req.path.replace('/api/market-data/alpha-vantage/', '');
+// Market data proxy endpoints - using regex to avoid path-to-regexp issues
+app.use('/api/market-data/alpha-vantage', async (req, res) => {
+  const path = req.url.substring(1); // Remove leading slash
   const apiKey = process.env.ALPHA_VANTAGE_API_KEY;
   
   if (!apiKey) {
@@ -86,8 +86,8 @@ app.get('/api/market-data/alpha-vantage/*', async (req, res) => {
 });
 
 // FMP proxy
-app.get('/api/market-data/fmp/*', async (req, res) => {
-  const path = req.path.replace('/api/market-data/fmp/', '');
+app.use('/api/market-data/fmp', async (req, res) => {
+  const path = req.url.substring(1); // Remove leading slash
   const apiKey = process.env.FMP_API_KEY;
   
   if (!apiKey) {
@@ -105,8 +105,8 @@ app.get('/api/market-data/fmp/*', async (req, res) => {
 });
 
 // Finnhub proxy
-app.get('/api/market-data/finnhub/*', async (req, res) => {
-  const path = req.path.replace('/api/market-data/finnhub/', '');
+app.use('/api/market-data/finnhub', async (req, res) => {
+  const path = req.url.substring(1); // Remove leading slash
   const apiKey = process.env.FINNHUB_API_KEY;
   
   if (!apiKey) {
