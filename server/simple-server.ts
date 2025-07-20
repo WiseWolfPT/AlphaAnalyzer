@@ -1,24 +1,156 @@
-import express from "express";
-import path from "path";
-import { fileURLToPath } from "url";
+// Simplified server for Koyeb deployment
+import express from 'express';
+import cors from 'cors';
+import dotenv from 'dotenv';
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
+// Load environment variables
+dotenv.config();
+
 const app = express();
+const PORT = process.env.PORT || 8000;
 
-// Serve static files from client/dist/public
-app.use(express.static(path.join(__dirname, '..', 'client', 'dist', 'public')));
+// Basic middleware
+app.use(cors({
+  origin: [
+    'https://alfalyzerpro4-fd1b9651c-antonios-projects-f9cd3cd0.vercel.app',
+    'https://alphaanalyzer.vercel.app',
+    'http://localhost:3000',
+    'http://localhost:5173'
+  ],
+  credentials: true
+}));
 
-// API routes
-app.get('/api/test', (req, res) => {
-  res.json({ message: 'API working' });
+app.use(express.json());
+
+// Health check endpoint
+app.get('/api/health', (req, res) => {
+  res.json({
+    status: 'ok',
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || 'development',
+    uptime: process.uptime()
+  });
 });
 
-// Fallback to index.html for SPA
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, '..', 'client', 'dist', 'public', 'index.html'));
+// Basic stock data endpoint (using Alpha Vantage)
+app.get('/api/stocks/:symbol/price', async (req, res) => {
+  const { symbol } = req.params;
+  const apiKey = process.env.ALPHA_VANTAGE_API_KEY;
+  
+  if (!apiKey) {
+    return res.status(500).json({ error: 'API key not configured' });
+  }
+  
+  try {
+    const response = await fetch(
+      `https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${symbol}&apikey=${apiKey}`
+    );
+    const data = await response.json();
+    
+    if (data['Global Quote']) {
+      const quote = data['Global Quote'];
+      res.json({
+        symbol: quote['01. symbol'],
+        price: parseFloat(quote['05. price']),
+        change: parseFloat(quote['09. change']),
+        changePercent: quote['10. change percent'],
+        volume: parseInt(quote['06. volume']),
+        latestTradingDay: quote['07. latest trading day']
+      });
+    } else {
+      res.status(404).json({ error: 'Stock not found' });
+    }
+  } catch (error) {
+    console.error('Error fetching stock data:', error);
+    res.status(500).json({ error: 'Failed to fetch stock data' });
+  }
 });
 
-const PORT = 8080;
+// Market data proxy endpoints
+app.get('/api/market-data/alpha-vantage/*', async (req, res) => {
+  const path = req.path.replace('/api/market-data/alpha-vantage/', '');
+  const apiKey = process.env.ALPHA_VANTAGE_API_KEY;
+  
+  if (!apiKey) {
+    return res.status(500).json({ error: 'Alpha Vantage API key not configured' });
+  }
+  
+  try {
+    const url = `https://www.alphavantage.co/query?${path}&apikey=${apiKey}`;
+    const response = await fetch(url);
+    const data = await response.json();
+    res.json(data);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch from Alpha Vantage' });
+  }
+});
+
+// FMP proxy
+app.get('/api/market-data/fmp/*', async (req, res) => {
+  const path = req.path.replace('/api/market-data/fmp/', '');
+  const apiKey = process.env.FMP_API_KEY;
+  
+  if (!apiKey) {
+    return res.status(500).json({ error: 'FMP API key not configured' });
+  }
+  
+  try {
+    const url = `https://financialmodelingprep.com/api/v3/${path}?apikey=${apiKey}`;
+    const response = await fetch(url);
+    const data = await response.json();
+    res.json(data);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch from FMP' });
+  }
+});
+
+// Finnhub proxy
+app.get('/api/market-data/finnhub/*', async (req, res) => {
+  const path = req.path.replace('/api/market-data/finnhub/', '');
+  const apiKey = process.env.FINNHUB_API_KEY;
+  
+  if (!apiKey) {
+    return res.status(500).json({ error: 'Finnhub API key not configured' });
+  }
+  
+  try {
+    const url = `https://finnhub.io/api/v1/${path}&token=${apiKey}`;
+    const response = await fetch(url);
+    const data = await response.json();
+    res.json(data);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch from Finnhub' });
+  }
+});
+
+// Root endpoint
+app.get('/', (req, res) => {
+  res.json({
+    name: 'AlphaAnalyzer API',
+    version: '1.0.0',
+    status: 'running',
+    endpoints: [
+      '/api/health',
+      '/api/stocks/:symbol/price',
+      '/api/market-data/alpha-vantage/*',
+      '/api/market-data/fmp/*',
+      '/api/market-data/finnhub/*'
+    ]
+  });
+});
+
+// Error handler
+app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+  console.error('Error:', err);
+  res.status(500).json({
+    error: 'Internal server error',
+    message: process.env.NODE_ENV === 'development' ? err.message : undefined
+  });
+});
+
+// Start server
 app.listen(PORT, () => {
-  console.log(`🚀 Server running on http://localhost:${PORT}`);
+  console.log(`Server running on port ${PORT}`);
+  console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
+  console.log(`Health check: http://localhost:${PORT}/api/health`);
 });
