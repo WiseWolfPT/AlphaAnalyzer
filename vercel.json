@@ -1,8 +1,8 @@
 {
   "version": 2,
   "name": "alphaanalyzer-frontend",
-  "buildCommand": "cd client && npm install --legacy-peer-deps && npm run build",
-  "outputDirectory": "dist",
+  "buildCommand": "cd client && npm install --legacy-peer-deps && npm run build && cd ..",
+  "outputDirectory": "client/dist",
   "installCommand": "npm install --legacy-peer-deps",
   "framework": null,
   "regions": ["iad1"],
