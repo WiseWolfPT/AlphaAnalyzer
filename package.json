@@ -113,7 +113,6 @@
     "status": "echo '🔍 Alfalyzer Status Check' && npm run port:check && echo '' && npm run health:quick",
     "debug": "echo '🐛 Debug Information' && npm run status && echo '' && npm run health:detailed",
     "troubleshoot": "echo '🔧 Troubleshooting Guide' && scripts/health-check.sh && echo '' && scripts/connectivity-test.ts",
-    "postinstall": "playwright install",
     "cost-protection:validate": "node scripts/validate-cost-protection.mjs",
     "cost-protection:demo": "node scripts/demo-cost-protection.mjs",
     "cost-protection:status": "curl -s http://localhost:3001/api/admin/cost-protection/status | jq .",
