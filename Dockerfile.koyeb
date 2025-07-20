@@ -6,8 +6,11 @@ WORKDIR /app
 # Copy package files
 COPY package*.json ./
 
-# Install dependencies
-RUN npm install --production
+# Install dependencies (skip prepare script)
+RUN npm install --production --ignore-scripts
+
+# Install required production dependencies
+RUN npm install express cors dotenv tsx
 
 # Copy server files
 COPY server ./server
@@ -15,9 +18,6 @@ COPY shared ./shared
 
 # Expose port
 EXPOSE 3001
-
-# Install tsx for TypeScript
-RUN npm install -g tsx
 
 # Start server
 CMD ["tsx", "server/simple-server.ts"]
