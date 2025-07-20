@@ -3,7 +3,6 @@ node_modules
 *.log
 .DS_Store
 server
-client
 simple-server.mjs
 debug-server.mjs
 test-server.js
