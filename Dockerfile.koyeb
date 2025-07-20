@@ -3,21 +3,27 @@ FROM node:20-alpine AS koyeb
 
 WORKDIR /app
 
-# Copy package files
-COPY package*.json ./
+# Install Python and build dependencies for canvas
+RUN apk add --no-cache python3 make g++ cairo-dev pango-dev jpeg-dev giflib-dev
 
-# Install dependencies (skip prepare script)
-RUN npm install --production --ignore-scripts
+# Copy only the server package.json to avoid canvas dependency
+COPY server/simple-server.ts ./server/simple-server.ts
 
-# Install required production dependencies
-RUN npm install express cors dotenv tsx
+# Create a minimal package.json
+RUN echo '{ \
+  "name": "alphaanalyzer-backend", \
+  "version": "1.0.0", \
+  "type": "module", \
+  "scripts": { \
+    "start": "tsx server/simple-server.ts" \
+  } \
+}' > package.json
 
-# Copy server files
-COPY server ./server
-COPY shared ./shared
+# Install only what we need
+RUN npm install express cors dotenv tsx @types/express @types/cors
 
 # Expose port
 EXPOSE 3001
 
 # Start server
-CMD ["tsx", "server/simple-server.ts"]
+CMD ["npx", "tsx", "server/simple-server.ts"]
