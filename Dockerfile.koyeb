@@ -1,20 +1,23 @@
 # Simple Dockerfile for Koyeb
-FROM node:20-alpine
+FROM node:20-alpine AS koyeb
 
 WORKDIR /app
 
 # Copy package files
-COPY koyeb-package.json ./package.json
+COPY package*.json ./
 
 # Install dependencies
-RUN npm install
+RUN npm install --production
 
 # Copy server files
-COPY server/simple-server.ts ./server/
-COPY .env* ./
+COPY server ./server
+COPY shared ./shared
 
 # Expose port
-EXPOSE 8000
+EXPOSE 3001
+
+# Install tsx for TypeScript
+RUN npm install -g tsx
 
 # Start server
-CMD ["npm", "start"]
+CMD ["tsx", "server/simple-server.ts"]
