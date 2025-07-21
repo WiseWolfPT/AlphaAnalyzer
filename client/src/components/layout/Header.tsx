@@ -10,7 +10,7 @@ export function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [activeSection, setActiveSection] = useState('hero');
-  const { user, signOut, toggleAuthState } = useAuth();
+  const { user, signOut, signIn } = useAuth();
   const { theme, setTheme } = useTheme();
   const [, setLocation] = useLocation();
 
@@ -49,6 +49,19 @@ export function Header() {
       element?.scrollIntoView({ behavior: 'smooth' });
     }
     setIsMobileMenuOpen(false);
+  };
+
+  const handleBetaLogin = async () => {
+    // Fazer login automático com as credenciais beta
+    const result = await signIn('beta@alfalyzer.com', '123demo');
+    
+    if (!result.error) {
+      // Redirecionar diretamente para o dashboard
+      setLocation('/find-stocks');
+    } else {
+      // Se houver erro, redirecionar para a página de login normal
+      setLocation('/login');
+    }
   };
 
   return (
@@ -140,7 +153,7 @@ export function Header() {
                   variant="ghost" 
                   size="sm"
                   className="text-foreground hover:text-teya-green border border-transparent hover:border-teya-green/30"
-                  onClick={() => setLocation('/login')}
+                  onClick={handleBetaLogin}
                 >
                   Beta Login
                 </Button>
@@ -240,6 +253,13 @@ export function Header() {
                     </>
                   ) : (
                     <>
+                      <Button 
+                        variant="ghost" 
+                        className="text-foreground justify-start border border-transparent hover:border-teya-green/30"
+                        onClick={handleBetaLogin}
+                      >
+                        Beta Login
+                      </Button>
                       <Button 
                         variant="ghost" 
                         className="text-foreground justify-start border border-transparent hover:border-teya-green/30"
