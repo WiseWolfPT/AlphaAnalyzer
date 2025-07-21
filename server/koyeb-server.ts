@@ -1,4 +1,5 @@
 // Simplified server for Koyeb deployment - without Supabase for now
+console.log('⚠️  RUNNING KOYEB-SERVER.TS - NO CACHE VERSION');
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
