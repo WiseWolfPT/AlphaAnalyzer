@@ -27,8 +27,8 @@ export default function Login() {
     if (result.error) {
       setError(result.error);
     } else {
-      // Redirect to dashboard on success
-      window.location.href = "/dashboard";
+      // Redirect to dashboard (find-stocks) on success
+      window.location.href = "/find-stocks";
     }
     
     setLoading(false);
