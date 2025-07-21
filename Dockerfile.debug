@@ -1,0 +1,47 @@
+# Debug Dockerfile to understand Koyeb build issues
+FROM node:20-alpine
+
+WORKDIR /app
+
+# Install basic tools for debugging
+RUN apk add --no-cache tree
+
+# Copy package files
+COPY package*.json ./
+
+# Show what we're starting with
+RUN echo "=== INITIAL STATE ===" && \
+    pwd && \
+    ls -la
+
+# Install dependencies
+RUN npm ci --only=production || npm install --production
+
+# Copy all server files
+COPY server/ ./server/
+
+# Show what was copied
+RUN echo "=== AFTER COPY ===" && \
+    pwd && \
+    echo "=== Root directory:" && \
+    ls -la && \
+    echo "=== Server directory:" && \
+    ls -la server/ && \
+    echo "=== Tree view:" && \
+    tree -L 2
+
+# Create a simple test file to verify write permissions
+RUN echo "console.log('Test file works');" > test.js && \
+    node test.js
+
+# Try to run our server files
+RUN echo "=== TESTING SERVER FILES ===" && \
+    echo "Testing simple.js:" && \
+    node server/simple.js --version || echo "simple.js failed" && \
+    echo "Testing koyeb-direct.js:" && \
+    node server/koyeb-direct.js --version || echo "koyeb-direct.js not ready yet"
+
+EXPOSE 3001
+
+# Use the simple.js which we know exists
+CMD ["node", "server/simple.js"]

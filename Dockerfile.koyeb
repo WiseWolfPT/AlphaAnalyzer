@@ -6,8 +6,10 @@ WORKDIR /app
 # Install Python and build dependencies for canvas
 RUN apk add --no-cache python3 make g++ cairo-dev pango-dev jpeg-dev giflib-dev
 
-# Copy server file
+# Copy server files - multiple options for flexibility
+COPY server/koyeb-server.ts ./server/koyeb-server.ts
 COPY server/simple-server.ts ./server/simple-server.ts
+COPY server/simple.js ./server/simple.js
 
 # Create empty .env to avoid dotenv warning
 RUN touch .env
@@ -29,4 +31,4 @@ RUN npm install express cors dotenv tsx @types/express @types/cors
 EXPOSE 3001
 
 # Start server
-CMD ["npx", "tsx", "server/simple-server.ts"]
+CMD ["npx", "tsx", "server/koyeb-server.ts"]
