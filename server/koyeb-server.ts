@@ -99,7 +99,6 @@ app.get('/api/market-data/quote/:symbol', async (req, res) => {
       return res.status(500).json({ error: 'API key not configured' });
     }
     
-    try {
     const response = await fetch(
       `https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${symbol}&apikey=${apiKey}`
     );
