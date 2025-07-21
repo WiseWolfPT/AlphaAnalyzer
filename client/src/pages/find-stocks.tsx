@@ -12,7 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Search, TrendingUp, TrendingDown, Activity, Target, RefreshCw, Zap, AlertCircle, Filter, Grid3X3, List } from "lucide-react";
 import { useAuth } from "@/contexts/simple-auth-offline";
 import { cn } from "@/lib/utils";
-import { useBatchQuotes } from "@/hooks/use-market-data";
+import { useBatchQuotes } from "@/hooks/use-market-data.tsx";
 
 // Popular stocks to display
 const POPULAR_SYMBOLS = [
