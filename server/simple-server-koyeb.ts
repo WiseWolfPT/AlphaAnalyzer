@@ -2,20 +2,9 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import { db } from './db';
-import { createCacheTables } from './db/cache-schema';
-import { cacheUpdater, CacheUpdaterService } from './services/cache-updater';
 
 // Load environment variables
 dotenv.config();
-
-// Initialize database tables
-try {
-  createCacheTables();
-  console.log('✅ Database initialized');
-} catch (error) {
-  console.error('❌ Database initialization error:', error);
-}
 
 const app = express();
 const PORT = process.env.PORT || 8000;
@@ -63,40 +52,16 @@ app.get('/api/market-data/health', (req, res) => {
   });
 });
 
-// Stock quote endpoint - now using cached data
+// Stock quote endpoint
 app.get('/api/market-data/quote/:symbol', async (req, res) => {
   const { symbol } = req.params;
+  const apiKey = process.env.ALPHA_VANTAGE_API_KEY;
+  
+  if (!apiKey) {
+    return res.status(500).json({ error: 'API key not configured' });
+  }
   
   try {
-    // First check cache
-    const cached = CacheUpdaterService.getCachedQuote(symbol.toUpperCase());
-    
-    if (cached) {
-      // Return cached data
-      res.json({
-        symbol: cached.symbol,
-        name: cached.name || `${cached.symbol} Corp`,
-        price: cached.price,
-        change: cached.change,
-        changePercent: cached.change_percent,
-        volume: cached.volume,
-        marketCap: cached.market_cap,
-        peRatio: cached.pe_ratio,
-        eps: cached.eps,
-        sector: cached.sector,
-        source: 'cache',
-        lastUpdated: cached.updated_at
-      });
-      return;
-    }
-    
-    // If not in cache, fetch from API
-    const apiKey = process.env.ALPHA_VANTAGE_API_KEY;
-    
-    if (!apiKey) {
-      return res.status(500).json({ error: 'API key not configured' });
-    }
-    
     const response = await fetch(
       `https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${symbol}&apikey=${apiKey}`
     );
@@ -104,33 +69,15 @@ app.get('/api/market-data/quote/:symbol', async (req, res) => {
     
     if (data['Global Quote']) {
       const quote = data['Global Quote'];
-      const result = {
+      res.json({
         symbol: quote['01. symbol'],
         name: `${quote['01. symbol']} Corp`,
         price: parseFloat(quote['05. price']),
         change: parseFloat(quote['09. change']),
         changePercent: parseFloat(quote['10. change percent'].replace('%', '')),
         volume: parseInt(quote['06. volume']),
-        latestTradingDay: quote['07. latest trading day'],
-        source: 'api'
-      };
-      
-      // Save to cache for next time
-      db.prepare(`
-        INSERT OR REPLACE INTO stock_quotes_cache 
-        (symbol, name, price, change, change_percent, volume, updated_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
-      `).run(
-        result.symbol,
-        result.name,
-        result.price,
-        result.change,
-        result.changePercent,
-        result.volume,
-        new Date().toISOString()
-      );
-      
-      res.json(result);
+        latestTradingDay: quote['07. latest trading day']
+      });
     } else {
       res.status(404).json({ error: 'Stock not found' });
     }
@@ -298,16 +245,9 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
   });
 });
 
-// Start cache updater service
-if (process.env.ENABLE_CACHE_UPDATER !== 'false') {
-  cacheUpdater.start();
-  console.log('✅ Cache updater service started');
-}
-
 // Start server
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
   console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
   console.log(`Health check: http://localhost:${PORT}/api/health`);
-  console.log(`Cache updater: ${process.env.ENABLE_CACHE_UPDATER !== 'false' ? 'enabled' : 'disabled'}`);
 });
