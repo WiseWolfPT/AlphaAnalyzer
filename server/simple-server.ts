@@ -2,8 +2,8 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import { testConnection } from './db/supabase-client.js';
-import { SupabaseCacheService } from './services/supabase-cache-service.js';
+import { testConnection } from './db/supabase-client';
+import { SupabaseCacheService } from './services/supabase-cache-service';
 
 // Load environment variables
 dotenv.config();

@@ -4,7 +4,7 @@
  */
 
 import { createClient } from '@supabase/supabase-js';
-import { Database } from '../../shared/types/supabase.js';
+import { Database } from '../../shared/types/supabase';
 
 // Verificar variáveis de ambiente
 if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {

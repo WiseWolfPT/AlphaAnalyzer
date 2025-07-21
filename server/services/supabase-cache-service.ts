@@ -1,6 +1,6 @@
 // Supabase Cache Service - Professional caching with PostgreSQL
-import { supabaseAdmin } from '../db/supabase-client.js';
-import { fiscalAI } from './fiscal-ai-service.js';
+import { supabaseAdmin } from '../db/supabase-client';
+import { fiscalAI } from './fiscal-ai-service';
 
 interface StockQuote {
   symbol: string;
