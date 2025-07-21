@@ -11,6 +11,10 @@ COPY server/koyeb-server.ts ./server/koyeb-server.ts
 COPY server/simple-server.ts ./server/simple-server.ts
 COPY server/simple.js ./server/simple.js
 
+# Copy Supabase integration files
+COPY server/db/supabase-client.ts ./server/db/supabase-client.ts
+COPY server/services/supabase-cache-service.ts ./server/services/supabase-cache-service.ts
+
 # Create empty .env to avoid dotenv warning
 RUN touch .env
 
@@ -25,7 +29,7 @@ RUN echo '{ \
 }' > package.json
 
 # Install only what we need
-RUN npm install express cors dotenv tsx @types/express @types/cors
+RUN npm install express cors dotenv tsx @types/express @types/cors @supabase/supabase-js
 
 # Expose port
 EXPOSE 3001
