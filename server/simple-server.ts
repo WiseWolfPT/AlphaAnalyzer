@@ -11,7 +11,7 @@ dotenv.config();
 // Test Supabase connection
 testConnection().then(connected => {
   if (connected) {
-    console.log('✅ Supabase database connected');
+    console.log('✅ Supabase database connected - Cache enabled!');
   } else {
     console.warn('⚠️ Supabase connection failed - will use direct API calls');
   }
