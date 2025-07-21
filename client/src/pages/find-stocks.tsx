@@ -12,8 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Search, TrendingUp, TrendingDown, Activity, Target, RefreshCw, Zap, AlertCircle, Filter, Grid3X3, List } from "lucide-react";
 import { useAuth } from "@/contexts/simple-auth-offline";
 import { cn } from "@/lib/utils";
-import { useMarketQuotes } from "@/hooks/use-market-data";
-import { invisibleFallbackService } from "@/services/invisible-fallback-service";
+import { useBatchQuotes } from "@/hooks/use-market-data";
 
 // Popular stocks to display
 const POPULAR_SYMBOLS = [
@@ -42,6 +41,27 @@ function getCompanyName(symbol: string): string {
     'MA': 'Mastercard Incorporated'
   };
   return companyNames[symbol] || `${symbol} Corporation`;
+}
+
+function getIndustry(symbol: string): string {
+  const industries: Record<string, string> = {
+    'AAPL': 'Consumer Electronics',
+    'MSFT': 'Software',
+    'GOOGL': 'Internet Services',
+    'AMZN': 'E-Commerce',
+    'TSLA': 'Automotive',
+    'META': 'Social Media',
+    'NVDA': 'Semiconductors',
+    'JPM': 'Banking',
+    'V': 'Payment Services',
+    'JNJ': 'Pharmaceuticals',
+    'WMT': 'Retail',
+    'PG': 'Consumer Goods',
+    'UNH': 'Health Insurance',
+    'DIS': 'Entertainment',
+    'MA': 'Payment Services'
+  };
+  return industries[symbol] || 'Technology';
 }
 
 function getSector(symbol: string): string {
@@ -97,67 +117,32 @@ export default function FindStocks() {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [searchQuery, setSearchQuery] = useState('');
   
-  // Use invisible fallback service for consistent, high-quality data
-  const [stocks, setStocks] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
+  // Use real market data
+  const { data: quotesData, isLoading, error, refetch } = useBatchQuotes(displayedSymbols);
 
-  // Load data using invisible fallback service
-  useEffect(() => {
-    const loadStocks = async () => {
-      setIsLoading(true);
-      try {
-        const fallbackResponse = await invisibleFallbackService.getFallbackQuotes(displayedSymbols);
-        
-        const stocksData = fallbackResponse.quotes.map((quote, index) => ({
-          id: index + 1,
-          symbol: quote.symbol,
-          name: quote.name,
-          price: quote.price.toFixed(2),
-          change: quote.change.toFixed(2),
-          changePercent: quote.changePercent.toFixed(2),
-          marketCap: quote.marketCap,
-          sector: quote.sector,
-          industry: quote.industry,
-          eps: quote.eps,
-          peRatio: quote.peRatio,
-          logo: quote.logo,
-          lastUpdated: quote.lastUpdated,
-          _isRealData: true, // Always appears as real data to users
-          _provider: 'alfalyzer'
-        }));
-        
-        setStocks(stocksData);
-        setError(null);
-      } catch (err) {
-        setError(err);
-        // Even on error, provide fallback data
-        const fallbackResponse = invisibleFallbackService.getFallbackQuotes(displayedSymbols);
-        const stocksData = fallbackResponse.quotes.map((quote, index) => ({
-          id: index + 1,
-          symbol: quote.symbol,
-          name: quote.name,
-          price: quote.price.toFixed(2),
-          change: quote.change.toFixed(2),
-          changePercent: quote.changePercent.toFixed(2),
-          marketCap: quote.marketCap,
-          sector: quote.sector,
-          industry: quote.industry,
-          eps: quote.eps,
-          peRatio: quote.peRatio,
-          logo: quote.logo,
-          lastUpdated: quote.lastUpdated,
-          _isRealData: true,
-          _provider: 'alfalyzer'
-        }));
-        setStocks(stocksData);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadStocks();
-  }, [displayedSymbols]);
+  // Transform the quotes data to match the component's expected format
+  const stocks = quotesData?.quotes?.map((quote, index) => ({
+    id: index + 1,
+    symbol: quote.symbol,
+    name: getCompanyName(quote.symbol),
+    price: quote.price?.toFixed(2) || '0.00',
+    change: quote.change?.toFixed(2) || '0.00',
+    changePercent: quote.changePercent?.toFixed(2) || '0.00',
+    marketCap: quote.marketCap ? `$${(quote.marketCap / 1e9).toFixed(2)}B` : 'N/A',
+    sector: getSector(quote.symbol),
+    industry: getIndustry(quote.symbol),
+    eps: quote.eps?.toFixed(2) || 'N/A',
+    peRatio: quote.pe?.toFixed(2) || 'N/A',
+    logo: `/api/placeholder/40/40`,
+    lastUpdated: new Date(quote.timestamp * 1000),
+    volume: quote.volume,
+    high: quote.high,
+    low: quote.low,
+    open: quote.open,
+    _isRealData: !quote._cached,
+    _provider: quote.provider,
+    _cached: quote._cached
+  })) || [];
 
   const handleStockSelect = (symbol: string) => {
     setLocation(`/stock/${symbol}/charts`);
@@ -210,6 +195,15 @@ export default function FindStocks() {
               </p>
             </div>
             <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => refetch()}
+                disabled={isLoading}
+                title="Refresh stock data"
+              >
+                <RefreshCw className={cn("w-4 h-4", isLoading && "animate-spin")} />
+              </Button>
               <Button
                 variant={viewMode === 'grid' ? 'default' : 'outline'}
                 size="sm"
@@ -292,10 +286,18 @@ export default function FindStocks() {
         {/* Results Section */}
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <p className="text-sm text-muted-foreground">
-              Showing {filteredStocks.length} stocks
-              {searchQuery && ` for "${searchQuery}"`}
-            </p>
+            <div className="flex items-center gap-2">
+              <p className="text-sm text-muted-foreground">
+                Showing {filteredStocks.length} stocks
+                {searchQuery && ` for "${searchQuery}"`}
+              </p>
+              {quotesData && quotesData.quotes && quotesData.quotes.some(q => q._cached) && (
+                <Badge variant="outline" className="text-xs">
+                  <Activity className="w-3 h-3 mr-1" />
+                  Some data from cache
+                </Badge>
+              )}
+            </div>
             <Button variant="outline" size="sm" className="gap-2">
               <Filter className="w-4 h-4" />
               More Filters
