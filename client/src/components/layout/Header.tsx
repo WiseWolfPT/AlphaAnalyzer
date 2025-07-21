@@ -57,7 +57,7 @@ export function Header() {
     
     if (!result.error) {
       // Redirecionar diretamente para o dashboard
-      setLocation('/find-stocks');
+      setLocation('/dashboard');
     } else {
       // Se houver erro, redirecionar para a página de login normal
       setLocation('/login');
@@ -80,7 +80,7 @@ export function Header() {
           {/* Logo */}
           <div 
             className="flex items-center gap-2 sm:gap-3 cursor-pointer hover:opacity-80 transition-opacity"
-            onClick={() => setLocation(user ? "/find-stocks" : "/")}
+            onClick={() => setLocation(user ? "/dashboard" : "/")}
           >
             <div className="w-8 h-8 sm:w-10 sm:h-10 bg-teya-green-dark dark:bg-teya-green rounded-xl flex items-center justify-center shadow-lg hover:shadow-teya-green/30 transition-all duration-300 hover:scale-105">
               <BarChart3 className="h-4 w-4 sm:h-5 sm:w-5 text-deep-black" />
@@ -133,7 +133,7 @@ export function Header() {
                   <span className="hidden lg:inline">{user.name}</span>
                 </div>
                 <Button 
-                  onClick={() => setLocation('/find-stocks')}
+                  onClick={() => setLocation('/dashboard')}
                   className="bg-teya-green-dark dark:bg-teya-green hover:bg-teya-green-dark/90 dark:hover:bg-teya-green/90 text-deep-black dark:text-rich-black"
                 >
                   Dashboard
@@ -236,7 +236,7 @@ export function Header() {
                         <span>{user.name}</span>
                       </div>
                       <Button 
-                        onClick={() => setLocation('/find-stocks')}
+                        onClick={() => setLocation('/dashboard')}
                         className="bg-teya-green-dark dark:bg-teya-green hover:bg-teya-green-dark/90 dark:hover:bg-teya-green/90 text-deep-black dark:text-rich-black justify-start"
                       >
                         <User className="h-4 w-4 mr-2" />

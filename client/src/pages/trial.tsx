@@ -23,7 +23,7 @@ export default function Trial() {
   const handleStartTrial = () => {
     setIsStartingTrial(true);
     setTimeout(() => {
-      setLocation("/find-stocks");
+      setLocation("/dashboard");
     }, 1000);
   };
 
