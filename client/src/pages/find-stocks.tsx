@@ -105,7 +105,8 @@ export default function FindStocks() {
     quotesData,
     isLoading,
     error,
-    hasQuotes: quotesData?.quotes?.length > 0
+    hasQuotes: quotesData?.quotes?.length > 0,
+    apiUrl: import.meta.env.VITE_API_URL || 'NOT SET'
   });
 
   // Transform the quotes data to match the component's expected format
