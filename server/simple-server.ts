@@ -2,20 +2,20 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import { db } from './db';
-import { createCacheTables } from './db/cache-schema';
-import { cacheUpdater, CacheUpdaterService } from './services/cache-updater';
+import { testConnection } from './db/supabase-client';
+import { SupabaseCacheService } from './services/supabase-cache-service';
 
 // Load environment variables
 dotenv.config();
 
-// Initialize database tables
-try {
-  createCacheTables();
-  console.log('✅ Database initialized');
-} catch (error) {
-  console.error('❌ Database initialization error:', error);
-}
+// Test Supabase connection
+testConnection().then(connected => {
+  if (connected) {
+    console.log('✅ Supabase database connected');
+  } else {
+    console.warn('⚠️ Supabase connection failed - will use direct API calls');
+  }
+});
 
 const app = express();
 const PORT = process.env.PORT || 8000;
@@ -69,7 +69,7 @@ app.get('/api/market-data/quote/:symbol', async (req, res) => {
   
   try {
     // First check cache
-    const cached = CacheUpdaterService.getCachedQuote(symbol.toUpperCase());
+    const cached = await SupabaseCacheService.getCachedQuote(symbol.toUpperCase());
     
     if (cached) {
       // Return cached data
@@ -116,19 +116,14 @@ app.get('/api/market-data/quote/:symbol', async (req, res) => {
       };
       
       // Save to cache for next time
-      db.prepare(`
-        INSERT OR REPLACE INTO stock_quotes_cache 
-        (symbol, name, price, change, change_percent, volume, updated_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
-      `).run(
-        result.symbol,
-        result.name,
-        result.price,
-        result.change,
-        result.changePercent,
-        result.volume,
-        new Date().toISOString()
-      );
+      await SupabaseCacheService.saveQuoteToCache({
+        symbol: result.symbol,
+        name: result.name,
+        price: result.price,
+        change: result.change,
+        change_percent: result.changePercent,
+        volume: result.volume
+      });
       
       res.json(result);
     } else {
@@ -298,16 +293,13 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
   });
 });
 
-// Start cache updater service
-if (process.env.ENABLE_CACHE_UPDATER !== 'false') {
-  cacheUpdater.start();
-  console.log('✅ Cache updater service started');
-}
+// Note: Cache updater service would be implemented with Supabase Edge Functions
+// or a separate worker service for production use
 
 // Start server
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
   console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
   console.log(`Health check: http://localhost:${PORT}/api/health`);
-  console.log(`Cache updater: ${process.env.ENABLE_CACHE_UPDATER !== 'false' ? 'enabled' : 'disabled'}`);
+  console.log(`Database: Supabase PostgreSQL`);
 });
