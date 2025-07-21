@@ -140,7 +140,7 @@ export function Header() {
                   variant="ghost" 
                   size="sm"
                   className="text-foreground hover:text-teya-green border border-transparent hover:border-teya-green/30"
-                  onClick={toggleAuthState}
+                  onClick={() => setLocation('/login')}
                 >
                   Beta Login
                 </Button>

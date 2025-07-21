@@ -43,8 +43,8 @@ function detectEnvironment(): Environment {
       hostname.includes('herokuapp.com')) {
     return {
       name: 'production',
-      apiBase: `${protocol}//${hostname}/api`,
-      wsBase: `${protocol === 'https:' ? 'wss:' : 'ws:'}//${hostname}`,
+      apiBase: 'https://crucial-ivonne-alfalyzer-90666a9e.koyeb.app/api',
+      wsBase: 'wss://crucial-ivonne-alfalyzer-90666a9e.koyeb.app',
       debug: false
     };
   }

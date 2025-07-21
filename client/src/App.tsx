@@ -19,6 +19,7 @@ import { createLazyComponent, getLoadingMetrics } from "@/lib/lazy-loader";
 
 // Currency Context imports
 import { CurrencyProvider } from './contexts/currency-context';
+import { PortfolioProvider } from './contexts/portfolio-context';
 
 // AGGRESSIVE DYNAMIC IMPORTS - Load everything lazily with micro-bundles
 
@@ -489,13 +490,15 @@ function App() {
                 <AppInitializer>
                   <ThemeProvider defaultTheme="dark" storageKey="alfalyzer-theme">
                     <SupabaseAuthProvider>
-                      <Toaster />
-                      <Router />
-                      <ReactQueryDevtools 
-                        initialIsOpen={false} 
-                        buttonPosition="bottom-right"
-                        position="bottom"
-                      />
+                      <PortfolioProvider>
+                        <Toaster />
+                        <Router />
+                        <ReactQueryDevtools 
+                          initialIsOpen={false} 
+                          buttonPosition="bottom-right"
+                          position="bottom"
+                        />
+                      </PortfolioProvider>
                     </SupabaseAuthProvider>
                   </ThemeProvider>
                 </AppInitializer>
