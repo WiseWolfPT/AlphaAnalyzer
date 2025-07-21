@@ -85,27 +85,6 @@ function getSector(symbol: string): string {
   return sectors[symbol] || 'Technology';
 }
 
-function getIndustry(symbol: string): string {
-  const industries: Record<string, string> = {
-    'AAPL': 'Consumer Electronics',
-    'MSFT': 'Software',
-    'GOOGL': 'Internet Content & Information',
-    'AMZN': 'Internet Retail',
-    'TSLA': 'Auto Manufacturers',
-    'META': 'Internet Content & Information',
-    'NVDA': 'Semiconductors',
-    'JPM': 'Banks',
-    'V': 'Credit Services',
-    'JNJ': 'Drug Manufacturers',
-    'WMT': 'Discount Stores',
-    'PG': 'Household & Personal Products',
-    'UNH': 'Healthcare Plans',
-    'DIS': 'Entertainment',
-    'MA': 'Credit Services'
-  };
-  return industries[symbol] || 'Software';
-}
-
 export default function FindStocks() {
   const [, setLocation] = useLocation();
   const { user } = useAuth();
