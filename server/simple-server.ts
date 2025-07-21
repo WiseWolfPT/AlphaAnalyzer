@@ -12,6 +12,7 @@ const PORT = process.env.PORT || 8000;
 // Basic middleware
 app.use(cors({
   origin: [
+    'https://alfalyzerpro4-nth02sgvs-antonios-projects-f9cd3cd0.vercel.app',
     'https://alfalyzerpro4-fd1b9651c-antonios-projects-f9cd3cd0.vercel.app',
     'https://alphaanalyzer.vercel.app',
     'http://localhost:3000',
@@ -30,6 +31,60 @@ app.get('/api/health', (req, res) => {
     environment: process.env.NODE_ENV || 'development',
     uptime: process.uptime()
   });
+});
+
+// Market data health check
+app.get('/api/market-data/health', (req, res) => {
+  const hasRealData = !!(
+    process.env.ALPHA_VANTAGE_API_KEY ||
+    process.env.FINNHUB_API_KEY ||
+    process.env.FMP_API_KEY
+  );
+  
+  res.json({
+    status: 'healthy',
+    hasRealData,
+    providers: {
+      alphaVantage: !!process.env.ALPHA_VANTAGE_API_KEY,
+      finnhub: !!process.env.FINNHUB_API_KEY,
+      fmp: !!process.env.FMP_API_KEY
+    }
+  });
+});
+
+// Stock quote endpoint
+app.get('/api/market-data/quote/:symbol', async (req, res) => {
+  const { symbol } = req.params;
+  const apiKey = process.env.ALPHA_VANTAGE_API_KEY;
+  
+  if (!apiKey) {
+    return res.status(500).json({ error: 'API key not configured' });
+  }
+  
+  try {
+    const response = await fetch(
+      `https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${symbol}&apikey=${apiKey}`
+    );
+    const data = await response.json();
+    
+    if (data['Global Quote']) {
+      const quote = data['Global Quote'];
+      res.json({
+        symbol: quote['01. symbol'],
+        name: `${quote['01. symbol']} Corp`,
+        price: parseFloat(quote['05. price']),
+        change: parseFloat(quote['09. change']),
+        changePercent: parseFloat(quote['10. change percent'].replace('%', '')),
+        volume: parseInt(quote['06. volume']),
+        latestTradingDay: quote['07. latest trading day']
+      });
+    } else {
+      res.status(404).json({ error: 'Stock not found' });
+    }
+  } catch (error) {
+    console.error('Error fetching stock data:', error);
+    res.status(500).json({ error: 'Failed to fetch stock data' });
+  }
 });
 
 // Basic stock data endpoint (using Alpha Vantage)
@@ -63,6 +118,45 @@ app.get('/api/stocks/:symbol/price', async (req, res) => {
   } catch (error) {
     console.error('Error fetching stock data:', error);
     res.status(500).json({ error: 'Failed to fetch stock data' });
+  }
+});
+
+// Stock profile endpoint
+app.get('/api/stocks/:symbol/profile', async (req, res) => {
+  const { symbol } = req.params;
+  const apiKey = process.env.ALPHA_VANTAGE_API_KEY;
+  
+  if (!apiKey) {
+    return res.status(500).json({ error: 'API key not configured' });
+  }
+  
+  try {
+    const response = await fetch(
+      `https://www.alphavantage.co/query?function=OVERVIEW&symbol=${symbol}&apikey=${apiKey}`
+    );
+    const data = await response.json();
+    
+    if (data && data.Symbol) {
+      res.json({
+        symbol: data.Symbol,
+        name: data.Name,
+        description: data.Description,
+        sector: data.Sector,
+        industry: data.Industry,
+        marketCap: data.MarketCapitalization,
+        peRatio: data.PERatio,
+        dividendYield: data.DividendYield,
+        eps: data.EPS,
+        beta: data.Beta,
+        weekHigh52: data['52WeekHigh'],
+        weekLow52: data['52WeekLow']
+      });
+    } else {
+      res.status(404).json({ error: 'Company profile not found' });
+    }
+  } catch (error) {
+    console.error('Error fetching company profile:', error);
+    res.status(500).json({ error: 'Failed to fetch company profile' });
   }
 });
 
@@ -131,7 +225,10 @@ app.get('/', (req, res) => {
     status: 'running',
     endpoints: [
       '/api/health',
+      '/api/market-data/health',
+      '/api/market-data/quote/:symbol',
       '/api/stocks/:symbol/price',
+      '/api/stocks/:symbol/profile',
       '/api/market-data/alpha-vantage/*',
       '/api/market-data/fmp/*',
       '/api/market-data/finnhub/*'

@@ -1,6 +1,7 @@
 // Real Data Integration Service - Primary gateway for all stock data
 import { realAPI } from '@/lib/real-api';
 import { cacheManager } from '@/lib/cache-manager';
+import { apiConfig, enhancedFetch } from '@/lib/api-config';
 
 // Import services with error handling using dynamic imports
 let alphaVantageEnhanced: any = null;
@@ -63,9 +64,8 @@ class RealDataIntegrationService {
     // Check if backend server is available for real data
     try {
       // Test if backend market data endpoint is available
-      const response = await fetch('/api/market-data/health', {
-        method: 'GET',
-        headers: { 'Content-Type': 'application/json' }
+      const response = await enhancedFetch('/market-data/health', {
+        method: 'GET'
       });
       
       if (response.ok) {
@@ -251,12 +251,8 @@ class RealDataIntegrationService {
 
   private async getQuoteFromServer(symbol: string): Promise<StockQuote | null> {
     try {
-      const response = await fetch(`/api/market-data/quote/${symbol}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('alfalyzer-token') || 'demo-token'}`
-        }
+      const response = await enhancedFetch(`/market-data/quote/${symbol}`, {
+        method: 'GET'
       });
 
       if (!response.ok) {
