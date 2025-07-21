@@ -363,7 +363,7 @@ async function initializeMarketDataServices() {
       console.log('✅ Static assets configured for /assets route');
     }
 
-    // Register API routes SECOND
+    // CRITICAL: Register API routes BEFORE Vite to prevent interception
     await registerRoutes(app, server);
 
     // ROADMAP V4: Apply Supabase authentication to protected routes
@@ -380,7 +380,7 @@ async function initializeMarketDataServices() {
     app.use('/api/intrinsic-values', financialDataSecurity);
     app.use('/api/earnings', financialDataSecurity);
 
-    // Setup static file serving BEFORE error handlers
+    // Setup static file serving AFTER API routes (to avoid intercepting API calls)
     if (process.env.NODE_ENV === "development") {
       console.log('Setting up Vite development server...');
       await setupVite(app, server);

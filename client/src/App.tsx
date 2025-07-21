@@ -453,7 +453,7 @@ function Router() {
         
         {/* Valuation Dashboard Route */}
         <Route path="/valuation" component={ValuationDashboard} />
-        <Route path="/intrinsic-value" component={ValuationDashboard} />
+        <Route path="/intrinsic-value" component={IntrinsicValue} />
         
         {/* Other Routes */}
         <Route path="/find-stocks" component={FindStocks} />
@@ -470,6 +470,7 @@ function Router() {
         <Route path="/news" component={News} />
         <Route path="/alerts" component={Alerts} />
         <Route path="/test/stock-header" component={StockHeaderTest} />
+        <Route path="/test/api" component={lazy(() => import("@/pages/api-test"))} />
         <Route component={NotFound} />
       </Switch>
     </Suspense>

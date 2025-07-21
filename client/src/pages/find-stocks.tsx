@@ -99,6 +99,15 @@ export default function FindStocks() {
   // Use real market data
   const { data: quotesData, isLoading, error, refetch } = useBatchQuotes(displayedSymbols);
 
+  // Debug logs
+  console.log('Find Stocks Debug:', {
+    displayedSymbols,
+    quotesData,
+    isLoading,
+    error,
+    hasQuotes: quotesData?.quotes?.length > 0
+  });
+
   // Transform the quotes data to match the component's expected format
   const stocks = quotesData?.quotes?.map((quote, index) => ({
     id: index + 1,

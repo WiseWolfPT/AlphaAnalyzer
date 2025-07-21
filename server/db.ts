@@ -1,9 +1,12 @@
 import * as schema from "@shared/schema";
+import Database from 'better-sqlite3';
+import { drizzle } from 'drizzle-orm/better-sqlite3';
 
 // Check if we're in production
 const isProduction = process.env.NODE_ENV === 'production';
 
 let db: any;
+let sqlite: Database | null = null;
 
 if (isProduction) {
   // In production, create a mock db object that won't be used
@@ -30,11 +33,8 @@ if (isProduction) {
   };
 } else {
   // Development mode - use SQLite
-  const Database = require('better-sqlite3');
-  const { drizzle } = require('drizzle-orm/better-sqlite3');
-  
   const dbPath = process.env.DATABASE_PATH || './dev.db';
-  const sqlite = new Database(dbPath);
+  sqlite = new Database(dbPath);
 
   // CRÍTICO: Ativar foreign keys para garantir integridade referencial
   sqlite.pragma('foreign_keys = ON');
@@ -51,6 +51,12 @@ export { db };
 // Função segura para criar tabelas usando prepared statements
 function createTables() {
   try {
+    // Skip table creation in production mode or if sqlite is not initialized
+    if (!sqlite) {
+      console.log('⏭️ Skipping table creation (SQLite not initialized)');
+      return;
+    }
+    
     // 1. Tabela de stocks com tipos corretos para dados financeiros
     sqlite.prepare(`
       CREATE TABLE IF NOT EXISTS stocks (

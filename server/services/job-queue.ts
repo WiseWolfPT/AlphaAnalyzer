@@ -1,9 +1,6 @@
-import { createClient } from '@supabase/supabase-js';
+import { getSupabaseClient, isSupabaseConfigured } from '../lib/supabase-client';
 
-// Initialize Supabase client
-const supabaseUrl = process.env.SUPABASE_URL!;
-const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
-const supabase = createClient(supabaseUrl, supabaseKey);
+const supabase = getSupabaseClient();
 
 export interface JobPayload {
   symbol?: string;

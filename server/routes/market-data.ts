@@ -557,37 +557,47 @@ router.post('/quotes/batch',
       }
 
       const { symbols } = validation.data;
+      console.log(`📊 Batch quotes request for: ${symbols.join(', ')}`);
+      
       const results: any[] = [];
       const errors: Record<string, string> = {};
 
-      // Processar cada símbolo
-      await Promise.all(
-        symbols.map(async (symbol) => {
-          try {
-            const cacheKey = `quote:${symbol}`;
-            
-            // Verificar cache
-            const cached = checkCache(cacheKey);
-            if (cached) {
-              results.push({ ...cached, _cached: true });
-              return;
-            }
+      // Use the enhanced market data service for consistency
+      const stockQuotes = await marketDataService.getBatchQuotes(symbols);
+      
+      // Transform stock data to API response format
+      for (const stock of stockQuotes) {
+        if (stock) {
+          results.push({
+            symbol: stock.symbol,
+            name: stock.name,
+            price: stock.price,
+            change: stock.change,
+            changePercent: stock.changePercent,
+            high: stock.high,
+            low: stock.low,
+            open: stock.open,
+            previousClose: stock.previousClose,
+            volume: stock.volume,
+            marketCap: stock.marketCap ? parseFloat(stock.marketCap) : null,
+            eps: stock.eps,
+            pe: stock.peRatio,
+            provider: (stock as any).provider || 'unknown',
+            timestamp: Math.floor(stock.lastUpdated.getTime() / 1000),
+            _timestamp: Date.now(),
+            _cached: false,
+          });
+        }
+      }
 
-            // Buscar dados reais
-            const quoteData = await fetchQuoteWithFallback(symbol, req.user?.id);
-            const enrichedData = {
-              ...quoteData,
-              _timestamp: Date.now(),
-              _cached: false,
-            };
+      // Add errors for symbols that failed
+      for (const symbol of symbols) {
+        if (!results.find(r => r.symbol === symbol)) {
+          errors[symbol] = 'Failed to fetch quote';
+        }
+      }
 
-            saveToCache(cacheKey, enrichedData);
-            results.push(enrichedData);
-          } catch (error) {
-            errors[symbol] = error instanceof Error ? error.message : 'Failed to fetch';
-          }
-        })
-      );
+      console.log(`✅ Batch quotes: ${results.length} success, ${Object.keys(errors).length} failed`);
 
       res.json({
         quotes: results,

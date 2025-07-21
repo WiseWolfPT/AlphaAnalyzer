@@ -2,12 +2,9 @@ import { FinnhubService, finnhubService } from './finnhub-service';
 import { PolygonService } from './polygon-service';
 import { ServerMarketDataService } from './market-data-service';
 import { multiLayerCache, MultiLayerCache } from '../cache/multi-layer-cache.js';
-import { createClient } from '@supabase/supabase-js';
+import { getSupabaseClient, isSupabaseConfigured } from '../lib/supabase-client';
 
-// Initialize Supabase client
-const supabaseUrl = process.env.SUPABASE_URL!;
-const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
-const supabase = createClient(supabaseUrl, supabaseKey);
+const supabase = getSupabaseClient();
 
 export interface StockData {
   symbol: string;
