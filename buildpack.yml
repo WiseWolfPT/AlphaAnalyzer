@@ -1,0 +1,48 @@
+# Koyeb Buildpack Configuration
+# This helps Koyeb understand how to build your app without a Dockerfile
+
+# Node.js version
+node:
+  version: 18.x
+
+# Build commands
+build:
+  # Install dependencies
+  - npm install
+  
+  # Build the server (if TypeScript)
+  - npm run build:server || echo "No server build script"
+  
+  # Build the client
+  - npm run build:client || echo "No client build script"
+  
+  # General build command
+  - npm run build || echo "No build script"
+
+# Run command - try multiple options
+run: |
+  # First, try the npm start script
+  if npm run start 2>/dev/null; then
+    exit 0
+  fi
+  
+  # If that fails, try common entry points
+  if [ -f "server/index.js" ]; then
+    node server/index.js
+  elif [ -f "dist/index.js" ]; then
+    node dist/index.js
+  elif [ -f "index.js" ]; then
+    node index.js
+  elif [ -f "server.js" ]; then
+    node server.js
+  elif [ -f "emergency-server.js" ]; then
+    node emergency-server.js
+  else
+    echo "No entry point found! Starting debug server..."
+    node debug-koyeb-files.js
+  fi
+
+# Environment variables
+env:
+  NODE_ENV: production
+  PORT: 3001
