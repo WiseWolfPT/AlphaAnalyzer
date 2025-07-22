@@ -6,6 +6,7 @@ import dotenv from 'dotenv';
 import { testConnection } from './db/supabase-client';
 import { SupabaseCacheService } from './services/supabase-cache-service';
 import diagnosticRouter from './routes/diagnostic';
+import diagnosticSimpleRouter from './routes/diagnostic-simple';
 
 // Load environment variables
 dotenv.config();
@@ -47,8 +48,34 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// Register diagnostic routes
-app.use('/api/diagnostic', diagnosticRouter);
+// Register diagnostic routes with fallback
+try {
+  // Try to use the original diagnostic router with axios
+  app.use('/api/diagnostic', diagnosticRouter);
+  console.log('✅ Diagnostic routes (axios) registered successfully');
+} catch (error: any) {
+  console.error('❌ Failed to register axios-based diagnostic routes:', error.message);
+  
+  try {
+    // Fallback to fetch-based diagnostic router
+    app.use('/api/diagnostic', diagnosticSimpleRouter);
+    console.log('✅ Diagnostic routes (fetch) registered as fallback');
+  } catch (fallbackError) {
+    console.error('❌ Failed to register fetch-based diagnostic routes:', fallbackError);
+    
+    // Ultimate fallback - inline minimal diagnostic endpoint
+    app.get('/api/diagnostic', (req, res) => {
+      res.json({
+        status: 'fallback',
+        message: 'Using inline minimal diagnostic endpoint',
+        timestamp: new Date().toISOString(),
+        environment: process.env.NODE_ENV || 'development',
+        koyeb: !!process.env.KOYEB_SERVICE_NAME,
+        error: 'Both diagnostic modules failed to load'
+      });
+    });
+  }
+}
 
 // Market data health check
 app.get('/api/market-data/health', (req, res) => {
@@ -271,6 +298,136 @@ app.use('/api/market-data/finnhub', async (req, res) => {
   }
 });
 
+// Minimal diagnostic endpoint (always available)
+app.get('/api/diagnostic/minimal', async (req, res) => {
+  const maskApiKey = (key: string | undefined): string => {
+    if (!key) return 'NOT_FOUND';
+    if (key.length < 8) return 'INVALID';
+    return `${key.substring(0, 4)}...${key.substring(key.length - 4)} (${key.length} chars)`;
+  };
+
+  const diagnostics = {
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || 'development',
+    platform: process.platform,
+    nodeVersion: process.version,
+    
+    koyebInfo: {
+      IS_KOYEB: !!process.env.KOYEB_SERVICE_NAME,
+      KOYEB_SERVICE_NAME: process.env.KOYEB_SERVICE_NAME || 'NOT_ON_KOYEB',
+      KOYEB_APP_NAME: process.env.KOYEB_APP_NAME || 'NOT_ON_KOYEB',
+      KOYEB_REGION: process.env.KOYEB_REGION || 'NOT_ON_KOYEB'
+    },
+    
+    envVars: {
+      PORT: process.env.PORT || 'NOT_SET',
+      NODE_ENV: process.env.NODE_ENV || 'NOT_SET',
+      
+      // API Keys (masked for security)
+      ALPHA_VANTAGE_API_KEY: maskApiKey(process.env.ALPHA_VANTAGE_API_KEY),
+      FINNHUB_API_KEY: maskApiKey(process.env.FINNHUB_API_KEY),
+      FMP_API_KEY: maskApiKey(process.env.FMP_API_KEY),
+      
+      // Supabase
+      SUPABASE_URL: process.env.SUPABASE_URL || 'NOT_SET',
+      SUPABASE_ANON_KEY: maskApiKey(process.env.SUPABASE_ANON_KEY),
+    },
+    
+    // Quick connectivity test
+    connectivity: {
+      canFetch: typeof fetch !== 'undefined',
+      hasAxios: false // We'll use fetch instead
+    },
+    
+    summary: {
+      configuredApis: [] as string[],
+      recommendations: [] as string[]
+    }
+  };
+
+  // Check which APIs are configured
+  if (process.env.ALPHA_VANTAGE_API_KEY) diagnostics.summary.configuredApis.push('Alpha Vantage');
+  if (process.env.FINNHUB_API_KEY) diagnostics.summary.configuredApis.push('Finnhub');
+  if (process.env.FMP_API_KEY) diagnostics.summary.configuredApis.push('FMP');
+  
+  // Add recommendations
+  if (diagnostics.summary.configuredApis.length === 0) {
+    diagnostics.summary.recommendations.push('No API keys configured. Please set environment variables on Koyeb.');
+  }
+  
+  if (process.env.NODE_ENV !== 'production' && diagnostics.koyebInfo.IS_KOYEB) {
+    diagnostics.summary.recommendations.push('NODE_ENV should be set to "production" on Koyeb.');
+  }
+
+  res.json(diagnostics);
+});
+
+// Simple connectivity test endpoint using fetch
+app.get('/api/diagnostic/test-connectivity', async (req, res) => {
+  const tests = [];
+  
+  // Test Google (simple connectivity check)
+  try {
+    const googleStart = Date.now();
+    const googleResponse = await fetch('https://www.google.com/robots.txt', {
+      signal: AbortSignal.timeout(3000)
+    });
+    const googleLatency = Date.now() - googleStart;
+    
+    tests.push({
+      service: 'Google',
+      status: googleResponse.ok ? 'success' : 'failed',
+      httpStatus: googleResponse.status,
+      latencyMs: googleLatency
+    });
+  } catch (error: any) {
+    tests.push({
+      service: 'Google',
+      status: 'error',
+      error: error.message
+    });
+  }
+  
+  // Test Alpha Vantage if configured
+  if (process.env.ALPHA_VANTAGE_API_KEY) {
+    try {
+      const avStart = Date.now();
+      const avResponse = await fetch(
+        `https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=AAPL&apikey=${process.env.ALPHA_VANTAGE_API_KEY}`,
+        { signal: AbortSignal.timeout(5000) }
+      );
+      const avLatency = Date.now() - avStart;
+      const avData = await avResponse.json();
+      
+      tests.push({
+        service: 'Alpha Vantage',
+        status: avData['Global Quote'] ? 'success' : (avData.Note ? 'rate_limited' : 'failed'),
+        httpStatus: avResponse.status,
+        latencyMs: avLatency,
+        hasData: !!avData['Global Quote']
+      });
+    } catch (error: any) {
+      tests.push({
+        service: 'Alpha Vantage',
+        status: 'error',
+        error: error.message
+      });
+    }
+  }
+  
+  const allSuccess = tests.every(t => t.status === 'success');
+  
+  res.json({
+    timestamp: new Date().toISOString(),
+    koyeb: !!process.env.KOYEB_SERVICE_NAME,
+    tests,
+    summary: allSuccess ? 'All connectivity tests passed' : 'Some connectivity tests failed',
+    recommendation: allSuccess ? 
+      'External connectivity is working. If API calls still fail, check API keys and rate limits.' :
+      'External connectivity issues detected. Check network/firewall settings.'
+  });
+});
+
 // Root endpoint
 app.get('/', (req, res) => {
   res.json({
@@ -279,6 +436,9 @@ app.get('/', (req, res) => {
     status: 'running',
     endpoints: [
       '/api/health',
+      '/api/diagnostic',
+      '/api/diagnostic/minimal',
+      '/api/diagnostic/test-connectivity',
       '/api/market-data/health',
       '/api/market-data/quote/:symbol',
       '/api/stocks/:symbol/price',
