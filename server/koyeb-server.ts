@@ -46,6 +46,79 @@ app.get('/api/health', (req, res) => {
   });
 });
 
+// Minimal diagnostic endpoint - always works
+app.get('/api/diagnostic/minimal', (req, res) => {
+  const maskKey = (key: string | undefined) => {
+    if (!key) return 'NOT_SET';
+    if (key === 'demo') return 'DEMO';
+    if (key.length < 8) return 'INVALID';
+    return `${key.substring(0, 4)}...${key.substring(key.length - 4)}`;
+  };
+
+  res.json({
+    status: 'ok',
+    timestamp: new Date().toISOString(),
+    environment: {
+      NODE_ENV: process.env.NODE_ENV || 'NOT_SET',
+      PORT: process.env.PORT || 'NOT_SET',
+      KOYEB: !!process.env.KOYEB_SERVICE_NAME,
+      SERVICE: process.env.KOYEB_SERVICE_NAME || 'NOT_ON_KOYEB'
+    },
+    apiKeys: {
+      ALPHA_VANTAGE: maskKey(process.env.ALPHA_VANTAGE_API_KEY),
+      FINNHUB: maskKey(process.env.FINNHUB_API_KEY),
+      FMP: maskKey(process.env.FMP_API_KEY),
+      TWELVE_DATA: maskKey(process.env.TWELVE_DATA_API_KEY),
+      POLYGON: maskKey(process.env.POLYGON_API_KEY),
+      FISCAL_AI: maskKey(process.env.FISCAL_AI_API_KEY)
+    },
+    summary: {
+      totalConfigured: [
+        process.env.ALPHA_VANTAGE_API_KEY,
+        process.env.FINNHUB_API_KEY,
+        process.env.FMP_API_KEY,
+        process.env.TWELVE_DATA_API_KEY,
+        process.env.POLYGON_API_KEY,
+        process.env.FISCAL_AI_API_KEY
+      ].filter(key => key && key !== 'demo').length
+    }
+  });
+});
+
+// Test connectivity endpoint
+app.get('/api/diagnostic/test-connectivity', async (req, res) => {
+  const tests = [];
+  
+  // Test Yahoo Finance (no API key needed)
+  try {
+    const startTime = Date.now();
+    const response = await fetch('https://query1.finance.yahoo.com/v8/finance/chart/AAPL');
+    const data = await response.json();
+    
+    tests.push({
+      service: 'Yahoo Finance',
+      status: response.ok ? 'success' : 'failed',
+      latencyMs: Date.now() - startTime,
+      hasData: !!data?.chart?.result?.[0]
+    });
+  } catch (error: any) {
+    tests.push({
+      service: 'Yahoo Finance',
+      status: 'error',
+      error: error.message
+    });
+  }
+  
+  res.json({
+    timestamp: new Date().toISOString(),
+    koyeb: true,
+    tests,
+    summary: tests.every(t => t.status === 'success') ? 
+      'External connectivity working' : 
+      'Some connectivity issues detected'
+  });
+});
+
 // Market data health check
 app.get('/api/market-data/health', (req, res) => {
   const hasRealData = !!(
