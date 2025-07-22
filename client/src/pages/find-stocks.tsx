@@ -17,6 +17,7 @@ import { ApiDiagnostic } from "@/components/debug/api-diagnostic";
 import { env } from "@/lib/env";
 import { TestAPIConnection } from "@/components/test-api-connection";
 import { ConnectionTest } from "@/components/debug/connection-test";
+import { AuthTest } from "@/test/auth-test";
 import { testAPIConnection } from "@/test-api-connection";
 
 // Popular stocks to display
@@ -167,6 +168,10 @@ export default function FindStocks() {
           </div>
           {/* Debug connection test */}
           <ConnectionTest />
+          {/* Authentication test */}
+          <div className="mt-8">
+            <AuthTest />
+          </div>
         </div>
       </MainLayout>
     );
