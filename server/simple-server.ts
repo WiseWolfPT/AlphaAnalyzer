@@ -5,6 +5,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import { testConnection } from './db/supabase-client';
 import { SupabaseCacheService } from './services/supabase-cache-service';
+import diagnosticRouter from './routes/diagnostic';
 
 // Load environment variables
 dotenv.config();
@@ -45,6 +46,9 @@ app.get('/api/health', (req, res) => {
     uptime: process.uptime()
   });
 });
+
+// Register diagnostic routes
+app.use('/api/diagnostic', diagnosticRouter);
 
 // Market data health check
 app.get('/api/market-data/health', (req, res) => {
