@@ -27,7 +27,9 @@ app.use(cors({
   origin: [
     'https://alfalyzerpro4-nth02sgvs-antonios-projects-f9cd3cd0.vercel.app',
     'https://alfalyzerpro4-fd1b9651c-antonios-projects-f9cd3cd0.vercel.app',
+    'https://alfalyzerpro4-ihwma9ytw-antonios-projects-f9cd3cd0.vercel.app',
     'https://alphaanalyzer.vercel.app',
+    'https://alfalyzer.vercel.app',
     'http://localhost:3000',
     'http://localhost:5173'
   ],
