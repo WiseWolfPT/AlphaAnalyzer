@@ -32,7 +32,7 @@ RUN echo '{ \
 RUN npm install express cors dotenv tsx @types/express @types/cors @supabase/supabase-js
 
 # Expose port - Koyeb will use the PORT env variable
-EXPOSE 8000
+EXPOSE 3001
 
 # Start server
 CMD ["npx", "tsx", "server/koyeb-server.ts"]

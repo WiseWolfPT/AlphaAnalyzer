@@ -20,7 +20,7 @@ testConnection().then(connected => {
 
 const app = express();
 // IMPORTANT: Koyeb assigns the PORT dynamically, we must use it
-const PORT = process.env.PORT || 8000;
+const PORT = process.env.PORT || 3001;
 
 // Basic middleware
 app.use(cors({
