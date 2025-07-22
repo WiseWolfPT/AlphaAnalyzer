@@ -1,7 +1,7 @@
 // Financial Data Client - Fetches financial statements and metrics
 import { env } from '@/lib/env';
 
-const API_BASE_URL = env.VITE_API_URL || 'http://localhost:3001';
+const API_BASE_URL = env.VITE_API_URL || 'https://crucial-ivonne-alfalyzer-90666a9e.koyeb.app';
 
 export interface FinancialStatement {
   date: string;

@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
 
 // API base URL
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://crucial-ivonne-alfalyzer-90666a9e.koyeb.app';
 
 // Types
 export interface Fundamentals {

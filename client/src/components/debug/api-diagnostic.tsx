@@ -11,7 +11,7 @@ export function ApiDiagnostic() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const apiUrl = env.VITE_API_URL || 'http://localhost:3001';
+  const apiUrl = env.VITE_API_URL || 'https://crucial-ivonne-alfalyzer-90666a9e.koyeb.app';
 
   const checkHealth = async () => {
     setIsLoading(true);

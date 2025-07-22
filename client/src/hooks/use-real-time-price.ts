@@ -19,7 +19,7 @@ interface ApiResponse {
 }
 
 // API base URL - in production this should come from environment
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://crucial-ivonne-alfalyzer-90666a9e.koyeb.app';
 
 // Fetch single stock price
 export function useRealTimePrice(symbol: string, options?: {

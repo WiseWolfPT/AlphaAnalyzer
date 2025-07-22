@@ -17,7 +17,7 @@ export function ConnectionTest() {
     setIsLoading(true);
     setResult(null);
 
-    const apiUrl = env.VITE_API_URL || 'http://localhost:3001';
+    const apiUrl = env.VITE_API_URL || 'https://crucial-ivonne-alfalyzer-90666a9e.koyeb.app';
     const testUrl = `${apiUrl}/api/market-data/test`;
 
     console.log('🧪 Testing connection to:', testUrl);
@@ -69,7 +69,7 @@ export function ConnectionTest() {
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="text-sm text-muted-foreground">
-          <p>API URL: <code className="text-xs bg-muted px-1 py-0.5 rounded">{env.VITE_API_URL || 'http://localhost:3001'}</code></p>
+          <p>API URL: <code className="text-xs bg-muted px-1 py-0.5 rounded">{env.VITE_API_URL || 'https://crucial-ivonne-alfalyzer-90666a9e.koyeb.app'}</code></p>
         </div>
 
         <Button

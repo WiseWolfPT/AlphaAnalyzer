@@ -27,7 +27,7 @@ export function APIVerificationTest() {
     // Test 1: Basic connectivity
     const test1Start = Date.now();
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/market-data/test`);
+      const response = await fetch(`${import.meta.env.VITE_API_URL || 'https://crucial-ivonne-alfalyzer-90666a9e.koyeb.app'}/api/market-data/test`);
       const data = await response.json();
       testResults.push({
         name: 'Backend Connectivity',
@@ -187,7 +187,7 @@ export function APIVerificationTest() {
       <CardContent className="space-y-4">
         <div className="flex items-center justify-between">
           <div className="text-sm text-muted-foreground">
-            <p>API URL: <code className="text-xs bg-muted px-1 py-0.5 rounded">{import.meta.env.VITE_API_URL || 'http://localhost:3001'}</code></p>
+            <p>API URL: <code className="text-xs bg-muted px-1 py-0.5 rounded">{import.meta.env.VITE_API_URL || 'https://crucial-ivonne-alfalyzer-90666a9e.koyeb.app'}</code></p>
           </div>
           <Button
             onClick={runTests}

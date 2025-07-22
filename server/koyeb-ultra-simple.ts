@@ -338,6 +338,15 @@ app.get('/api/cache/status', (req, res) => {
   });
 });
 
+// Market data test endpoint
+app.get('/api/market-data/test', (req, res) => {
+  res.json({
+    status: 'ok',
+    message: 'Backend is accessible',
+    timestamp: new Date().toISOString()
+  });
+});
+
 // Market data health endpoint
 app.get('/api/market-data/health', (req, res) => {
   const apiKey = process.env.ALPHA_VANTAGE_API_KEY;
@@ -389,6 +398,7 @@ app.get('/', (req, res) => {
     endpoints: [
       '/api/health',
       '/api/diagnostic/minimal',
+      '/api/market-data/test',
       '/api/market-data/health',
       '/api/market-data/quotes/batch',
       '/api/cache/status',
