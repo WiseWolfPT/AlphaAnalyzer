@@ -20,7 +20,8 @@ app.use((req, res, next) => {
     'https://alphaanalyzer.vercel.app',
     'https://alfalyzer.vercel.app',
     'http://localhost:3000',
-    'http://localhost:5173'
+    'http://localhost:5173',
+    'http://localhost:5174' // Sometimes Vite uses 5174
   ];
   
   // Check if origin is allowed or is a Vercel preview

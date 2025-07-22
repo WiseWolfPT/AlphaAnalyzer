@@ -110,6 +110,15 @@ class MarketDataClient {
         console.error(`🚫 Network Error - Cannot reach API at ${url}`);
         console.error(`📍 This might be a CORS issue or the backend is not accessible`);
         console.error(`💡 Check if VITE_API_URL is correctly set to: ${env.VITE_API_URL}`);
+        console.error(`🔍 Full error details:`, error);
+        
+        // Provide more helpful error message
+        const betterError = new Error(
+          `Network error: Unable to connect to backend API at ${this.baseUrl}. ` +
+          `Make sure the backend server is running on port 3001.`
+        );
+        betterError.name = 'NetworkError';
+        throw betterError;
       }
       throw error;
     }

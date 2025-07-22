@@ -16,6 +16,7 @@ import { useBatchQuotes } from "@/hooks/use-market-data";
 import { ApiDiagnostic } from "@/components/debug/api-diagnostic";
 import { env } from "@/lib/env";
 import { TestAPIConnection } from "@/components/test-api-connection";
+import { ConnectionTest } from "@/components/debug/connection-test";
 
 // Popular stocks to display
 const POPULAR_SYMBOLS = [
@@ -100,7 +101,7 @@ export default function FindStocks() {
   const [searchQuery, setSearchQuery] = useState('');
   
   // Use real market data
-  const { data: quotesData, isLoading, error, refetch } = useBatchQuotes(displayedSymbols);
+  const { data: quotesData, isLoading, error, refetch, status, fetchStatus } = useBatchQuotes(displayedSymbols);
 
   // Debug logs
   console.log('Find Stocks Debug:', {
@@ -108,8 +109,11 @@ export default function FindStocks() {
     quotesData,
     isLoading,
     error,
+    status,
+    fetchStatus,
     hasQuotes: quotesData?.quotes?.length > 0,
-    apiUrl: import.meta.env.VITE_API_URL || 'NOT SET'
+    apiUrl: import.meta.env.VITE_API_URL || 'NOT SET',
+    symbolsLength: displayedSymbols.length
   });
 
   // Transform the quotes data to match the component's expected format
@@ -154,6 +158,8 @@ export default function FindStocks() {
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
             <p className="mt-4 text-gray-600">Loading real market data...</p>
           </div>
+          {/* Debug connection test */}
+          <ConnectionTest />
         </div>
       </MainLayout>
     );

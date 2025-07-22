@@ -38,6 +38,7 @@ export function useMarketQuotes(symbols: string[]) {
   const { user, token } = useAuth();
   
   useEffect(() => {
+    console.log('🔑 useMarketQuotes auth effect:', { hasUser: !!user, hasToken: !!token, token });
     if (token) {
       marketDataClient.setAuthToken(token);
     }
@@ -46,6 +47,8 @@ export function useMarketQuotes(symbols: string[]) {
   return useQuery({
     queryKey: ['market-quotes', 'batch', symbols],
     queryFn: async () => {
+      console.log('🔍 useBatchQuotes: Starting query with symbols:', symbols);
+      console.log('🔐 Auth state:', { hasUser: !!user, hasToken: !!token });
       
       // Check if we recently got rate limited
       const rateLimitKey = 'alfalyzer-rate-limit';
@@ -64,19 +67,28 @@ export function useMarketQuotes(symbols: string[]) {
       
       // In development, allow access without authentication for real data
       if (!user || !token) {
+        console.log('🔧 No auth, setting demo token for development');
         // Set a demo token for API access
         marketDataClient.setAuthToken('demo-token-development');
       }
       
       try {
+        console.log('📡 Calling marketDataClient.getBatchQuotes...');
         const response = await marketDataClient.getBatchQuotes(symbols);
+        console.log('✅ Received response:', { 
+          hasQuotes: !!response?.quotes, 
+          quotesCount: response?.quotes?.length || 0,
+          response 
+        });
         
         if (response.quotes && response.quotes.length > 0) {
           return response;
         } else {
+          console.warn('⚠️ Empty response from API');
           return response;
         }
-      } catch (error) {
+      } catch (error: any) {
+        console.error('❌ Error in useBatchQuotes:', error);
         // Check if it's a rate limit error
         if (error.message?.includes('Too many requests') || error.message?.includes('rate limit')) {
           // Store rate limit for 15 minutes
@@ -91,14 +103,21 @@ export function useMarketQuotes(symbols: string[]) {
     cacheTime: 20 * 60 * 1000, // 20 minutes - keep in cache longer
     refetchInterval: false, // Disable automatic refetch to save API calls
     refetchOnWindowFocus: false, // Don't refetch when window gets focus
-    retry: (failureCount, error) => {
+    retry: (failureCount, error: any) => {
+      console.log('🔄 Retry attempt:', failureCount, 'Error:', error?.message);
       // Don't retry rate limit errors
-      if (error.message?.includes('rate limit') || error.message?.includes('Too many requests')) {
+      if (error?.message?.includes('rate limit') || error?.message?.includes('Too many requests')) {
         return false;
       }
       return failureCount < 2;
     },
     retryDelay: attemptIndex => Math.min(5000 * 2 ** attemptIndex, 30000), // Slower retry
+    onError: (error: any) => {
+      console.error('🚨 Query error in useBatchQuotes:', error);
+    },
+    onSuccess: (data) => {
+      console.log('🎉 Query success in useBatchQuotes:', data);
+    }
   });
 }
 
