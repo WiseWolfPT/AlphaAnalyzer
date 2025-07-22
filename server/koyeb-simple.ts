@@ -214,6 +214,15 @@ app.get('/api/market-data/health', (req, res) => {
   });
 });
 
+// Alerts endpoint (empty for now to stop 404s)
+app.get('/api/alerts/notifications', (req, res) => {
+  res.json({
+    notifications: [],
+    count: 0,
+    timestamp: new Date().toISOString()
+  });
+});
+
 // Root endpoint
 app.get('/', (req, res) => {
   res.json({
@@ -225,7 +234,8 @@ app.get('/', (req, res) => {
       '/api/diagnostic/minimal',
       '/api/market-data/health',
       '/api/market-data/quotes/batch',
-      '/api/cache/status'
+      '/api/cache/status',
+      '/api/alerts/notifications'
     ],
     mode: 'simple',
     cache: 'disabled'
