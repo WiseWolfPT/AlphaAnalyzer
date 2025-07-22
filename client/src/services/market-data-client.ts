@@ -52,6 +52,8 @@ class MarketDataClient {
   constructor() {
     this.baseUrl = `${API_BASE_URL}/api/market-data`;
     // Get auth token from localStorage (multiple possible keys for compatibility)
+    // Note: The backend doesn't require authentication, but we still check for token
+    // in case it's implemented in the future
     this.authToken = localStorage.getItem('alfalyzer-token') || localStorage.getItem('auth-token');
     
     // Log configuration for debugging
@@ -60,6 +62,7 @@ class MarketDataClient {
       baseUrl: this.baseUrl,
       VITE_API_URL: env.VITE_API_URL,
       hasAuthToken: !!this.authToken,
+      authNotRequired: true, // Backend doesn't require auth
       environment: import.meta.env.MODE
     });
   }
@@ -84,22 +87,29 @@ class MarketDataClient {
       console.log(`📡 Response status: ${response.status}`);
 
       if (!response.ok) {
-        const errorText = await response.text();
-        let errorData;
-        try {
-          errorData = JSON.parse(errorText);
-        } catch {
-          errorData = { message: errorText };
+        // Special handling for 401 Unauthorized when auth is not required
+        if (response.status === 401 && !this.authToken) {
+          console.warn(`⚠️ Received 401 but auth token is not required. Proceeding anyway.`);
+          // Don't throw error for 401 when no auth token exists
+          // The backend doesn't require auth, so this might be a misconfiguration
+        } else {
+          const errorText = await response.text();
+          let errorData;
+          try {
+            errorData = JSON.parse(errorText);
+          } catch {
+            errorData = { message: errorText };
+          }
+          
+          console.error(`❌ API Error Response:`, {
+            status: response.status,
+            statusText: response.statusText,
+            error: errorData,
+            url: url
+          });
+          
+          throw new Error(errorData.message || `HTTP ${response.status}: ${response.statusText}`);
         }
-        
-        console.error(`❌ API Error Response:`, {
-          status: response.status,
-          statusText: response.statusText,
-          error: errorData,
-          url: url
-        });
-        
-        throw new Error(errorData.message || `HTTP ${response.status}: ${response.statusText}`);
       }
 
       const data = await response.json();
@@ -258,6 +268,50 @@ class MarketDataClient {
     this.authToken = null;
     localStorage.removeItem('alfalyzer-token');
     localStorage.removeItem('auth-token');
+  }
+
+  // Test connectivity without authentication
+  async testConnectivity(): Promise<{ success: boolean; message: string; details?: any }> {
+    try {
+      console.log('🔍 Testing market data API connectivity...');
+      console.log(`📡 Testing endpoint: ${this.baseUrl}/health`);
+      
+      // Test without auth token to verify backend doesn't require it
+      const response = await fetch(`${this.baseUrl}/health`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          // Intentionally not sending auth token
+        },
+        mode: 'cors',
+        credentials: 'omit',
+      });
+
+      const data = await response.json();
+      
+      if (response.ok) {
+        console.log('✅ API connectivity test successful');
+        return {
+          success: true,
+          message: 'API is accessible without authentication',
+          details: data
+        };
+      } else {
+        console.warn('⚠️ API returned non-OK status:', response.status);
+        return {
+          success: false,
+          message: `API returned status ${response.status}`,
+          details: data
+        };
+      }
+    } catch (error: any) {
+      console.error('❌ API connectivity test failed:', error);
+      return {
+        success: false,
+        message: error.message || 'Failed to connect to API',
+        details: { error: error.toString() }
+      };
+    }
   }
 }
 

@@ -68,17 +68,27 @@ export function AuthCompatProvider({ children }: { children: ReactNode }) {
         const { supabase } = await import('@/lib/supabase');
         
         // Get initial session
-        const { data: { session: initialSession } } = await supabase.auth.getSession();
+        const { data: { session: initialSession }, error } = await supabase.auth.getSession();
         
-        if (initialSession) {
+        if (error) {
+          console.error('Error getting session:', error);
+          setAuthError(error.message);
+        } else if (initialSession) {
+          // User is authenticated
           setSession(initialSession);
           setSupabaseUser(initialSession.user);
           await loadUserProfile(initialSession.user.id);
+        } else {
+          // User is not authenticated - this is a valid state
+          setSession(null);
+          setSupabaseUser(null);
+          setUserProfile(null);
         }
       } catch (error) {
         console.error('Error initializing auth:', error);
         setAuthError(error instanceof Error ? error.message : 'Failed to initialize auth');
       } finally {
+        // Always set loading to false after initialization
         setAuthLoading(false);
       }
     };
@@ -91,7 +101,10 @@ export function AuthCompatProvider({ children }: { children: ReactNode }) {
       
       const { data: { subscription } } = supabase.auth.onAuthStateChange(
         async (event, session) => {
-          console.log('Auth state changed:', event, session?.user?.email);
+          // Only log meaningful auth state changes
+          if (event !== 'INITIAL_SESSION' || session) {
+            console.log('Auth state changed:', event, session?.user?.email || 'unauthenticated');
+          }
           
           setSession(session);
           setSupabaseUser(session?.user ?? null);
@@ -104,10 +117,12 @@ export function AuthCompatProvider({ children }: { children: ReactNode }) {
               await updateLastLogin(session.user.id);
             }
           } else {
+            // Clear user profile when session ends
             setUserProfile(null);
           }
           
-          setAuthLoading(false);
+          // Don't set loading to false here - it's already handled in initializeAuth
+          // This prevents race conditions where auth state changes before initial load completes
         }
       );
 

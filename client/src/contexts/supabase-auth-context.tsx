@@ -64,10 +64,20 @@ export const SupabaseAuthProvider: React.FC<{ children: React.ReactNode }> = ({ 
           setSession(initialSession);
           setUser(initialSession.user);
           await loadUserProfile(initialSession.user.id);
+        } else {
+          // No session is a valid state - user is not authenticated
+          setSession(null);
+          setUser(null);
+          setUserProfile(null);
         }
       } catch (error) {
         console.error('Error initializing auth:', error);
+        // Even on error, we should set these to null to allow the app to continue
+        setSession(null);
+        setUser(null);
+        setUserProfile(null);
       } finally {
+        // Always set loading to false to allow the app to continue
         setLoading(false);
       }
     };
@@ -103,6 +113,7 @@ export const SupabaseAuthProvider: React.FC<{ children: React.ReactNode }> = ({ 
           }
         }
         
+        // Always set loading to false after handling auth state change
         setLoading(false);
       }
     );
