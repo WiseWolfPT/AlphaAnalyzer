@@ -1,6 +1,7 @@
 import { createRoot } from "react-dom/client";
 import App from "./App";
 import "./index.css";
+import "./i18n"; // Initialize i18n before App renders
 import { initializePWA } from "./utils/pwa";
 
 // Temporarily disable monitoring for deployment

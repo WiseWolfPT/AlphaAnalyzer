@@ -2,7 +2,8 @@
 import { env } from '@/lib/env';
 import { invisibleFallbackService } from './invisible-fallback-service';
 
-const API_BASE_URL = env.VITE_API_URL || 'https://crucial-ivonne-alfalyzer-90666a9e.koyeb.app';
+// Use relative path for Vercel proxy instead of direct Koyeb URL
+const API_BASE_URL = typeof window !== 'undefined' ? '' : (env.VITE_API_URL || 'https://crucial-ivonne-alfalyzer-90666a9e.koyeb.app');
 
 export interface MarketQuote {
   symbol: string;
@@ -92,6 +93,8 @@ class MarketDataClient {
           console.warn(`⚠️ Received 401 but auth token is not required. Proceeding anyway.`);
           // Don't throw error for 401 when no auth token exists
           // The backend doesn't require auth, so this might be a misconfiguration
+          // Return empty data for 401 without auth
+          return { quotes: [], errors: { auth: '401 received but auth not required' }, timestamp: Date.now() };
         } else {
           const errorText = await response.text();
           let errorData;
