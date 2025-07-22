@@ -17,14 +17,7 @@ import { ServerMarketDataService } from '../services/market-data-service';
 const router = Router();
 
 // Simple test endpoint to verify connectivity
-router.get('/test', (req, res) => {
-  res.json({
-    status: 'ok',
-    message: 'Market data API is running',
-    timestamp: new Date().toISOString(),
-    env: process.env.NODE_ENV || 'development'
-  });
-});
+// Test endpoint moved to line 848 with more comprehensive testing
 
 // Use demo authentication in development mode
 const isDevelopment = process.env.NODE_ENV !== 'production';
@@ -847,6 +840,11 @@ router.get('/health',
  */
 router.get('/test', 
   async (req: Request, res: Response) => {
+    // Add explicit CORS headers for debugging
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    
     const testSymbol = req.query.symbol as string || 'AAPL';
     const testResults: any = {
       timestamp: new Date().toISOString(),

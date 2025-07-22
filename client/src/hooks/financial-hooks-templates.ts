@@ -93,7 +93,24 @@ export function useStockQuote(
 
   return useFinancialData<StockQuote>(
     ['stock-quote', symbol],
-    () => fetch(`/api/stocks/${symbol}/quote`).then(res => res.json()),
+    async () => {
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+      const response = await fetch(`${apiUrl}/api/market-data/quotes/batch`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ symbols: [symbol] }),
+      });
+      
+      if (!response.ok) throw new Error('Failed to fetch stock quote');
+      const data = await response.json();
+      const stockData = data.quotes?.[0];
+      
+      if (!stockData) throw new Error(`No data found for ${symbol}`);
+      
+      return stockData;
+    },
     {
       enabled: !!symbol && options.enabled,
       staleTime: 10000, // 10 seconds for real-time data
@@ -108,7 +125,34 @@ export function useStockQuote(
 export function useStockProfile(symbol: string) {
   return useFinancialData<StockProfile>(
     ['stock-profile', symbol],
-    () => fetch(`/api/stocks/${symbol}/profile`).then(res => res.json()),
+    async () => {
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+      const response = await fetch(`${apiUrl}/api/market-data/quotes/batch`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ symbols: [symbol] }),
+      });
+      
+      if (!response.ok) throw new Error('Failed to fetch stock profile');
+      const data = await response.json();
+      const stockData = data.quotes?.[0];
+      
+      if (!stockData) throw new Error(`No data found for ${symbol}`);
+      
+      // Transform to profile format
+      return {
+        symbol: stockData.symbol,
+        name: stockData.name,
+        sector: stockData.sector || 'Unknown',
+        industry: stockData.industry || 'Unknown',
+        marketCap: stockData.marketCap || 0,
+        country: stockData.country || 'US',
+        currency: stockData.currency || 'USD',
+        website: stockData.website || '',
+      };
+    },
     {
       enabled: !!symbol,
       staleTime: 600000, // 10 minutes

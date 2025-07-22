@@ -17,6 +17,7 @@ import { ApiDiagnostic } from "@/components/debug/api-diagnostic";
 import { env } from "@/lib/env";
 import { TestAPIConnection } from "@/components/test-api-connection";
 import { ConnectionTest } from "@/components/debug/connection-test";
+import { testAPIConnection } from "@/test-api-connection";
 
 // Popular stocks to display
 const POPULAR_SYMBOLS = [
@@ -102,6 +103,12 @@ export default function FindStocks() {
   
   // Use real market data
   const { data: quotesData, isLoading, error, refetch, status, fetchStatus } = useBatchQuotes(displayedSymbols);
+
+  // Run API connection test on mount
+  useEffect(() => {
+    console.log('🚀 Running API connection test...');
+    testAPIConnection();
+  }, []);
 
   // Debug logs
   console.log('Find Stocks Debug:', {
@@ -327,6 +334,25 @@ export default function FindStocks() {
               More Filters
             </Button>
           </div>
+
+          {/* Error Alert - Non-blocking */}
+          {error && !isLoading && (
+            <Alert variant="default" className="border-yellow-500/50 bg-yellow-50/50 dark:bg-yellow-950/20">
+              <AlertCircle className="h-4 w-4 text-yellow-600" />
+              <AlertDescription className="text-sm">
+                <strong>Limited connectivity:</strong> Some real-time data may be unavailable. 
+                {stocks.length > 0 ? ' Showing cached data.' : ' Please try again later.'}
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={() => refetch()}
+                  className="ml-2"
+                >
+                  Retry
+                </Button>
+              </AlertDescription>
+            </Alert>
+          )}
 
           {/* Stock Cards Grid */}
           <div className={cn(

@@ -99,12 +99,56 @@ app.get('/api/diagnostic/minimal', (req, res) => {
 const quoteCache = new Map<string, { data: any; timestamp: number }>();
 const CACHE_DURATION = 60000; // 1 minute cache to avoid API limits
 
-// Rate limiting
-let lastApiCall = 0;
-const MIN_API_INTERVAL = 12000; // 12 seconds between calls (5 calls per minute limit)
+// Per-IP rate limiting
+const ipRateLimits = new Map<string, { lastCall: number; callCount: number; resetTime: number }>();
+const RATE_LIMIT_WINDOW = 60000; // 1 minute window
+const MAX_CALLS_PER_WINDOW = 10; // 10 calls per minute per IP
+const MIN_API_INTERVAL = 1000; // 1 second minimum between API calls (reduced from 12s)
+
+// Helper function to get client IP
+function getClientIp(req: express.Request): string {
+  const forwarded = req.headers['x-forwarded-for'];
+  if (typeof forwarded === 'string') {
+    return forwarded.split(',')[0].trim();
+  }
+  return req.ip || req.socket.remoteAddress || 'unknown';
+}
+
+// Check rate limit for IP
+function checkRateLimit(ip: string): { allowed: boolean; waitTime: number } {
+  const now = Date.now();
+  const limit = ipRateLimits.get(ip);
+  
+  if (!limit || now > limit.resetTime) {
+    // New window
+    ipRateLimits.set(ip, {
+      lastCall: now,
+      callCount: 1,
+      resetTime: now + RATE_LIMIT_WINDOW
+    });
+    return { allowed: true, waitTime: 0 };
+  }
+  
+  if (limit.callCount >= MAX_CALLS_PER_WINDOW) {
+    // Rate limit exceeded
+    const waitTime = limit.resetTime - now;
+    return { allowed: false, waitTime };
+  }
+  
+  // Check minimum interval
+  const timeSinceLastCall = now - limit.lastCall;
+  if (timeSinceLastCall < MIN_API_INTERVAL) {
+    return { allowed: false, waitTime: MIN_API_INTERVAL - timeSinceLastCall };
+  }
+  
+  // Allow the call
+  limit.callCount++;
+  limit.lastCall = now;
+  return { allowed: true, waitTime: 0 };
+}
 
 // Alpha Vantage API function
-async function fetchAlphaVantageQuote(symbol: string): Promise<any> {
+async function fetchAlphaVantageQuote(symbol: string, clientIp: string = 'unknown'): Promise<any> {
   const apiKey = process.env.ALPHA_VANTAGE_API_KEY;
   
   if (!apiKey || apiKey === 'demo') {
@@ -118,16 +162,19 @@ async function fetchAlphaVantageQuote(symbol: string): Promise<any> {
     return { ...cached.data, _cached: true };
   }
   
-  // Rate limiting
-  const now = Date.now();
-  const timeSinceLastCall = now - lastApiCall;
-  if (timeSinceLastCall < MIN_API_INTERVAL) {
-    const waitTime = MIN_API_INTERVAL - timeSinceLastCall;
-    console.log(`⏱️ Rate limiting: waiting ${waitTime}ms`);
-    await new Promise(resolve => setTimeout(resolve, waitTime));
+  // Check rate limit for this IP
+  const { allowed, waitTime } = checkRateLimit(clientIp);
+  if (!allowed) {
+    if (waitTime > 2000) {
+      // If wait time is more than 2 seconds, throw rate limit error
+      console.log(`⚠️ Rate limit exceeded for IP ${clientIp}, wait ${waitTime}ms`);
+      throw new Error(`Rate limit exceeded. Please try again in ${Math.ceil(waitTime / 1000)} seconds.`);
+    } else {
+      // Short wait, just delay
+      console.log(`⏱️ Rate limiting IP ${clientIp}: waiting ${waitTime}ms`);
+      await new Promise(resolve => setTimeout(resolve, waitTime));
+    }
   }
-  
-  lastApiCall = Date.now();
   
   const url = `https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${symbol}&apikey=${apiKey}`;
   
@@ -196,53 +243,76 @@ app.post('/api/market-data/quotes/batch', async (req, res) => {
     
     const apiKey = process.env.ALPHA_VANTAGE_API_KEY;
     const useRealData = apiKey && apiKey !== 'demo';
+    const clientIp = getClientIp(req);
     
     const quotes = [];
     const errors: Record<string, string> = {};
     
-    for (const symbol of symbols) {
-      try {
-        if (useRealData) {
-          const quote = await fetchAlphaVantageQuote(symbol);
-          quotes.push(quote);
-        } else {
-          // Fallback to mock data if no API key
-          quotes.push({
+    // Process symbols in parallel batches to optimize speed
+    const BATCH_SIZE = 3; // Process 3 symbols at a time
+    const symbolBatches = [];
+    for (let i = 0; i < symbols.length; i += BATCH_SIZE) {
+      symbolBatches.push(symbols.slice(i, i + BATCH_SIZE));
+    }
+    
+    for (const batch of symbolBatches) {
+      const batchPromises = batch.map(async (symbol) => {
+        try {
+          if (useRealData) {
+            const quote = await fetchAlphaVantageQuote(symbol, clientIp);
+            return { symbol, quote, error: null };
+          } else {
+            // Fallback to mock data if no API key
+            const mockQuote = {
+              symbol,
+              price: 100 + Math.random() * 200,
+              change: (Math.random() - 0.5) * 10,
+              changePercent: (Math.random() - 0.5) * 5,
+              high: 100 + Math.random() * 220,
+              low: 100 + Math.random() * 180,
+              open: 100 + Math.random() * 200,
+              previousClose: 100 + Math.random() * 200,
+              volume: Math.floor(Math.random() * 100000000),
+              provider: 'mock',
+              timestamp: Date.now() / 1000,
+              _cached: false,
+              _timestamp: Date.now() / 1000
+            };
+            return { symbol, quote: mockQuote, error: null };
+          }
+        } catch (error) {
+          console.error(`Error fetching ${symbol}:`, error);
+          const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+          
+          // Return error data
+          const errorQuote = {
             symbol,
-            price: 100 + Math.random() * 200,
-            change: (Math.random() - 0.5) * 10,
-            changePercent: (Math.random() - 0.5) * 5,
-            high: 100 + Math.random() * 220,
-            low: 100 + Math.random() * 180,
-            open: 100 + Math.random() * 200,
-            previousClose: 100 + Math.random() * 200,
-            volume: Math.floor(Math.random() * 100000000),
-            provider: 'mock',
+            price: 0,
+            change: 0,
+            changePercent: 0,
+            high: 0,
+            low: 0,
+            open: 0,
+            previousClose: 0,
+            volume: 0,
+            provider: 'error',
             timestamp: Date.now() / 1000,
             _cached: false,
             _timestamp: Date.now() / 1000
-          });
+          };
+          return { symbol, quote: errorQuote, error: errorMessage };
         }
-      } catch (error) {
-        console.error(`Error fetching ${symbol}:`, error);
-        errors[symbol] = error instanceof Error ? error.message : 'Unknown error';
-        
-        // Add mock data for failed symbols to keep UI working
-        quotes.push({
-          symbol,
-          price: 0,
-          change: 0,
-          changePercent: 0,
-          high: 0,
-          low: 0,
-          open: 0,
-          previousClose: 0,
-          volume: 0,
-          provider: 'error',
-          timestamp: Date.now() / 1000,
-          _cached: false,
-          _timestamp: Date.now() / 1000
-        });
+      });
+      
+      // Wait for all quotes in this batch to complete
+      const batchResults = await Promise.all(batchPromises);
+      
+      // Process results
+      for (const result of batchResults) {
+        quotes.push(result.quote);
+        if (result.error) {
+          errors[result.symbol] = result.error;
+        }
       }
     }
     
@@ -272,6 +342,8 @@ app.get('/api/cache/status', (req, res) => {
 app.get('/api/market-data/health', (req, res) => {
   const apiKey = process.env.ALPHA_VANTAGE_API_KEY;
   const hasValidApiKey = apiKey && apiKey !== 'demo';
+  const clientIp = getClientIp(req);
+  const ipLimit = ipRateLimits.get(clientIp);
   
   res.json({
     status: 'healthy',
@@ -284,8 +356,17 @@ app.get('/api/market-data/health', (req, res) => {
       fiscalAI: !!process.env.FISCAL_AI_API_KEY
     },
     rateLimit: {
-      callsPerMinute: 5,
-      minIntervalMs: MIN_API_INTERVAL
+      type: 'per-ip',
+      callsPerMinute: MAX_CALLS_PER_WINDOW,
+      minIntervalMs: MIN_API_INTERVAL,
+      currentIp: clientIp,
+      currentIpUsage: ipLimit ? ipLimit.callCount : 0,
+      windowResetTime: ipLimit ? new Date(ipLimit.resetTime).toISOString() : null
+    },
+    cache: {
+      enabled: true,
+      durationMs: CACHE_DURATION,
+      currentSize: quoteCache.size
     }
   });
 });
@@ -329,10 +410,29 @@ app.use((req, res) => {
   });
 });
 
+// Cleanup old rate limit entries every 5 minutes
+setInterval(() => {
+  const now = Date.now();
+  let cleaned = 0;
+  
+  for (const [ip, limit] of ipRateLimits.entries()) {
+    if (now > limit.resetTime + RATE_LIMIT_WINDOW) {
+      ipRateLimits.delete(ip);
+      cleaned++;
+    }
+  }
+  
+  if (cleaned > 0) {
+    console.log(`🧹 Cleaned up ${cleaned} expired rate limit entries`);
+  }
+}, 5 * 60 * 1000); // 5 minutes
+
 // Start server
 app.listen(PORT, () => {
   console.log(`🚀 Ultra simple server running on port ${PORT}`);
   console.log(`📍 Environment: ${process.env.NODE_ENV || 'development'}`);
   console.log(`🏥 Health check: http://localhost:${PORT}/api/health`);
   console.log(`💾 Mode: Ultra simple (no complex dependencies)`);
+  console.log(`⚡ Rate limiting: ${MAX_CALLS_PER_WINDOW} calls/minute per IP, ${MIN_API_INTERVAL}ms minimum interval`);
+  console.log(`💾 Cache duration: ${CACHE_DURATION / 1000} seconds`);
 });

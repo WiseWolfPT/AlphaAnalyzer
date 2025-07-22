@@ -471,6 +471,7 @@ function Router() {
         <Route path="/alerts" component={Alerts} />
         <Route path="/test/stock-header" component={StockHeaderTest} />
         <Route path="/test/api" component={lazy(() => import("@/pages/api-test"))} />
+        <Route path="/test/api-verification" component={lazy(() => import("@/test/api-verification.test"))} />
         <Route component={NotFound} />
       </Switch>
     </Suspense>

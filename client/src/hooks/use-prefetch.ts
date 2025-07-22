@@ -2,6 +2,7 @@ import { useRef, useCallback } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { queryKeys, prefetchConfigs } from '../lib/query-client';
 import { localCache } from '../services/local-cache';
+import { env } from '@/lib/env';
 
 interface PrefetchOptions {
   delay?: number; // Delay before prefetching (ms)
@@ -46,42 +47,41 @@ export function usePrefetch() {
             }
           }
 
-          // Prefetch stock profile and current price
-          await Promise.allSettled([
-            queryClient.prefetchQuery({
-              queryKey: queryKeys.stockProfile(symbol),
-              queryFn: async () => {
-                const response = await fetch(`/api/stocks/${symbol}/profile`);
-                if (!response.ok) throw new Error('Failed to fetch stock profile');
-                const data = await response.json();
-                
-                // Cache the data
-                if (cache) {
-                  localCache.setStockData(symbol, 'stock_profile', data);
-                }
-                
-                return data;
-              },
-              ...prefetchConfigs.stock,
-            }),
-            
-            queryClient.prefetchQuery({
-              queryKey: queryKeys.stockPrice(symbol),
-              queryFn: async () => {
-                const response = await fetch(`/api/stocks/${symbol}/price`);
-                if (!response.ok) throw new Error('Failed to fetch stock price');
-                const data = await response.json();
-                
-                // Cache the data
-                if (cache) {
-                  localCache.setStockData(symbol, 'stock_price', data);
-                }
-                
-                return data;
-              },
-              ...prefetchConfigs.stock,
-            }),
-          ]);
+          // Prefetch stock data using batch endpoint for efficiency
+          await queryClient.prefetchQuery({
+            queryKey: queryKeys.stock(symbol),
+            queryFn: async () => {
+              // Use batch endpoint even for single stock to standardize API usage
+              const apiUrl = env.VITE_API_URL || 'http://localhost:3001';
+              const response = await fetch(`${apiUrl}/api/market-data/quotes/batch`, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ symbols: [symbol] }),
+              });
+              
+              if (!response.ok) throw new Error('Failed to fetch stock data');
+              const data = await response.json();
+              
+              // Extract the single stock from batch response
+              const stockData = data.quotes?.[0];
+              if (!stockData) throw new Error(`No data found for ${symbol}`);
+              
+              // Cache the data
+              if (cache) {
+                localCache.setStockData(symbol, 'stock_profile', stockData);
+                localCache.setStockData(symbol, 'stock_price', {
+                  price: stockData.price || stockData.currentPrice,
+                  change: stockData.change,
+                  changePercent: stockData.changePercent,
+                });
+              }
+              
+              return stockData;
+            },
+            ...prefetchConfigs.stock,
+          });
         } catch (error) {
           console.warn(`Failed to prefetch stock data for ${symbol}:`, error);
         }

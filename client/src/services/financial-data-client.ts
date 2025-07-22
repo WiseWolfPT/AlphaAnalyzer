@@ -78,8 +78,11 @@ class FinancialDataClient {
 
   async getStockProfile(symbol: string): Promise<StockProfile | null> {
     try {
-      const response = await fetch(`${this.baseUrl}/stocks/${symbol}/profile`, {
+      // Use batch endpoint for consistency
+      const response = await fetch(`${this.baseUrl}/market-data/quotes/batch`, {
+        method: 'POST',
         headers: this.getHeaders(),
+        body: JSON.stringify({ symbols: [symbol] }),
       });
 
       if (!response.ok) {
@@ -87,7 +90,26 @@ class FinancialDataClient {
         return null;
       }
 
-      return await response.json();
+      const data = await response.json();
+      const stockData = data.quotes?.[0];
+      
+      if (!stockData) {
+        console.error(`No data found for ${symbol}`);
+        return null;
+      }
+
+      // Transform batch data to profile format
+      return {
+        symbol: stockData.symbol,
+        name: stockData.name,
+        sector: stockData.sector || 'Unknown',
+        industry: stockData.industry || 'Unknown',
+        marketCap: stockData.marketCap || 0,
+        country: stockData.country || 'US',
+        currency: stockData.currency || 'USD',
+        website: stockData.website || '',
+        logo: stockData.logo,
+      };
     } catch (error) {
       console.error(`Error fetching profile for ${symbol}:`, error);
       return null;
