@@ -94,6 +94,94 @@ app.get('/api/diagnostic/minimal', (req, res) => {
   });
 });
 
+// Simple in-memory cache
+const quoteCache = new Map<string, { data: any; timestamp: number }>();
+const CACHE_DURATION = 60000; // 1 minute cache to avoid API limits
+
+// Rate limiting
+let lastApiCall = 0;
+const MIN_API_INTERVAL = 12000; // 12 seconds between calls (5 calls per minute limit)
+
+// Alpha Vantage API function
+async function fetchAlphaVantageQuote(symbol: string): Promise<any> {
+  const apiKey = process.env.ALPHA_VANTAGE_API_KEY;
+  
+  if (!apiKey || apiKey === 'demo') {
+    throw new Error('Valid Alpha Vantage API key required');
+  }
+  
+  // Check cache first
+  const cached = quoteCache.get(symbol);
+  if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
+    console.log(`📦 Returning cached quote for ${symbol}`);
+    return { ...cached.data, _cached: true };
+  }
+  
+  // Rate limiting
+  const now = Date.now();
+  const timeSinceLastCall = now - lastApiCall;
+  if (timeSinceLastCall < MIN_API_INTERVAL) {
+    const waitTime = MIN_API_INTERVAL - timeSinceLastCall;
+    console.log(`⏱️ Rate limiting: waiting ${waitTime}ms`);
+    await new Promise(resolve => setTimeout(resolve, waitTime));
+  }
+  
+  lastApiCall = Date.now();
+  
+  const url = `https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${symbol}&apikey=${apiKey}`;
+  
+  try {
+    console.log(`🌐 Fetching quote for ${symbol} from Alpha Vantage`);
+    const response = await fetch(url);
+    
+    if (!response.ok) {
+      throw new Error(`API request failed: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    
+    // Check for API errors
+    if (data['Error Message']) {
+      throw new Error(data['Error Message']);
+    }
+    
+    if (data['Note']) {
+      console.warn('⚠️ Alpha Vantage API limit warning:', data['Note']);
+      throw new Error('API rate limit exceeded');
+    }
+    
+    const quote = data['Global Quote'];
+    if (!quote || !quote['05. price']) {
+      throw new Error('Invalid quote data received');
+    }
+    
+    // Transform Alpha Vantage data to our format
+    const transformedQuote = {
+      symbol: quote['01. symbol'],
+      price: parseFloat(quote['05. price']),
+      change: parseFloat(quote['09. change']),
+      changePercent: parseFloat(quote['10. change percent'].replace('%', '')),
+      high: parseFloat(quote['03. high']),
+      low: parseFloat(quote['04. low']),
+      open: parseFloat(quote['02. open']),
+      previousClose: parseFloat(quote['08. previous close']),
+      volume: parseInt(quote['06. volume']),
+      provider: 'alpha_vantage',
+      timestamp: Date.now() / 1000,
+      _cached: false,
+      _timestamp: Date.now() / 1000
+    };
+    
+    // Cache the result
+    quoteCache.set(symbol, { data: transformedQuote, timestamp: Date.now() });
+    
+    return transformedQuote;
+  } catch (error) {
+    console.error(`❌ Error fetching quote for ${symbol}:`, error);
+    throw error;
+  }
+}
+
 // Market data batch quotes endpoint
 app.post('/api/market-data/quotes/batch', async (req, res) => {
   console.log(`📊 Batch quotes request for ${req.body?.symbols?.length || 0} symbols`);
@@ -105,28 +193,64 @@ app.post('/api/market-data/quotes/batch', async (req, res) => {
       return res.status(400).json({ error: 'Symbols array is required' });
     }
     
-    // For now, return mock data to test connectivity
-    const mockQuotes = symbols.map((symbol: string) => ({
-      symbol,
-      price: 100 + Math.random() * 200,
-      change: (Math.random() - 0.5) * 10,
-      changePercent: (Math.random() - 0.5) * 5,
-      high: 100 + Math.random() * 220,
-      low: 100 + Math.random() * 180,
-      open: 100 + Math.random() * 200,
-      previousClose: 100 + Math.random() * 200,
-      volume: Math.floor(Math.random() * 100000000),
-      provider: 'mock',
-      timestamp: Date.now() / 1000,
-      _cached: false,
-      _timestamp: Date.now() / 1000
-    }));
+    const apiKey = process.env.ALPHA_VANTAGE_API_KEY;
+    const useRealData = apiKey && apiKey !== 'demo';
+    
+    const quotes = [];
+    const errors: Record<string, string> = {};
+    
+    for (const symbol of symbols) {
+      try {
+        if (useRealData) {
+          const quote = await fetchAlphaVantageQuote(symbol);
+          quotes.push(quote);
+        } else {
+          // Fallback to mock data if no API key
+          quotes.push({
+            symbol,
+            price: 100 + Math.random() * 200,
+            change: (Math.random() - 0.5) * 10,
+            changePercent: (Math.random() - 0.5) * 5,
+            high: 100 + Math.random() * 220,
+            low: 100 + Math.random() * 180,
+            open: 100 + Math.random() * 200,
+            previousClose: 100 + Math.random() * 200,
+            volume: Math.floor(Math.random() * 100000000),
+            provider: 'mock',
+            timestamp: Date.now() / 1000,
+            _cached: false,
+            _timestamp: Date.now() / 1000
+          });
+        }
+      } catch (error) {
+        console.error(`Error fetching ${symbol}:`, error);
+        errors[symbol] = error instanceof Error ? error.message : 'Unknown error';
+        
+        // Add mock data for failed symbols to keep UI working
+        quotes.push({
+          symbol,
+          price: 0,
+          change: 0,
+          changePercent: 0,
+          high: 0,
+          low: 0,
+          open: 0,
+          previousClose: 0,
+          volume: 0,
+          provider: 'error',
+          timestamp: Date.now() / 1000,
+          _cached: false,
+          _timestamp: Date.now() / 1000
+        });
+      }
+    }
     
     res.json({
-      quotes: mockQuotes,
-      errors: {},
+      quotes,
+      errors,
       timestamp: Date.now(),
-      _timestamp: Date.now() / 1000
+      _timestamp: Date.now() / 1000,
+      provider: useRealData ? 'alpha_vantage' : 'mock'
     });
   } catch (error) {
     console.error('Error in batch quotes:', error);
@@ -145,14 +269,22 @@ app.get('/api/cache/status', (req, res) => {
 
 // Market data health endpoint
 app.get('/api/market-data/health', (req, res) => {
+  const apiKey = process.env.ALPHA_VANTAGE_API_KEY;
+  const hasValidApiKey = apiKey && apiKey !== 'demo';
+  
   res.json({
     status: 'healthy',
-    hasRealData: false,
+    hasRealData: hasValidApiKey,
+    cacheSize: quoteCache.size,
     providers: {
-      alphaVantage: !!process.env.ALPHA_VANTAGE_API_KEY,
+      alphaVantage: hasValidApiKey,
       finnhub: !!process.env.FINNHUB_API_KEY,
       fmp: !!process.env.FMP_API_KEY,
       fiscalAI: !!process.env.FISCAL_AI_API_KEY
+    },
+    rateLimit: {
+      callsPerMinute: 5,
+      minIntervalMs: MIN_API_INTERVAL
     }
   });
 });
