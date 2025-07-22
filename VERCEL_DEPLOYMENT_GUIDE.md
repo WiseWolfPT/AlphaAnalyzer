@@ -1,208 +1,97 @@
-# VERCEL DEPLOYMENT GUIDE - AlphaAnalyzer Frontend
+# Vercel Deployment Guide for Alfalyzer
 
-## 🚀 QUICK START (5 MINUTES)
+## Issue Fixed
+The frontend was showing mock data because it was configured to proxy API requests to the wrong Koyeb URL.
 
-### 1. Prerequisites
-- Vercel account (free): https://vercel.com/signup
-- GitHub repository connected: https://github.com/wisewolf-pt/alfalyzer
+## What Was Changed
+1. Updated `client/vercel.json` to use the correct Koyeb backend URL: `https://crucial-ivonne-alfalyzer-90666a9e.koyeb.app`
+2. Created proper environment variable files for different environments
 
-### 2. Import Project to Vercel
+## Environment Variables to Set in Vercel
 
-1. Go to: https://vercel.com/new
-2. Click "Import Git Repository"
-3. Select your `alfalyzer` repository
-4. Configure project:
+Go to your Vercel project settings and add these environment variables:
 
+### Required Variables
 ```
-Framework Preset: Other
-Root Directory: ./
-Build Command: npm install && npm run build:client
-Output Directory: dist/public
-Install Command: npm install
+VITE_API_URL=https://crucial-ivonne-alfalyzer-90666a9e.koyeb.app
 ```
 
-### 3. Environment Variables (CRITICAL)
-
-Add these in Vercel Dashboard → Settings → Environment Variables:
-
-```bash
-# REQUIRED - Supabase
+### Optional Variables (if using Supabase)
+```
 VITE_SUPABASE_URL=your-supabase-url
 VITE_SUPABASE_ANON_KEY=your-supabase-anon-key
-
-# REQUIRED - Backend URL (Koyeb)
-VITE_API_URL=https://alphaanalyzer-wisewolfpt.koyeb.app
-
-# OPTIONAL - API Keys (only if using frontend direct calls)
-VITE_POLYGON_API_KEY=your-polygon-api-key
-VITE_ALPHA_VANTAGE_API_KEY=your-alpha-vantage-key
-VITE_TWELVE_DATA_API_KEY=your-twelve-data-key
-VITE_FMP_API_KEY=your-fmp-key
-VITE_FINNHUB_API_KEY=your-finnhub-key
-
-# OPTIONAL - Stripe (if using payments)
-VITE_STRIPE_PUBLISHABLE_KEY=your-stripe-publishable-key
 ```
 
-### 4. Deploy
+## How the API Connection Works
 
-Click "Deploy" and wait ~2-3 minutes.
+1. **Direct API calls**: The frontend makes requests to `VITE_API_URL` (e.g., `https://crucial-ivonne-alfalyzer-90666a9e.koyeb.app/api/market-data/quotes/batch`)
 
-## 🔍 VERIFICATION CHECKLIST
+2. **Proxy rewrites**: The `vercel.json` configuration also includes a rewrite rule that proxies `/api/*` requests to your Koyeb backend. This provides two ways to access the API:
+   - Direct: `https://crucial-ivonne-alfalyzer-90666a9e.koyeb.app/api/...`
+   - Proxied: `https://your-vercel-app.vercel.app/api/...` (rewrites to Koyeb)
 
-After deployment, verify:
+3. **Fallback mechanism**: If API requests fail, the frontend automatically falls back to mock data via `invisible-fallback-service.ts` to ensure users never see errors.
 
-1. **Main Page Loads**: https://alphaanalyzer.vercel.app
-2. **Static Assets Load**: Check Network tab for 200 status
-3. **Service Worker**: Check Application → Service Workers
-4. **API Calls Work**: Check Network tab for /api/* calls
-5. **No Console Errors**: Open DevTools Console
+## Deployment Steps
 
-## 🐛 TROUBLESHOOTING
+1. **Commit the changes**:
+   ```bash
+   git add client/vercel.json client/.env.production client/.env.local
+   git commit -m "fix: Update Koyeb backend URL for production deployment"
+   git push
+   ```
 
-### Issue: Black Screen / White Screen
-```bash
-# Check Console for errors
-# Common fixes:
-1. Verify all VITE_ env vars are set
-2. Check vercel.json exists
-3. Ensure build output is dist/public
-```
+2. **Configure Vercel environment variables**:
+   - Go to your Vercel project dashboard
+   - Navigate to Settings → Environment Variables
+   - Add `VITE_API_URL` with value `https://crucial-ivonne-alfalyzer-90666a9e.koyeb.app`
+   - Save the changes
 
-### Issue: API Calls Fail (CORS)
-```bash
-# Backend needs to accept Vercel domain
-# Already prepared in security-middleware.ts
-# Just needs backend redeploy on Koyeb
-```
+3. **Trigger a new deployment**:
+   - Vercel will automatically deploy when you push to your connected branch
+   - Or manually trigger a deployment from the Vercel dashboard
 
-### Issue: 404 on Refresh
-```bash
-# vercel.json already configured with:
-"rewrites": [
-  { "source": "/(.*)", "destination": "/index.html" }
-]
-```
+4. **Verify the deployment**:
+   - Check the browser console for API requests going to the correct Koyeb URL
+   - Look for successful responses with real market data
+   - The console logs in `market-data-client.ts` will show the API URLs being used
 
-### Issue: Service Worker Not Loading
-```bash
-# Check that sw.js is in dist/public/
-# Headers already configured in vercel.json
-```
+## Troubleshooting
 
-## 📝 CONFIGURATION FILES
+### If you still see mock data:
+1. Check browser console for errors
+2. Verify CORS is properly configured on your Koyeb backend
+3. Check if the authentication token is being sent correctly
+4. Look for "Using fallback data" messages in the console
 
-### vercel.json (already configured)
-```json
-{
-  "version": 2,
-  "name": "alphaanalyzer-frontend",
-  "buildCommand": "npm install && npm run build:client",
-  "outputDirectory": "dist/public",
-  "installCommand": "npm install",
-  "framework": null,
-  "regions": ["iad1"],
-  "public": false,
-  "rewrites": [
-    {
-      "source": "/api/:path*",
-      "destination": "https://alphaanalyzer-wisewolfpt.koyeb.app/api/:path*"
-    },
-    {
-      "source": "/(.*)",
-      "destination": "/index.html"
-    }
+### CORS Configuration
+Your Koyeb backend should have CORS configured to allow requests from your Vercel domain:
+```javascript
+// In your backend server
+app.use(cors({
+  origin: [
+    'https://your-app.vercel.app',
+    'http://localhost:5173', // For local development
+    'http://localhost:3000'
   ],
-  "headers": [
-    {
-      "source": "/assets/(.*)",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=31536000, immutable"
-        }
-      ]
-    },
-    {
-      "source": "/sw.js",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=3600"
-        },
-        {
-          "key": "Content-Type",
-          "value": "application/javascript"
-        }
-      ]
-    }
-  ],
-  "env": {
-    "VITE_SUPABASE_URL": "@vite_supabase_url",
-    "VITE_SUPABASE_ANON_KEY": "@vite_supabase_anon_key",
-    "VITE_API_URL": "https://alphaanalyzer-wisewolfpt.koyeb.app"
-  }
-}
+  credentials: true
+}));
 ```
 
-## 🚀 DEPLOYMENT COMMANDS
+### Authentication
+The frontend tries to send an authentication token with API requests. If users are not logged in, it uses a demo token. Make sure your backend accepts these tokens appropriately.
 
-### From Terminal (Alternative)
-```bash
-# Install Vercel CLI
-npm i -g vercel
+## Local Development
 
-# Login
-vercel login
+To test with the production Koyeb backend locally:
+1. Edit `client/.env.local`
+2. Uncomment the line with the Koyeb URL
+3. Run `npm run dev` in the client directory
 
-# Deploy
-vercel --prod
+## Success Indicators
 
-# Follow prompts and add env vars when asked
-```
-
-## 📊 POST-DEPLOYMENT
-
-### 1. Update Backend CORS (Koyeb)
-Add to Koyeb environment variables:
-```bash
-FRONTEND_ORIGIN=https://alphaanalyzer.vercel.app
-```
-
-### 2. Monitor Performance
-- Vercel Analytics: Automatic
-- Check build times in Vercel dashboard
-- Monitor API response times
-
-### 3. Custom Domain (Optional)
-1. Go to Vercel Dashboard → Settings → Domains
-2. Add your domain: alphaanalyzer.com
-3. Update DNS records as instructed
-
-## 🔄 CONTINUOUS DEPLOYMENT
-
-Every push to main branch will:
-1. Trigger automatic build
-2. Create preview URL for branch
-3. Deploy to production when merged
-
-## 📞 SUPPORT
-
-- Vercel Docs: https://vercel.com/docs
-- Status Page: https://vercel-status.com
-- Community: https://github.com/vercel/next.js/discussions
-
-## ✅ SUCCESS METRICS
-
-Your deployment is successful when:
-- [ ] Site loads at https://alphaanalyzer.vercel.app
-- [ ] Login/Register works
-- [ ] Stock search returns results
-- [ ] Charts display properly
-- [ ] No console errors
-- [ ] Service Worker active
-- [ ] API calls succeed
-
----
-Generated by Claude Opus 4 on 2025-07-20
-Part of AlphaAnalyzer Migration Plan
+When everything is working correctly, you should see:
+- Real stock prices updating in the dashboard
+- Console logs showing "Successfully fetched batch quotes"
+- API requests going to `https://crucial-ivonne-alfalyzer-90666a9e.koyeb.app`
+- No "Using fallback data" messages

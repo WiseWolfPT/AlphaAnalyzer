@@ -5,7 +5,7 @@
   "rewrites": [
     {
       "source": "/api/:path*",
-      "destination": "https://alphaanalyzer-wisewolfpt.koyeb.app/api/:path*"
+      "destination": "https://crucial-ivonne-alfalyzer-90666a9e.koyeb.app/api/:path*"
     },
     {
       "source": "/(.*)",
