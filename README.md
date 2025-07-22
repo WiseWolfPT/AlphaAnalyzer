@@ -124,4 +124,4 @@ npm run dev
 
 For production deployment, see [docs/DEPLOY_PRODUCTION.md](docs/DEPLOY_PRODUCTION.md)
 
-🤖 Auto-deployed with Claude Code
+🤖 Auto-deployed with Claude Code# Trigger deployment
