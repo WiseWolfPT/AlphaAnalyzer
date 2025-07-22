@@ -11,22 +11,49 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-// Basic middleware
+// Basic middleware with dynamic CORS for Vercel deployments
 app.use(cors({
-  origin: [
-    'https://alfalyzerpro4.vercel.app',
-    'https://alfalyzerpro4-nth02sgvs-antonios-projects-f9cd3cd0.vercel.app',
-    'https://alfalyzerpro4-fd1b9651c-antonios-projects-f9cd3cd0.vercel.app',
-    'https://alfalyzerpro4-ihwma9ytw-antonios-projects-f9cd3cd0.vercel.app',
-    'https://alphaanalyzer.vercel.app',
-    'https://alfalyzer.vercel.app',
-    'http://localhost:3000',
-    'http://localhost:5173'
-  ],
-  credentials: true
+  origin: (origin, callback) => {
+    // Allow requests with no origin (like mobile apps or curl)
+    if (!origin) return callback(null, true);
+    
+    // List of allowed origins
+    const allowedOrigins = [
+      'https://alfalyzerpro4.vercel.app',
+      'https://alphaanalyzer.vercel.app',
+      'https://alfalyzer.vercel.app',
+      'http://localhost:3000',
+      'http://localhost:5173'
+    ];
+    
+    // Check if origin is in allowed list
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+    
+    // Allow all Vercel preview deployments
+    const vercelPreviewRegex = /^https:\/\/[a-zA-Z0-9-]+(-[a-zA-Z0-9]+)*\.vercel\.app$/;
+    if (vercelPreviewRegex.test(origin)) {
+      return callback(null, true);
+    }
+    
+    // Log rejected origins for debugging
+    console.log(`CORS rejected origin: ${origin}`);
+    callback(new Error('Not allowed by CORS'));
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  exposedHeaders: ['X-Total-Count'],
+  maxAge: 86400 // 24 hours
 }));
 
 app.use(express.json());
+
+// Handle preflight requests
+app.options('*', (req, res) => {
+  res.sendStatus(200);
+});
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
@@ -85,6 +112,7 @@ app.get('/api/cache/status', (req, res) => {
 
 // Batch quotes endpoint - simplified without cache
 app.post('/api/market-data/quotes/batch', async (req, res) => {
+  console.log(`📊 Batch quotes request from origin: ${req.get('origin')}`);
   const { symbols } = req.body;
   
   if (!symbols || !Array.isArray(symbols) || symbols.length === 0) {
@@ -92,7 +120,7 @@ app.post('/api/market-data/quotes/batch', async (req, res) => {
   }
   
   try {
-    console.log(`📊 Batch quotes request for ${symbols.length} symbols`);
+    console.log(`📊 Processing ${symbols.length} symbols: ${symbols.join(', ')}`);
     
     const quotes = [];
     const errors: Record<string, string> = {};
