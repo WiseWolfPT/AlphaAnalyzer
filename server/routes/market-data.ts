@@ -16,6 +16,16 @@ import { ServerMarketDataService } from '../services/market-data-service';
 
 const router = Router();
 
+// Simple test endpoint to verify connectivity
+router.get('/test', (req, res) => {
+  res.json({
+    status: 'ok',
+    message: 'Market data API is running',
+    timestamp: new Date().toISOString(),
+    env: process.env.NODE_ENV || 'development'
+  });
+});
+
 // Use demo authentication in development mode
 const isDevelopment = process.env.NODE_ENV !== 'production';
 const authService = isDevelopment ? demoAuthMiddleware() : authMiddleware.instance.authenticate();

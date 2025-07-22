@@ -53,6 +53,15 @@ class MarketDataClient {
     this.baseUrl = `${API_BASE_URL}/api/market-data`;
     // Get auth token from localStorage (multiple possible keys for compatibility)
     this.authToken = localStorage.getItem('alfalyzer-token') || localStorage.getItem('auth-token');
+    
+    // Log configuration for debugging
+    console.log('🔧 Market Data Client Configuration:', {
+      API_BASE_URL,
+      baseUrl: this.baseUrl,
+      VITE_API_URL: env.VITE_API_URL,
+      hasAuthToken: !!this.authToken,
+      environment: import.meta.env.MODE
+    });
   }
 
   private async fetchWithAuth(url: string, options?: RequestInit) {
@@ -132,7 +141,19 @@ class MarketDataClient {
         body: JSON.stringify({ symbols }),
       });
       
-      console.log(`✅ Successfully fetched batch quotes`);
+      console.log(`✅ Successfully fetched batch quotes from backend`);
+      
+      // Ensure response has the expected format
+      if (!response.quotes) {
+        console.warn('⚠️ Backend response missing quotes array, wrapping response');
+        return {
+          quotes: Array.isArray(response) ? response : [],
+          errors: {},
+          timestamp: Date.now(),
+          _timestamp: Date.now() / 1000
+        };
+      }
+      
       return response;
     } catch (error: any) {
       console.error('❌ Error fetching batch quotes:', error);
@@ -144,43 +165,45 @@ class MarketDataClient {
         symbols: symbols
       });
       
-      // Use invisible fallback service for seamless user experience
-      const fallbackResponse = await invisibleFallbackService.getQuotesWithFallback(
-        symbols,
-        async () => {
-          throw error; // Re-throw to trigger fallback
-        }
-      );
-
-      // Convert fallback response to expected format
-      const processedQuotes = fallbackResponse.quotes.map(quote => ({
-        symbol: quote.symbol,
-        price: quote.price,
-        change: quote.change,
-        changePercent: quote.changePercent,
-        high: quote.high || quote.price * 1.02,
-        low: quote.low || quote.price * 0.98,
-        open: quote.open || quote.price,
-        previousClose: quote.previousClose || quote.price,
-        volume: quote.volume || Math.floor(Math.random() * 10000000),
-        marketCap: typeof quote.marketCap === 'string' 
-          ? parseInt(quote.marketCap.replace(/[$B,]/g, '')) * 1000000000 
-          : quote.marketCap || 0,
-        eps: typeof quote.eps === 'string' ? parseFloat(quote.eps) : quote.eps || 0,
-        pe: typeof quote.peRatio === 'string' ? parseFloat(quote.peRatio) : quote.pe || 0,
-        provider: fallbackResponse.source === 'fallback' ? 'alfalyzer' : 'api',
-        timestamp: Date.now() / 1000,
-        _cached: fallbackResponse.source === 'cache',
-        _timestamp: Date.now() / 1000
-      }));
-
-      console.log(`📈 Returning ${processedQuotes.length} processed quotes (source: ${fallbackResponse.source})`);
-
+      // Check if this is a network error (backend not available)
+      if (error.name === 'TypeError' && error.message.includes('Failed to fetch')) {
+        console.log('🔄 Backend unavailable, using fallback service');
+        
+        // Use the invisible fallback service
+        const fallbackResponse = invisibleFallbackService.getFallbackQuotes(symbols);
+        
+        // Transform fallback response to match our API format
+        return {
+          quotes: fallbackResponse.quotes.map(stock => ({
+            symbol: stock.symbol,
+            price: stock.price,
+            change: stock.change,
+            changePercent: stock.changePercent,
+            high: stock.high,
+            low: stock.low,
+            open: stock.open,
+            previousClose: stock.price - stock.change,
+            volume: stock.volume,
+            marketCap: parseFloat(stock.marketCap.replace(/[^0-9.]/g, '')) * 1e9,
+            eps: parseFloat(stock.eps) || undefined,
+            pe: parseFloat(stock.peRatio) || undefined,
+            provider: 'fallback',
+            timestamp: Math.floor(Date.now() / 1000),
+            _cached: true,
+            _timestamp: Date.now() / 1000
+          })),
+          errors: {},
+          timestamp: Date.now(),
+          _timestamp: Date.now() / 1000
+        };
+      }
+      
+      // For other errors, return empty response
       return {
-        quotes: processedQuotes,
-        errors: {},
-        _timestamp: Date.now() / 1000,
-        timestamp: Date.now()
+        quotes: [],
+        errors: { general: error.message },
+        timestamp: Date.now(),
+        _timestamp: Date.now() / 1000
       };
     }
   }

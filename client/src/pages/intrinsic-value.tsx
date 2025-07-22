@@ -88,8 +88,8 @@ export default function IntrinsicValue() {
     
     // Simulate calculation delay
     setTimeout(() => {
-      const currentPrice = parseFloat(stock.price);
-      const epsValue = parseFloat(stock.eps || eps);
+      const currentPrice = typeof stock.price === 'number' ? stock.price : parseFloat(stock.price || '0');
+      const epsValue = typeof stock.eps === 'number' ? stock.eps : parseFloat(stock.eps || eps);
       
       // Different valuation methods
       const dcfValue = calculateDCF(epsValue, growthRate, discountRate, terminalGrowth, years);

@@ -41,10 +41,12 @@ function detectEnvironment(): Environment {
       hostname.includes('netlify.app') || 
       hostname.includes('alfalyzer.com') ||
       hostname.includes('herokuapp.com')) {
+    // Use VITE_API_URL if provided, otherwise use Koyeb URL
+    const apiUrl = import.meta.env.VITE_API_URL || 'https://crucial-ivonne-alfalyzer-90666a9e.koyeb.app';
     return {
       name: 'production',
-      apiBase: 'https://crucial-ivonne-alfalyzer-90666a9e.koyeb.app/api',
-      wsBase: 'wss://crucial-ivonne-alfalyzer-90666a9e.koyeb.app',
+      apiBase: `${apiUrl}/api`,
+      wsBase: apiUrl.replace('https://', 'wss://').replace('http://', 'ws://'),
       debug: false
     };
   }

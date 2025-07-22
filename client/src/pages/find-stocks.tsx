@@ -116,16 +116,16 @@ export default function FindStocks() {
     id: index + 1,
     symbol: quote.symbol,
     name: getCompanyName(quote.symbol),
-    price: quote.price?.toFixed(2) || '0.00',
-    change: quote.change?.toFixed(2) || '0.00',
-    changePercent: quote.changePercent?.toFixed(2) || '0.00',
+    price: typeof quote.price === 'number' ? quote.price.toFixed(2) : '0.00',
+    change: typeof quote.change === 'number' ? quote.change.toFixed(2) : '0.00',
+    changePercent: typeof quote.changePercent === 'number' ? quote.changePercent.toFixed(2) : '0.00',
     marketCap: quote.marketCap ? `$${(quote.marketCap / 1e9).toFixed(2)}B` : 'N/A',
     sector: getSector(quote.symbol),
     industry: getIndustry(quote.symbol),
-    eps: quote.eps?.toFixed(2) || 'N/A',
-    peRatio: quote.pe?.toFixed(2) || 'N/A',
+    eps: typeof quote.eps === 'number' ? quote.eps.toFixed(2) : 'N/A',
+    peRatio: typeof quote.pe === 'number' ? quote.pe.toFixed(2) : 'N/A',
     logo: `/api/placeholder/40/40`,
-    lastUpdated: new Date(quote.timestamp * 1000),
+    lastUpdated: new Date((quote.timestamp || Date.now() / 1000) * 1000),
     volume: quote.volume,
     high: quote.high,
     low: quote.low,
@@ -158,10 +158,29 @@ export default function FindStocks() {
     );
   }
 
-  // Silent error handling - no technical messages shown to users
-  if (error) {
-    // Continue with displaying stocks using fallback data
-    console.error('Market data error (hidden from user):', error.message);
+  // Show error state if backend is not available
+  if (error && stocks.length === 0) {
+    return (
+      <MainLayout>
+        <div className="space-y-8">
+          <BetaBanner />
+          <div className="text-center py-12">
+            <AlertCircle className="w-12 h-12 text-yellow-500 mx-auto mb-4" />
+            <h3 className="text-lg font-medium mb-2">Market Data Temporarily Unavailable</h3>
+            <p className="text-muted-foreground mb-4">
+              We're having trouble connecting to our market data service.
+            </p>
+            <Button 
+              onClick={() => refetch()}
+              className="bg-teya-green hover:bg-teya-green-dark text-black"
+            >
+              <RefreshCw className="w-4 h-4 mr-2" />
+              Try Again
+            </Button>
+          </div>
+        </div>
+      </MainLayout>
+    );
   }
 
   const filteredStocks = stocks.filter(stock => 
@@ -290,7 +309,9 @@ export default function FindStocks() {
               {quotesData && quotesData.quotes && quotesData.quotes.some(q => q._cached) && (
                 <Badge variant="outline" className="text-xs">
                   <Activity className="w-3 h-3 mr-1" />
-                  Some data from cache
+                  {quotesData.quotes.some(q => q.provider === 'fallback') 
+                    ? 'Demo data (backend unavailable)' 
+                    : 'Some data from cache'}
                 </Badge>
               )}
             </div>

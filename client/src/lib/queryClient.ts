@@ -1,7 +1,5 @@
 import { QueryClient, QueryFunction } from "@tanstack/react-query";
-import { getMockApiData } from "./mock-api";
-import { realAPI } from "./real-api";
-import { enhancedFetch, environment, apiConfig } from "./api-config";
+import { apiConfig } from "./api-config";
 
 // Get authentication headers
 function getAuthHeaders(): Record<string, string> {
@@ -27,8 +25,10 @@ export async function apiRequest(
   data?: unknown | undefined,
 ): Promise<Response> {
   try {
-    // Use enhanced fetch with retry logic and proper error handling
-    const res = await enhancedFetch(url, {
+    // Build full URL if needed
+    const fullURL = url.startsWith('http') ? url : `${apiConfig.baseURL}${url}`;
+    
+    const res = await fetch(fullURL, {
       method,
       headers: {
         ...(data ? { "Content-Type": "application/json" } : {}),
@@ -41,21 +41,11 @@ export async function apiRequest(
     await throwIfResNotOk(res);
     return res;
   } catch (error) {
-    // Log the error in development
-    if (environment.debug) {
-      console.error(`🔴 API Request failed: ${method} ${url}`, error);
-    }
+    console.error(`🔴 API Request failed: ${method} ${url}`, error);
     throw error;
   }
 }
 
-// Check if we're running in production/Vercel (no backend available)
-const isProductionWithoutBackend = () => {
-  if (typeof window === 'undefined') return false;
-  return window.location.hostname.includes('vercel.app') || 
-         window.location.hostname.includes('netlify.app') ||
-         (window.location.hostname === 'localhost' && window.location.port !== '3000');
-};
 
 type UnauthorizedBehavior = "returnNull" | "throw";
 export const getQueryFn: <T>(options: {
@@ -68,7 +58,7 @@ export const getQueryFn: <T>(options: {
     try {
       console.log('🔄 Query for:', url);
       
-      // FIXED: Always try real backend API first
+      // Always try real backend API first
       try {
         const fullURL = url.startsWith('/api') ? `${apiConfig.baseURL}${url}` : url;
         const res = await fetch(fullURL, {
@@ -88,97 +78,14 @@ export const getQueryFn: <T>(options: {
           console.log('✅ Backend API success for:', url);
           return data;
         } else {
-          console.warn('⚠️ Backend API failed, falling back to mock:', res.status, res.statusText);
+          console.warn('⚠️ Backend API failed:', res.status, res.statusText);
+          // Don't fall back to mock - let the error bubble up
+          throw new Error(`API request failed: ${res.status} ${res.statusText}`);
         }
       } catch (fetchError) {
-        console.warn('⚠️ Backend fetch failed, falling back to mock:', fetchError);
+        console.warn('⚠️ Backend fetch failed:', fetchError);
+        throw fetchError;
       }
-      
-      // FALLBACK: Use enhanced mock data with real API integration
-      if (url === '/api/stocks') {
-        console.log('📊 Fetching all stocks with real API enhancement');
-        
-        // Get mock data as base
-        const mockData = getMockApiData(url);
-        
-        // Try to enhance first few stocks with real data
-        const enhanced = await Promise.all(
-          mockData.slice(0, 6).map(async (stock: any) => {
-            try {
-              const realData = await realAPI.getStockQuote(stock.symbol);
-              return realData || stock;
-            } catch {
-              return stock;
-            }
-          })
-        );
-        
-        // Combine enhanced data with remaining mock data
-        return [...enhanced, ...mockData.slice(6)];
-      }
-      
-      if (url.startsWith('/api/stocks/') && !url.includes('search')) {
-        console.log('📈 Fetching individual stock data');
-        
-        const pathParts = url.split('/');
-        const symbol = pathParts[pathParts.length - 1]?.toUpperCase();
-        
-        if (symbol) {
-          // Try real API first
-          const realData = await realAPI.getStockQuote(symbol);
-          if (realData) {
-            console.log('✅ Real API data found for', symbol);
-            return realData;
-          }
-        }
-        
-        console.log('📦 Falling back to mock data for', symbol);
-        const result = getMockApiData(url);
-        if (!result) {
-          throw new Error('Stock not found');
-        }
-        return result;
-      }
-      
-      // Handle search endpoint specifically
-      if (url.includes('/api/stocks/search')) {
-        console.log('🔍 Handling stock search:', url);
-        
-        // Extract search query from URL
-        const urlObj = new URL(url, window.location.origin);
-        const searchQuery = urlObj.searchParams.get('q') || '';
-        
-        if (!searchQuery) {
-          return [];
-        }
-        
-        // Get all stocks and filter by search query
-        const allStocks = getMockApiData('/api/stocks') || [];
-        const searchTerm = searchQuery.toLowerCase();
-        
-        const filtered = allStocks.filter((stock: any) => 
-          stock.symbol.toLowerCase().includes(searchTerm) ||
-          stock.name.toLowerCase().includes(searchTerm)
-        ).slice(0, 10); // Limit to 10 results
-        
-        console.log(`🔍 Search results for "${searchQuery}":`, filtered.length);
-        return filtered;
-      }
-      
-      // For other endpoints, use mock data with slight delay
-      await new Promise(resolve => setTimeout(resolve, 300));
-      
-      const result = getMockApiData(url);
-      console.log('📦 Mock data for:', url);
-      
-      if (result === null || result === undefined) {
-        console.log('❌ No data found for URL:', url);
-        if (url.includes('/api/stocks/') && !url.includes('search')) {
-          throw new Error('Stock not found');
-        }
-      }
-      
-      return result;
     } catch (error) {
       console.error('❌ Query function error:', error);
       throw error;

@@ -1,34 +1,7 @@
 // Real Data Integration Service - Primary gateway for all stock data
-import { realAPI } from '@/lib/real-api';
+import { marketDataClient } from './market-data-client';
 import { cacheManager } from '@/lib/cache-manager';
 import { apiConfig, enhancedFetch } from '@/lib/api-config';
-
-// Import services with error handling using dynamic imports
-let alphaVantageEnhanced: any = null;
-let finnhubEnhanced: any = null;
-let servicesLoaded = false;
-
-async function loadServices() {
-  if (servicesLoaded) return;
-  
-  try {
-    const alphaModule = await import('./alpha-vantage-enhanced');
-    alphaVantageEnhanced = alphaModule.alphaVantageEnhanced;
-    console.log('✅ Alpha Vantage Enhanced service loaded');
-  } catch (error) {
-    console.warn('⚠️ Alpha Vantage Enhanced service not available:', error);
-  }
-
-  try {
-    const finnhubModule = await import('./finnhub-enhanced');
-    finnhubEnhanced = finnhubModule.finnhubEnhanced;
-    console.log('✅ Finnhub Enhanced service loaded');
-  } catch (error) {
-    console.warn('⚠️ Finnhub Enhanced service not available:', error);
-  }
-  
-  servicesLoaded = true;
-}
 
 export interface StockQuote {
   symbol: string;
@@ -52,37 +25,12 @@ export interface MarketIndices {
 }
 
 class RealDataIntegrationService {
-  // Mock fallback removed - using real API data only
-  private apiPriority: ('finnhub' | 'alphavantage' | 'realapi')[] = ['finnhub', 'realapi', 'alphavantage'];
-  private hasValidApiKeys = false;
-  
   constructor() {
-    this.checkApiKeys();
+    // Service is initialized and ready to use backend
+    console.log('🚀 Real Data Integration Service initialized');
   }
   
-  private async checkApiKeys() {
-    // Check if backend server is available for real data
-    try {
-      // Test if backend market data endpoint is available
-      const response = await enhancedFetch('/market-data/health', {
-        method: 'GET'
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        this.hasValidApiKeys = data.hasRealData || false;
-        console.log(`🔧 Backend data status: ${this.hasValidApiKeys ? 'Real APIs available' : 'Fallback mode'}`);
-      } else {
-        console.warn('⚠️ Backend not available - using fallback data');
-        this.hasValidApiKeys = false;
-      }
-    } catch (error) {
-      console.warn('⚠️ Could not connect to backend:', error.message);
-      this.hasValidApiKeys = false;
-    }
-  }
-  
-  // Main method to get stock data with fallback
+  // Main method to get stock data from backend
   async getStockQuote(symbol: string): Promise<StockQuote | null> {
     console.log(`🔍 Getting stock quote for ${symbol}`);
     
@@ -94,29 +42,35 @@ class RealDataIntegrationService {
       return cached;
     }
 
-    // Try backend server first if available
-    if (this.hasValidApiKeys) {
-      try {
-        const quote = await this.getQuoteFromServer(symbol);
-        if (quote) {
-          quote.source = 'server';
-          // Cache server data for 60 seconds
-          cacheManager.set(cacheKey, quote, 'quote', 60000);
-          console.log(`✅ Server data for ${symbol}`);
-          return quote;
-        }
-      } catch (error) {
-        console.warn(`⚠️ Server failed for ${symbol}:`, error.message);
-        // Continue to fallback methods
+    try {
+      // Use market data client to get quote from backend
+      const quote = await marketDataClient.getQuote(symbol);
+      
+      if (quote) {
+        const stockQuote: StockQuote = {
+          symbol: quote.symbol,
+          name: `${quote.symbol} Corp`, // Backend might not provide name
+          price: quote.price.toFixed(2),
+          change: quote.change.toFixed(2),
+          changePercent: quote.changePercent.toFixed(2),
+          sector: 'Technology', // Default for now
+          marketCap: quote.marketCap ? `${(quote.marketCap / 1e9).toFixed(1)}B` : 'N/A',
+          eps: quote.eps?.toFixed(2) || 'N/A',
+          peRatio: quote.pe?.toFixed(2) || 'N/A',
+          logo: null,
+          lastUpdated: new Date(),
+          source: 'real'
+        };
+        
+        // Cache for 60 seconds
+        cacheManager.set(cacheKey, stockQuote, 'quote', 60000);
+        console.log(`✅ Backend data for ${symbol}`);
+        return stockQuote;
       }
+    } catch (error) {
+      console.error(`❌ Failed to fetch ${symbol}:`, error);
     }
 
-    // Load services if not already loaded
-    await loadServices();
-
-    // No more mock fallback - fail cleanly if no real data available
-
-    console.error(`❌ No data available for ${symbol}`);
     return null;
   }
 
@@ -125,176 +79,47 @@ class RealDataIntegrationService {
     console.log(`🔍 Getting batch quotes for ${symbols.length} symbols`);
     
     const results: Record<string, StockQuote> = {};
-    const uncachedSymbols: string[] = [];
 
-    // Check cache first
-    for (const symbol of symbols) {
-      const cacheKey = `real-stock-${symbol}`;
-      const cached = cacheManager.get<StockQuote>(cacheKey, 'quote');
-      if (cached) {
-        results[symbol] = cached;
-      } else {
-        uncachedSymbols.push(symbol);
-      }
-    }
-
-    console.log(`📦 ${symbols.length - uncachedSymbols.length} cached, ${uncachedSymbols.length} need fetching`);
-
-    // Process uncached symbols
-    for (const symbol of uncachedSymbols) {
-      try {
-        const quote = await this.getStockQuote(symbol);
-        if (quote) {
-          results[symbol] = quote;
-        }
-      } catch (error) {
-        console.warn(`⚠️ Failed to fetch ${symbol}:`, error);
-      }
+    try {
+      // Use market data client batch endpoint
+      const response = await marketDataClient.getBatchQuotes(symbols);
       
-      // Small delay to avoid overwhelming APIs
-      await new Promise(resolve => setTimeout(resolve, 100));
+      if (response.quotes && response.quotes.length > 0) {
+        // Convert batch response to our format
+        for (const quote of response.quotes) {
+          const stockQuote: StockQuote = {
+            symbol: quote.symbol,
+            name: `${quote.symbol} Corp`,
+            price: quote.price.toFixed(2),
+            change: quote.change.toFixed(2),
+            changePercent: quote.changePercent.toFixed(2),
+            sector: 'Technology',
+            marketCap: quote.marketCap ? `${(quote.marketCap / 1e9).toFixed(1)}B` : 'N/A',
+            eps: quote.eps?.toFixed(2) || 'N/A',
+            peRatio: quote.pe?.toFixed(2) || 'N/A',
+            logo: null,
+            lastUpdated: new Date(),
+            source: 'real'
+          };
+          
+          results[quote.symbol] = stockQuote;
+          
+          // Cache each quote
+          const cacheKey = `real-stock-${quote.symbol}`;
+          cacheManager.set(cacheKey, stockQuote, 'quote', 60000);
+        }
+        
+        console.log(`✅ Fetched ${response.quotes.length} quotes from backend`);
+      }
+    } catch (error) {
+      console.error('❌ Failed to fetch batch quotes:', error);
     }
 
     return results;
   }
 
-  // Get stock data from specific provider
-  private async getQuoteFromProvider(symbol: string, provider: string): Promise<StockQuote | null> {
-    switch (provider) {
-      case 'finnhub':
-        return await this.getQuoteFromFinnhub(symbol);
-      case 'alphavantage':
-        return await this.getQuoteFromAlphaVantage(symbol);
-      case 'realapi':
-        return await this.getQuoteFromRealAPI(symbol);
-      default:
-        return null;
-    }
-  }
 
-  private async getQuoteFromFinnhub(symbol: string): Promise<StockQuote | null> {
-    if (!finnhubEnhanced) {
-      console.warn('⚠️ Finnhub Enhanced service not available');
-      return null;
-    }
-    
-    try {
-      // Test with a timeout to avoid hanging
-      const timeoutId = setTimeout(() => {
-        throw new Error('Finnhub API request timeout after 10 seconds');
-      }, 10000);
-      
-      const [quote, profile] = await Promise.all([
-        finnhubEnhanced.getStockQuoteWithRateLimit(symbol),
-        finnhubEnhanced.getCompanyProfileWithRateLimit(symbol).catch(() => null)
-      ]);
-      
-      clearTimeout(timeoutId);
-
-      if (!quote || quote.c === undefined || quote.c === null) {
-        console.warn(`⚠️ Finnhub returned invalid quote data for ${symbol}:`, quote);
-        return null;
-      }
-
-      return {
-        symbol: symbol.toUpperCase(),
-        name: profile?.name || `${symbol} Corp`,
-        price: quote.c.toFixed(2),
-        change: quote.d?.toFixed(2) || '0.00',
-        changePercent: quote.dp?.toFixed(2) || '0.00',
-        sector: profile?.finnhubIndustry || 'Technology',
-        marketCap: profile?.marketCapitalization ? `${(profile.marketCapitalization / 1000).toFixed(1)}B` : 'N/A',
-        eps: 'N/A',
-        peRatio: 'N/A',
-        logo: profile?.logo || null,
-        lastUpdated: new Date()
-      };
-    } catch (error) {
-      console.error(`❌ Finnhub error for ${symbol}:`, error);
-      throw error;
-    }
-  }
-
-  private async getQuoteFromAlphaVantage(symbol: string): Promise<StockQuote | null> {
-    if (!alphaVantageEnhanced) {
-      console.warn('Alpha Vantage Enhanced service not available');
-      return null;
-    }
-    
-    try {
-      const overview = await alphaVantageEnhanced.getCompanyOverviewOptimized(symbol);
-      
-      if (!overview || !overview['50DayMovingAverage']) return null;
-
-      // Alpha Vantage doesn't provide real-time quotes in overview
-      // Use the 50-day moving average as price (not ideal but available)
-      const price = parseFloat(overview['50DayMovingAverage'] || '0');
-      
-      return {
-        symbol: symbol.toUpperCase(),
-        name: overview.Name || `${symbol} Corp`,
-        price: price.toFixed(2),
-        change: '0.00', // Not available in overview
-        changePercent: '0.00', // Not available in overview
-        sector: overview.Sector || 'Technology',
-        marketCap: overview.MarketCapitalization || 'N/A',
-        eps: overview.EPS || 'N/A',
-        peRatio: overview.PERatio || 'N/A',
-        logo: null,
-        lastUpdated: new Date()
-      };
-    } catch (error) {
-      console.error(`Alpha Vantage error for ${symbol}:`, error);
-      throw error;
-    }
-  }
-
-  private async getQuoteFromServer(symbol: string): Promise<StockQuote | null> {
-    try {
-      const response = await enhancedFetch(`/market-data/quote/${symbol}`, {
-        method: 'GET'
-      });
-
-      if (!response.ok) {
-        throw new Error(`Server responded with status: ${response.status}`);
-      }
-
-      const data = await response.json();
-      
-      return {
-        symbol: data.symbol,
-        name: data.name || `${data.symbol} Corp`,
-        price: data.price.toFixed(2),
-        change: data.change?.toFixed(2) || '0.00',
-        changePercent: data.changePercent?.toFixed(2) || '0.00',
-        sector: 'Technology', // Default for now
-        marketCap: data.marketCap ? `${(data.marketCap / 1000000000).toFixed(1)}B` : 'N/A',
-        eps: data.eps?.toFixed(2) || 'N/A',
-        peRatio: data.pe?.toFixed(2) || 'N/A',
-        logo: null,
-        lastUpdated: new Date()
-      };
-    } catch (error) {
-      console.error(`Server API error for ${symbol}:`, error);
-      throw error;
-    }
-  }
-
-  private async getQuoteFromRealAPI(symbol: string): Promise<StockQuote | null> {
-    try {
-      const mockStock = await realAPI.getStockQuote(symbol);
-      if (!mockStock) return null;
-
-      return mockStock;
-    } catch (error) {
-      console.error(`Real API error for ${symbol}:`, error);
-      throw error;
-    }
-  }
-
-  // Mock methods removed - using real API data only
-
-  // Market indices with real data simulation
+  // Market indices from backend
   async getMarketIndices(): Promise<MarketIndices> {
     console.log('🔍 Getting market indices');
     
@@ -305,81 +130,39 @@ class RealDataIntegrationService {
       return cached;
     }
 
-    // Simulate real market data with realistic fluctuations
-    const baseData = {
-      dow: { value: 34567.89, change: 0.52 },
-      sp500: { value: 4234.56, change: 0.31 },
-      nasdaq: { value: 13789.12, change: -0.18 }
-    };
-
-    // Add realistic market movement
-    const indices: MarketIndices = {
-      dow: {
-        value: baseData.dow.value + (Math.random() - 0.5) * 100,
-        change: baseData.dow.change + (Math.random() - 0.5) * 0.5
-      },
-      sp500: {
-        value: baseData.sp500.value + (Math.random() - 0.5) * 50,
-        change: baseData.sp500.change + (Math.random() - 0.5) * 0.3
-      },
-      nasdaq: {
-        value: baseData.nasdaq.value + (Math.random() - 0.5) * 200,
-        change: baseData.nasdaq.change + (Math.random() - 0.5) * 0.4
-      }
-    };
-
-    // Cache for 1 minute
-    cacheManager.set(cacheKey, indices, 'market', 60000);
-    console.log('✅ Market indices generated');
-    return indices;
-  }
-
-  // Configuration methods
-  setMockFallback(enabled: boolean): void {
-    // Mock fallback removed - method deprecated
-    console.log(`🔧 Mock fallback ${enabled ? 'enabled' : 'disabled'}`);
-  }
-
-  setApiPriority(priority: ('finnhub' | 'alphavantage' | 'realapi')[]): void {
-    this.apiPriority = priority;
-    console.log(`🔧 API priority set to: ${priority.join(' -> ')}`);
-  }
-
-  // Health check for all providers
-  async checkProviderHealth(): Promise<Record<string, { available: boolean; responseTime: number; error?: string }>> {
-    const testSymbol = 'AAPL';
-    const results: Record<string, { available: boolean; responseTime: number; error?: string }> = {};
-
-    for (const provider of this.apiPriority) {
-      const startTime = Date.now();
-      try {
-        const quote = await this.getQuoteFromProvider(testSymbol, provider);
-        results[provider] = {
-          available: !!quote,
-          responseTime: Date.now() - startTime
+    try {
+      const overview = await marketDataClient.getMarketOverview();
+      
+      if (overview) {
+        const indices: MarketIndices = {
+          dow: overview.dow,
+          sp500: overview.sp500,
+          nasdaq: overview.nasdaq
         };
-      } catch (error) {
-        results[provider] = {
-          available: false,
-          responseTime: Date.now() - startTime,
-          error: error instanceof Error ? error.message : 'Unknown error'
-        };
+        
+        // Cache for 1 minute
+        cacheManager.set(cacheKey, indices, 'market', 60000);
+        console.log('✅ Market indices from backend');
+        return indices;
       }
+    } catch (error) {
+      console.error('❌ Failed to fetch market indices:', error);
     }
 
-    return results;
+    // Return default values if backend fails
+    return {
+      dow: { value: 0, change: 0 },
+      sp500: { value: 0, change: 0 },
+      nasdaq: { value: 0, change: 0 }
+    };
   }
 
   // Get usage statistics
   getUsageStats(): {
     cache: any;
-    finnhub: any;
-    alphavantage: any;
   } {
     return {
-      cache: cacheManager.getStats(),
-      finnhub: finnhubEnhanced ? finnhubEnhanced.getRateLimitStatus() : null,
-      alphavantage: alphaVantageEnhanced ? alphaVantageEnhanced.getUsageReport() : null
+      cache: cacheManager.getStats()
     };
   }
 }

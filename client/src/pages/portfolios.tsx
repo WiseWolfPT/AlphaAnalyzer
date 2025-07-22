@@ -10,37 +10,21 @@ import { BarChart3, PieChart, Activity, TrendingUp, TrendingDown, Target, Dollar
 import { SectorPerformance } from "@/components/stock/sector-performance";
 import { LightweightLineChart, LightweightPriceChart, LightweightChartContainer } from "@/components/ui/lightweight-chart";
 import { useStock } from "@/hooks/use-enhanced-stocks";
+import { useMarketQuote } from "@/hooks/use-market-data";
 import { cn } from "@/lib/utils";
 import type { MockStock } from "@/lib/mock-api";
 
 // Enhanced portfolio holding component with real data
 function PortfolioHolding({ holding }: { holding: any }) {
   const [, setLocation] = useLocation();
-  const { data: stock, isLoading } = useStock(holding.symbol);
+  const { data: quote } = useMarketQuote(holding.symbol);
 
   const handleClick = () => {
     setLocation(`/stock/${holding.symbol}/charts`);
   };
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-between p-4 hover:bg-secondary/50 rounded-lg animate-pulse">
-        <div className="flex items-center space-x-3">
-          <div className="w-10 h-10 bg-gray-300 rounded-lg"></div>
-          <div>
-            <div className="h-4 bg-gray-300 rounded w-16 mb-1"></div>
-            <div className="h-3 bg-gray-300 rounded w-20"></div>
-          </div>
-        </div>
-        <div className="text-right">
-          <div className="h-4 bg-gray-300 rounded w-20 mb-1"></div>
-          <div className="h-3 bg-gray-300 rounded w-16"></div>
-        </div>
-      </div>
-    );
-  }
-
-  const currentPrice = stock?.currentPrice || holding.currentPrice;
+  // Use real price if available, otherwise fall back to holding price
+  const currentPrice = quote?.price || holding.currentPrice;
   const gainLoss = (currentPrice - holding.avgPrice) * holding.shares;
   const gainLossPercent = ((currentPrice - holding.avgPrice) / holding.avgPrice) * 100;
   const isPositive = gainLoss >= 0;
