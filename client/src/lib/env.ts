@@ -64,7 +64,7 @@ export const env = {
   
   // API Base URLs (públicas)
   VITE_API_BASE_URL: getEnvVar('VITE_API_BASE_URL', '/api'),
-  VITE_API_URL: getEnvVar('VITE_API_URL', 'http://localhost:3003'),
+  VITE_API_URL: getEnvVar('VITE_API_URL', 'http://localhost:3001'),
   
   // Ambiente
   NODE_ENV: getEnvVar('NODE_ENV', 'development'),

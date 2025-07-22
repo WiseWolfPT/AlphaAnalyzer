@@ -153,16 +153,17 @@ export class DatabaseStorage implements IStorage {
   async searchStocks(query: string, limit = 10): Promise<Stock[]> {
     if (!query.trim()) return [];
     
-    const searchTerm = query.toLowerCase().trim();
+    const searchTerm = query.trim();
     
     // Get all matching stocks and sort them by relevance
+    // Using LIKE with SQLite (case-insensitive by default with COLLATE NOCASE)
     const results = await db
       .select()
       .from(stocks)
       .where(
         or(
-          ilike(stocks.symbol, `%${searchTerm}%`),
-          ilike(stocks.name, `%${searchTerm}%`)
+          sql`${stocks.symbol} LIKE ${`%${searchTerm}%`} COLLATE NOCASE`,
+          sql`${stocks.name} LIKE ${`%${searchTerm}%`} COLLATE NOCASE`
         )
       );
     
@@ -172,18 +173,19 @@ export class DatabaseStorage implements IStorage {
       const aName = a.name.toLowerCase();
       const bSymbol = b.symbol.toLowerCase();
       const bName = b.name.toLowerCase();
+      const searchTermLower = searchTerm.toLowerCase();
       
       // Exact symbol match gets highest priority
-      if (aSymbol === searchTerm && bSymbol !== searchTerm) return -1;
-      if (bSymbol === searchTerm && aSymbol !== searchTerm) return 1;
+      if (aSymbol === searchTermLower && bSymbol !== searchTermLower) return -1;
+      if (bSymbol === searchTermLower && aSymbol !== searchTermLower) return 1;
       
       // Symbol starts with search term
-      if (aSymbol.startsWith(searchTerm) && !bSymbol.startsWith(searchTerm)) return -1;
-      if (bSymbol.startsWith(searchTerm) && !aSymbol.startsWith(searchTerm)) return 1;
+      if (aSymbol.startsWith(searchTermLower) && !bSymbol.startsWith(searchTermLower)) return -1;
+      if (bSymbol.startsWith(searchTermLower) && !aSymbol.startsWith(searchTermLower)) return 1;
       
       // Name starts with search term
-      if (aName.startsWith(searchTerm) && !bName.startsWith(searchTerm)) return -1;
-      if (bName.startsWith(searchTerm) && !aName.startsWith(searchTerm)) return 1;
+      if (aName.startsWith(searchTermLower) && !bName.startsWith(searchTermLower)) return -1;
+      if (bName.startsWith(searchTermLower) && !aName.startsWith(searchTermLower)) return 1;
       
       // Both contain the term, sort alphabetically
       return aSymbol.localeCompare(bSymbol);

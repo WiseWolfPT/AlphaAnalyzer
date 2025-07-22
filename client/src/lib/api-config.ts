@@ -73,8 +73,8 @@ function detectEnvironment(): Environment {
   // Fallback to direct backend connection
   return {
     name: 'development',
-    apiBase: 'http://localhost:3003/api',
-    wsBase: 'ws://localhost:3003',
+    apiBase: 'http://localhost:3001/api',
+    wsBase: 'ws://localhost:3001',
     debug: true
   };
 }

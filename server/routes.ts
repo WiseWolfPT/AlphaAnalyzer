@@ -17,6 +17,7 @@ import cronRouter from "./routes/cron";
 import aiAnalysisRouter from "./routes/ai-analysis";
 import portfoliosRouter from "./routes/portfolios";
 import earningsCalendarRouter from "./routes/earnings-calendar";
+import diagnosticRouter from "./routes/diagnostic";
 // REMOVED: Cache and alerts imports due to startup issues
 // import cacheAdminRouter from "./routes/cache-admin";
 // import { alertsRouter } from "./routes/alerts";
@@ -104,6 +105,9 @@ export async function registerRoutes(app: Express, server: Server): Promise<void
 
   // Enhanced health monitoring endpoints (no auth required)
   app.use("/api/health", healthRouter);
+  
+  // Diagnostic endpoint for debugging production issues (no auth required)
+  app.use("/api/diagnostic", diagnosticRouter);
 
   // Basic API info endpoint
   app.get("/api", (req, res) => {
@@ -119,6 +123,7 @@ export async function registerRoutes(app: Express, server: Server): Promise<void
         "/api/health/metrics",
         "/api/health/kv",
         "/api/health/ttfb",
+        "/api/diagnostic",
         "/api/auth",
         "/api/stocks",
         "/api/market-data",

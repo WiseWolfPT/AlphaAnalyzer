@@ -6,6 +6,8 @@ import { globalCache, DataType, CacheKeys } from '../cache/intelligent-cache-man
 // Server-side environment access with proper security and validation
 const getServerEnvVar = (key: string, fallbackKey?: string): string => {
   const value = process.env[key];
+  console.log(`🔍 Checking env var ${key}: ${value ? 'exists' : 'missing'}, length: ${value?.length || 0}`);
+  
   if (!value || value === 'your_' + key.toLowerCase().replace('_api_key', '') + '_key_here') {
     if (fallbackKey) {
       const fallbackValue = process.env[fallbackKey];
@@ -97,10 +99,12 @@ export class ServerMarketDataService {
     const cached = globalCache.get<Stock>(cacheKey, DataType.REAL_TIME_PRICE);
     
     if (cached) {
+      console.log(`📦 Returning cached quote for ${symbol}`);
       return cached;
     }
 
     console.log(`🔍 Fetching real-time quote for ${symbol}`);
+    console.log(`🔑 API Key Status: FH:${isRealApiKey(API_KEYS.FINNHUB)}, AV:${isRealApiKey(API_KEYS.ALPHA_VANTAGE)}, FMP:${isRealApiKey(API_KEYS.FMP)}, TD:${isRealApiKey(API_KEYS.TWELVE_DATA)}`);
 
     const providers = [
       { name: 'twelvedata', fn: () => this.fetchTwelveDataQuote(symbol), hasRealKey: isRealApiKey(API_KEYS.TWELVE_DATA) },
@@ -116,11 +120,14 @@ export class ServerMarketDataService {
       return 0;
     });
 
+    const errors: Record<string, string> = {};
+
     for (const provider of providers) {
       try {
         const quota = this.quotaTracker.get(provider.name);
         if (quota && quota.remaining <= 0) {
           console.log(`⚠️ Quota exhausted for ${provider.name}`);
+          errors[provider.name] = 'Quota exhausted';
           continue;
         }
 
@@ -142,9 +149,13 @@ export class ServerMarketDataService {
           );
           
           return enrichedQuote;
+        } else {
+          errors[provider.name] = 'No data returned';
         }
       } catch (error) {
-        console.error(`❌ ${provider.name} failed for ${symbol}:`, error.message);
+        const errorMsg = error instanceof Error ? error.message : 'Unknown error';
+        console.error(`❌ ${provider.name} failed for ${symbol}:`, errorMsg);
+        errors[provider.name] = errorMsg;
         continue;
       }
     }
@@ -165,20 +176,30 @@ export class ServerMarketDataService {
         );
         
         return enrichedQuote;
+      } else {
+        errors['yahoo'] = 'No data returned';
       }
     } catch (error) {
-      console.error(`❌ Yahoo Finance failed for ${symbol}:`, error.message);
+      const errorMsg = error instanceof Error ? error.message : 'Unknown error';
+      console.error(`❌ Yahoo Finance failed for ${symbol}:`, errorMsg);
+      errors['yahoo'] = errorMsg;
     }
 
-    console.error(`🚫 All providers failed for ${symbol}`);
+    console.error(`🚫 All providers failed for ${symbol}. Errors:`, JSON.stringify(errors, null, 2));
     return null;
   }
 
   private async fetchTwelveDataQuote(symbol: string): Promise<Stock | null> {
     try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+      
       const response = await fetch(
-        `https://api.twelvedata.com/quote?symbol=${symbol}&apikey=${API_KEYS.TWELVE_DATA}`
+        `https://api.twelvedata.com/quote?symbol=${symbol}&apikey=${API_KEYS.TWELVE_DATA}`,
+        { signal: controller.signal }
       );
+      
+      clearTimeout(timeout);
 
       if (!response.ok) return null;
 
@@ -218,9 +239,15 @@ export class ServerMarketDataService {
 
   private async fetchFinnhubQuote(symbol: string): Promise<Stock | null> {
     try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+      
       const response = await fetch(
-        `https://finnhub.io/api/v1/quote?symbol=${symbol}&token=${API_KEYS.FINNHUB}`
+        `https://finnhub.io/api/v1/quote?symbol=${symbol}&token=${API_KEYS.FINNHUB}`,
+        { signal: controller.signal }
       );
+      
+      clearTimeout(timeout);
 
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}`);
@@ -261,9 +288,15 @@ export class ServerMarketDataService {
 
   private async fetchFMPQuote(symbol: string): Promise<Stock | null> {
     try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+      
       const response = await fetch(
-        `https://financialmodelingprep.com/api/v3/quote/${symbol}?apikey=${API_KEYS.FMP}`
+        `https://financialmodelingprep.com/api/v3/quote/${symbol}?apikey=${API_KEYS.FMP}`,
+        { signal: controller.signal }
       );
+      
+      clearTimeout(timeout);
 
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}`);
@@ -306,9 +339,15 @@ export class ServerMarketDataService {
 
   private async fetchAlphaVantageQuote(symbol: string): Promise<Stock | null> {
     try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 15000); // 15 second timeout (AlphaVantage is slower)
+      
       const response = await fetch(
-        `https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${symbol}&apikey=${API_KEYS.ALPHA_VANTAGE}`
+        `https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${symbol}&apikey=${API_KEYS.ALPHA_VANTAGE}`,
+        { signal: controller.signal }
       );
+      
+      clearTimeout(timeout);
 
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}`);
@@ -382,27 +421,43 @@ export class ServerMarketDataService {
   }
 
   getApiStatus() {
+    const providers = ['finnhub', 'alphaVantage', 'fmp', 'twelveData'];
+    const availableProviders = [];
+    
+    if (isRealApiKey(API_KEYS.FINNHUB)) availableProviders.push('finnhub');
+    if (isRealApiKey(API_KEYS.ALPHA_VANTAGE)) availableProviders.push('alphaVantage');
+    if (isRealApiKey(API_KEYS.FMP)) availableProviders.push('fmp');
+    if (isRealApiKey(API_KEYS.TWELVE_DATA)) availableProviders.push('twelveData');
+    
+    // Always add Yahoo Finance as it doesn't require API key
+    availableProviders.push('yahoo');
+    
     return {
+      availableProviders,
       apiKeys: {
         finnhub: { 
           configured: API_KEYS.FINNHUB !== 'demo',
           isReal: isRealApiKey(API_KEYS.FINNHUB),
-          masked: API_KEYS.FINNHUB.substring(0, 8) + '...'
+          masked: API_KEYS.FINNHUB.substring(0, 8) + '...',
+          keyLength: API_KEYS.FINNHUB.length
         },
         alphaVantage: { 
           configured: API_KEYS.ALPHA_VANTAGE !== 'demo',
           isReal: isRealApiKey(API_KEYS.ALPHA_VANTAGE),
-          masked: API_KEYS.ALPHA_VANTAGE.substring(0, 8) + '...'
+          masked: API_KEYS.ALPHA_VANTAGE.substring(0, 8) + '...',
+          keyLength: API_KEYS.ALPHA_VANTAGE.length
         },
         fmp: { 
           configured: API_KEYS.FMP !== 'demo',
           isReal: isRealApiKey(API_KEYS.FMP),
-          masked: API_KEYS.FMP.substring(0, 8) + '...'
+          masked: API_KEYS.FMP.substring(0, 8) + '...',
+          keyLength: API_KEYS.FMP.length
         },
         twelveData: { 
           configured: API_KEYS.TWELVE_DATA !== 'demo',
           isReal: isRealApiKey(API_KEYS.TWELVE_DATA),
-          masked: API_KEYS.TWELVE_DATA.substring(0, 8) + '...'
+          masked: API_KEYS.TWELVE_DATA.substring(0, 8) + '...',
+          keyLength: API_KEYS.TWELVE_DATA.length
         }
       },
       quotas: Object.fromEntries(this.quotaTracker),

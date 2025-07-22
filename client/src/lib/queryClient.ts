@@ -140,6 +140,31 @@ export const getQueryFn: <T>(options: {
         return result;
       }
       
+      // Handle search endpoint specifically
+      if (url.includes('/api/stocks/search')) {
+        console.log('🔍 Handling stock search:', url);
+        
+        // Extract search query from URL
+        const urlObj = new URL(url, window.location.origin);
+        const searchQuery = urlObj.searchParams.get('q') || '';
+        
+        if (!searchQuery) {
+          return [];
+        }
+        
+        // Get all stocks and filter by search query
+        const allStocks = getMockApiData('/api/stocks') || [];
+        const searchTerm = searchQuery.toLowerCase();
+        
+        const filtered = allStocks.filter((stock: any) => 
+          stock.symbol.toLowerCase().includes(searchTerm) ||
+          stock.name.toLowerCase().includes(searchTerm)
+        ).slice(0, 10); // Limit to 10 results
+        
+        console.log(`🔍 Search results for "${searchQuery}":`, filtered.length);
+        return filtered;
+      }
+      
       // For other endpoints, use mock data with slight delay
       await new Promise(resolve => setTimeout(resolve, 300));
       

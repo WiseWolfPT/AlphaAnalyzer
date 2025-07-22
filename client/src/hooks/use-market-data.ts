@@ -189,3 +189,6 @@ export function useMarketSearch(query: string) {
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 }
+
+// Alias for backward compatibility
+export const useBatchQuotes = useMarketQuotes;

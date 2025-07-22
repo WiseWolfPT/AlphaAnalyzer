@@ -68,10 +68,20 @@ export default function IntrinsicValue() {
   const [terminalGrowth, setTerminalGrowth] = useState(3);
   const [years, setYears] = useState(10);
 
-  const { data: searchResults } = useQuery<Stock[]>({
+  const { data: searchResults, error: searchError, isLoading: searchLoading } = useQuery<Stock[]>({
     queryKey: [`/api/stocks/search?q=${encodeURIComponent(searchQuery)}`],
     enabled: searchQuery.length > 0,
   });
+
+  // Debug search results
+  useEffect(() => {
+    if (searchQuery) {
+      console.log('Search query:', searchQuery);
+      console.log('Search loading:', searchLoading);
+      console.log('Search error:', searchError);
+      console.log('Search results:', searchResults);
+    }
+  }, [searchQuery, searchResults, searchError, searchLoading]);
 
   const calculateIntrinsicValue = (stock: Stock) => {
     setIsCalculating(true);

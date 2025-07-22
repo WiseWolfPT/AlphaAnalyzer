@@ -12,7 +12,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Search, TrendingUp, TrendingDown, Activity, Target, RefreshCw, Zap, AlertCircle, Filter, Grid3X3, List } from "lucide-react";
 import { useAuth } from "@/contexts/simple-auth-offline";
 import { cn } from "@/lib/utils";
-import { useBatchQuotes } from "@/hooks/use-market-data.tsx";
+import { useBatchQuotes } from "@/hooks/use-market-data";
+import { ApiDiagnostic } from "@/components/debug/api-diagnostic";
+import { env } from "@/lib/env";
 
 // Popular stocks to display
 const POPULAR_SYMBOLS = [
@@ -271,6 +273,11 @@ export default function FindStocks() {
 
         {/* Beta Banner */}
         <BetaBanner />
+
+        {/* API Diagnostic (Temporary - Remove in production) */}
+        {env.NODE_ENV === 'development' || window.location.search.includes('debug') ? (
+          <ApiDiagnostic />
+        ) : null}
 
         {/* Results Section */}
         <div className="space-y-4">

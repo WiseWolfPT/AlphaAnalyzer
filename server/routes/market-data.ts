@@ -725,12 +725,60 @@ router.get('/market-overview',
 );
 
 /**
+ * GET /api/market-data/config
+ * Simple public endpoint to check API configuration (no auth required)
+ */
+router.get('/config', 
+  async (req: Request, res: Response) => {
+    try {
+      const hasKeys = {
+        finnhub: !!process.env.FINNHUB_API_KEY && process.env.FINNHUB_API_KEY !== 'demo' && process.env.FINNHUB_API_KEY.length > 10,
+        alphaVantage: !!process.env.ALPHA_VANTAGE_API_KEY && process.env.ALPHA_VANTAGE_API_KEY !== 'demo' && process.env.ALPHA_VANTAGE_API_KEY.length > 10,
+        fmp: !!process.env.FMP_API_KEY && process.env.FMP_API_KEY !== 'demo' && process.env.FMP_API_KEY.length > 10,
+        twelveData: !!process.env.TWELVE_DATA_API_KEY && process.env.TWELVE_DATA_API_KEY !== 'demo' && process.env.TWELVE_DATA_API_KEY.length > 10,
+        polygon: !!process.env.POLYGON_API_KEY && process.env.POLYGON_API_KEY !== 'demo' && process.env.POLYGON_API_KEY.length > 10,
+      };
+
+      const configuredCount = Object.values(hasKeys).filter(Boolean).length;
+      
+      res.json({
+        status: 'ok',
+        hasRealData: configuredCount > 0,
+        configuredProviders: configuredCount,
+        providers: hasKeys,
+        yahooFinance: 'always available (no key required)',
+        message: configuredCount > 0 ? 
+          `${configuredCount} API provider(s) configured` : 
+          'No API keys configured - using Yahoo Finance fallback',
+        timestamp: new Date().toISOString(),
+      });
+    } catch (error) {
+      console.error('Config check error:', error);
+      res.status(500).json({
+        status: 'error',
+        hasRealData: false,
+        message: 'Failed to check configuration',
+        timestamp: new Date().toISOString(),
+      });
+    }
+  }
+);
+
+/**
  * GET /api/market-data/health
  * Health check endpoint for frontend to check if real data is available
  */
 router.get('/health', 
   async (req: Request, res: Response) => {
     try {
+      // Log request details for debugging
+      console.log('🏥 Health check request:', {
+        origin: req.headers.origin,
+        referer: req.headers.referer,
+        host: req.headers.host,
+        ip: req.ip
+      });
+
       // Check if any API keys are configured (not 'demo')
       const hasValidKeys = [
         process.env.FINNHUB_API_KEY,
@@ -758,9 +806,18 @@ router.get('/health',
           ].filter(Boolean),
           active: serviceStatus.availableProviders || []
         },
+        cors: {
+          origin: req.headers.origin || 'no-origin',
+          allowed: true // This will be set by CORS middleware
+        },
         timestamp: new Date().toISOString()
       };
 
+      console.log('✅ Health check response:', response);
+
+      // Set CORS headers explicitly for this endpoint
+      res.header('Access-Control-Allow-Origin', req.headers.origin || '*');
+      res.header('Access-Control-Allow-Credentials', 'true');
       res.json(response);
     } catch (error) {
       console.error('Health check error:', error);
@@ -780,10 +837,16 @@ router.get('/health',
  */
 router.get('/test', 
   async (req: Request, res: Response) => {
-    const testSymbol = 'AAPL';
+    const testSymbol = req.query.symbol as string || 'AAPL';
     const testResults: any = {
       timestamp: new Date().toISOString(),
       symbol: testSymbol,
+      environment: {
+        NODE_ENV: process.env.NODE_ENV,
+        host: req.hostname,
+        origin: req.headers.origin || 'no-origin',
+        userAgent: req.headers['user-agent'],
+      },
       providers: {},
       workingProviders: [],
       failedProviders: [],
@@ -884,10 +947,30 @@ router.get('/diagnostics',
   async (req: Request, res: Response) => {
     try {
       console.log('🔧 Running API diagnostics...');
+      
+      // Get environment info
+      const envInfo = {
+        NODE_ENV: process.env.NODE_ENV,
+        FRONTEND_ORIGIN: process.env.FRONTEND_ORIGIN || 'not set',
+        KOYEB_APP_URL: process.env.KOYEB_APP_URL || 'not set',
+        APP_URL: process.env.APP_URL || 'not set',
+        PORT: process.env.PORT || '3001',
+        // Check if API keys exist (not their values)
+        apiKeysConfigured: {
+          FINNHUB: !!process.env.FINNHUB_API_KEY && process.env.FINNHUB_API_KEY !== 'demo',
+          ALPHA_VANTAGE: !!process.env.ALPHA_VANTAGE_API_KEY && process.env.ALPHA_VANTAGE_API_KEY !== 'demo',
+          FMP: !!process.env.FMP_API_KEY && process.env.FMP_API_KEY !== 'demo',
+          TWELVE_DATA: !!process.env.TWELVE_DATA_API_KEY && process.env.TWELVE_DATA_API_KEY !== 'demo',
+          POLYGON: !!process.env.POLYGON_API_KEY && process.env.POLYGON_API_KEY !== 'demo',
+        }
+      };
+      
       const diagnostics = await marketDataService.testApiConnections();
       
       res.json({
-        ...diagnostics,
+        environment: envInfo,
+        apiStatus: marketDataService.getApiStatus(),
+        connectionTests: diagnostics,
         summary: {
           total: Object.keys(diagnostics).length,
           working: Object.values(diagnostics).filter((result: any) => result.status === 'success').length,
@@ -900,6 +983,7 @@ router.get('/diagnostics',
       res.status(500).json({
         error: 'DIAGNOSTICS_FAILED',
         message: 'Unable to run API diagnostics',
+        details: error instanceof Error ? error.message : 'Unknown error',
         timestamp: new Date().toISOString(),
       });
     }
@@ -933,6 +1017,74 @@ router.post('/warm-cache',
         error: 'CACHE_WARMING_FAILED',
         message: 'Unable to warm cache',
         timestamp: new Date().toISOString(),
+      });
+    }
+  }
+);
+
+/**
+ * GET /api/market-data/simple-test
+ * Ultra-simple test endpoint to verify basic connectivity
+ */
+router.get('/simple-test', 
+  async (req: Request, res: Response) => {
+    try {
+      // Direct test of Yahoo Finance without any caching or complex logic
+      const symbol = (req.query.symbol as string) || 'AAPL';
+      console.log(`🧪 Simple test for ${symbol}`);
+      
+      // Direct fetch from Yahoo Finance
+      try {
+        const response = await fetch(
+          `https://query1.finance.yahoo.com/v8/finance/chart/${symbol}`,
+          {
+            headers: { 'User-Agent': 'Mozilla/5.0 (compatible; Alfalyzer/1.0)' },
+            signal: AbortSignal.timeout(10000)
+          }
+        );
+        
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+        
+        const data = await response.json();
+        const meta = data?.chart?.result?.[0]?.meta;
+        
+        if (meta) {
+          const price = meta.regularMarketPrice || meta.previousClose || 0;
+          const previousClose = meta.previousClose || 0;
+          
+          res.json({
+            success: true,
+            symbol: symbol,
+            price: price,
+            previousClose: previousClose,
+            change: price - previousClose,
+            changePercent: previousClose > 0 ? ((price - previousClose) / previousClose) * 100 : 0,
+            provider: 'yahoo',
+            timestamp: new Date().toISOString()
+          });
+        } else {
+          res.json({
+            success: false,
+            error: 'No data found',
+            symbol: symbol,
+            timestamp: new Date().toISOString()
+          });
+        }
+      } catch (fetchError) {
+        res.json({
+          success: false,
+          error: fetchError instanceof Error ? fetchError.message : 'Fetch failed',
+          symbol: symbol,
+          timestamp: new Date().toISOString()
+        });
+      }
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+        timestamp: new Date().toISOString()
       });
     }
   }

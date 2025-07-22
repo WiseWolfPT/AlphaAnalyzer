@@ -2,30 +2,47 @@
 import { env } from '@/lib/env';
 import { invisibleFallbackService } from './invisible-fallback-service';
 
-const API_BASE_URL = env.VITE_API_URL || 'http://localhost:3003';
+const API_BASE_URL = env.VITE_API_URL || 'http://localhost:3001';
 
 export interface MarketQuote {
   symbol: string;
   price: number;
   change: number;
   changePercent: number;
-  high?: number;
-  low?: number;
-  open?: number;
-  previousClose?: number;
-  volume?: number;
+  high: number;
+  low: number;
+  open: number;
+  previousClose: number;
+  volume: number;
   marketCap?: number;
   eps?: number;
   pe?: number;
   provider: string;
-  timestamp?: number;
-  _cached?: boolean;
+  timestamp: number;
+  _cached: boolean;
+  _timestamp: number;
 }
 
 export interface BatchQuotesResponse {
   quotes: MarketQuote[];
-  failed: string[];
+  failed?: string[];
+  errors?: Record<string, string>;
   timestamp: number;
+  _timestamp?: number;
+}
+
+export interface SearchResult {
+  symbol: string;
+  name: string;
+  type: string;
+  exchange: string;
+}
+
+export interface MarketOverview {
+  sp500: { value: number; change: number };
+  nasdaq: { value: number; change: number };
+  dow: { value: number; change: number };
+  vix: { value: number; change: number };
 }
 
 class MarketDataClient {
@@ -36,6 +53,57 @@ class MarketDataClient {
     this.baseUrl = `${API_BASE_URL}/api/market-data`;
     // Get auth token from localStorage (multiple possible keys for compatibility)
     this.authToken = localStorage.getItem('alfalyzer-token') || localStorage.getItem('auth-token');
+  }
+
+  private async fetchWithAuth(url: string, options?: RequestInit) {
+    const headers = {
+      'Content-Type': 'application/json',
+      ...(this.authToken && { Authorization: `Bearer ${this.authToken}` }),
+      ...options?.headers,
+    };
+
+    console.log(`🌐 Making request to: ${url}`);
+    
+    try {
+      const response = await fetch(url, {
+        ...options,
+        headers,
+        mode: 'cors',
+        credentials: 'omit',
+      });
+
+      console.log(`📡 Response status: ${response.status}`);
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        let errorData;
+        try {
+          errorData = JSON.parse(errorText);
+        } catch {
+          errorData = { message: errorText };
+        }
+        
+        console.error(`❌ API Error Response:`, {
+          status: response.status,
+          statusText: response.statusText,
+          error: errorData,
+          url: url
+        });
+        
+        throw new Error(errorData.message || `HTTP ${response.status}: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      console.log(`✅ API Response received`);
+      return data;
+    } catch (error: any) {
+      if (error.name === 'TypeError' && error.message.includes('Failed to fetch')) {
+        console.error(`🚫 Network Error - Cannot reach API at ${url}`);
+        console.error(`📍 This might be a CORS issue or the backend is not accessible`);
+        console.error(`💡 Check if VITE_API_URL is correctly set to: ${env.VITE_API_URL}`);
+      }
+      throw error;
+    }
   }
 
   private getHeaders(): HeadersInit {
@@ -50,147 +118,100 @@ class MarketDataClient {
     return headers;
   }
 
-  async getQuote(symbol: string): Promise<MarketQuote | null> {
-    try {
-      const response = await fetch(`${this.baseUrl}/quote/${symbol}`, {
-        method: 'GET',
-        headers: this.getHeaders(),
-      });
-
-      if (!response.ok) {
-        console.error(`Failed to fetch quote for ${symbol}:`, response.status);
-        return null;
-      }
-
-      const data = await response.json();
-      return data;
-    } catch (error) {
-      console.error(`Error fetching quote for ${symbol}:`, error);
-      return null;
-    }
+  async getQuote(symbol: string): Promise<MarketQuote> {
+    return this.fetchWithAuth(`${this.baseUrl}/quote/${symbol}`);
   }
 
   async getBatchQuotes(symbols: string[]): Promise<BatchQuotesResponse> {
-    console.log(`📊 Fetching batch quotes for ${symbols.length} symbols:`, symbols.join(', '));
-    
-    // Use invisible fallback service for seamless user experience
-    const fallbackResponse = await invisibleFallbackService.getQuotesWithFallback(
-      symbols,
-      async () => {
-        console.log('🚀 Attempting to fetch real data from API...');
-        
-        // Try to fetch real data with better error handling
-        const quotePromises = symbols.map(async (symbol) => {
-          try {
-            const quote = await this.getQuote(symbol);
-            return { symbol, quote, success: true };
-          } catch (error) {
-            console.warn(`Failed to fetch ${symbol}:`, error.message);
-            return { symbol, quote: null, success: false, error: error.message };
-          }
-        });
-        
-        const results = await Promise.allSettled(quotePromises);
-        
-        const quotes: MarketQuote[] = [];
-        const failed: string[] = [];
-        
-        results.forEach((result) => {
-          if (result.status === 'fulfilled') {
-            const { symbol, quote, success } = result.value;
-            if (success && quote) {
-              quotes.push(quote);
-            } else {
-              failed.push(symbol);
-            }
-          } else {
-            console.error('Promise rejected:', result.reason);
-          }
-        });
-
-        if (quotes.length === 0) {
-          throw new Error('No real data available from any provider');
+    try {
+      console.log(`📡 Fetching batch quotes from: ${this.baseUrl}/quotes/batch`);
+      console.log(`📊 Symbols: ${symbols.join(', ')}`);
+      
+      const response = await this.fetchWithAuth(`${this.baseUrl}/quotes/batch`, {
+        method: 'POST',
+        body: JSON.stringify({ symbols }),
+      });
+      
+      console.log(`✅ Successfully fetched batch quotes`);
+      return response;
+    } catch (error: any) {
+      console.error('❌ Error fetching batch quotes:', error);
+      console.error(`🔗 API URL was: ${this.baseUrl}`);
+      console.error(`📍 Full error details:`, {
+        message: error.message,
+        baseUrl: this.baseUrl,
+        apiUrl: env.VITE_API_URL,
+        symbols: symbols
+      });
+      
+      // Use invisible fallback service for seamless user experience
+      const fallbackResponse = await invisibleFallbackService.getQuotesWithFallback(
+        symbols,
+        async () => {
+          throw error; // Re-throw to trigger fallback
         }
+      );
 
-        console.log(`✅ Successfully fetched ${quotes.length} real quotes, ${failed.length} failed`);
-        return { quotes, failed, timestamp: Date.now() };
-      }
-    );
+      // Convert fallback response to expected format
+      const processedQuotes = fallbackResponse.quotes.map(quote => ({
+        symbol: quote.symbol,
+        price: quote.price,
+        change: quote.change,
+        changePercent: quote.changePercent,
+        high: quote.high || quote.price * 1.02,
+        low: quote.low || quote.price * 0.98,
+        open: quote.open || quote.price,
+        previousClose: quote.previousClose || quote.price,
+        volume: quote.volume || Math.floor(Math.random() * 10000000),
+        marketCap: typeof quote.marketCap === 'string' 
+          ? parseInt(quote.marketCap.replace(/[$B,]/g, '')) * 1000000000 
+          : quote.marketCap || 0,
+        eps: typeof quote.eps === 'string' ? parseFloat(quote.eps) : quote.eps || 0,
+        pe: typeof quote.peRatio === 'string' ? parseFloat(quote.peRatio) : quote.pe || 0,
+        provider: fallbackResponse.source === 'fallback' ? 'alfalyzer' : 'api',
+        timestamp: Date.now() / 1000,
+        _cached: fallbackResponse.source === 'cache',
+        _timestamp: Date.now() / 1000
+      }));
 
-    // Convert fallback response to expected format with better error handling
-    const processedQuotes = fallbackResponse.quotes.map(quote => {
-      try {
-        return {
-          symbol: quote.symbol,
-          price: quote.price,
-          change: quote.change,
-          changePercent: quote.changePercent,
-          high: quote.high,
-          low: quote.low,
-          open: quote.open,
-          volume: quote.volume,
-          marketCap: typeof quote.marketCap === 'string' 
-            ? parseInt(quote.marketCap.replace(/[$B,]/g, '')) * 1000000000 
-            : quote.marketCap || 0,
-          eps: typeof quote.eps === 'string' ? parseFloat(quote.eps) : quote.eps || 0,
-          pe: typeof quote.peRatio === 'string' ? parseFloat(quote.peRatio) : quote.pe || 0,
-          provider: fallbackResponse.source === 'fallback' ? 'alfalyzer' : 'api',
-          timestamp: Date.now(),
-          _cached: fallbackResponse.source === 'cache'
-        };
-      } catch (error) {
-        console.error('Error processing quote:', quote, error);
-        return null;
-      }
-    }).filter(Boolean) as MarketQuote[];
+      console.log(`📈 Returning ${processedQuotes.length} processed quotes (source: ${fallbackResponse.source})`);
 
-    console.log(`📈 Returning ${processedQuotes.length} processed quotes (source: ${fallbackResponse.source})`);
-
-    return {
-      quotes: processedQuotes,
-      failed: [],
-      timestamp: Date.now()
-    };
+      return {
+        quotes: processedQuotes,
+        errors: {},
+        _timestamp: Date.now() / 1000,
+        timestamp: Date.now()
+      };
+    }
   }
 
-  async search(query: string): Promise<any[]> {
+  async searchSymbols(query: string): Promise<{ results: SearchResult[]; count: number }> {
+    const params = new URLSearchParams({ query });
+    return this.fetchWithAuth(`${this.baseUrl}/search?${params}`);
+  }
+
+  async search(query: string): Promise<SearchResult[]> {
     try {
-      const response = await fetch(`${this.baseUrl}/search?q=${encodeURIComponent(query)}`, {
-        method: 'GET',
-        headers: this.getHeaders(),
-      });
-
-      if (!response.ok) {
-        console.error('Failed to search stocks:', response.status);
-        return [];
-      }
-
-      const data = await response.json();
-      return data.results || [];
+      const response = await this.searchSymbols(query);
+      return response.results || [];
     } catch (error) {
       console.error('Error searching stocks:', error);
       return [];
     }
   }
 
-  async getMarketOverview(): Promise<any> {
+  async getMarketOverview(): Promise<MarketOverview | null> {
     try {
-      const response = await fetch(`${this.baseUrl}/market-overview`, {
-        method: 'GET',
-        headers: this.getHeaders(),
-      });
-
-      if (!response.ok) {
-        console.error('Failed to fetch market overview:', response.status);
-        return null;
-      }
-
-      const data = await response.json();
-      return data;
+      const response = await this.fetchWithAuth(`${this.baseUrl}/market-overview`);
+      return response;
     } catch (error) {
       console.error('Error fetching market overview:', error);
       return null;
     }
+  }
+
+  async getStatus() {
+    return this.fetchWithAuth(`${this.baseUrl}/status`);
   }
 
   // Update auth token when user logs in

@@ -27,6 +27,7 @@ class YahooFinanceService {
    */
   async getQuote(symbol: string): Promise<Stock | null> {
     try {
+      console.log(`🌐 Yahoo Finance: Fetching quote for ${symbol}`);
       const response = await axios.get(`${this.baseUrl}/v8/finance/chart/${symbol}`, {
         timeout: 10000,
         headers: {

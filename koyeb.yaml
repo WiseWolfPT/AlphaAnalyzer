@@ -8,17 +8,16 @@ build:
 env:
   - key: NODE_ENV
     value: production
-  - key: PORT
-    value: "3001"
+  # Remove PORT from here, let Koyeb assign it
   
 service:
   ports:
-    - port: 3001
+    - port: 8000
       protocol: http
   
   routes:
     - path: /
-      port: 3001
+      port: 8000
   
   healthcheck:
     path: /api/health
