@@ -5,6 +5,8 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import { testConnection } from './db/supabase-client';
 import { SupabaseCacheService } from './services/supabase-cache-service';
+import { RedditStrategyService } from './services/reddit-strategy-service';
+import { CacheUpdaterJob } from './services/cache-updater-job';
 
 // Load environment variables
 dotenv.config();
@@ -13,6 +15,11 @@ dotenv.config();
 testConnection().then(connected => {
   if (connected) {
     console.log('✅ Supabase database connected - Cache enabled!');
+    // Start cache updater job if Supabase is connected
+    if (process.env.NODE_ENV === 'production') {
+      console.log('🚀 Starting cache updater job in production');
+      CacheUpdaterJob.start();
+    }
   } else {
     console.warn('⚠️ Supabase connection failed - will use direct API calls');
   }
@@ -25,6 +32,7 @@ const PORT = process.env.PORT || 3001;
 // Basic middleware
 app.use(cors({
   origin: [
+    'https://alfalyzerpro4.vercel.app', // MAIN PRODUCTION URL
     'https://alfalyzerpro4-nth02sgvs-antonios-projects-f9cd3cd0.vercel.app',
     'https://alfalyzerpro4-fd1b9651c-antonios-projects-f9cd3cd0.vercel.app',
     'https://alfalyzerpro4-ihwma9ytw-antonios-projects-f9cd3cd0.vercel.app',
@@ -139,6 +147,55 @@ app.get('/api/market-data/health', (req, res) => {
       fiscalAI: !!process.env.FISCAL_AI_API_KEY
     }
   });
+});
+
+// Batch quotes endpoint - Reddit Strategy
+app.post('/api/market-data/quotes/batch', async (req, res) => {
+  const { symbols } = req.body;
+  
+  if (!symbols || !Array.isArray(symbols) || symbols.length === 0) {
+    return res.status(400).json({ error: 'Invalid symbols array' });
+  }
+  
+  try {
+    console.log(`📊 Batch quotes request for ${symbols.length} symbols`);
+    
+    // Use Reddit Strategy - backend fetches and caches
+    const result = await RedditStrategyService.getBatchQuotes(symbols);
+    
+    // Transform to match frontend expected format
+    const response = {
+      quotes: result.quotes.map(quote => ({
+        symbol: quote.symbol,
+        price: quote.price,
+        change: quote.change,
+        changePercent: quote.change_percent,
+        high: quote.high || quote.price * 1.02,
+        low: quote.low || quote.price * 0.98,
+        open: quote.open || quote.price,
+        previousClose: quote.previousClose || quote.price,
+        volume: quote.volume || 0,
+        marketCap: quote.market_cap,
+        eps: quote.eps,
+        pe: quote.pe_ratio,
+        provider: result.source === 'cache' ? 'cache' : 'api',
+        timestamp: quote.timestamp || Date.now() / 1000,
+        _cached: result.source === 'cache',
+        _timestamp: Date.now() / 1000
+      })),
+      errors: result.errors,
+      timestamp: Date.now(),
+      _timestamp: Date.now() / 1000
+    };
+    
+    res.json(response);
+  } catch (error: any) {
+    console.error('Error in batch quotes endpoint:', error);
+    res.status(500).json({ 
+      error: 'Failed to fetch quotes',
+      message: error.message 
+    });
+  }
 });
 
 // Stock quote endpoint - now with Supabase cache!
@@ -343,6 +400,41 @@ app.use('/api/market-data/finnhub', async (req, res) => {
   }
 });
 
+// Cache status endpoint
+app.get('/api/cache/status', (req, res) => {
+  const status = CacheUpdaterJob.getStatus();
+  res.json({
+    cacheUpdater: status,
+    supabase: {
+      connected: !!process.env.SUPABASE_URL,
+      cacheEnabled: true
+    },
+    strategy: 'Reddit Strategy - Backend fetches, frontend reads from cache'
+  });
+});
+
+// Force cache update endpoint (admin only in production)
+app.post('/api/cache/update', async (req, res) => {
+  const { symbols } = req.body;
+  
+  try {
+    if (symbols && Array.isArray(symbols)) {
+      // Update specific symbols
+      const result = await CacheUpdaterJob.updateSymbols(symbols);
+      res.json({ 
+        message: `Updated ${result.quotes.length} symbols`,
+        errors: result.errors 
+      });
+    } else {
+      // Run full update
+      await CacheUpdaterJob.runUpdate();
+      res.json({ message: 'Full cache update started' });
+    }
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Root endpoint
 app.get('/', (req, res) => {
   res.json({
@@ -352,14 +444,18 @@ app.get('/', (req, res) => {
     endpoints: [
       '/api/health',
       '/api/market-data/health',
+      '/api/market-data/quotes/batch',
       '/api/market-data/quote/:symbol',
       '/api/stocks/:symbol/price',
       '/api/stocks/:symbol/profile',
       '/api/market-data/alpha-vantage/*',
       '/api/market-data/fmp/*',
-      '/api/market-data/finnhub/*'
+      '/api/market-data/finnhub/*',
+      '/api/cache/status',
+      '/api/cache/update'
     ],
-    database: 'Supabase PostgreSQL with caching enabled'
+    database: 'Supabase PostgreSQL with caching enabled',
+    strategy: 'Reddit Strategy - Backend fetches and caches data'
   });
 });
 
