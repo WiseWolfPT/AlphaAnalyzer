@@ -81,9 +81,10 @@ export class TwelveDataService {
 
   constructor(cache?: CacheManager) {
     this.cache = cache || new CacheManager();
-    this.apiKey = API_CONFIG.TWELVE_DATA.apiKey;
-    this.baseUrl = API_CONFIG.TWELVE_DATA.baseUrl;
-    this.wsUrl = API_CONFIG.TWELVE_DATA.wsUrl;
+    // API keys are now handled by backend - use proxy URLs
+    this.apiKey = ''; // No longer used - API key is on backend
+    this.baseUrl = API_CONFIG.TWELVE_DATA.proxyUrl; // Use proxy URL instead
+    this.wsUrl = ''; // WebSocket disabled - needs backend implementation
   }
 
   async getQuote(symbol: string): Promise<TwelveDataQuote | null> {
@@ -92,8 +93,9 @@ export class TwelveDataService {
     if (cached) return cached as TwelveDataQuote;
 
     try {
+      // Use proxy URL - API key is handled by backend
       const response = await fetch(
-        `${this.baseUrl}/quote?symbol=${symbol}&apikey=${this.apiKey}`
+        `${this.baseUrl}/quote?symbol=${symbol}`
       );
 
       if (!response.ok) {
@@ -123,8 +125,9 @@ export class TwelveDataService {
     if (cached) return cached as TwelveDataTimeSeries;
 
     try {
+      // Use proxy URL - API key is handled by backend
       const response = await fetch(
-        `${this.baseUrl}/time_series?symbol=${symbol}&interval=${interval}&outputsize=${outputsize}&apikey=${this.apiKey}`
+        `${this.baseUrl}/time_series?symbol=${symbol}&interval=${interval}&outputsize=${outputsize}`
       );
 
       if (!response.ok) {
@@ -158,8 +161,9 @@ export class TwelveDataService {
     if (cached) return cached as Record<string, TwelveDataQuote>;
 
     try {
+      // Use proxy URL - API key is handled by backend
       const response = await fetch(
-        `${this.baseUrl}/quote?symbol=${symbolsStr}&apikey=${this.apiKey}`
+        `${this.baseUrl}/quote?symbol=${symbolsStr}`
       );
 
       if (!response.ok) {
@@ -194,6 +198,12 @@ export class TwelveDataService {
 
   // Enhanced WebSocket methods with exponential backoff reconnection
   connectWebSocket(onMessage: (data: TwelveDataWebSocketMessage) => void): void {
+    // WebSocket functionality disabled - API keys moved to backend
+    console.log('⚠️ WebSocket connections are disabled. Real-time updates need backend implementation.');
+    return;
+    
+    // Original code kept for future backend implementation
+    /* 
     // Prevent multiple connection attempts
     if (this.isConnecting) {
       console.log('WebSocket connection already in progress...');
@@ -288,17 +298,25 @@ export class TwelveDataService {
       this.isConnecting = false;
       this.scheduleReconnectWithBackoff(onMessage);
     }
+    */
   }
 
   private setupHeartbeat(): void {
+    // WebSocket heartbeat disabled - API keys moved to backend
+    return;
+    /* Original code for future backend implementation
     this.heartbeatInterval = setInterval(() => {
       if (this.ws && this.ws.readyState === WebSocket.OPEN) {
         this.ws.send(JSON.stringify({ action: 'heartbeat' }));
       }
     }, 30000); // Send heartbeat every 30 seconds
+    */
   }
 
   private scheduleReconnectWithBackoff(onMessage: (data: TwelveDataWebSocketMessage) => void): void {
+    // WebSocket reconnection disabled - API keys moved to backend
+    return;
+    /* Original code for future backend implementation
     if (this.reconnectTimeout) {
       clearTimeout(this.reconnectTimeout);
     }
@@ -323,6 +341,7 @@ export class TwelveDataService {
         this.connectWebSocket(onMessage);
       }
     }, delayWithJitter);
+    */
   }
 
   // Legacy method for backward compatibility
@@ -331,6 +350,11 @@ export class TwelveDataService {
   }
 
   subscribe(symbols: string[]): void {
+    // WebSocket functionality disabled - API keys moved to backend
+    console.log('⚠️ WebSocket subscriptions are disabled. Real-time updates need backend implementation.');
+    return;
+    
+    /* Original code for future backend implementation
     if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
       // Store subscriptions for when connection is established
       symbols.forEach(symbol => this.subscriptions.add(symbol));
@@ -346,9 +370,14 @@ export class TwelveDataService {
 
     this.ws.send(JSON.stringify(message));
     symbols.forEach(symbol => this.subscriptions.add(symbol));
+    */
   }
 
   unsubscribe(symbols: string[]): void {
+    // WebSocket functionality disabled - API keys moved to backend
+    return;
+    
+    /* Original code for future backend implementation
     if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
       symbols.forEach(symbol => this.subscriptions.delete(symbol));
       return;
@@ -363,6 +392,7 @@ export class TwelveDataService {
 
     this.ws.send(JSON.stringify(message));
     symbols.forEach(symbol => this.subscriptions.delete(symbol));
+    */
   }
 
   disconnect(): void {
