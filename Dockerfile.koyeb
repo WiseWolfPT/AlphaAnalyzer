@@ -9,6 +9,7 @@ RUN apk add --no-cache python3 make g++ cairo-dev pango-dev jpeg-dev giflib-dev
 # Copy server files - multiple options for flexibility
 COPY server/koyeb-server.ts ./server/koyeb-server.ts
 COPY server/koyeb-simple.ts ./server/koyeb-simple.ts
+COPY server/koyeb-ultra-simple.ts ./server/koyeb-ultra-simple.ts
 COPY server/simple-server.ts ./server/simple-server.ts
 COPY server/simple.js ./server/simple.js
 
@@ -39,5 +40,5 @@ RUN npm install express cors dotenv tsx axios @types/express @types/cors @supaba
 # Expose port - Koyeb will use the PORT env variable
 EXPOSE 3001
 
-# Start server - using simplified version to avoid import issues
-CMD ["npx", "tsx", "server/koyeb-simple.ts"]
+# Start server - using ultra-simple version to avoid path-to-regexp issues
+CMD ["npx", "tsx", "server/koyeb-ultra-simple.ts"]
