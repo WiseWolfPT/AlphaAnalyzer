@@ -15,6 +15,7 @@ import { cn } from "@/lib/utils";
 import { useBatchQuotes } from "@/hooks/use-market-data";
 import { ApiDiagnostic } from "@/components/debug/api-diagnostic";
 import { env } from "@/lib/env";
+import { TestAPIConnection } from "@/components/test-api-connection";
 
 // Popular stocks to display
 const POPULAR_SYMBOLS = [
@@ -388,6 +389,17 @@ export default function FindStocks() {
               </Button>
             </div>
           )}
+        </div>
+
+        {/* API Test Component - TEMPORARY */}
+        <div className="mt-8 p-4 bg-yellow-50 dark:bg-yellow-900/10 rounded-lg border border-yellow-200 dark:border-yellow-800">
+          <h3 className="text-lg font-semibold mb-2 text-yellow-800 dark:text-yellow-200">
+            🧪 API Connection Test (Temporary)
+          </h3>
+          <p className="text-sm text-yellow-700 dark:text-yellow-300 mb-4">
+            This test component verifies that the API is properly connected and CORS is configured correctly.
+          </p>
+          <TestAPIConnection />
         </div>
 
         {/* Quick Actions */}
