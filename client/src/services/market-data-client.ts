@@ -93,31 +93,24 @@ class MarketDataClient {
       console.log(`📡 Response status: ${response.status}`);
 
       if (!response.ok) {
-        // Special handling for 401 Unauthorized when auth is not required
-        if (response.status === 401 && !this.authToken) {
-          console.warn(`⚠️ Received 401 but auth token is not required. Proceeding anyway.`);
-          // Don't throw error for 401 when no auth token exists
-          // The backend doesn't require auth, so this might be a misconfiguration
-          // Return empty data for 401 without auth
-          return { quotes: [], errors: { auth: '401 received but auth not required' }, timestamp: Date.now() };
-        } else {
-          const errorText = await response.text();
-          let errorData;
-          try {
-            errorData = JSON.parse(errorText);
-          } catch {
-            errorData = { message: errorText };
-          }
-          
-          console.error(`❌ API Error Response:`, {
-            status: response.status,
-            statusText: response.statusText,
-            error: errorData,
-            url: url
-          });
-          
-          throw new Error(errorData.message || `HTTP ${response.status}: ${response.statusText}`);
+        const errorText = await response.text();
+        let errorData;
+        try {
+          errorData = JSON.parse(errorText);
+        } catch {
+          errorData = { message: errorText };
         }
+        
+        console.error(`❌ API Error Response:`, {
+          status: response.status,
+          statusText: response.statusText,
+          error: errorData,
+          url: url
+        });
+        
+        // Always throw error for non-OK responses
+        // This allows the fallback service to be used
+        throw new Error(errorData.message || `HTTP ${response.status}: ${response.statusText}`);
       }
 
       const data = await response.json();
