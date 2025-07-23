@@ -3,7 +3,7 @@ import jwt from 'jsonwebtoken';
 import { auth, db } from '../lib/supabase';
 import { SubscriptionTier, UserRole } from '../types/auth';
 import { createJWTValidator, extractTokenFromHeaders, JWTValidationResult } from '../utils/jwt-validator';
-import { isVercelProxyRequest, extractVercelMetadata } from './vercel-proxy-auth';
+import { isFromVercelProxy as isVercelProxyRequest, getProxyMetadata } from './vercel-proxy-auth';
 
 // Extend Express Request interface to include user data
 declare global {
@@ -67,8 +67,8 @@ export class AuthenticationMiddleware {
           if (proxyAuth) {
             req.user = proxyAuth;
             console.log('🔐 Vercel proxy authentication successful', {
-              deployment: extractVercelMetadata(req).deployment,
-              region: extractVercelMetadata(req).region,
+              deployment: getProxyMetadata(req)?.deployment,
+              region: getProxyMetadata(req)?.region,
             });
             return next();
           }
@@ -161,7 +161,7 @@ export class AuthenticationMiddleware {
    */
   private async authenticateVercelProxy(req: Request): Promise<Request['user'] | null> {
     try {
-      const metadata = extractVercelMetadata(req);
+      const metadata = getProxyMetadata(req);
       
       // Check if proxy authentication is enabled
       const proxyEnabled = process.env.ENABLE_VERCEL_PROXY_AUTH === 'true';

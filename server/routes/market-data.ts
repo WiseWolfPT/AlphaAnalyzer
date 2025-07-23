@@ -19,9 +19,10 @@ const router = Router();
 // Simple test endpoint to verify connectivity
 // Test endpoint moved to line 848 with more comprehensive testing
 
-// Use demo authentication in development mode
+// Use optional authentication for market data endpoints (public access allowed)
 const isDevelopment = process.env.NODE_ENV !== 'production';
-const authService = isDevelopment ? demoAuthMiddleware() : authMiddleware.instance.authenticate();
+// Market data should be publicly accessible - use optional auth
+const authService = isDevelopment ? optionalDemoAuth() : authMiddleware.instance.optionalAuth();
 
 // Initialize the enhanced market data service
 const marketDataService = new ServerMarketDataService();
@@ -455,7 +456,7 @@ async function fetchQuoteWithFallback(symbol: string, userId?: string): Promise<
  * Buscar cotação de uma ação com dados reais usando o enhanced service
  */
 router.get('/quote/:symbol',
-  authService,
+  authService, // Optional auth - allows public access
   marketDataRateLimit,
   async (req: Request, res: Response) => {
     try {

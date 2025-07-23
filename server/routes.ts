@@ -19,6 +19,7 @@ import portfoliosRouter from "./routes/portfolios";
 import earningsCalendarRouter from "./routes/earnings-calendar";
 import diagnosticRouter from "./routes/diagnostic";
 import cachedDataRouter from "./routes/cached-data";
+import logsRouter from "./routes/logs";
 // REMOVED: Cache and alerts imports due to startup issues
 // import cacheAdminRouter from "./routes/cache-admin";
 // import { alertsRouter } from "./routes/alerts";
@@ -109,9 +110,6 @@ export async function registerRoutes(app: Express, server: Server): Promise<void
   
   // Diagnostic endpoint for debugging production issues (no auth required)
   app.use("/api/diagnostic", diagnosticRouter);
-  
-  // Import logs router
-  import logsRouter from "./routes/logs";
   
   // Logs management routes (protected by admin auth in production)
   app.use("/api/logs", process.env.NODE_ENV === 'production' ? adminSecurityMiddleware : (req: any, res: any, next: any) => next(), logsRouter);

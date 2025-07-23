@@ -5,10 +5,15 @@
  */
 
 // Check if we're running on Vercel
-export const isVercelDeployment = process.env.VERCEL === '1';
+// In browser, we need to use import.meta.env instead of process.env
+export const isVercelDeployment = typeof window !== 'undefined' 
+  ? (import.meta.env.VERCEL === '1' || window.location.hostname.includes('vercel.app'))
+  : (process.env.VERCEL === '1');
 
 // Get proxy secret from environment
-const PROXY_SECRET = process.env.VERCEL_PROXY_SECRET || process.env.NEXT_PUBLIC_VERCEL_PROXY_SECRET;
+const PROXY_SECRET = typeof window !== 'undefined'
+  ? (import.meta.env.VITE_VERCEL_PROXY_SECRET || import.meta.env.VERCEL_PROXY_SECRET)
+  : (process.env.VERCEL_PROXY_SECRET || process.env.NEXT_PUBLIC_VERCEL_PROXY_SECRET);
 
 /**
  * Add Vercel proxy headers to a request
