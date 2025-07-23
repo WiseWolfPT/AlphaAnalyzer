@@ -50,13 +50,10 @@ export interface MarketOverview {
 
 class MarketDataClient {
   private baseUrl: string;
-  private cachedBaseUrl: string;
   private authToken: string | null = null;
-  private useCachedEndpoints: boolean = true; // Enable cached endpoints by default
 
   constructor() {
     this.baseUrl = `${API_BASE_URL}/api/market-data`;
-    this.cachedBaseUrl = `${API_BASE_URL}/api/cached`;
     // Get auth token from localStorage (backend doesn't require it, but we keep for future)
     this.authToken = localStorage.getItem('alfalyzer-token') || localStorage.getItem('auth-token');
     
@@ -181,53 +178,7 @@ class MarketDataClient {
 
   async getBatchQuotes(symbols: string[]): Promise<BatchQuotesResponse> {
     try {
-      // Try cached endpoints first if enabled
-      if (this.useCachedEndpoints) {
-        try {
-          console.log(`🗄️ Fetching batch quotes from cache: ${this.cachedBaseUrl}/quotes/batch`);
-          console.log(`📊 Symbols: ${symbols.join(', ')}`);
-          
-          const response = await this.fetchWithAuth(`${this.cachedBaseUrl}/quotes/batch`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ symbols }),
-          });
-          
-          console.log(`✅ Successfully fetched batch quotes from cache`);
-          
-          // Transform cached response to our format
-          if (response.quotes && Array.isArray(response.quotes)) {
-            return {
-              quotes: response.quotes.map((q: any) => ({
-                symbol: q.symbol,
-                price: q.price,
-                change: q.change || 0,
-                changePercent: q.changePercent || 0,
-                high: q.price,
-                low: q.price,
-                open: q.price,
-                previousClose: q.price - (q.change || 0),
-                volume: q.volume || 0,
-                marketCap: q.marketCap,
-                provider: 'cache',
-                timestamp: new Date(q.lastUpdated).getTime() / 1000,
-                _cached: true,
-                _timestamp: Date.now() / 1000
-              })),
-              errors: {},
-              timestamp: Date.now(),
-              _timestamp: Date.now() / 1000
-            };
-          }
-        } catch (cacheError) {
-          console.warn('⚠️ Cache fetch failed, falling back to direct API', cacheError);
-          // Continue to fallback below
-        }
-      }
-      
-      // Original direct API call (fallback)
+      // Direct API call - no cached endpoints for now
       console.log(`📡 Fetching batch quotes from: ${this.baseUrl}/quotes/batch`);
       console.log(`📊 Symbols: ${symbols.join(', ')}`);
       
@@ -306,17 +257,7 @@ class MarketDataClient {
   async searchSymbols(query: string): Promise<{ results: SearchResult[]; count: number }> {
     const params = new URLSearchParams({ query });
     
-    // Try cached search first
-    if (this.useCachedEndpoints) {
-      try {
-        console.log(`🗄️ Searching symbols in cache: ${query}`);
-        return await this.fetchWithAuth(`${this.cachedBaseUrl}/search?${params}`);
-      } catch (error) {
-        console.warn('⚠️ Cache search failed, falling back to direct API', error);
-      }
-    }
-    
-    // Fallback to direct API
+    // Direct API call - no cached endpoints for now
     return this.fetchWithAuth(`${this.baseUrl}/search?${params}`);
   }
 
@@ -332,34 +273,7 @@ class MarketDataClient {
 
   async getMarketOverview(): Promise<MarketOverview | null> {
     try {
-      // Try cached market overview first
-      if (this.useCachedEndpoints) {
-        try {
-          console.log('🗄️ Fetching market overview from cache');
-          const response = await this.fetchWithAuth(`${this.cachedBaseUrl}/market-overview`);
-          
-          // Transform cached response to MarketOverview format
-          if (response.indices && Array.isArray(response.indices)) {
-            const findIndex = (symbol: string) => response.indices.find((i: any) => i.symbol === symbol);
-            
-            const sp500 = findIndex('^GSPC') || { price: 0, change_percent: 0 };
-            const nasdaq = findIndex('^IXIC') || { price: 0, change_percent: 0 };
-            const dow = findIndex('^DJI') || { price: 0, change_percent: 0 };
-            const vix = findIndex('^VIX') || { price: 0, change_percent: 0 };
-            
-            return {
-              sp500: { value: sp500.price, change: sp500.change_percent },
-              nasdaq: { value: nasdaq.price, change: nasdaq.change_percent },
-              dow: { value: dow.price, change: dow.change_percent },
-              vix: { value: vix.price, change: vix.change_percent }
-            };
-          }
-        } catch (error) {
-          console.warn('⚠️ Cache market overview failed, falling back to direct API', error);
-        }
-      }
-      
-      // Fallback to direct API
+      // Direct API call - no cached endpoints for now
       const response = await this.fetchWithAuth(`${this.baseUrl}/market-overview`);
       return response;
     } catch (error) {
