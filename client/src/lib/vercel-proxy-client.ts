@@ -83,7 +83,9 @@ export class VercelProxyAPIClient {
   private baseUrl: string;
   private fetch: ReturnType<typeof createProxyFetch>;
   
-  constructor(baseUrl: string = process.env.VITE_API_URL || '') {
+  constructor(baseUrl: string = '') {
+    // CRITICAL: Always use relative paths to go through Vercel proxy
+    // The proxy is configured in vercel.json to redirect /api/* to the Koyeb backend
     this.baseUrl = baseUrl;
     this.fetch = createProxyFetch(baseUrl);
   }

@@ -1,8 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
 
-// API base URL
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://crucial-ivonne-alfalyzer-90666a9e.koyeb.app';
+// API base URL - Use relative path to go through Vercel proxy
+const API_BASE_URL = '';
 
 // Types
 export interface Fundamentals {

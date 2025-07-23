@@ -13,10 +13,11 @@ import { initializePWA } from "./utils/pwa";
 // Add debug info
 console.log('Alfalyzer starting...');
 console.log('Environment:', {
-  VITE_API_URL: import.meta.env.VITE_API_URL,
+  // VITE_API_URL removed - using Vercel proxy instead
   VITE_SUPABASE_URL: import.meta.env.VITE_SUPABASE_URL,
   MODE: import.meta.env.MODE,
-  PROD: import.meta.env.PROD
+  PROD: import.meta.env.PROD,
+  usingProxy: true // Always using Vercel proxy for API calls
 });
 
 // Debug theme and DOM state

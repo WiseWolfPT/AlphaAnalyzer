@@ -116,7 +116,9 @@ class AlertService {
   private notificationCallbacks: ((notification: Notification) => void)[] = [];
 
   constructor() {
-    this.baseUrl = env.VITE_API_URL || '/api';
+    // CRITICAL: Always use relative paths to go through Vercel proxy
+    // The proxy is configured in vercel.json to redirect /api/* to the Koyeb backend
+    this.baseUrl = '/api';
   }
 
   /**

@@ -1,7 +1,9 @@
 // Financial Data Client - Fetches financial statements and metrics
 import { env } from '@/lib/env';
 
-const API_BASE_URL = env.VITE_API_URL || 'https://crucial-ivonne-alfalyzer-90666a9e.koyeb.app';
+// CRITICAL: Always use relative paths to go through Vercel proxy
+// The proxy is configured in vercel.json to redirect /api/* to the Koyeb backend
+const API_BASE_URL = ''; // Empty string to use relative paths
 
 export interface FinancialStatement {
   date: string;

@@ -94,8 +94,8 @@ export function useStockQuote(
   return useFinancialData<StockQuote>(
     ['stock-quote', symbol],
     async () => {
-      const apiUrl = import.meta.env.VITE_API_URL || 'https://crucial-ivonne-alfalyzer-90666a9e.koyeb.app';
-      const response = await fetch(`${apiUrl}/api/market-data/quotes/batch`, {
+      // Use relative path to go through Vercel proxy
+      const response = await fetch(`/api/market-data/quotes/batch`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -126,8 +126,8 @@ export function useStockProfile(symbol: string) {
   return useFinancialData<StockProfile>(
     ['stock-profile', symbol],
     async () => {
-      const apiUrl = import.meta.env.VITE_API_URL || 'https://crucial-ivonne-alfalyzer-90666a9e.koyeb.app';
-      const response = await fetch(`${apiUrl}/api/market-data/quotes/batch`, {
+      // Use relative path to go through Vercel proxy
+      const response = await fetch(`/api/market-data/quotes/batch`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

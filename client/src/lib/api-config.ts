@@ -24,11 +24,11 @@ export interface Environment {
 function detectEnvironment(): Environment {
   // Check if we're in browser
   if (typeof window === 'undefined') {
-    const serverUrl = process.env.VITE_API_URL || 'https://crucial-ivonne-alfalyzer-90666a9e.koyeb.app';
+    // Server-side rendering - use relative paths
     return {
       name: 'development',
-      apiBase: `${serverUrl}/api`,
-      wsBase: serverUrl.replace('https://', 'wss://').replace('http://', 'ws://'),
+      apiBase: '/api',
+      wsBase: '/ws',
       debug: true
     };
   }
@@ -43,14 +43,12 @@ function detectEnvironment(): Environment {
       hostname.includes('alfalyzer.com') ||
       hostname.includes('herokuapp.com') ||
       protocol === 'https:') { // Also detect production by https
-    // Use VITE_API_URL if provided, otherwise use Koyeb URL
-    const apiUrl = import.meta.env.VITE_API_URL || 'https://crucial-ivonne-alfalyzer-90666a9e.koyeb.app';
-    // Remove any trailing slashes
-    const cleanApiUrl = apiUrl.replace(/\/$/, '');
+    // CRITICAL: Always use relative paths to go through Vercel proxy
+    // The proxy is configured in vercel.json to redirect /api/* to the Koyeb backend
     return {
       name: 'production',
-      apiBase: `${cleanApiUrl}/api`,
-      wsBase: cleanApiUrl.replace('https://', 'wss://').replace('http://', 'ws://'),
+      apiBase: '/api',
+      wsBase: '/ws',
       debug: false
     };
   }
@@ -76,12 +74,11 @@ function detectEnvironment(): Environment {
     };
   }
 
-  // Fallback to Koyeb backend if no VITE_API_URL is set
-  const fallbackUrl = import.meta.env.VITE_API_URL || 'https://crucial-ivonne-alfalyzer-90666a9e.koyeb.app';
+  // Fallback - always use relative paths
   return {
     name: 'development',
-    apiBase: `${fallbackUrl}/api`,
-    wsBase: fallbackUrl.replace('https://', 'wss://').replace('http://', 'ws://'),
+    apiBase: '/api',
+    wsBase: '/ws',
     debug: true
   };
 }

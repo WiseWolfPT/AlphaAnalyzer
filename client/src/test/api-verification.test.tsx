@@ -27,7 +27,8 @@ export function APIVerificationTest() {
     // Test 1: Basic connectivity
     const test1Start = Date.now();
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL || 'https://crucial-ivonne-alfalyzer-90666a9e.koyeb.app'}/api/market-data/test`);
+      // Use relative path to go through Vercel proxy
+      const response = await fetch(`/api/market-data/test`);
       const data = await response.json();
       testResults.push({
         name: 'Backend Connectivity',

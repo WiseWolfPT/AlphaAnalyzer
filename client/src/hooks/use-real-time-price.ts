@@ -18,8 +18,8 @@ interface ApiResponse {
   cached?: boolean;
 }
 
-// API base URL - in production this should come from environment
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://crucial-ivonne-alfalyzer-90666a9e.koyeb.app';
+// API base URL - Use relative path to go through Vercel proxy
+const API_BASE_URL = '';
 
 // Fetch single stock price
 export function useRealTimePrice(symbol: string, options?: {

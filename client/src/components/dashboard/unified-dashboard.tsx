@@ -13,6 +13,11 @@ import { ErrorBoundary } from '@/components/ui/error-boundary';
 import { StockCardSkeleton } from '@/components/ui/stock-card-skeleton';
 import { DashboardErrorBoundary } from './dashboard-error-boundary';
 import { LazyDashboardCards } from './lazy-dashboard-cards';
+import { EnhancedErrorBoundary } from '@/components/error/enhanced-error-boundary';
+import { AsyncDataWrapper, StockCardsSkeleton, StockDataError } from '@/components/data/async-data-wrapper';
+import { useSafeAsync } from '@/hooks/use-safe-async';
+import { handleError } from '@/services/error-handler-service';
+import { useNotification } from '@/components/notifications/notification-toast';
 import { 
   TrendingUp, Activity, Target, RefreshCw, Zap, AlertCircle, 
   User, Settings, Crown, Calendar, Shield, MonitorSpeaker,
@@ -329,24 +334,24 @@ export const UnifiedDashboard: React.FC<UnifiedDashboardProps> = ({
   
   const displayStocks = stocks || mockStocks || [];
 
-  // Market stats calculation
+  // Market stats calculation with proper null checks
   const marketStats = config.features.marketOverview ? [
     {
       label: "S&P 500",
-      value: marketIndices?.sp500?.value.toFixed(2) || "0.00",
-      change: marketIndices?.sp500?.change || 0,
+      value: marketIndices?.sp500?.value ? marketIndices.sp500.value.toFixed(2) : "0.00",
+      change: marketIndices?.sp500?.change ?? 0,
       icon: TrendingUp,
     },
     {
       label: "Dow Jones",
-      value: marketIndices?.dow?.value.toFixed(2) || "0.00",
-      change: marketIndices?.dow?.change || 0,
+      value: marketIndices?.dow?.value ? marketIndices.dow.value.toFixed(2) : "0.00",
+      change: marketIndices?.dow?.change ?? 0,
       icon: Activity,
     },
     {
       label: "Nasdaq",
-      value: marketIndices?.nasdaq?.value.toFixed(2) || "0.00",
-      change: marketIndices?.nasdaq?.change || 0,
+      value: marketIndices?.nasdaq?.value ? marketIndices.nasdaq.value.toFixed(2) : "0.00",
+      change: marketIndices?.nasdaq?.change ?? 0,
       icon: Target,
     },
   ] : [];

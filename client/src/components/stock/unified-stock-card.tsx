@@ -106,19 +106,19 @@ export const UnifiedStockCard = memo(function UnifiedStockCard({
     }
     
     const isPositive = propStock ? 
-      parseFloat(stock.changePercent) >= 0 : 
+      parseFloat(stock.changePercent || '0') >= 0 : 
       isStockPositive(stock);
     
     const currentPrice = propStock ? 
-      parseFloat(stock.price) : 
+      parseFloat(stock.price || '0') : 
       getStockPrice(stock);
     
     const changePercent = propStock ? 
-      parseFloat(stock.changePercent) : 
+      parseFloat(stock.changePercent || '0') : 
       getStockChangePercent(stock);
     
     const change = propStock ? 
-      stock.change : 
+      stock.change || '0' : 
       getStockChange(stock);
     
     // Intrinsic value calculations
@@ -413,10 +413,10 @@ function StandardVariant({
       <div className="flex items-start gap-4 mb-4">
         {/* Company Logo */}
         <div className="w-12 h-12 rounded-xl bg-secondary/50 flex-shrink-0 flex items-center justify-center overflow-hidden border border-border/30">
-          {stock.logo && !imageError ? (
+          {stock?.logo && !imageError ? (
             <OptimizedImage
               src={stock.logo}
-              alt={`${stock.name} logo`}
+              alt={`${stock?.name || 'Stock'} logo`}
               className="w-full h-full object-cover rounded-xl"
               onError={() => setImageError(true)}
               priority="low"
@@ -424,14 +424,14 @@ function StandardVariant({
             />
           ) : (
             <span className="text-sm font-bold text-primary">
-              {stock.symbol.charAt(0)}
+              {stock?.symbol?.charAt(0) || '?'}
             </span>
           )}
         </div>
 
         <div className="flex-1 min-w-0">
-          <div className="font-bold text-foreground text-lg">{stock.symbol}</div>
-          <div className="text-sm text-muted-foreground truncate">{stock.name}</div>
+          <div className="font-bold text-foreground text-lg">{stock?.symbol || 'N/A'}</div>
+          <div className="text-sm text-muted-foreground truncate">{stock?.name || 'Unknown'}</div>
         </div>
       </div>
 
@@ -585,10 +585,10 @@ function EnhancedVariant({
           <div className="flex items-center gap-3 flex-1 min-w-0">
             {/* Logo */}
             <div className="w-10 h-10 rounded-xl bg-secondary/50 flex-shrink-0 flex items-center justify-center overflow-hidden border border-border/30">
-              {stock.logo && !imageError ? (
+              {stock?.logo && !imageError ? (
                 <OptimizedImage
                   src={stock.logo}
-                  alt={`${stock.name} logo`}
+                  alt={`${stock?.name || 'Stock'} logo`}
                   className="w-full h-full object-cover rounded-xl"
                   onError={() => setImageError(true)}
                   priority="low"
@@ -596,14 +596,14 @@ function EnhancedVariant({
                 />
               ) : (
                 <span className="text-sm font-bold text-primary">
-                  {stock.symbol.charAt(0)}
+                  {stock?.symbol?.charAt(0) || '?'}
                 </span>
               )}
             </div>
             
             <div className="flex-1 min-w-0">
-              <h3 className="font-bold text-lg">{stock.symbol}</h3>
-              <p className="text-sm text-muted-foreground truncate">{stock.name}</p>
+              <h3 className="font-bold text-lg">{stock?.symbol || 'N/A'}</h3>
+              <p className="text-sm text-muted-foreground truncate">{stock?.name || 'Unknown'}</p>
             </div>
           </div>
           

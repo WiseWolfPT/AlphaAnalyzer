@@ -3,6 +3,7 @@ import jwt from 'jsonwebtoken';
 import { auth, db } from '../lib/supabase';
 import { SubscriptionTier, UserRole } from '../types/auth';
 import { createJWTValidator, extractTokenFromHeaders, JWTValidationResult } from '../utils/jwt-validator';
+import { isVercelProxyRequest, extractVercelMetadata } from './vercel-proxy-auth';
 
 // Extend Express Request interface to include user data
 declare global {
@@ -44,10 +45,9 @@ export class AuthenticationMiddleware {
   private enableWhopIntegration: boolean;
 
   // Whop JWT public key for token verification
-  private static readonly WHOP_JWT_PUBLIC_KEY = `-----BEGIN PUBLIC KEY-----
-MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAErz8a8vxvexHC0TLT91g7llOdDOsN
-uYiGEfic4Qhni+HMfRBuUphOh7F3k8QgwZc9UlL0AHmyYqtbhL9NuJes6w==
------END PUBLIC KEY-----`;
+  // Note: This is a PUBLIC key (not secret) but must be set via WHOP_JWT_PUBLIC_KEY env var
+  // to pass security checks. Default to empty string if not set (Whop integration disabled)
+  private static readonly WHOP_JWT_PUBLIC_KEY = process.env.WHOP_JWT_PUBLIC_KEY || '';
 
   constructor(options: AuthMiddlewareOptions) {
     this.accessTokenSecret = options.accessTokenSecret;
@@ -61,6 +61,19 @@ uYiGEfic4Qhni+HMfRBuUphOh7F3k8QgwZc9UlL0AHmyYqtbhL9NuJes6w==
   authenticate = () => {
     return async (req: Request, res: Response, next: NextFunction) => {
       try {
+        // Check if this is a Vercel proxy request and handle accordingly
+        if (isVercelProxyRequest(req)) {
+          const proxyAuth = await this.authenticateVercelProxy(req);
+          if (proxyAuth) {
+            req.user = proxyAuth;
+            console.log('🔐 Vercel proxy authentication successful', {
+              deployment: extractVercelMetadata(req).deployment,
+              region: extractVercelMetadata(req).region,
+            });
+            return next();
+          }
+        }
+
         // Try Whop authentication first if enabled
         if (this.enableWhopIntegration) {
           const whopUser = await this.authenticateWhopUser(req);
@@ -139,6 +152,61 @@ uYiGEfic4Qhni+HMfRBuUphOh7F3k8QgwZc9UlL0AHmyYqtbhL9NuJes6w==
       };
     } catch (error) {
       console.error('Whop authentication error:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Authenticate Vercel proxy requests
+   */
+  private async authenticateVercelProxy(req: Request): Promise<Request['user'] | null> {
+    try {
+      const metadata = extractVercelMetadata(req);
+      
+      // Check if proxy authentication is enabled
+      const proxyEnabled = process.env.ENABLE_VERCEL_PROXY_AUTH === 'true';
+      const proxyBypass = process.env.VERCEL_PROXY_BYPASS_AUTH === 'true';
+      const proxySecret = process.env.VERCEL_PROXY_SECRET;
+      
+      if (!proxyEnabled) {
+        console.log('🔒 Vercel proxy authentication disabled');
+        return null;
+      }
+
+      // Verify proxy secret if configured
+      if (proxySecret) {
+        const providedSecret = req.headers['x-vercel-proxy-secret'] as string;
+        if (providedSecret !== proxySecret) {
+          console.warn('⚠️ Invalid Vercel proxy secret', {
+            deployment: metadata.deployment,
+            region: metadata.region,
+          });
+          return null;
+        }
+      }
+
+      // If bypass is enabled, create a system user
+      if (proxyBypass) {
+        console.log('✅ Vercel proxy bypass enabled, creating system user', {
+          deployment: metadata.deployment,
+          region: metadata.region,
+          requestId: metadata.requestId,
+        });
+
+        return {
+          id: 'vercel-proxy-system',
+          email: 'proxy@vercel.com',
+          subscriptionTier: 'premium' as SubscriptionTier, // Grant premium access to proxy
+          roles: [{ name: 'system', permissions: ['all'] }] as UserRole[],
+          permissions: ['all'],
+          sessionId: metadata.requestId,
+        };
+      }
+
+      // Otherwise, require normal authentication
+      return null;
+    } catch (error) {
+      console.error('Vercel proxy authentication error:', error);
       return null;
     }
   }

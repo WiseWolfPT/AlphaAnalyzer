@@ -62,9 +62,10 @@ export const env = {
   VITE_SUPABASE_ANON_KEY: getEnvVar('VITE_SUPABASE_ANON_KEY', ''), // Anon key é pública por design
   VITE_WHOP_CLIENT_ID: getEnvVar('VITE_WHOP_CLIENT_ID', ''), // Client ID é público
   
-  // API Base URLs (públicas)
-  VITE_API_BASE_URL: getEnvVar('VITE_API_BASE_URL', '/api'),
-  VITE_API_URL: getEnvVar('VITE_API_URL', 'https://crucial-ivonne-alfalyzer-90666a9e.koyeb.app'),
+  // API Base URLs - CRITICAL: Always use relative paths for Vercel proxy
+  // The proxy is configured in vercel.json to redirect /api/* to the Koyeb backend
+  VITE_API_BASE_URL: '/api', // Fixed to use proxy
+  VITE_API_URL: '', // Deprecated - should not be used
   
   // Ambiente
   NODE_ENV: getEnvVar('NODE_ENV', 'development'),

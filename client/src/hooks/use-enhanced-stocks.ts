@@ -3,28 +3,49 @@ import enhancedApi from '@/lib/enhanced-api';
 import { queryKeys, prefetchConfigs } from '@/lib/query-client';
 import { localCache } from '@/services/local-cache';
 import type { Stock } from '@shared/schema';
+import { handleError } from '@/services/error-handler-service';
 
 // Hook for fetching a single stock with real-time data
 export function useStock(symbol: string, enabled = true) {
   return useQuery({
     queryKey: queryKeys.stock(symbol),
     queryFn: async () => {
-      // Check local cache first
-      const cached = localCache.getStockData(symbol, 'stock_profile');
-      if (cached) {
-        return cached;
+      try {
+        // Check local cache first
+        const cached = localCache.getStockData(symbol, 'stock_profile');
+        if (cached) {
+          return cached;
+        }
+        
+        // Fetch from API
+        const data = await enhancedApi.stocks.getBySymbol(symbol);
+        
+        // Cache the result
+        localCache.setStockData(symbol, 'stock_profile', data);
+        
+        return data;
+      } catch (error) {
+        await handleError(error, {
+          context: `Fetching stock data for ${symbol}`,
+          category: 'api',
+          severity: 'medium',
+          showNotification: true,
+          retry: true
+        });
+        throw error;
       }
-      
-      // Fetch from API
-      const data = await enhancedApi.stocks.getBySymbol(symbol);
-      
-      // Cache the result
-      localCache.setStockData(symbol, 'stock_profile', data);
-      
-      return data;
     },
     enabled: enabled && !!symbol,
     ...prefetchConfigs.stock,
+    retry: (failureCount, error) => {
+      // Custom retry logic
+      if (error?.message?.includes('404')) return false; // Don't retry if stock not found
+      if (error?.message?.includes('quota')) return false; // Don't retry if quota exceeded
+      return failureCount < 3;
+    },
+    onError: (error) => {
+      console.error(`Error fetching stock ${symbol}:`, error);
+    }
   });
 }
 

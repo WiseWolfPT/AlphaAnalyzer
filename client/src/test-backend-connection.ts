@@ -1,7 +1,8 @@
 // Test script to verify backend connection
 
 async function testBackendConnection() {
-  const BACKEND_URL = import.meta.env.VITE_API_URL || 'https://crucial-ivonne-alfalyzer-90666a9e.koyeb.app';
+  // Use relative path to go through Vercel proxy
+  const BACKEND_URL = '';
   
   console.log('🧪 Testing backend connection...');
   console.log(`📍 Backend URL: ${BACKEND_URL}`);

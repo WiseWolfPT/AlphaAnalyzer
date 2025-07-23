@@ -3,6 +3,7 @@ import { env } from '@/lib/env';
 import { invisibleFallbackService } from './invisible-fallback-service';
 import { createAuthHeaders, logAuthConfig } from '@/lib/auth-headers';
 import { addVercelProxyHeaders, isVercelDeployment } from '@/lib/vercel-proxy-client';
+import { handleApiError, retryWithBackoff } from '@/services/error-handler-service';
 
 // Use relative path for Vercel proxy instead of direct Koyeb URL
 const API_BASE_URL = typeof window !== 'undefined' ? '' : (env.VITE_API_URL || 'https://crucial-ivonne-alfalyzer-90666a9e.koyeb.app');
@@ -158,7 +159,11 @@ class MarketDataClient {
     
     // Use batch endpoint to get a single quote since individual endpoints don't exist
     try {
-      const batchResponse = await this.getBatchQuotes([symbol]);
+      const batchResponse = await retryWithBackoff(
+        () => this.getBatchQuotes([symbol]),
+        3,
+        1000
+      );
       
       // Extract the single quote from batch response
       if (batchResponse.quotes && batchResponse.quotes.length > 0) {
@@ -173,6 +178,15 @@ class MarketDataClient {
       throw new Error(`No quote data found for symbol: ${symbol}`);
     } catch (error) {
       console.error(`❌ Error fetching quote for ${symbol}:`, error);
+      
+      // Try to handle the error and provide fallback
+      await handleApiError(
+        error, 
+        `quote/${symbol}`,
+        () => this.getQuote(symbol)
+      );
+      
+      // If we reach here, error handler couldn't recover, throw the error
       throw error;
     }
   }
@@ -288,10 +302,28 @@ class MarketDataClient {
         };
       }
       
-      // For other errors, return empty response
+      // Handle API errors with the error handler
+      await handleApiError(
+        error,
+        'quotes/batch',
+        async () => {
+          // Retry with exponential backoff
+          return await retryWithBackoff(
+            () => this.fetchWithAuth(`${this.baseUrl}/quotes/batch`, {
+              method: 'POST',
+              body: JSON.stringify({ symbols }),
+            }),
+            3,
+            2000
+          );
+        }
+      );
+      
+      // For other errors, return empty response with proper error info
       return {
         quotes: [],
         errors: { general: error.message },
+        failed: symbols,
         timestamp: Date.now(),
         _timestamp: Date.now() / 1000
       };

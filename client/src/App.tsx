@@ -10,6 +10,8 @@ import { SupabaseAuthProvider } from "@/contexts/supabase-auth-context";
 import { ErrorBoundary } from "@/components/shared/error-boundary";
 import { DebugErrorBoundary } from "@/components/shared/debug-error-boundary";
 import { AppInitializer } from "@/components/app-initializer";
+import { EnhancedErrorBoundary } from "@/components/error/enhanced-error-boundary";
+import { NotificationToast } from "@/components/notifications/notification-toast";
 // Temporarily disable monitoring
 // import { initializeMonitoring, FinancialWidgetErrorBoundary, performanceMonitor } from "@/lib/monitoring";
 
@@ -554,13 +556,14 @@ function App() {
     <DebugErrorBoundary>
       <CurrencyProvider>
         <FinancialWidgetErrorBoundary>
-          <ErrorBoundary>
+          <EnhancedErrorBoundary context="Root Application">
             <QueryClientProvider client={queryClient}>
               <QueryDebugWrapper queryClient={queryClient}>
                 <AppInitializer>
                   <ThemeProvider defaultTheme="dark" storageKey="alfalyzer-theme">
                     <SupabaseAuthProvider>
                       <PortfolioProvider>
+                        <NotificationToast />
                         <Toaster />
                         <DebugModeToggle />
                         <Router />

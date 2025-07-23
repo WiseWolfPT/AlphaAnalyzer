@@ -120,7 +120,7 @@ export default function FindStocks() {
     status,
     fetchStatus,
     hasQuotes: quotesData?.quotes?.length > 0,
-    apiUrl: import.meta.env.VITE_API_URL || 'NOT SET',
+    apiUrl: 'Using Vercel Proxy',
     symbolsLength: displayedSymbols.length
   });
 
