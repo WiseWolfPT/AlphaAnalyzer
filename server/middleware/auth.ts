@@ -30,22 +30,37 @@ export enum JWTErrorType {
 }
 
 /**
- * Extract JWT token from Authorization header
+ * Extract JWT token from Authorization or X-Auth-Token header
+ * Supports both headers to handle Vercel's Authorization header bug
  */
 function extractToken(req: Request): string | null {
+  // Try Authorization header first (for development)
   const authHeader = req.headers.authorization;
   
-  if (!authHeader) {
+  // Try X-Auth-Token header (for Vercel production)
+  const xAuthToken = req.headers['x-auth-token'] as string;
+  
+  // Use whichever header is present
+  const tokenHeader = authHeader || xAuthToken;
+  
+  if (!tokenHeader) {
     return null;
   }
   
+  // Log which header was used for debugging
+  if (xAuthToken && !authHeader) {
+    console.log('🔐 Using X-Auth-Token header (Vercel workaround)');
+  } else if (authHeader) {
+    console.log('🔐 Using Authorization header');
+  }
+  
   // Check for Bearer token
-  if (authHeader.startsWith('Bearer ')) {
-    return authHeader.substring(7);
+  if (tokenHeader.startsWith('Bearer ')) {
+    return tokenHeader.substring(7);
   }
   
   // Also support token without Bearer prefix
-  return authHeader;
+  return tokenHeader;
 }
 
 /**

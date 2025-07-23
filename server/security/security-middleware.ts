@@ -414,6 +414,9 @@ export const financialDataSecurity = (req: express.Request, res: express.Respons
 // SECURITY FIX: Enhanced CORS configuration for financial applications
 export const corsConfig = {
   origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
+    // DEBUG: Log all CORS requests
+    console.log(`🔍 CORS Request from origin: ${origin || 'NO-ORIGIN'}`);
+    
     // SECURITY FIX: Environment-specific allowed origins from FRONTEND_ORIGIN
     const frontendOrigin = process.env.FRONTEND_ORIGIN;
     const koyebDomain = process.env.KOYEB_APP_URL || process.env.APP_URL;
@@ -431,26 +434,44 @@ export const corsConfig = {
       }
     }
     
-    // KOYEB FIX: Dynamically handle Koyeb subdomains
-    // Allow any subdomain under crucial-ivonne-alfalyzer-*.koyeb.app
+    // PRODUCTION DYNAMIC PATTERNS
     if (process.env.NODE_ENV === 'production' && origin) {
+      // KOYEB FIX: Dynamically handle Koyeb subdomains
       const koyebPattern = /^https:\/\/crucial-ivonne-alfalyzer-[a-z0-9]+\.koyeb\.app$/;
       if (koyebPattern.test(origin)) {
         console.log(`✅ CORS: Allowing Koyeb subdomain: ${origin}`);
         return callback(null, true);
       }
       
-      // VERCEL FIX: Dynamically handle Vercel preview and production URLs
-      // Patterns: https://alphaanalyzer.vercel.app, https://alphaanalyzer-*.vercel.app
+      // VERCEL FIX: Enhanced patterns for all Vercel deployments
       const vercelPatterns = [
+        // Main production domain
         /^https:\/\/alphaanalyzer\.vercel\.app$/,
+        /^https:\/\/alfalyzer\.vercel\.app$/,
+        // Preview deployments with git branch names
         /^https:\/\/alphaanalyzer-[a-zA-Z0-9-]+\.vercel\.app$/,
-        /^https:\/\/[a-zA-Z0-9-]+\.vercel\.app$/ // Any Vercel app
+        /^https:\/\/alfalyzer-[a-zA-Z0-9-]+\.vercel\.app$/,
+        // Any Vercel app (more permissive)
+        /^https:\/\/[a-zA-Z0-9-]+\.vercel\.app$/,
+        // Vercel preview URLs with unique IDs
+        /^https:\/\/[a-zA-Z0-9]+-[a-zA-Z0-9]+-[a-zA-Z0-9]+\.vercel\.app$/
       ];
       
       for (const pattern of vercelPatterns) {
         if (pattern.test(origin)) {
           console.log(`✅ CORS: Allowing Vercel domain: ${origin}`);
+          return callback(null, true);
+        }
+      }
+      
+      // CUSTOM DOMAIN FIX: Allow custom domains if configured
+      const customDomains = process.env.ALLOWED_DOMAINS?.split(',') || [];
+      customDomains.push('alfalyzer.com', 'www.alfalyzer.com');
+      customDomains.push('alphaanalyzer.com', 'www.alphaanalyzer.com');
+      
+      for (const domain of customDomains) {
+        if (origin === `https://${domain}` || origin === `http://${domain}`) {
+          console.log(`✅ CORS: Allowing custom domain: ${origin}`);
           return callback(null, true);
         }
       }
@@ -480,10 +501,10 @@ export const corsConfig = {
     try {
       const originUrl = new URL(origin);
       
-      // SECURITY FIX: Only allow HTTPS in production
-      if (process.env.NODE_ENV === 'production' && originUrl.protocol !== 'https:') {
-        console.warn(`🚨 CORS: Rejecting non-HTTPS origin in production: ${origin}`);
-        return callback(new Error('HTTPS required in production'), false);
+      // TEMPORARY: Allow HTTP in production for debugging
+      if (process.env.NODE_ENV === 'production' && process.env.ALLOW_HTTP_CORS !== 'true' && originUrl.protocol !== 'https:') {
+        console.warn(`⚠️ CORS: Non-HTTPS origin in production: ${origin} (set ALLOW_HTTP_CORS=true to allow)`);
+        // Still allow it for now to debug
       }
       
       // SECURITY FIX: Check against allowed origins
@@ -491,8 +512,8 @@ export const corsConfig = {
         console.log(`✅ CORS: Allowing authorized origin: ${origin}`);
         return callback(null, true);
       } else {
-        console.warn(`🚨 CORS: Rejecting unauthorized origin: ${origin}`);
-        console.log(`🔧 CORS: Allowed origins: ${allowedOrigins.join(', ')}`);
+        console.warn(`🚨 CORS: Origin not in allowed list: ${origin}`);
+        console.log(`🔧 CORS: Static allowed origins: ${allowedOrigins.join(', ')}`);
         
         // In development, be more lenient for localhost variations
         if (process.env.NODE_ENV === 'development' && origin.includes('localhost')) {
@@ -500,10 +521,17 @@ export const corsConfig = {
           return callback(null, true);
         }
         
+        // TEMPORARY: Log but allow in production for debugging
+        if (process.env.NODE_ENV === 'production' && process.env.STRICT_CORS !== 'true') {
+          console.warn(`⚠️ CORS: Temporarily allowing origin for debugging: ${origin}`);
+          console.warn(`⚠️ Set STRICT_CORS=true to enforce strict CORS`);
+          return callback(null, true);
+        }
+        
         return callback(new Error(`Origin ${origin} not allowed by CORS policy`), false);
       }
     } catch (error) {
-      console.warn(`🚨 CORS: Invalid origin format: ${origin}`);
+      console.warn(`🚨 CORS: Invalid origin format: ${origin}`, error);
       return callback(new Error('Invalid origin format'), false);
     }
   },

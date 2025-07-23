@@ -17,6 +17,11 @@ import { AppInitializer } from "@/components/app-initializer";
 const FinancialWidgetErrorBoundary = ({ children }: { children: React.ReactNode }) => <>{children}</>;
 import { createLazyComponent, getLoadingMetrics } from "@/lib/lazy-loader";
 
+// Initialize logging system
+import logger from "@/lib/logger";
+import httpInterceptor from "@/lib/http-interceptor";
+import { DebugModeToggle } from "@/components/debug/debug-mode-toggle";
+
 // Currency Context imports
 import { CurrencyProvider } from './contexts/currency-context';
 import { PortfolioProvider } from './contexts/portfolio-context';
@@ -44,6 +49,14 @@ const AdminDashboard = createLazyComponent(
   () => import("@/pages/admin/admin-dashboard"),
   {
     name: 'AdminDashboard',
+    fallback: FallbackDashboard
+  }
+);
+
+const LogsDashboard = createLazyComponent(
+  () => import("@/pages/admin/logs-dashboard"),
+  {
+    name: 'LogsDashboard',
     fallback: FallbackDashboard
   }
 );
@@ -243,6 +256,14 @@ const Settings = createLazyComponent(
   () => import("@/pages/settings"),
   {
     name: 'Settings'
+  }
+);
+
+// Monitoring micro-bundles
+const CacheMonitor = createLazyComponent(
+  () => import("@/pages/cache-monitor"),
+  {
+    name: 'CacheMonitor'
   }
 );
 
@@ -450,6 +471,20 @@ function Router() {
           )}
         </Route>
         <Route path="/admin/debug" component={DebugDashboard} />
+        <Route path="/admin/cache">
+          {() => (
+            <AdminRoute>
+              <CacheMonitor />
+            </AdminRoute>
+          )}
+        </Route>
+        <Route path="/admin/logs">
+          {() => (
+            <AdminRoute>
+              <LogsDashboard />
+            </AdminRoute>
+          )}
+        </Route>
         
         {/* Valuation Dashboard Route */}
         <Route path="/valuation" component={ValuationDashboard} />
@@ -479,6 +514,39 @@ function Router() {
 }
 
 function App() {
+  // Initialize logging system on app start
+  useEffect(() => {
+    logger.info('🚀 Alfalyzer App Started', {
+      environment: import.meta.env.MODE,
+      timestamp: new Date().toISOString(),
+      userAgent: navigator.userAgent,
+    });
+    
+    // Log unhandled errors
+    window.addEventListener('error', (event) => {
+      logger.error('Unhandled Error', {
+        message: event.message,
+        filename: event.filename,
+        lineno: event.lineno,
+        colno: event.colno,
+        stack: event.error?.stack,
+      });
+    });
+    
+    // Log unhandled promise rejections
+    window.addEventListener('unhandledrejection', (event) => {
+      logger.error('Unhandled Promise Rejection', {
+        reason: event.reason,
+        promise: event.promise,
+      });
+    });
+    
+    // Enable remote logging in production
+    if (import.meta.env.PROD) {
+      logger.enableRemoteLogging('/api/logs');
+    }
+  }, []);
+  
   console.log('🚀 App component rendering');
   console.log('QueryClient instance at App render:', queryClient);
 
@@ -494,6 +562,7 @@ function App() {
                     <SupabaseAuthProvider>
                       <PortfolioProvider>
                         <Toaster />
+                        <DebugModeToggle />
                         <Router />
                         <ReactQueryDevtools 
                           initialIsOpen={false} 

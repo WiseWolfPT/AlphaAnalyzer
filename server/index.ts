@@ -99,6 +99,11 @@ app.use(compression({
   level: 6 // Balanced compression level
 }));
 
+// CORS Logger middleware (before CORS)
+import { corsLoggerMiddleware, corsDebugMiddleware } from './middleware/cors-logger';
+app.use(corsLoggerMiddleware);
+app.use(corsDebugMiddleware);
+
 // CORS configuration
 app.use(cors(corsConfig));
 
@@ -142,6 +147,23 @@ const csrfProtection = null; // BROKEN: csurf package removed
 app.use(originValidationMiddleware);
 app.use(inputSanitationMiddleware);
 app.use(securityLoggingMiddleware);
+
+// Import and add enhanced logging middleware
+import { 
+  authLoggingMiddleware, 
+  corsLoggingMiddleware, 
+  unauthorizedLoggingMiddleware, 
+  proxyLoggingMiddleware, 
+  environmentLoggingMiddleware 
+} from './middleware/auth-logging';
+import { requestLogger, errorLogger } from './lib/logger';
+
+// Add comprehensive logging middleware
+app.use(environmentLoggingMiddleware);
+app.use(requestLogger);
+app.use(authLoggingMiddleware);
+app.use(corsLoggingMiddleware);
+app.use(proxyLoggingMiddleware);
 
 // Add request ID and logging middleware
 app.use((req, res, next) => {
@@ -393,6 +415,12 @@ async function initializeMarketDataServices() {
 
     // Setup Sentry error handler BEFORE other error middleware
     setupSentryErrorHandler(app);
+
+    // Add 401 error logging middleware
+    app.use(unauthorizedLoggingMiddleware);
+    
+    // Enhanced error logging
+    app.use(errorLogger);
 
     // Global error handling middleware (must be last)
     app.use(errorHandler);

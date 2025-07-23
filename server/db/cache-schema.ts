@@ -2,8 +2,10 @@
 import { db } from './index';
 
 export function createCacheTables() {
+  const database = db();
+  
   // Financial data cache table
-  db.exec(`
+  database.exec(`
     CREATE TABLE IF NOT EXISTS financial_cache (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       symbol TEXT NOT NULL,
@@ -18,7 +20,7 @@ export function createCacheTables() {
   `);
   
   // Stock quote cache table
-  db.exec(`
+  database.exec(`
     CREATE TABLE IF NOT EXISTS stock_quotes_cache (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       symbol TEXT NOT NULL UNIQUE,
@@ -41,7 +43,7 @@ export function createCacheTables() {
   `);
   
   // Company profile cache table
-  db.exec(`
+  database.exec(`
     CREATE TABLE IF NOT EXISTS company_profiles_cache (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       symbol TEXT NOT NULL UNIQUE,
@@ -63,7 +65,7 @@ export function createCacheTables() {
   `);
   
   // API usage tracking
-  db.exec(`
+  database.exec(`
     CREATE TABLE IF NOT EXISTS api_usage (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       provider TEXT NOT NULL,
@@ -80,7 +82,7 @@ export function createCacheTables() {
   `);
   
   // Market indices cache
-  db.exec(`
+  database.exec(`
     CREATE TABLE IF NOT EXISTS market_indices_cache (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       symbol TEXT NOT NULL UNIQUE,
@@ -98,31 +100,36 @@ export function createCacheTables() {
 }
 
 // Helper functions for cache management
-export const cacheQueries = {
-  // Insert or update stock quote
-  upsertStockQuote: db.prepare(`
-    INSERT OR REPLACE INTO stock_quotes_cache 
-    (symbol, name, price, change, change_percent, volume, market_cap, pe_ratio, eps, sector, industry, logo_url, updated_at)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-  `),
-  
-  // Get stock quote
-  getStockQuote: db.prepare(`
-    SELECT * FROM stock_quotes_cache 
-    WHERE symbol = ? 
-    AND updated_at > datetime('now', '-1 minute')
-  `),
-  
-  // Get multiple stock quotes
-  getMultipleStockQuotes: db.prepare(`
-    SELECT * FROM stock_quotes_cache 
-    WHERE symbol IN (SELECT value FROM json_each(?))
-    AND updated_at > datetime('now', '-1 minute')
-  `),
-  
-  // Clean old cache entries
-  cleanOldCache: db.prepare(`
-    DELETE FROM stock_quotes_cache 
-    WHERE updated_at < datetime('now', '-1 day')
-  `)
-};
+export function getCacheQueries() {
+  return {
+    // Insert or update stock quote
+    upsertStockQuote: db().prepare(`
+      INSERT OR REPLACE INTO stock_quotes_cache 
+      (symbol, name, price, change, change_percent, volume, market_cap, pe_ratio, eps, sector, industry, logo_url, updated_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `),
+    
+    // Get stock quote
+    getStockQuote: db().prepare(`
+      SELECT * FROM stock_quotes_cache 
+      WHERE symbol = ? 
+      AND updated_at > datetime('now', '-1 minute')
+    `),
+    
+    // Get multiple stock quotes
+    getMultipleStockQuotes: db().prepare(`
+      SELECT * FROM stock_quotes_cache 
+      WHERE symbol IN (SELECT value FROM json_each(?))
+      AND updated_at > datetime('now', '-1 minute')
+    `),
+    
+    // Clean old cache entries
+    cleanOldCache: db().prepare(`
+      DELETE FROM stock_quotes_cache 
+      WHERE updated_at < datetime('now', '-1 day')
+    `)
+  };
+}
+
+// Export for backward compatibility
+export const cacheQueries = getCacheQueries;

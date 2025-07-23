@@ -18,6 +18,7 @@ import aiAnalysisRouter from "./routes/ai-analysis";
 import portfoliosRouter from "./routes/portfolios";
 import earningsCalendarRouter from "./routes/earnings-calendar";
 import diagnosticRouter from "./routes/diagnostic";
+import cachedDataRouter from "./routes/cached-data";
 // REMOVED: Cache and alerts imports due to startup issues
 // import cacheAdminRouter from "./routes/cache-admin";
 // import { alertsRouter } from "./routes/alerts";
@@ -108,6 +109,12 @@ export async function registerRoutes(app: Express, server: Server): Promise<void
   
   // Diagnostic endpoint for debugging production issues (no auth required)
   app.use("/api/diagnostic", diagnosticRouter);
+  
+  // Import logs router
+  import logsRouter from "./routes/logs";
+  
+  // Logs management routes (protected by admin auth in production)
+  app.use("/api/logs", process.env.NODE_ENV === 'production' ? adminSecurityMiddleware : (req: any, res: any, next: any) => next(), logsRouter);
 
   // Basic API info endpoint
   app.get("/api", (req, res) => {
@@ -166,6 +173,9 @@ export async function registerRoutes(app: Express, server: Server): Promise<void
   
   // Image optimization proxy routes
   app.use("/api/image", imageProxyRouter);
+  
+  // Cached data routes (eliminates CORS/Auth issues)
+  app.use("/api/cached", cachedDataRouter);
   
   // REMOVED: Alert system routes due to startup issues
   // app.use("/api/alerts", alertsRouter);
@@ -513,6 +523,61 @@ export async function registerRoutes(app: Express, server: Server): Promise<void
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch market indices" });
     }
+  });
+
+  // CORS Test Endpoint - for debugging CORS issues
+  app.get("/api/cors-test", (req, res) => {
+    const origin = req.headers.origin || 'NO-ORIGIN';
+    const userAgent = req.headers['user-agent'] || 'NO-USER-AGENT';
+    const referer = req.headers.referer || 'NO-REFERER';
+    
+    console.log(`🔍 CORS Test Request:`);
+    console.log(`   Origin: ${origin}`);
+    console.log(`   User-Agent: ${userAgent}`);
+    console.log(`   Referer: ${referer}`);
+    console.log(`   Headers:`, req.headers);
+    
+    res.json({
+      success: true,
+      message: "CORS test successful!",
+      requestInfo: {
+        origin,
+        userAgent,
+        referer,
+        headers: req.headers,
+        method: req.method,
+        url: req.url,
+        timestamp: new Date().toISOString()
+      },
+      corsInfo: {
+        allowedOrigins: process.env.NODE_ENV === 'production' 
+          ? ['*.vercel.app', '*.koyeb.app', 'alfalyzer.com', 'alphaanalyzer.com']
+          : ['localhost:*', '127.0.0.1:*'],
+        credentialsAllowed: true,
+        methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH']
+      },
+      environment: {
+        nodeEnv: process.env.NODE_ENV,
+        frontendOrigin: process.env.FRONTEND_ORIGIN || 'NOT-SET',
+        appUrl: process.env.APP_URL || process.env.KOYEB_APP_URL || 'NOT-SET',
+        strictCors: process.env.STRICT_CORS || 'false'
+      }
+    });
+  });
+
+  // CORS Test with POST - for testing preflight requests
+  app.post("/api/cors-test", (req, res) => {
+    console.log(`🔍 CORS Test POST Request:`);
+    console.log(`   Origin: ${req.headers.origin || 'NO-ORIGIN'}`);
+    console.log(`   Content-Type: ${req.headers['content-type']}`);
+    console.log(`   Body:`, req.body);
+    
+    res.json({
+      success: true,
+      message: "CORS POST test successful!",
+      receivedData: req.body,
+      timestamp: new Date().toISOString()
+    });
   });
 
   // Server is now created in index.ts

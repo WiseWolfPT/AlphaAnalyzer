@@ -1,0 +1,493 @@
+{
+  "indices": [
+    {
+      "symbol": "^PSI20",
+      "name": "PSI 20",
+      "exchange": "EURONEXT",
+      "description": "Portuguese Stock Index",
+      "country": "PT",
+      "currency": "EUR"
+    },
+    {
+      "symbol": "^GSPC",
+      "name": "S&P 500",
+      "exchange": "NYSE",
+      "description": "Standard & Poor's 500 Index",
+      "country": "US",
+      "currency": "USD"
+    },
+    {
+      "symbol": "^DJI",
+      "name": "Dow Jones Industrial Average",
+      "exchange": "NYSE",
+      "description": "Dow Jones Industrial Average",
+      "country": "US",
+      "currency": "USD"
+    },
+    {
+      "symbol": "^IXIC",
+      "name": "NASDAQ Composite",
+      "exchange": "NASDAQ",
+      "description": "NASDAQ Composite Index",
+      "country": "US",
+      "currency": "USD"
+    },
+    {
+      "symbol": "^FTSE",
+      "name": "FTSE 100",
+      "exchange": "LSE",
+      "description": "Financial Times Stock Exchange 100 Index",
+      "country": "GB",
+      "currency": "GBP"
+    },
+    {
+      "symbol": "^GDAXI",
+      "name": "DAX",
+      "exchange": "XETRA",
+      "description": "Deutscher Aktienindex",
+      "country": "DE",
+      "currency": "EUR"
+    }
+  ],
+  "portuguese_stocks": [
+    {
+      "symbol": "GALP.LS",
+      "name": "Galp Energia",
+      "exchange": "EURONEXT",
+      "sector": "Energy",
+      "industry": "Oil & Gas",
+      "country": "PT",
+      "currency": "EUR",
+      "website_url": "https://www.galp.com",
+      "description": "Integrated energy company with operations in oil, gas and renewables"
+    },
+    {
+      "symbol": "EDP.LS",
+      "name": "EDP - Energias de Portugal",
+      "exchange": "EURONEXT",
+      "sector": "Utilities",
+      "industry": "Electric Utilities",
+      "country": "PT",
+      "currency": "EUR",
+      "website_url": "https://www.edp.com",
+      "description": "Leading utilities company in Portugal and renewable energy leader"
+    },
+    {
+      "symbol": "EDPR.LS",
+      "name": "EDP Renováveis",
+      "exchange": "EURONEXT",
+      "sector": "Utilities",
+      "industry": "Renewable Energy",
+      "country": "PT",
+      "currency": "EUR",
+      "website_url": "https://www.edpr.com",
+      "description": "Global leader in renewable energy development and operation"
+    },
+    {
+      "symbol": "JMT.LS",
+      "name": "Jerónimo Martins",
+      "exchange": "EURONEXT",
+      "sector": "Consumer Defensive",
+      "industry": "Food Retail",
+      "country": "PT",
+      "currency": "EUR",
+      "website_url": "https://www.jeronimomartins.com",
+      "description": "Food distribution group operating Pingo Doce and Biedronka"
+    },
+    {
+      "symbol": "SON.LS",
+      "name": "Sonae",
+      "exchange": "EURONEXT",
+      "sector": "Consumer Cyclical",
+      "industry": "Retail",
+      "country": "PT",
+      "currency": "EUR",
+      "website_url": "https://www.sonae.pt",
+      "description": "Retail conglomerate with operations in food retail and shopping centers"
+    },
+    {
+      "symbol": "NOS.LS",
+      "name": "NOS SGPS",
+      "exchange": "EURONEXT",
+      "sector": "Communication Services",
+      "industry": "Telecom Services",
+      "country": "PT",
+      "currency": "EUR",
+      "website_url": "https://www.nos.pt",
+      "description": "Leading telecommunications and entertainment group in Portugal"
+    },
+    {
+      "symbol": "BCP.LS",
+      "name": "Banco Comercial Português",
+      "exchange": "EURONEXT",
+      "sector": "Financials",
+      "industry": "Banks",
+      "country": "PT",
+      "currency": "EUR",
+      "website_url": "https://www.millenniumbcp.pt",
+      "description": "Largest private bank in Portugal with international operations"
+    },
+    {
+      "symbol": "NVG.LS",
+      "name": "Navigator Company",
+      "exchange": "EURONEXT",
+      "sector": "Materials",
+      "industry": "Paper & Forest Products",
+      "country": "PT",
+      "currency": "EUR",
+      "website_url": "https://www.thenavigatorcompany.com",
+      "description": "Leading European producer of uncoated printing and writing paper"
+    },
+    {
+      "symbol": "CTT.LS",
+      "name": "CTT - Correios de Portugal",
+      "exchange": "EURONEXT",
+      "sector": "Industrials",
+      "industry": "Postal Services",
+      "country": "PT",
+      "currency": "EUR",
+      "website_url": "https://www.ctt.pt",
+      "description": "National postal service provider with banking and express services"
+    },
+    {
+      "symbol": "RENE.LS",
+      "name": "REN - Redes Energéticas Nacionais",
+      "exchange": "EURONEXT",
+      "sector": "Utilities",
+      "industry": "Energy Infrastructure",
+      "country": "PT",
+      "currency": "EUR",
+      "website_url": "https://www.ren.pt",
+      "description": "Operator of electricity and natural gas transmission networks"
+    },
+    {
+      "symbol": "ALTRI.LS",
+      "name": "Altri SGPS",
+      "exchange": "EURONEXT",
+      "sector": "Materials",
+      "industry": "Paper & Forest Products",
+      "country": "PT",
+      "currency": "EUR",
+      "website_url": "https://www.altri.pt",
+      "description": "Leading European producer of eucalyptus pulp"
+    },
+    {
+      "symbol": "SEM.LS",
+      "name": "Semapa",
+      "exchange": "EURONEXT",
+      "sector": "Materials",
+      "industry": "Diversified Materials",
+      "country": "PT",
+      "currency": "EUR",
+      "website_url": "https://www.semapa.pt",
+      "description": "Industrial holding company with interests in paper and cement"
+    },
+    {
+      "symbol": "COR.LS",
+      "name": "Corticeira Amorim",
+      "exchange": "EURONEXT",
+      "sector": "Materials",
+      "industry": "Cork Products",
+      "country": "PT",
+      "currency": "EUR",
+      "website_url": "https://www.amorim.com",
+      "description": "World's largest cork processing group"
+    },
+    {
+      "symbol": "MOTA.LS",
+      "name": "Mota-Engil",
+      "exchange": "EURONEXT",
+      "sector": "Industrials",
+      "industry": "Construction & Engineering",
+      "country": "PT",
+      "currency": "EUR",
+      "website_url": "https://www.mota-engil.com",
+      "description": "International construction and infrastructure management group"
+    },
+    {
+      "symbol": "PHR.LS",
+      "name": "Pharol SGPS",
+      "exchange": "EURONEXT",
+      "sector": "Communication Services",
+      "industry": "Telecom Holdings",
+      "country": "PT",
+      "currency": "EUR",
+      "website_url": "https://www.pharol.pt",
+      "description": "Investment holding company with stake in Oi telecom"
+    }
+  ],
+  "us_stocks": [
+    {
+      "symbol": "AAPL",
+      "name": "Apple Inc.",
+      "exchange": "NASDAQ",
+      "sector": "Technology",
+      "industry": "Consumer Electronics",
+      "country": "US",
+      "currency": "USD",
+      "website_url": "https://www.apple.com",
+      "description": "Designs, manufactures, and markets smartphones, computers, tablets, wearables and accessories"
+    },
+    {
+      "symbol": "MSFT",
+      "name": "Microsoft Corporation",
+      "exchange": "NASDAQ",
+      "sector": "Technology",
+      "industry": "Software",
+      "country": "US",
+      "currency": "USD",
+      "website_url": "https://www.microsoft.com",
+      "description": "Develops and licenses software, services, devices, and solutions worldwide"
+    },
+    {
+      "symbol": "AMZN",
+      "name": "Amazon.com Inc.",
+      "exchange": "NASDAQ",
+      "sector": "Consumer Cyclical",
+      "industry": "E-Commerce",
+      "country": "US",
+      "currency": "USD",
+      "website_url": "https://www.amazon.com",
+      "description": "Online retail, cloud computing, digital streaming, and artificial intelligence"
+    },
+    {
+      "symbol": "GOOGL",
+      "name": "Alphabet Inc. Class A",
+      "exchange": "NASDAQ",
+      "sector": "Communication Services",
+      "industry": "Internet Services",
+      "country": "US",
+      "currency": "USD",
+      "website_url": "https://www.google.com",
+      "description": "Parent company of Google, specializing in internet-related services and products"
+    },
+    {
+      "symbol": "META",
+      "name": "Meta Platforms Inc.",
+      "exchange": "NASDAQ",
+      "sector": "Communication Services",
+      "industry": "Social Media",
+      "country": "US",
+      "currency": "USD",
+      "website_url": "https://www.meta.com",
+      "description": "Develops social media applications including Facebook, Instagram, and WhatsApp"
+    },
+    {
+      "symbol": "TSLA",
+      "name": "Tesla Inc.",
+      "exchange": "NASDAQ",
+      "sector": "Consumer Cyclical",
+      "industry": "Electric Vehicles",
+      "country": "US",
+      "currency": "USD",
+      "website_url": "https://www.tesla.com",
+      "description": "Designs, develops, manufactures, and sells electric vehicles and energy storage systems"
+    },
+    {
+      "symbol": "NVDA",
+      "name": "NVIDIA Corporation",
+      "exchange": "NASDAQ",
+      "sector": "Technology",
+      "industry": "Semiconductors",
+      "country": "US",
+      "currency": "USD",
+      "website_url": "https://www.nvidia.com",
+      "description": "Designs graphics processing units for gaming and professional markets"
+    },
+    {
+      "symbol": "BRK.B",
+      "name": "Berkshire Hathaway Inc. Class B",
+      "exchange": "NYSE",
+      "sector": "Financials",
+      "industry": "Conglomerate",
+      "country": "US",
+      "currency": "USD",
+      "website_url": "https://www.berkshirehathaway.com",
+      "description": "Diversified holding company with subsidiaries in insurance, energy, and retail"
+    },
+    {
+      "symbol": "JPM",
+      "name": "JPMorgan Chase & Co.",
+      "exchange": "NYSE",
+      "sector": "Financials",
+      "industry": "Banks",
+      "country": "US",
+      "currency": "USD",
+      "website_url": "https://www.jpmorganchase.com",
+      "description": "Largest bank in the United States providing financial services worldwide"
+    },
+    {
+      "symbol": "V",
+      "name": "Visa Inc.",
+      "exchange": "NYSE",
+      "sector": "Financials",
+      "industry": "Payment Processing",
+      "country": "US",
+      "currency": "USD",
+      "website_url": "https://www.visa.com",
+      "description": "Global payments technology company facilitating electronic funds transfers"
+    },
+    {
+      "symbol": "JNJ",
+      "name": "Johnson & Johnson",
+      "exchange": "NYSE",
+      "sector": "Healthcare",
+      "industry": "Pharmaceuticals",
+      "country": "US",
+      "currency": "USD",
+      "website_url": "https://www.jnj.com",
+      "description": "Develops medical devices, pharmaceutical, and consumer packaged goods"
+    },
+    {
+      "symbol": "WMT",
+      "name": "Walmart Inc.",
+      "exchange": "NYSE",
+      "sector": "Consumer Defensive",
+      "industry": "Retail",
+      "country": "US",
+      "currency": "USD",
+      "website_url": "https://www.walmart.com",
+      "description": "Operates retail stores, wholesale clubs, and e-commerce websites"
+    },
+    {
+      "symbol": "PG",
+      "name": "Procter & Gamble Company",
+      "exchange": "NYSE",
+      "sector": "Consumer Defensive",
+      "industry": "Consumer Goods",
+      "country": "US",
+      "currency": "USD",
+      "website_url": "https://www.pg.com",
+      "description": "Manufactures and sells branded consumer packaged goods worldwide"
+    },
+    {
+      "symbol": "MA",
+      "name": "Mastercard Incorporated",
+      "exchange": "NYSE",
+      "sector": "Financials",
+      "industry": "Payment Processing",
+      "country": "US",
+      "currency": "USD",
+      "website_url": "https://www.mastercard.com",
+      "description": "Technology company in the global payments industry"
+    },
+    {
+      "symbol": "UNH",
+      "name": "UnitedHealth Group Incorporated",
+      "exchange": "NYSE",
+      "sector": "Healthcare",
+      "industry": "Health Insurance",
+      "country": "US",
+      "currency": "USD",
+      "website_url": "https://www.unitedhealthgroup.com",
+      "description": "Diversified health care company offering health care coverage and services"
+    },
+    {
+      "symbol": "DIS",
+      "name": "The Walt Disney Company",
+      "exchange": "NYSE",
+      "sector": "Communication Services",
+      "industry": "Entertainment",
+      "country": "US",
+      "currency": "USD",
+      "website_url": "https://www.disney.com",
+      "description": "Entertainment company with theme parks, media networks, and studio entertainment"
+    },
+    {
+      "symbol": "HD",
+      "name": "The Home Depot Inc.",
+      "exchange": "NYSE",
+      "sector": "Consumer Cyclical",
+      "industry": "Home Improvement",
+      "country": "US",
+      "currency": "USD",
+      "website_url": "https://www.homedepot.com",
+      "description": "Home improvement retailer selling tools, construction products, and services"
+    },
+    {
+      "symbol": "BAC",
+      "name": "Bank of America Corporation",
+      "exchange": "NYSE",
+      "sector": "Financials",
+      "industry": "Banks",
+      "country": "US",
+      "currency": "USD",
+      "website_url": "https://www.bankofamerica.com",
+      "description": "Banking and financial services company serving individual consumers and businesses"
+    },
+    {
+      "symbol": "NFLX",
+      "name": "Netflix Inc.",
+      "exchange": "NASDAQ",
+      "sector": "Communication Services",
+      "industry": "Streaming Services",
+      "country": "US",
+      "currency": "USD",
+      "website_url": "https://www.netflix.com",
+      "description": "Subscription streaming service offering TV series, documentaries and feature films"
+    },
+    {
+      "symbol": "KO",
+      "name": "The Coca-Cola Company",
+      "exchange": "NYSE",
+      "sector": "Consumer Defensive",
+      "industry": "Beverages",
+      "country": "US",
+      "currency": "USD",
+      "website_url": "https://www.coca-colacompany.com",
+      "description": "Manufactures, markets, and sells nonalcoholic beverage concentrates and syrups"
+    }
+  ],
+  "crypto": [
+    {
+      "symbol": "BTC-USD",
+      "name": "Bitcoin",
+      "exchange": "CRYPTO",
+      "sector": "Cryptocurrency",
+      "industry": "Digital Currency",
+      "country": "GLOBAL",
+      "currency": "USD",
+      "description": "First and largest cryptocurrency by market capitalization"
+    },
+    {
+      "symbol": "ETH-USD",
+      "name": "Ethereum",
+      "exchange": "CRYPTO",
+      "sector": "Cryptocurrency",
+      "industry": "Smart Contract Platform",
+      "country": "GLOBAL",
+      "currency": "USD",
+      "description": "Decentralized platform for smart contracts and decentralized applications"
+    },
+    {
+      "symbol": "BNB-USD",
+      "name": "Binance Coin",
+      "exchange": "CRYPTO",
+      "sector": "Cryptocurrency",
+      "industry": "Exchange Token",
+      "country": "GLOBAL",
+      "currency": "USD",
+      "description": "Native cryptocurrency of the Binance exchange ecosystem"
+    },
+    {
+      "symbol": "USDT-USD",
+      "name": "Tether",
+      "exchange": "CRYPTO",
+      "sector": "Cryptocurrency",
+      "industry": "Stablecoin",
+      "country": "GLOBAL",
+      "currency": "USD",
+      "description": "USD-pegged stablecoin for cryptocurrency trading"
+    },
+    {
+      "symbol": "SOL-USD",
+      "name": "Solana",
+      "exchange": "CRYPTO",
+      "sector": "Cryptocurrency",
+      "industry": "Smart Contract Platform",
+      "country": "GLOBAL",
+      "currency": "USD",
+      "description": "High-performance blockchain supporting decentralized applications"
+    }
+  ]
+}
