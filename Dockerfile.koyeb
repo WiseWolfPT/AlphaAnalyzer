@@ -1,4 +1,4 @@
-# Dockerfile for Koyeb - Full server with all routes
+# Simple Dockerfile for Koyeb - Using koyeb-server.ts
 FROM node:20-alpine AS koyeb
 
 WORKDIR /app
@@ -6,17 +6,20 @@ WORKDIR /app
 # Install Python and build dependencies
 RUN apk add --no-cache python3 make g++ cairo-dev pango-dev jpeg-dev giflib-dev
 
-# Copy all files
-COPY . .
+# Copy essential server files
+COPY server ./server
+COPY shared ./shared
+COPY package*.json ./
+COPY tsconfig*.json ./
 
-# Install dependencies
-RUN npm install
-
-# Create empty .env to avoid dotenv warning
+# Create .env file
 RUN touch .env
 
-# Expose port - Koyeb will use the PORT env variable
+# Install only production dependencies
+RUN npm install express cors dotenv tsx axios @types/express @types/cors @supabase/supabase-js zod
+
+# Expose port
 EXPOSE 3001
 
-# Start the FULL server with tsx (handles TypeScript directly)
-CMD ["npx", "tsx", "server/index.ts"]
+# Use koyeb-production.ts with GET endpoints
+CMD ["npx", "tsx", "server/koyeb-production.ts"]
