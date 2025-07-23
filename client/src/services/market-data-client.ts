@@ -53,7 +53,7 @@ class MarketDataClient {
   private baseUrl: string;
   private cachedBaseUrl: string;
   private authToken: string | null = null;
-  private useCachedEndpoints: boolean = true; // New flag to use cached endpoints
+  private useCachedEndpoints: boolean = false; // Disabled - cached endpoints don't exist on backend
 
   constructor() {
     this.baseUrl = `${API_BASE_URL}/api/market-data`;
