@@ -1,6 +1,8 @@
 // Market Data Client - Connects to our backend API for real market data
 import { env } from '@/lib/env';
 import { invisibleFallbackService } from './invisible-fallback-service';
+import { createAuthHeaders, logAuthConfig } from '@/lib/auth-headers';
+import { addVercelProxyHeaders, isVercelDeployment } from '@/lib/vercel-proxy-client';
 
 // Use relative path for Vercel proxy instead of direct Koyeb URL
 const API_BASE_URL = typeof window !== 'undefined' ? '' : (env.VITE_API_URL || 'https://crucial-ivonne-alfalyzer-90666a9e.koyeb.app');
@@ -48,10 +50,13 @@ export interface MarketOverview {
 
 class MarketDataClient {
   private baseUrl: string;
+  private cachedBaseUrl: string;
   private authToken: string | null = null;
+  private useCachedEndpoints: boolean = true; // New flag to use cached endpoints
 
   constructor() {
     this.baseUrl = `${API_BASE_URL}/api/market-data`;
+    this.cachedBaseUrl = `${API_BASE_URL}/api/cached`; // New cached endpoints
     // Get auth token from localStorage (multiple possible keys for compatibility)
     // Note: The backend doesn't require authentication, but we still check for token
     // in case it's implemented in the future
@@ -61,19 +66,26 @@ class MarketDataClient {
     console.log('🔧 Market Data Client Configuration:', {
       API_BASE_URL,
       baseUrl: this.baseUrl,
+      cachedBaseUrl: this.cachedBaseUrl,
       VITE_API_URL: env.VITE_API_URL,
       hasAuthToken: !!this.authToken,
       authNotRequired: true, // Backend doesn't require auth
+      useCachedEndpoints: this.useCachedEndpoints,
       environment: import.meta.env.MODE
     });
+    
+    // Log auth header configuration
+    logAuthConfig();
   }
 
   private async fetchWithAuth(url: string, options?: RequestInit) {
-    const headers = {
-      'Content-Type': 'application/json',
-      ...(this.authToken && { Authorization: `Bearer ${this.authToken}` }),
-      ...options?.headers,
-    };
+    let headers = createAuthHeaders(this.authToken, options?.headers as Record<string, string>);
+    
+    // Add Vercel proxy headers if running on Vercel
+    if (isVercelDeployment) {
+      headers = addVercelProxyHeaders(headers);
+      console.log(`🚀 Running on Vercel - proxy headers added`);
+    }
 
     console.log(`🌐 Making request to: ${url}`);
     
@@ -138,23 +150,88 @@ class MarketDataClient {
   }
 
   private getHeaders(): HeadersInit {
-    const headers: HeadersInit = {
-      'Content-Type': 'application/json',
-    };
-    
-    if (this.authToken) {
-      headers['Authorization'] = `Bearer ${this.authToken}`;
-    }
-    
-    return headers;
+    return createAuthHeaders(this.authToken);
   }
 
   async getQuote(symbol: string): Promise<MarketQuote> {
+    if (this.useCachedEndpoints) {
+      try {
+        console.log(`🗄️ Fetching quote from cache: ${symbol}`);
+        const response = await this.fetchWithAuth(`${this.cachedBaseUrl}/quotes/${symbol}`);
+        
+        // Transform cached response to MarketQuote format
+        return {
+          symbol: response.symbol,
+          price: response.price,
+          change: response.change || 0,
+          changePercent: response.changePercent || 0,
+          high: response.price, // Cached data might not have high/low
+          low: response.price,
+          open: response.price,
+          previousClose: response.price - (response.change || 0),
+          volume: response.volume || 0,
+          marketCap: response.marketCap,
+          provider: 'cache',
+          timestamp: new Date(response.lastUpdated).getTime() / 1000,
+          _cached: true,
+          _timestamp: Date.now() / 1000
+        };
+      } catch (error) {
+        console.warn(`⚠️ Cache fetch failed for ${symbol}, falling back to direct API`, error);
+        // Fall back to direct API if cache fails
+      }
+    }
+    
+    // Original direct API call
     return this.fetchWithAuth(`${this.baseUrl}/quote/${symbol}`);
   }
 
   async getBatchQuotes(symbols: string[]): Promise<BatchQuotesResponse> {
     try {
+      // Try cached endpoints first if enabled
+      if (this.useCachedEndpoints) {
+        try {
+          console.log(`🗄️ Fetching batch quotes from cache: ${this.cachedBaseUrl}/quotes/batch`);
+          console.log(`📊 Symbols: ${symbols.join(', ')}`);
+          
+          const response = await this.fetchWithAuth(`${this.cachedBaseUrl}/quotes/batch`, {
+            method: 'POST',
+            body: JSON.stringify({ symbols }),
+          });
+          
+          console.log(`✅ Successfully fetched batch quotes from cache`);
+          
+          // Transform cached response to our format
+          if (response.quotes && Array.isArray(response.quotes)) {
+            return {
+              quotes: response.quotes.map((q: any) => ({
+                symbol: q.symbol,
+                price: q.price,
+                change: q.change || 0,
+                changePercent: q.changePercent || 0,
+                high: q.price,
+                low: q.price,
+                open: q.price,
+                previousClose: q.price - (q.change || 0),
+                volume: q.volume || 0,
+                marketCap: q.marketCap,
+                provider: 'cache',
+                timestamp: new Date(q.lastUpdated).getTime() / 1000,
+                _cached: true,
+                _timestamp: Date.now() / 1000
+              })),
+              errors: {},
+              timestamp: Date.now(),
+              _timestamp: Date.now() / 1000
+            };
+          }
+        } catch (cacheError) {
+          console.warn('⚠️ Cache fetch failed, falling back to direct API', cacheError);
+          // Continue to fallback below
+        }
+      }
+      
+      // Original direct API call (fallback)
       console.log(`📡 Fetching batch quotes from: ${this.baseUrl}/quotes/batch`);
       console.log(`📊 Symbols: ${symbols.join(', ')}`);
       
@@ -232,6 +309,18 @@ class MarketDataClient {
 
   async searchSymbols(query: string): Promise<{ results: SearchResult[]; count: number }> {
     const params = new URLSearchParams({ query });
+    
+    // Try cached search first
+    if (this.useCachedEndpoints) {
+      try {
+        console.log(`🗄️ Searching symbols in cache: ${query}`);
+        return await this.fetchWithAuth(`${this.cachedBaseUrl}/search?${params}`);
+      } catch (error) {
+        console.warn('⚠️ Cache search failed, falling back to direct API', error);
+      }
+    }
+    
+    // Fallback to direct API
     return this.fetchWithAuth(`${this.baseUrl}/search?${params}`);
   }
 
@@ -247,10 +336,68 @@ class MarketDataClient {
 
   async getMarketOverview(): Promise<MarketOverview | null> {
     try {
+      // Try cached market overview first
+      if (this.useCachedEndpoints) {
+        try {
+          console.log('🗄️ Fetching market overview from cache');
+          const response = await this.fetchWithAuth(`${this.cachedBaseUrl}/market-overview`);
+          
+          // Transform cached response to MarketOverview format
+          if (response.indices && Array.isArray(response.indices)) {
+            const findIndex = (symbol: string) => response.indices.find((i: any) => i.symbol === symbol);
+            
+            const sp500 = findIndex('^GSPC') || { price: 0, change_percent: 0 };
+            const nasdaq = findIndex('^IXIC') || { price: 0, change_percent: 0 };
+            const dow = findIndex('^DJI') || { price: 0, change_percent: 0 };
+            const vix = findIndex('^VIX') || { price: 0, change_percent: 0 };
+            
+            return {
+              sp500: { value: sp500.price, change: sp500.change_percent },
+              nasdaq: { value: nasdaq.price, change: nasdaq.change_percent },
+              dow: { value: dow.price, change: dow.change_percent },
+              vix: { value: vix.price, change: vix.change_percent }
+            };
+          }
+        } catch (error) {
+          console.warn('⚠️ Cache market overview failed, falling back to direct API', error);
+        }
+      }
+      
+      // Fallback to direct API
       const response = await this.fetchWithAuth(`${this.baseUrl}/market-overview`);
       return response;
     } catch (error) {
       console.error('Error fetching market overview:', error);
+      return null;
+    }
+  }
+
+  // New method to get cache statistics
+  async getCacheStats(): Promise<any> {
+    if (!this.useCachedEndpoints) {
+      return null;
+    }
+    
+    try {
+      console.log('📊 Fetching cache statistics');
+      return await this.fetchWithAuth(`${this.cachedBaseUrl}/stats`);
+    } catch (error) {
+      console.error('Error fetching cache stats:', error);
+      return null;
+    }
+  }
+
+  // New method to get API provider status
+  async getProviderStatus(): Promise<any> {
+    if (!this.useCachedEndpoints) {
+      return null;
+    }
+    
+    try {
+      console.log('🔍 Fetching API provider status');
+      return await this.fetchWithAuth(`${this.cachedBaseUrl}/providers`);
+    } catch (error) {
+      console.error('Error fetching provider status:', error);
       return null;
     }
   }
@@ -280,12 +427,20 @@ class MarketDataClient {
       console.log(`📡 Testing endpoint: ${this.baseUrl}/health`);
       
       // Test without auth token to verify backend doesn't require it
+      let headers: HeadersInit = {
+        'Content-Type': 'application/json',
+        // Intentionally not sending auth token
+      };
+      
+      // Add Vercel proxy headers if running on Vercel
+      if (isVercelDeployment) {
+        headers = addVercelProxyHeaders(headers);
+        console.log(`🚀 Running on Vercel - proxy headers added for health check`);
+      }
+      
       const response = await fetch(`${this.baseUrl}/health`, {
         method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          // Intentionally not sending auth token
-        },
+        headers,
         mode: 'cors',
         credentials: 'omit',
       });
