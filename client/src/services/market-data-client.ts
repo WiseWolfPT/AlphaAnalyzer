@@ -61,8 +61,6 @@ class MarketDataClient {
     console.log('🔧 Market Data Client Configuration:', {
       API_BASE_URL,
       baseUrl: this.baseUrl,
-      cachedBaseUrl: this.cachedBaseUrl,
-      useCachedEndpoints: this.useCachedEndpoints,
       hasAuthToken: !!this.authToken,
       authNotRequired: true, // Backend doesn't require auth
       environment: import.meta.env.MODE,
@@ -284,32 +282,14 @@ class MarketDataClient {
 
   // New method to get cache statistics
   async getCacheStats(): Promise<any> {
-    if (!this.useCachedEndpoints) {
-      return null;
-    }
-    
-    try {
-      console.log('📊 Fetching cache statistics');
-      return await this.fetchWithAuth(`${this.cachedBaseUrl}/stats`);
-    } catch (error) {
-      console.error('Error fetching cache stats:', error);
-      return null;
-    }
+    // Cached endpoints not implemented yet
+    return null;
   }
 
   // New method to get API provider status
   async getProviderStatus(): Promise<any> {
-    if (!this.useCachedEndpoints) {
-      return null;
-    }
-    
-    try {
-      console.log('🔍 Fetching API provider status');
-      return await this.fetchWithAuth(`${this.cachedBaseUrl}/providers`);
-    } catch (error) {
-      console.error('Error fetching provider status:', error);
-      return null;
-    }
+    // Provider status endpoint not implemented yet
+    return null;
   }
 
   async getStatus() {
@@ -330,10 +310,9 @@ class MarketDataClient {
     localStorage.removeItem('auth-token');
   }
 
-  // Enable or disable cached endpoints
+  // Enable or disable cached endpoints (placeholder for future implementation)
   setUseCachedEndpoints(enabled: boolean) {
-    this.useCachedEndpoints = enabled;
-    console.log(`🗄️ Cached endpoints ${enabled ? 'enabled' : 'disabled'}`);
+    console.log(`🗄️ Cached endpoints ${enabled ? 'enabled' : 'disabled'} (not implemented yet)`);
   }
 
   // Test connectivity without authentication
