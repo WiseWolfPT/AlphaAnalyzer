@@ -21,8 +21,8 @@ const router = Router();
 
 // Use optional authentication for market data endpoints (public access allowed)
 const isDevelopment = process.env.NODE_ENV !== 'production';
-// Market data should be publicly accessible - use optional auth
-const authService = isDevelopment ? optionalDemoAuth() : authMiddleware.instance.optionalAuth();
+// Market data should be publicly accessible - always use demo auth that allows public access
+const authService = optionalDemoAuth(); // Always allow public access to market data
 
 // Initialize the enhanced market data service
 const marketDataService = new ServerMarketDataService();
