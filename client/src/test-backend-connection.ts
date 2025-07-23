@@ -53,20 +53,30 @@ async function testBackendConnection() {
     console.error('   ❌ Quotes request error:', error.message);
   }
   
-  // Test 3: Individual quote endpoint
+  // Test 3: Single quote via batch endpoint
   try {
-    console.log('\n3️⃣ Testing /api/market-data/quote/AAPL endpoint...');
-    const quoteResponse = await fetch(`${BACKEND_URL}/api/market-data/quote/AAPL`);
+    console.log('\n3️⃣ Testing single quote via /api/market-data/quotes/batch endpoint...');
+    const quoteResponse = await fetch(`${BACKEND_URL}/api/market-data/quotes/batch`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ symbols: ['AAPL'] }),
+    });
     console.log(`   Status: ${quoteResponse.status} ${quoteResponse.statusText}`);
     
     if (quoteResponse.ok) {
       const data = await quoteResponse.json();
-      console.log('   ✅ Individual quote fetched:', data);
+      if (data.quotes && data.quotes.length > 0) {
+        console.log('   ✅ Single quote fetched:', data.quotes[0]);
+      } else {
+        console.log('   ⚠️ No quote data returned');
+      }
     } else {
-      console.error('   ❌ Individual quote failed');
+      console.error('   ❌ Single quote request failed');
     }
   } catch (error) {
-    console.error('   ❌ Individual quote error:', error.message);
+    console.error('   ❌ Single quote error:', error.message);
   }
   
   console.log('\n✅ Backend connection test completed');

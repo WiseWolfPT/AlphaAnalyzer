@@ -154,36 +154,27 @@ class MarketDataClient {
   }
 
   async getQuote(symbol: string): Promise<MarketQuote> {
-    if (this.useCachedEndpoints) {
-      try {
-        console.log(`🗄️ Fetching quote from cache: ${symbol}`);
-        const response = await this.fetchWithAuth(`${this.cachedBaseUrl}/quotes/${symbol}`);
-        
-        // Transform cached response to MarketQuote format
-        return {
-          symbol: response.symbol,
-          price: response.price,
-          change: response.change || 0,
-          changePercent: response.changePercent || 0,
-          high: response.price, // Cached data might not have high/low
-          low: response.price,
-          open: response.price,
-          previousClose: response.price - (response.change || 0),
-          volume: response.volume || 0,
-          marketCap: response.marketCap,
-          provider: 'cache',
-          timestamp: new Date(response.lastUpdated).getTime() / 1000,
-          _cached: true,
-          _timestamp: Date.now() / 1000
-        };
-      } catch (error) {
-        console.warn(`⚠️ Cache fetch failed for ${symbol}, falling back to direct API`, error);
-        // Fall back to direct API if cache fails
-      }
-    }
+    console.log(`📊 getQuote called for symbol: ${symbol}`);
     
-    // Original direct API call
-    return this.fetchWithAuth(`${this.baseUrl}/quote/${symbol}`);
+    // Use batch endpoint to get a single quote since individual endpoints don't exist
+    try {
+      const batchResponse = await this.getBatchQuotes([symbol]);
+      
+      // Extract the single quote from batch response
+      if (batchResponse.quotes && batchResponse.quotes.length > 0) {
+        const quote = batchResponse.quotes.find(q => q.symbol === symbol);
+        if (quote) {
+          console.log(`✅ Successfully extracted quote for ${symbol} from batch response`);
+          return quote;
+        }
+      }
+      
+      // If no quote found in batch response, throw error
+      throw new Error(`No quote data found for symbol: ${symbol}`);
+    } catch (error) {
+      console.error(`❌ Error fetching quote for ${symbol}:`, error);
+      throw error;
+    }
   }
 
   async getBatchQuotes(symbols: string[]): Promise<BatchQuotesResponse> {
