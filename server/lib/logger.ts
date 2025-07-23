@@ -3,6 +3,11 @@ import winston from 'winston';
 import { Request, Response, NextFunction } from 'express';
 import path from 'path';
 import fs from 'fs';
+import { fileURLToPath } from 'url';
+
+// ES module fix for __dirname
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Ensure logs directory exists
 const logsDir = path.join(__dirname, '../../logs');

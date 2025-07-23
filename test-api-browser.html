@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alfalyzer API Test Dashboard</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .header {
+            background: #2563eb;
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .test-card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 15px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .test-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .test-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+        .status {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        .status.pending { background: #e5e7eb; color: #6b7280; }
+        .status.running { background: #fef3c7; color: #d97706; }
+        .status.success { background: #d1fae5; color: #065f46; }
+        .status.error { background: #fee2e2; color: #dc2626; }
+        .test-details {
+            margin-top: 10px;
+            padding: 10px;
+            background: #f9fafb;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 14px;
+            white-space: pre-wrap;
+            display: none;
+        }
+        .test-details.show {
+            display: block;
+        }
+        button {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-right: 10px;
+        }
+        button:hover {
+            background: #1d4ed8;
+        }
+        button:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+        }
+        .controls {
+            margin-bottom: 20px;
+        }
+        .summary {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        .metric {
+            display: inline-block;
+            margin-right: 30px;
+            margin-bottom: 10px;
+        }
+        .metric-label {
+            font-size: 14px;
+            color: #6b7280;
+        }
+        .metric-value {
+            font-size: 24px;
+            font-weight: 600;
+            color: #111827;
+        }
+        .quote-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .quote-item {
+            background: #f3f4f6;
+            padding: 10px;
+            border-radius: 6px;
+        }
+        .quote-symbol {
+            font-weight: 600;
+            font-size: 16px;
+        }
+        .quote-price {
+            font-size: 20px;
+            margin: 5px 0;
+        }
+        .quote-change {
+            font-size: 14px;
+        }
+        .quote-change.positive { color: #059669; }
+        .quote-change.negative { color: #dc2626; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Alfalyzer API Test Dashboard</h1>
+            <p>Frontend: https://alfalyzerpro4.vercel.app | Backend: Koyeb</p>
+        </div>
+
+        <div class="controls">
+            <button onclick="runAllTests()">Run All Tests</button>
+            <button onclick="clearResults()">Clear Results</button>
+            <button onclick="testQuotes()">Test Live Quotes</button>
+        </div>
+
+        <div id="tests">
+            <!-- Tests will be inserted here -->
+        </div>
+
+        <div class="summary" id="summary" style="display: none;">
+            <h2>Test Summary</h2>
+            <div class="metric">
+                <div class="metric-label">Total Tests</div>
+                <div class="metric-value" id="totalTests">0</div>
+            </div>
+            <div class="metric">
+                <div class="metric-label">Passed</div>
+                <div class="metric-value" id="passedTests" style="color: #059669;">0</div>
+            </div>
+            <div class="metric">
+                <div class="metric-label">Failed</div>
+                <div class="metric-value" id="failedTests" style="color: #dc2626;">0</div>
+            </div>
+            <div class="metric">
+                <div class="metric-label">Success Rate</div>
+                <div class="metric-value" id="successRate">0%</div>
+            </div>
+        </div>
+
+        <div class="test-card" id="liveQuotes" style="display: none;">
+            <div class="test-header">
+                <div class="test-title">Live Stock Quotes</div>
+                <button onclick="testQuotes()">Refresh</button>
+            </div>
+            <div class="quote-grid" id="quoteGrid">
+                <!-- Quotes will be inserted here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'https://alfalyzerpro4.vercel.app/api/market-data';
+        
+        const tests = [
+            {
+                id: 'health',
+                name: 'Health Check',
+                endpoint: '/health',
+                method: 'GET',
+                test: async () => {
+                    const response = await fetch(`${API_BASE}/health`);
+                    const data = await response.json();
+                    
+                    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                    if (!data.status) throw new Error('Missing status field');
+                    
+                    return {
+                        success: true,
+                        data: {
+                            status: data.status,
+                            providers: Object.keys(data.providers || {}).filter(p => data.providers[p]),
+                            cacheEnabled: data.cache?.enabled,
+                            rateLimit: `${data.rateLimit?.callsPerMinute} calls/min`
+                        }
+                    };
+                }
+            },
+            {
+                id: 'batchQuotes',
+                name: 'Batch Quotes',
+                endpoint: '/quotes/batch',
+                method: 'POST',
+                test: async () => {
+                    const response = await fetch(`${API_BASE}/quotes/batch`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ symbols: ['AAPL', 'MSFT', 'GOOGL'] })
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                    if (!Array.isArray(data.quotes)) throw new Error('Invalid response format');
+                    
+                    return {
+                        success: true,
+                        data: {
+                            quotesCount: data.quotes.length,
+                            symbols: data.quotes.map(q => q.symbol).join(', '),
+                            provider: data.quotes[0]?.provider || 'unknown',
+                            sample: data.quotes[0] ? `${data.quotes[0].symbol}: $${data.quotes[0].price}` : 'N/A'
+                        }
+                    };
+                }
+            },
+            {
+                id: 'cors',
+                name: 'CORS Configuration',
+                endpoint: '/health',
+                method: 'GET',
+                test: async () => {
+                    const response = await fetch(`${API_BASE}/health`);
+                    
+                    const corsHeaders = {
+                        origin: response.headers.get('access-control-allow-origin'),
+                        methods: response.headers.get('access-control-allow-methods'),
+                        headers: response.headers.get('access-control-allow-headers')
+                    };
+                    
+                    if (corsHeaders.origin !== '*') {
+                        throw new Error('CORS not configured for all origins');
+                    }
+                    
+                    return {
+                        success: true,
+                        data: corsHeaders
+                    };
+                }
+            },
+            {
+                id: 'invalidSymbol',
+                name: 'Invalid Symbol Handling',
+                endpoint: '/quotes/batch',
+                method: 'POST',
+                test: async () => {
+                    const response = await fetch(`${API_BASE}/quotes/batch`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ symbols: ['INVALID_XXX'] })
+                    });
+                    
+                    const data = await response.json();
+                    
+                    return {
+                        success: true,
+                        data: {
+                            status: response.status,
+                            quotesReturned: data.quotes?.length || 0,
+                            hasErrors: !!data.errors && Object.keys(data.errors).length > 0,
+                            failed: data.failed?.join(', ') || 'none'
+                        }
+                    };
+                }
+            },
+            {
+                id: 'emptyRequest',
+                name: 'Empty Request Handling',
+                endpoint: '/quotes/batch',
+                method: 'POST',
+                test: async () => {
+                    const response = await fetch(`${API_BASE}/quotes/batch`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ symbols: [] })
+                    });
+                    
+                    const data = await response.json();
+                    
+                    return {
+                        success: response.ok,
+                        data: {
+                            status: response.status,
+                            message: data.error || data.message || 'OK',
+                            quotesReturned: data.quotes?.length || 0
+                        }
+                    };
+                }
+            }
+        ];
+
+        function createTestCard(test) {
+            const card = document.createElement('div');
+            card.className = 'test-card';
+            card.id = `test-${test.id}`;
+            
+            card.innerHTML = `
+                <div class="test-header">
+                    <div class="test-title">${test.name}</div>
+                    <span class="status pending">Pending</span>
+                </div>
+                <div class="test-info">
+                    <small>${test.method} ${test.endpoint}</small>
+                </div>
+                <div class="test-details"></div>
+            `;
+            
+            return card;
+        }
+
+        function updateTestStatus(testId, status, details) {
+            const card = document.getElementById(`test-${testId}`);
+            const statusEl = card.querySelector('.status');
+            const detailsEl = card.querySelector('.test-details');
+            
+            statusEl.className = `status ${status}`;
+            statusEl.textContent = status.charAt(0).toUpperCase() + status.slice(1);
+            
+            if (details) {
+                detailsEl.textContent = JSON.stringify(details, null, 2);
+                detailsEl.classList.add('show');
+            }
+        }
+
+        async function runTest(test) {
+            updateTestStatus(test.id, 'running', null);
+            
+            try {
+                const result = await test.test();
+                updateTestStatus(test.id, 'success', result.data);
+                return true;
+            } catch (error) {
+                updateTestStatus(test.id, 'error', { error: error.message });
+                return false;
+            }
+        }
+
+        async function runAllTests() {
+            const testsContainer = document.getElementById('tests');
+            testsContainer.innerHTML = '';
+            
+            // Create test cards
+            tests.forEach(test => {
+                testsContainer.appendChild(createTestCard(test));
+            });
+            
+            // Run tests
+            let passed = 0;
+            let failed = 0;
+            
+            for (const test of tests) {
+                const success = await runTest(test);
+                if (success) passed++;
+                else failed++;
+                
+                // Small delay between tests
+                await new Promise(resolve => setTimeout(resolve, 300));
+            }
+            
+            // Update summary
+            updateSummary(tests.length, passed, failed);
+        }
+
+        function updateSummary(total, passed, failed) {
+            document.getElementById('summary').style.display = 'block';
+            document.getElementById('totalTests').textContent = total;
+            document.getElementById('passedTests').textContent = passed;
+            document.getElementById('failedTests').textContent = failed;
+            document.getElementById('successRate').textContent = 
+                Math.round((passed / total) * 100) + '%';
+        }
+
+        function clearResults() {
+            document.getElementById('tests').innerHTML = '';
+            document.getElementById('summary').style.display = 'none';
+            document.getElementById('liveQuotes').style.display = 'none';
+        }
+
+        async function testQuotes() {
+            const symbols = ['AAPL', 'MSFT', 'GOOGL', 'AMZN', 'META', 'TSLA'];
+            document.getElementById('liveQuotes').style.display = 'block';
+            const grid = document.getElementById('quoteGrid');
+            grid.innerHTML = '<div>Loading...</div>';
+            
+            try {
+                const response = await fetch(`${API_BASE}/quotes/batch`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ symbols })
+                });
+                
+                const data = await response.json();
+                
+                if (data.quotes && data.quotes.length > 0) {
+                    grid.innerHTML = data.quotes.map(quote => {
+                        const changeClass = quote.change >= 0 ? 'positive' : 'negative';
+                        const changeSymbol = quote.change >= 0 ? '+' : '';
+                        
+                        return `
+                            <div class="quote-item">
+                                <div class="quote-symbol">${quote.symbol}</div>
+                                <div class="quote-price">$${quote.price.toFixed(2)}</div>
+                                <div class="quote-change ${changeClass}">
+                                    ${changeSymbol}${quote.change.toFixed(2)} 
+                                    (${changeSymbol}${quote.changePercent.toFixed(2)}%)
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+                } else {
+                    grid.innerHTML = '<div>No quotes available</div>';
+                }
+            } catch (error) {
+                grid.innerHTML = `<div style="color: red;">Error: ${error.message}</div>`;
+            }
+        }
+
+        // Auto-run tests on load
+        window.addEventListener('load', () => {
+            console.log('Alfalyzer API Test Dashboard loaded');
+            console.log('Click "Run All Tests" to begin');
+        });
+    </script>
+</body>
+</html>

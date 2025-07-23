@@ -31,8 +31,8 @@
     "fix:vercel-env": "node scripts/remove-vercel-env.js",
     "verify:vercel-proxy": "node scripts/verify-vercel-proxy.js",
     "test:auth-headers": "node scripts/test-auth-headers.js",
-    "test:cors": "node scripts/test-cors.js",
-    "fix:401": "npm run fix:vercel-env && npm run deploy:vercel",
+    "test:cors": "npm run test:api",
+    "fix:401": "npm run fix:vercel-env && echo '\n📌 Agora faça deploy: npm run vercel:deploy'",
     "deploy:vercel": "vercel --prod",
     "vercel:list-env": "vercel env ls",
     "restart:force": "npm run stop:force && npm run dev:force",
@@ -110,7 +110,6 @@
     "test:e2e:ui": "playwright test e2e/smoke-v4.spec.ts --ui",
     "test:api": "node test-api-connection.js",
     "test:ports": "npm run test:api",
-    "test:cors": "npm run test:api",
     "test:connectivity": "scripts/connectivity-test.ts",
     "test:diagnostic": "tsx scripts/test-diagnostic.ts",
     "test:vercel-proxy": "tsx server/scripts/test-vercel-proxy.ts",
@@ -170,11 +169,8 @@
     "seed:db": "tsx server/seeds/seed-database.ts seed",
     "seed:history": "tsx server/seeds/seed-price-history.ts seed",
     "prepare": "husky",
-    "fix:vercel-env": "node scripts/remove-vercel-env.js",
-    "verify:vercel-proxy": "node scripts/verify-vercel-proxy.js",
     "vercel:check-env": "vercel env ls",
     "vercel:deploy": "vercel --prod",
-    "fix:401": "npm run fix:vercel-env && echo '\n📌 Agora faça deploy: npm run vercel:deploy'",
     "vercel:checklist": "./scripts/vercel-401-checklist.sh",
     "vercel:diagnose": "npm run vercel:checklist"
   },
@@ -246,6 +242,7 @@
     "helmet": "^8.1.0",
     "i18next": "^25.3.2",
     "idb": "^8.0.3",
+    "immer": "^10.1.1",
     "input-otp": "^1.4.2",
     "jsonwebtoken": "^9.0.2",
     "lottie-react": "^2.4.1",
@@ -276,7 +273,8 @@
     "winston": "^3.17.0",
     "wouter": "^3.3.5",
     "zod": "^3.24.2",
-    "zod-validation-error": "^3.4.0"
+    "zod-validation-error": "^3.4.0",
+    "zustand": "^5.0.6"
   },
   "devDependencies": {
     "@babel/plugin-transform-react-jsx": "^7.27.1",

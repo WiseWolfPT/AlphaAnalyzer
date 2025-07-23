@@ -1,12 +1,11 @@
 // Market Data Client - Connects to our backend API for real market data
-import { env } from '@/lib/env';
 import { invisibleFallbackService } from './invisible-fallback-service';
 import { createAuthHeaders, logAuthConfig } from '@/lib/auth-headers';
 import { addVercelProxyHeaders, isVercelDeployment } from '@/lib/vercel-proxy-client';
-import { handleApiError, retryWithBackoff } from '@/services/error-handler-service';
+import { retryWithBackoff } from '@/services/error-handler-service';
 
-// Use relative path for Vercel proxy instead of direct Koyeb URL
-const API_BASE_URL = typeof window !== 'undefined' ? '' : (env.VITE_API_URL || 'https://crucial-ivonne-alfalyzer-90666a9e.koyeb.app');
+// Use relative path for Vercel proxy - empty string allows proxy to work
+const API_BASE_URL = '';
 
 export interface MarketQuote {
   symbol: string;
@@ -53,14 +52,12 @@ class MarketDataClient {
   private baseUrl: string;
   private cachedBaseUrl: string;
   private authToken: string | null = null;
-  private useCachedEndpoints: boolean = false; // Disabled - cached endpoints don't exist on backend
+  private useCachedEndpoints: boolean = true; // Enable cached endpoints by default
 
   constructor() {
     this.baseUrl = `${API_BASE_URL}/api/market-data`;
-    this.cachedBaseUrl = `${API_BASE_URL}/api/cached`; // New cached endpoints
-    // Get auth token from localStorage (multiple possible keys for compatibility)
-    // Note: The backend doesn't require authentication, but we still check for token
-    // in case it's implemented in the future
+    this.cachedBaseUrl = `${API_BASE_URL}/api/cached`;
+    // Get auth token from localStorage (backend doesn't require it, but we keep for future)
     this.authToken = localStorage.getItem('alfalyzer-token') || localStorage.getItem('auth-token');
     
     // Log configuration for debugging
@@ -68,11 +65,11 @@ class MarketDataClient {
       API_BASE_URL,
       baseUrl: this.baseUrl,
       cachedBaseUrl: this.cachedBaseUrl,
-      VITE_API_URL: env.VITE_API_URL,
+      useCachedEndpoints: this.useCachedEndpoints,
       hasAuthToken: !!this.authToken,
       authNotRequired: true, // Backend doesn't require auth
-      useCachedEndpoints: this.useCachedEndpoints,
-      environment: import.meta.env.MODE
+      environment: import.meta.env.MODE,
+      isVercel: isVercelDeployment
     });
     
     // Log auth header configuration
@@ -135,7 +132,7 @@ class MarketDataClient {
       if (error.name === 'TypeError' && error.message.includes('Failed to fetch')) {
         console.error(`🚫 Network Error - Cannot reach API at ${url}`);
         console.error(`📍 This might be a CORS issue or the backend is not accessible`);
-        console.error(`💡 Check if VITE_API_URL is correctly set to: ${env.VITE_API_URL}`);
+        console.error(`💡 Check if VITE_API_URL is correctly set to: ${import.meta.env.VITE_API_URL}`);
         console.error(`🔍 Full error details:`, error);
         
         // Provide more helpful error message
@@ -178,15 +175,6 @@ class MarketDataClient {
       throw new Error(`No quote data found for symbol: ${symbol}`);
     } catch (error) {
       console.error(`❌ Error fetching quote for ${symbol}:`, error);
-      
-      // Try to handle the error and provide fallback
-      await handleApiError(
-        error, 
-        `quote/${symbol}`,
-        () => this.getQuote(symbol)
-      );
-      
-      // If we reach here, error handler couldn't recover, throw the error
       throw error;
     }
   }
@@ -201,6 +189,9 @@ class MarketDataClient {
           
           const response = await this.fetchWithAuth(`${this.cachedBaseUrl}/quotes/batch`, {
             method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
             body: JSON.stringify({ symbols }),
           });
           
@@ -265,12 +256,11 @@ class MarketDataClient {
       console.error(`📍 Full error details:`, {
         message: error.message,
         baseUrl: this.baseUrl,
-        apiUrl: env.VITE_API_URL,
         symbols: symbols
       });
       
       // Check if this is a network error (backend not available)
-      if (error.name === 'TypeError' && error.message.includes('Failed to fetch')) {
+      if (error.name === 'NetworkError' || (error.name === 'TypeError' && error.message.includes('Failed to fetch'))) {
         console.log('🔄 Backend unavailable, using fallback service');
         
         // Use the invisible fallback service
@@ -301,23 +291,6 @@ class MarketDataClient {
           _timestamp: Date.now() / 1000
         };
       }
-      
-      // Handle API errors with the error handler
-      await handleApiError(
-        error,
-        'quotes/batch',
-        async () => {
-          // Retry with exponential backoff
-          return await retryWithBackoff(
-            () => this.fetchWithAuth(`${this.baseUrl}/quotes/batch`, {
-              method: 'POST',
-              body: JSON.stringify({ symbols }),
-            }),
-            3,
-            2000
-          );
-        }
-      );
       
       // For other errors, return empty response with proper error info
       return {
@@ -441,6 +414,12 @@ class MarketDataClient {
     this.authToken = null;
     localStorage.removeItem('alfalyzer-token');
     localStorage.removeItem('auth-token');
+  }
+
+  // Enable or disable cached endpoints
+  setUseCachedEndpoints(enabled: boolean) {
+    this.useCachedEndpoints = enabled;
+    console.log(`🗄️ Cached endpoints ${enabled ? 'enabled' : 'disabled'}`);
   }
 
   // Test connectivity without authentication

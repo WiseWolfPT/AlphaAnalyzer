@@ -749,4 +749,5 @@ export const structuredLogger = new StructuredLogger({
 });
 
 export { StructuredLogger, ChildLogger };
+export { StructuredLogger as Logger }; // Alias for compatibility
 export default structuredLogger;
