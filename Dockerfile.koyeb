@@ -1,44 +1,22 @@
-# Simple Dockerfile for Koyeb
+# Dockerfile for Koyeb - Full server with all routes
 FROM node:20-alpine AS koyeb
 
 WORKDIR /app
 
-# Install Python and build dependencies for canvas
+# Install Python and build dependencies
 RUN apk add --no-cache python3 make g++ cairo-dev pango-dev jpeg-dev giflib-dev
 
-# Copy server files - multiple options for flexibility
-COPY server/koyeb-server.ts ./server/koyeb-server.ts
-COPY server/koyeb-simple.ts ./server/koyeb-simple.ts
-COPY server/koyeb-ultra-simple.ts ./server/koyeb-ultra-simple.ts
-COPY server/simple-server.ts ./server/simple-server.ts
-COPY server/simple.js ./server/simple.js
+# Copy all files
+COPY . .
 
-# Copy Supabase integration files (for koyeb-server.ts)
-COPY server/db/supabase-client.ts ./server/db/supabase-client.ts
-COPY server/services/supabase-cache-service.ts ./server/services/supabase-cache-service.ts
-COPY server/services/reddit-strategy-service.ts ./server/services/reddit-strategy-service.ts
-COPY server/services/cache-updater-job.ts ./server/services/cache-updater-job.ts
-COPY server/services/alpha-vantage-service.ts ./server/services/alpha-vantage-service.ts
-COPY server/services/finnhub-service.ts ./server/services/finnhub-service.ts
+# Install dependencies
+RUN npm install
 
 # Create empty .env to avoid dotenv warning
 RUN touch .env
 
-# Create a minimal package.json
-RUN echo '{ \
-  "name": "alphaanalyzer-backend", \
-  "version": "1.0.0", \
-  "type": "module", \
-  "scripts": { \
-    "start": "tsx server/simple-server.ts" \
-  } \
-}' > package.json
-
-# Install only what we need
-RUN npm install express cors dotenv tsx axios @types/express @types/cors @supabase/supabase-js
-
 # Expose port - Koyeb will use the PORT env variable
 EXPOSE 3001
 
-# Start server - using ultra-simple version to avoid path-to-regexp issues
-CMD ["npx", "tsx", "server/koyeb-ultra-simple.ts"]
+# Start the FULL server with tsx (handles TypeScript directly)
+CMD ["npx", "tsx", "server/index.ts"]
