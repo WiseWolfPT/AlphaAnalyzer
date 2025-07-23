@@ -52,8 +52,8 @@ export function usePrefetch() {
             queryKey: queryKeys.stock(symbol),
             queryFn: async () => {
               // Use batch endpoint even for single stock to standardize API usage
-              const apiUrl = env.VITE_API_URL || 'http://localhost:3001';
-              const response = await fetch(`${apiUrl}/api/market-data/quotes/batch`, {
+              // Always use relative path to go through Vercel proxy
+              const response = await fetch(`/api/market-data/quotes/batch`, {
                 method: 'POST',
                 headers: {
                   'Content-Type': 'application/json',
