@@ -578,7 +578,7 @@ function App() {
                 </AppInitializer>
               </QueryDebugWrapper>
             </QueryClientProvider>
-          </ErrorBoundary>
+          </EnhancedErrorBoundary>
       </FinancialWidgetErrorBoundary>
     </CurrencyProvider>
     </DebugErrorBoundary>
