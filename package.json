@@ -74,7 +74,7 @@
     "analyze:extreme": "npx webpack-bundle-analyzer dist/public/assets/*.js --port 8888 --host 0.0.0.0",
     "test:performance": "node scripts/test-bundle-performance.js",
     "build:multi": "concurrently \"vite build --outDir dist/public-3000\" \"vite build --config vite.config.port3005.ts\" \"vite build --config vite.config.port8080.ts\"",
-    "start": "NODE_ENV=production node start-koyeb.js",
+    "start": "node start-production.js",
     "start:koyeb": "NODE_ENV=production tsx server/koyeb-server.ts",
     "start:full": "NODE_ENV=production tsx server/index.ts",
     "start:simple": "NODE_ENV=production tsx server/simple-server.ts",

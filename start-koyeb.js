@@ -7,8 +7,8 @@ console.log('Starting Koyeb server...');
 console.log('Environment:', process.env.NODE_ENV || 'development');
 console.log('Port:', process.env.PORT || 8000);
 
-// Start the server using tsx - now with Supabase cache
-const server = spawn('npx', ['tsx', 'server/simple-server.ts'], {
+// Start the server using tsx - using the main server index
+const server = spawn('npx', ['tsx', 'server/index.ts'], {
   stdio: 'inherit',
   env: process.env
 });
