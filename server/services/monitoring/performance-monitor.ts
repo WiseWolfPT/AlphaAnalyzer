@@ -1,11 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { logger } from '../../lib/logger';
-import { createClient } from '@supabase/supabase-js';
-
-const supabase = createClient(
-  process.env.SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_KEY!
-);
+import { getSupabaseClient } from '../../lib/supabase-client';
 
 export interface RequestMetrics {
   path: string;

@@ -1,4 +1,4 @@
-import { createClient } from '@supabase/supabase-js';
+import { getSupabaseClient } from '../../lib/supabase-client';
 import { Logger } from '../structured-logger';
 import { AlphaVantageService } from '../alpha-vantage-service';
 import { FinnhubService } from '../finnhub-service';
@@ -6,18 +6,6 @@ import { PolygonService } from '../polygon-service';
 import { YahooFinanceService } from '../yahoo-finance-service';
 
 const logger = new Logger('PriceUpdateWorker');
-
-// Initialize Supabase client with service role key
-const supabase = createClient(
-  process.env.SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!,
-  {
-    auth: {
-      autoRefreshToken: false,
-      persistSession: false
-    }
-  }
-);
 
 // API Services
 const apiServices = {
@@ -104,7 +92,7 @@ export class PriceUpdateWorker {
   private async getSymbolsToUpdate(): Promise<string[]> {
     try {
       // Get all active assets that are stale (older than 1 minute)
-      const { data, error } = await supabase
+      const { data, error } = await getSupabaseClient()
         .from('latest_asset_prices')
         .select('symbol')
         .or('age_seconds.gt.60,age_seconds.is.null')
@@ -166,7 +154,7 @@ export class PriceUpdateWorker {
   }
 
   private async getNextProvider(excludeProvider?: string): Promise<any> {
-    const { data, error } = await supabase
+    const { data, error } = await getSupabaseClient()
       .rpc('get_next_api_provider');
 
     if (error || !data || data.length === 0) {
@@ -262,7 +250,7 @@ export class PriceUpdateWorker {
 
   private async updatePrice(priceData: PriceData, provider: string): Promise<void> {
     try {
-      const { error } = await supabase.rpc('update_asset_price', {
+      const { error } = await getSupabaseClient().rpc('update_asset_price', {
         p_symbol: priceData.symbol,
         p_price: priceData.price,
         p_change: priceData.change,
@@ -294,7 +282,7 @@ export class PriceUpdateWorker {
     errorMessage?: string
   ): Promise<void> {
     try {
-      await supabase.rpc('log_api_call', {
+      await getSupabaseClient().rpc('log_api_call', {
         p_provider: provider,
         p_endpoint: '/quotes',
         p_symbols: symbols,
@@ -309,7 +297,7 @@ export class PriceUpdateWorker {
 
   private async updateCacheStats(): Promise<void> {
     try {
-      const { data } = await supabase.rpc('get_cache_statistics');
+      const { data } = await getSupabaseClient().rpc('get_cache_statistics');
       if (data) {
         logger.info('Cache statistics', data);
       }

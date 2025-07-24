@@ -1,13 +1,8 @@
 import { Router } from 'express';
 import { webSocketService } from '../../services/websocket-service';
-import { createClient } from '@supabase/supabase-js';
+import { getSupabaseClient } from '../../lib/supabase-client';
 
 const router = Router();
-
-// Initialize Supabase client for WebSocket data
-const supabaseUrl = process.env.SUPABASE_URL!;
-const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
-const supabase = createClient(supabaseUrl, supabaseKey);
 
 /**
  * GET /api/admin/websocket/dashboard
@@ -22,13 +17,13 @@ router.get('/dashboard', async (req, res) => {
 
     // Get database statistics
     const [statsResult, connectionsResult, quotesResult] = await Promise.all([
-      supabase.rpc('get_websocket_stats'),
-      supabase
+      getSupabaseClient().rpc('get_websocket_stats'),
+      getSupabaseClient()
         .from('websocket_connections')
         .select('*')
         .order('connected_at', { ascending: false })
         .limit(10),
-      supabase
+      getSupabaseClient()
         .from('real_time_quotes')
         .select('symbol, price, source, updated_at')
         .order('updated_at', { ascending: false })
@@ -71,7 +66,7 @@ router.get('/connections', async (req, res) => {
     const status = req.query.status as string;
     const offset = (page - 1) * limit;
 
-    let query = supabase
+    let query = getSupabaseClient()
       .from('websocket_connections')
       .select('*', { count: 'exact' })
       .order('connected_at', { ascending: false })
@@ -110,12 +105,12 @@ router.get('/connections', async (req, res) => {
 router.get('/subscriptions', async (req, res) => {
   try {
     const [subscriptionsResult, popularSymbolsResult] = await Promise.all([
-      supabase
+      getSupabaseClient()
         .from('websocket_subscriptions')
         .select('*, websocket_connections(user_id, ip_address)')
         .eq('is_active', true)
         .order('subscribed_at', { ascending: false }),
-      supabase
+      getSupabaseClient()
         .from('websocket_subscriptions')
         .select('symbol')
         .eq('is_active', true)
@@ -158,7 +153,7 @@ router.get('/metrics', async (req, res) => {
     const hours = parseInt(req.query.hours as string) || 24;
     const since = new Date(Date.now() - hours * 60 * 60 * 1000).toISOString();
 
-    const { data: metrics, error } = await supabase
+    const { data: metrics, error } = await getSupabaseClient()
       .from('websocket_metrics')
       .select('*')
       .gte('timestamp', since)
@@ -321,7 +316,7 @@ router.get('/health', async (req, res) => {
     const stats = webSocketService.getStats();
     
     // Check database connectivity
-    const { data: dbTest, error: dbError } = await supabase
+    const { data: dbTest, error: dbError } = await getSupabaseClient()
       .from('real_time_quotes')
       .select('count', { count: 'exact', head: true });
 
@@ -360,7 +355,7 @@ router.get('/health', async (req, res) => {
  */
 router.delete('/cleanup', async (req, res) => {
   try {
-    const { data: cleanupResult, error } = await supabase.rpc('cleanup_websocket_data');
+    const { data: cleanupResult, error } = await getSupabaseClient().rpc('cleanup_websocket_data');
 
     if (error) throw error;
 

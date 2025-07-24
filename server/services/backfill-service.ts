@@ -1,11 +1,6 @@
 import { rateLimitTracker } from './rate-limit-tracker';
 import { PolygonService } from './polygon-service';
-import { createClient } from '@supabase/supabase-js';
-
-// Initialize Supabase client
-const supabaseUrl = process.env.SUPABASE_URL!;
-const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
-const supabase = createClient(supabaseUrl, supabaseKey);
+import { getSupabaseClient } from '../lib/supabase-client';
 
 export interface BackfillJobConfig {
   id: string;
@@ -372,7 +367,7 @@ export class BackfillService {
         created_at: new Date()
       }));
 
-      const { error } = await supabase
+      const { error } = await getSupabaseClient()
         .from('historical_data')
         .upsert(records, { 
           onConflict: 'symbol,timestamp,data_type',
@@ -405,7 +400,7 @@ export class BackfillService {
         created_at: new Date()
       };
 
-      const { error } = await supabase
+      const { error } = await getSupabaseClient()
         .from('historical_data')
         .upsert([record], { 
           onConflict: 'symbol,timestamp,data_type',
@@ -439,7 +434,7 @@ export class BackfillService {
         created_at: new Date()
       };
 
-      const { error } = await supabase
+      const { error } = await getSupabaseClient()
         .from('historical_data')
         .upsert([record], { 
           onConflict: 'symbol,timestamp,data_type',
@@ -459,7 +454,7 @@ export class BackfillService {
    */
   private async loadJobsFromDatabase(): Promise<void> {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await getSupabaseClient()
         .from('backfill_jobs')
         .select('*')
         .in('status', ['pending', 'running']);
@@ -501,7 +496,7 @@ export class BackfillService {
    */
   private async saveJobToDatabase(job: BackfillJobConfig): Promise<void> {
     try {
-      const { error } = await supabase
+      const { error } = await getSupabaseClient()
         .from('backfill_jobs')
         .insert({
           id: job.id,
@@ -533,7 +528,7 @@ export class BackfillService {
    */
   private async updateJobInDatabase(job: BackfillJobConfig): Promise<void> {
     try {
-      const { error } = await supabase
+      const { error } = await getSupabaseClient()
         .from('backfill_jobs')
         .update({
           status: job.status,
@@ -585,7 +580,7 @@ export class BackfillService {
    */
   async getStats(): Promise<BackfillStats> {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await getSupabaseClient()
         .from('backfill_jobs')
         .select('*');
 

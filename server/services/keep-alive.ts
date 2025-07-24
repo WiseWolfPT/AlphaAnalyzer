@@ -1,10 +1,5 @@
 import { logger } from '../lib/logger';
-import { createClient } from '@supabase/supabase-js';
-
-const supabase = createClient(
-  process.env.SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_KEY!
-);
+import { getSupabaseClient } from '../lib/supabase-client';
 
 export interface KeepAliveMetrics {
   lastPing: Date;
@@ -133,7 +128,7 @@ export class KeepAliveService {
    */
   private async logColdStart(): Promise<void> {
     try {
-      await supabase
+      await getSupabaseClient()
         .from('performance_logs')
         .insert({
           event_type: 'cold_start',
@@ -148,7 +143,7 @@ export class KeepAliveService {
         });
       
       // Also publish to Realtime for immediate notification
-      await supabase
+      await getSupabaseClient()
         .from('realtime_events')
         .insert({
           event_type: 'cold_start_detected',
@@ -169,7 +164,7 @@ export class KeepAliveService {
    */
   private async storeMetrics(data: any): Promise<void> {
     try {
-      await supabase
+      await getSupabaseClient()
         .from('health_metrics')
         .insert({
           ...data,
@@ -185,7 +180,7 @@ export class KeepAliveService {
    */
   private async publishHealthStatus(status: any): Promise<void> {
     try {
-      await supabase
+      await getSupabaseClient()
         .from('realtime_health')
         .insert({
           ...status,
@@ -237,7 +232,7 @@ export class KeepAliveService {
     logger.info(`📡 Received keep-alive ping from ${source}`);
     
     // Log the external ping
-    await supabase
+    await getSupabaseClient()
       .from('external_pings')
       .insert({
         source,

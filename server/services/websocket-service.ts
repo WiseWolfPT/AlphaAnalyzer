@@ -1,11 +1,6 @@
 import WebSocket from 'ws';
 import { rateLimitTracker } from './rate-limit-tracker';
-import { createClient } from '@supabase/supabase-js';
-
-// Initialize Supabase client for real-time broadcasting
-const supabaseUrl = process.env.SUPABASE_URL!;
-const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
-const supabase = createClient(supabaseUrl, supabaseKey);
+import { getSupabaseClient } from '../lib/supabase-client';
 
 export interface MarketDataUpdate {
   symbol: string;
@@ -553,7 +548,7 @@ export class WebSocketService {
    */
   private async broadcastUpdate(update: MarketDataUpdate): Promise<void> {
     try {
-      await supabase
+      await getSupabaseClient()
         .channel('market-data')
         .send({
           type: 'broadcast',
@@ -573,7 +568,7 @@ export class WebSocketService {
   private async cacheUpdate(update: MarketDataUpdate): Promise<void> {
     try {
       // Store in real_time_quotes table for immediate access
-      const { error } = await supabase
+      const { error } = await getSupabaseClient()
         .from('real_time_quotes')
         .upsert({
           symbol: update.symbol,

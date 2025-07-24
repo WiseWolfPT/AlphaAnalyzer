@@ -1,21 +1,9 @@
 import { Router, Request, Response } from 'express';
-import { createClient } from '@supabase/supabase-js';
+import { getSupabaseClient } from '../lib/supabase-client';
 import { Logger } from '../services/structured-logger';
 
 const router = Router();
 const logger = new Logger('CachedDataRoute');
-
-// Initialize Supabase client
-const supabase = createClient(
-  process.env.SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!,
-  {
-    auth: {
-      autoRefreshToken: false,
-      persistSession: false
-    }
-  }
-);
 
 // GET /api/cached/quotes/:symbol - Get single quote from cache
 router.get('/quotes/:symbol', async (req: Request, res: Response) => {
@@ -25,7 +13,7 @@ router.get('/quotes/:symbol', async (req: Request, res: Response) => {
 
     logger.info(`Fetching cached quote for ${symbol}`);
 
-    const { data, error } = await supabase
+    const { data, error } = await getSupabaseClient()
       .rpc('get_cached_quote', {
         p_symbol: symbol.toUpperCase(),
         p_max_age: maxAge
@@ -84,7 +72,7 @@ router.post('/quotes/batch', async (req: Request, res: Response) => {
 
     const upperSymbols = symbols.map(s => s.toUpperCase());
     
-    const { data, error } = await supabase
+    const { data, error } = await getSupabaseClient()
       .rpc('get_cached_quotes_batch', {
         p_symbols: upperSymbols,
         p_max_age: maxAge
@@ -132,7 +120,7 @@ router.get('/market-overview', async (req: Request, res: Response) => {
     // Get major indices
     const indicesSymbols = ['^GSPC', '^DJI', '^IXIC', '^RUT']; // S&P 500, Dow, Nasdaq, Russell
     
-    const { data: indices, error: indicesError } = await supabase
+    const { data: indices, error: indicesError } = await getSupabaseClient()
       .rpc('get_cached_quotes_batch', {
         p_symbols: indicesSymbols,
         p_max_age: 300 // 5 minutes for indices
@@ -143,7 +131,7 @@ router.get('/market-overview', async (req: Request, res: Response) => {
     }
 
     // Get top gainers (simplified - in production, use a dedicated query)
-    const { data: allQuotes, error: quotesError } = await supabase
+    const { data: allQuotes, error: quotesError } = await getSupabaseClient()
       .from('latest_asset_prices')
       .select('*')
       .not('change_percent', 'is', null)
@@ -180,7 +168,7 @@ router.get('/search', async (req: Request, res: Response) => {
 
     logger.info(`Searching for symbols matching: ${query}`);
 
-    const { data, error } = await supabase
+    const { data, error } = await getSupabaseClient()
       .from('assets')
       .select('symbol, name, type, sector, exchange')
       .or(`symbol.ilike.%${query}%,name.ilike.%${query}%`)
@@ -204,7 +192,7 @@ router.get('/stats', async (req: Request, res: Response) => {
   try {
     logger.info('Fetching cache statistics');
 
-    const { data, error } = await supabase.rpc('get_cache_statistics');
+    const { data, error } = await getSupabaseClient().rpc('get_cache_statistics');
 
     if (error) {
       logger.error('Error fetching cache stats', error);
@@ -223,7 +211,7 @@ router.get('/providers', async (req: Request, res: Response) => {
   try {
     logger.info('Fetching API provider status');
 
-    const { data, error } = await supabase
+    const { data, error } = await getSupabaseClient()
       .from('api_providers')
       .select('*')
       .order('priority', { ascending: false });
@@ -262,7 +250,7 @@ router.post('/refresh/:symbol', async (req: Request, res: Response) => {
     logger.info(`Force refreshing ${symbol}`);
 
     // Mark cache as stale to trigger update on next worker cycle
-    const { error } = await supabase
+    const { error } = await getSupabaseClient()
       .from('cache_metadata')
       .update({ is_stale: true, last_updated: new Date().toISOString() })
       .eq('cache_key', `quote:${symbol.toUpperCase()}`);

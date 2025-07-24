@@ -1,10 +1,5 @@
 import { performanceOptimizer } from './performance-optimizer';
-import { createClient } from '@supabase/supabase-js';
-
-// Initialize Supabase client for performance monitoring
-const supabaseUrl = process.env.SUPABASE_URL!;
-const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
-const supabase = createClient(supabaseUrl, supabaseKey);
+import { getSupabaseClient } from '../lib/supabase-client';
 
 export interface PerformanceAlert {
   id: string;

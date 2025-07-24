@@ -1,10 +1,5 @@
 import { rateLimitTracker } from './rate-limit-tracker';
-import { createClient } from '@supabase/supabase-js';
-
-// Initialize Supabase client
-const supabaseUrl = process.env.SUPABASE_URL!;
-const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
-const supabase = createClient(supabaseUrl, supabaseKey);
+import { getSupabaseClient } from '../lib/supabase-client';
 
 export interface AlertRule {
   id: string;
@@ -249,7 +244,7 @@ export class RateLimitAlertService {
         created_at: alert.timestamp.toISOString()
       }));
 
-      const { error } = await supabase
+      const { error } = await getSupabaseClient()
         .from('rate_limit_alerts')
         .insert(alertRecords);
 
@@ -358,7 +353,7 @@ export class RateLimitAlertService {
     try {
       const hoursAgo = new Date(Date.now() - hours * 60 * 60 * 1000);
 
-      const { data, error } = await supabase
+      const { data, error } = await getSupabaseClient()
         .from('rate_limit_alerts')
         .select('*')
         .gte('created_at', hoursAgo.toISOString());

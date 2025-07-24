@@ -1,13 +1,8 @@
 import { Router } from 'express';
 import { backfillService } from '../../services/backfill-service';
-import { createClient } from '@supabase/supabase-js';
+import { getSupabaseClient } from '../../lib/supabase-client';
 
 const router = Router();
-
-// Initialize Supabase client
-const supabaseUrl = process.env.SUPABASE_URL!;
-const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
-const supabase = createClient(supabaseUrl, supabaseKey);
 
 /**
  * GET /api/admin/backfill/jobs
@@ -25,7 +20,7 @@ router.get('/jobs', async (req, res) => {
       sortOrder = 'desc' 
     } = req.query;
 
-    let query = supabase
+    let query = getSupabaseClient()
       .from('backfill_jobs')
       .select('*');
 
@@ -110,7 +105,7 @@ router.post('/jobs', async (req, res) => {
     }
 
     // Check if job already exists for this symbol and date range
-    const { data: existingJobs } = await supabase
+    const { data: existingJobs } = await getSupabaseClient()
       .from('backfill_jobs')
       .select('id')
       .eq('symbol', symbol.toUpperCase())
@@ -134,7 +129,7 @@ router.post('/jobs', async (req, res) => {
     );
 
     // Get the created job details
-    const { data: jobData, error: fetchError } = await supabase
+    const { data: jobData, error: fetchError } = await getSupabaseClient()
       .from('backfill_jobs')
       .select('*')
       .eq('id', jobId)
@@ -160,7 +155,7 @@ router.get('/jobs/:id', async (req, res) => {
   try {
     const { id } = req.params;
 
-    const { data, error } = await supabase
+    const { data, error } = await getSupabaseClient()
       .from('backfill_jobs')
       .select('*')
       .eq('id', id)
@@ -249,7 +244,7 @@ router.post('/jobs/:id/retry', async (req, res) => {
     const { id } = req.params;
 
     // Get the job details
-    const { data: job, error } = await supabase
+    const { data: job, error } = await getSupabaseClient()
       .from('backfill_jobs')
       .select('*')
       .eq('id', id)
@@ -268,7 +263,7 @@ router.post('/jobs/:id/retry', async (req, res) => {
     }
 
     // Reset job status and increment retry count
-    const { error: updateError } = await supabase
+    const { error: updateError } = await getSupabaseClient()
       .from('backfill_jobs')
       .update({
         status: 'pending',
@@ -326,7 +321,7 @@ router.get('/symbols', async (req, res) => {
   try {
     const { popular_only, limit = 100 } = req.query;
 
-    let query = supabase
+    let query = getSupabaseClient()
       .from('symbol_metadata')
       .select('*')
       .order('priority_score', { ascending: false });
@@ -364,7 +359,7 @@ router.get('/symbols/:symbol/gaps', async (req, res) => {
       end_date = new Date().toISOString().split('T')[0] // today
     } = req.query;
 
-    const { data, error } = await supabase.rpc('get_data_gaps', {
+    const { data, error } = await getSupabaseClient().rpc('get_data_gaps', {
       p_symbol: symbol.toUpperCase(),
       p_data_type: data_type,
       p_start_date: start_date,
@@ -437,7 +432,7 @@ router.delete('/cleanup', async (req, res) => {
   try {
     const { keep_count = 1000 } = req.query;
 
-    const { data: deletedCount, error } = await supabase.rpc('cleanup_old_backfill_jobs');
+    const { data: deletedCount, error } = await getSupabaseClient().rpc('cleanup_old_backfill_jobs');
 
     if (error) {
       console.error('Failed to cleanup old jobs:', error);
@@ -461,7 +456,7 @@ router.delete('/cleanup', async (req, res) => {
 router.get('/providers', async (req, res) => {
   try {
     // Get job counts by provider
-    const { data: providerStats, error } = await supabase
+    const { data: providerStats, error } = await getSupabaseClient()
       .from('backfill_jobs')
       .select('provider, status')
       .order('provider');
