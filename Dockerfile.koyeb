@@ -22,7 +22,7 @@ RUN echo '#!/bin/bash' > /app/start.sh && \
     echo 'echo ""' >> /app/start.sh && \
     echo 'echo "📂 Checking files..."' >> /app/start.sh && \
     echo 'echo "   package.json exists: $(test -f package.json && echo YES || echo NO)"' >> /app/start.sh && \
-    echo 'echo "   start-production.js exists: $(test -f start-production.js && echo YES || echo NO)"' >> /app/start.sh && \
+    echo 'echo "   start-production.cjs exists: $(test -f start-production.cjs && echo YES || echo NO)"' >> /app/start.sh && \
     echo 'echo "   server/index.ts exists: $(test -f server/index.ts && echo YES || echo NO)"' >> /app/start.sh && \
     echo 'echo ""' >> /app/start.sh && \
     echo 'echo "🔧 Starting application with: npm start"' >> /app/start.sh && \

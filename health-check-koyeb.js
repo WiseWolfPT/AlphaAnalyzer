@@ -4,8 +4,9 @@
  * Health check script to verify server can start properly
  */
 
-const { spawn } = require('child_process');
-const http = require('http');
+import { spawn } from 'child_process';
+import http from 'http';
+import fs from 'fs';
 
 console.log('🔍 Running Koyeb health check...');
 console.log('Environment:', process.env.NODE_ENV || 'development');
@@ -30,7 +31,6 @@ tsxCheck.on('exit', (code) => {
 });
 
 // Test 2: Check if server file exists
-const fs = require('fs');
 const serverPath = './server/index.ts';
 
 console.log('\n2️⃣ Checking server file...');
