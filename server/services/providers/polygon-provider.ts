@@ -78,8 +78,9 @@ export class PolygonProvider extends BaseProvider {
         console.log('[Polygon] Using previous day data for current price');
       }
 
-      const change = currentPrice - data.c;
-      const changePercent = (change / data.c) * 100;
+      const previousClose = data.c; // Yesterday's close price
+      const change = currentPrice - previousClose;
+      const changePercent = previousClose !== 0 ? (change / previousClose) * 100 : 0;
 
       return {
         symbol: symbol.toUpperCase(),
@@ -89,7 +90,7 @@ export class PolygonProvider extends BaseProvider {
         high: data.h,
         low: data.l,
         open: data.o,
-        previousClose: data.c,
+        previousClose,
         volume,
         timestamp: new Date(data.t).toISOString(),
         provider: this.name

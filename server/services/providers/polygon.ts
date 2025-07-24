@@ -67,19 +67,21 @@ export class PolygonProvider extends BaseProvider {
         }
 
         const result = data.results[0];
-        const change = result.c - result.o;
-        const changePercent = result.o !== 0 ? (change / result.o) * 100 : 0;
+        // Since we only have previous day data, we can't calculate today's change
+        // Set change to 0 as we're returning yesterday's close price
+        const change = 0;
+        const changePercent = 0;
 
         return {
           symbol: symbol,
-          price: result.c,
+          price: result.c, // Yesterday's close price
           change: change,
           changePercent: changePercent,
           volume: result.v,
           high: result.h,
           low: result.l,
           open: result.o,
-          previousClose: result.c, // Using close as previous close
+          previousClose: result.c, // Yesterday's close is today's previous close
           timestamp: new Date(result.t).toISOString(),
           provider: this.name
         };
