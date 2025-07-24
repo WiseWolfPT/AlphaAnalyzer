@@ -184,6 +184,11 @@ router.get('/:id', async (req: Request, res: Response) => {
     const userId = (req as any).user?.id || 'demo_user';
     const { id } = req.params;
 
+    // TODO: Production mode - SQLite disabled. Implement Supabase query
+    if (process.env.NODE_ENV === 'production') {
+      return res.status(404).json({ error: 'Alert not found' });
+    }
+
     const alert = db.prepare(`
       SELECT * FROM alerts_v2 
       WHERE id = ? AND user_id = ?
@@ -219,6 +224,11 @@ router.put('/:id', async (req: Request, res: Response) => {
   try {
     const userId = (req as any).user?.id || 'demo_user';
     const { id } = req.params;
+
+    // TODO: Production mode - SQLite disabled. Implement Supabase query
+    if (process.env.NODE_ENV === 'production') {
+      return res.status(404).json({ error: 'Alert not found' });
+    }
 
     // Check if alert exists and belongs to user
     const existingAlert = db.prepare(`
@@ -262,6 +272,11 @@ router.delete('/:id', async (req: Request, res: Response) => {
     const userId = (req as any).user?.id || 'demo_user';
     const { id } = req.params;
 
+    // TODO: Production mode - SQLite disabled. Implement Supabase query
+    if (process.env.NODE_ENV === 'production') {
+      return res.status(404).json({ error: 'Alert not found' });
+    }
+
     // Check if alert exists and belongs to user
     const existingAlert = db.prepare(`
       SELECT * FROM alerts_v2 
@@ -294,6 +309,16 @@ router.get('/triggers', async (req: Request, res: Response) => {
   try {
     const userId = (req as any).user?.id || 'demo_user';
     const { limit = 50, offset = 0, severity, acknowledged } = req.query;
+
+    // TODO: Production mode - SQLite disabled. Implement Supabase query
+    if (process.env.NODE_ENV === 'production') {
+      return res.json({
+        triggers: [],
+        total: 0,
+        limit: Number(limit),
+        offset: Number(offset)
+      });
+    }
 
     let query = `
       SELECT at.*, a.name as alert_name, a.type as alert_type
@@ -348,6 +373,11 @@ router.post('/triggers/:id/acknowledge', async (req: Request, res: Response) => 
     const userId = (req as any).user?.id || 'demo_user';
     const { id } = req.params;
 
+    // TODO: Production mode - SQLite disabled. Implement Supabase query
+    if (process.env.NODE_ENV === 'production') {
+      return res.json({ message: 'Alert trigger acknowledged' });
+    }
+
     const result = db.prepare(`
       UPDATE alert_triggers_v2 
       SET acknowledged = 1, acknowledged_at = datetime('now')
@@ -373,6 +403,23 @@ router.post('/triggers/:id/acknowledge', async (req: Request, res: Response) => 
 router.get('/preferences', async (req: Request, res: Response) => {
   try {
     const userId = (req as any).user?.id || 'demo_user';
+
+    // TODO: Production mode - SQLite disabled. Implement Supabase query
+    if (process.env.NODE_ENV === 'production') {
+      // Return default preferences in production
+      return res.json({
+        user_id: userId,
+        global_enabled: true,
+        email_notifications: false,
+        push_notifications: false,
+        weekend_alerts: true,
+        default_channels: ['in_app'],
+        quiet_hours: {enabled: false, startHour: 22, endHour: 8, timezone: 'UTC'},
+        categories: {},
+        max_alerts_per_day: 50,
+        preferred_frequency: 'every_15_minutes'
+      });
+    }
 
     const preferences = db.prepare(`
       SELECT * FROM user_alert_preferences_v2 WHERE user_id = ?
@@ -452,6 +499,11 @@ router.put('/preferences', async (req: Request, res: Response) => {
   try {
     const userId = (req as any).user?.id || 'demo_user';
     const validatedData = UserPreferencesSchema.parse(req.body);
+
+    // TODO: Production mode - SQLite disabled. Implement Supabase query
+    if (process.env.NODE_ENV === 'production') {
+      return res.json({ message: 'Alert preferences updated successfully' });
+    }
 
     // Build dynamic update query
     const updateFields: string[] = [];
@@ -606,6 +658,17 @@ router.delete('/notifications', async (req: Request, res: Response) => {
 router.get('/stats', async (req: Request, res: Response) => {
   try {
     const userId = (req as any).user?.id || 'demo_user';
+
+    // TODO: Production mode - SQLite disabled. Implement Supabase query
+    if (process.env.NODE_ENV === 'production') {
+      return res.json({
+        totalAlerts: 0,
+        activeAlerts: 0,
+        totalTriggers: 0,
+        triggersToday: 0,
+        unacknowledged: 0
+      });
+    }
 
     // Get user-specific stats
     const alertStats = db.prepare(`
