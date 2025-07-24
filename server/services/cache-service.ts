@@ -60,4 +60,6 @@ class CacheService {
   }
 }
 
+// Export both the class and the singleton instance
+export { CacheService };
 export const cacheService = new CacheService();
