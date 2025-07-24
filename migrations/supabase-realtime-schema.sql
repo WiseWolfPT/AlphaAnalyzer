@@ -126,7 +126,7 @@ CREATE POLICY "Anyone can read realtime quotes" ON public.realtime_quotes
   FOR SELECT USING (true);
 
 CREATE POLICY "Service role can write realtime quotes" ON public.realtime_quotes
-  FOR INSERT USING (auth.role() = 'service_role');
+  FOR INSERT WITH CHECK (auth.role() = 'service_role');
 
 -- Realtime alerts are user-specific
 CREATE POLICY "Users can read own alerts" ON public.realtime_alerts
@@ -140,7 +140,7 @@ CREATE POLICY "Anyone can read market status" ON public.realtime_market_status
   FOR SELECT USING (true);
 
 CREATE POLICY "Service role can write market status" ON public.realtime_market_status
-  FOR INSERT USING (auth.role() = 'service_role');
+  FOR INSERT WITH CHECK (auth.role() = 'service_role');
 
 -- Portfolio updates are user-specific
 CREATE POLICY "Users can read own portfolio updates" ON public.realtime_portfolio_updates
