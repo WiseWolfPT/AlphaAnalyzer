@@ -3,6 +3,12 @@
  * Main export file for cache services
  */
 
+// Export new Supabase-based cache services
+export { CacheService } from './cache-service';
+export { getSupabaseClient, getCacheSchemaClient, getRealtimeClient } from './supabase-client';
+export * from '../../types/cache.types';
+
+// Keep backward compatibility exports
 export { cacheManager, CacheType, CacheKeys, CACHE_CONFIGS } from './cache-manager';
 export type { CacheStats, CacheConfig } from './cache-manager';
 

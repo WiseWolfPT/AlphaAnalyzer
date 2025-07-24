@@ -121,3 +121,23 @@ export const marketDataRateLimiters = {
   // System status endpoints
   status: createApiRateLimiter(isDevelopment ? 100 : 10, 1) // 100 in dev, 10 in prod requests per minute
 };
+
+// Rate limiter geral (from implementation plan)
+export const generalLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutos
+  max: 100, // limite de 100 requisições
+  message: 'Too many requests from this IP, please try again later.',
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// Rate limiter específico para APIs de mercado (from implementation plan)
+export const marketDataLimiter = rateLimit({
+  windowMs: 1 * 60 * 1000, // 1 minuto
+  max: 20, // 20 requisições por minuto
+  message: 'Too many market data requests, please slow down.',
+  skip: (req) => {
+    // Skip rate limiting para requisições com cache hit
+    return req.headers['x-cache-hit'] === 'true';
+  }
+});

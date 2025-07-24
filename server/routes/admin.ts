@@ -9,6 +9,9 @@ import { getUnifiedAPIService } from '../services/unified-api';
 import { db } from '../lib/supabase-admin';
 import { asyncHandler, createAuthenticationError, createAuthorizationError } from '../middleware/error-handler';
 import { requireAdmin, adminRateLimit } from '../middleware/admin-auth';
+import { cronManager } from '../services/cron/cron-manager';
+import { performanceMonitor } from '../services/monitoring/performance-monitor';
+import { keepAliveService } from '../services/keep-alive';
 
 // Import admin sub-routes
 import authRoutes from './admin/auth';
@@ -712,6 +715,138 @@ router.get('/performance-metrics', requireAdmin(), async (req, res) => {
       error: 'Erro ao coletar métricas de performance',
       details: error instanceof Error ? error.message : 'Erro desconhecido',
       timestamp: new Date().toISOString()
+    });
+  }
+});
+
+/**
+ * GET /api/admin/cron/status
+ * Get status of all cron jobs
+ */
+router.get('/cron/status', requireAdmin(), async (req, res) => {
+  try {
+    const status = cronManager.getStatus();
+    res.json(status);
+  } catch (error) {
+    console.error('❌ Error getting cron status:', error);
+    res.status(500).json({
+      error: 'Failed to get cron status',
+      details: error instanceof Error ? error.message : 'Unknown error'
+    });
+  }
+});
+
+/**
+ * POST /api/admin/cron/trigger/:jobName
+ * Manually trigger a specific cron job
+ */
+router.post('/cron/trigger/:jobName', requireAdmin(), async (req, res) => {
+  try {
+    const { jobName } = req.params;
+    
+    console.log(`🔄 Manually triggering cron job: ${jobName}`);
+    await cronManager.triggerJob(jobName);
+    
+    res.json({
+      success: true,
+      message: `Job ${jobName} triggered successfully`,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error(`❌ Error triggering cron job ${req.params.jobName}:`, error);
+    res.status(500).json({
+      error: 'Failed to trigger cron job',
+      details: error instanceof Error ? error.message : 'Unknown error'
+    });
+  }
+});
+
+/**
+ * GET /api/admin/monitoring/health
+ * Get comprehensive health status
+ */
+router.get('/monitoring/health', requireAdmin(), async (req, res) => {
+  try {
+    const health = performanceMonitor.getHealthStatus();
+    const keepAliveMetrics = keepAliveService.getMetrics();
+    
+    const fullHealth = {
+      ...health,
+      keepAlive: keepAliveMetrics,
+      database: {
+        connected: !!supabaseAdmin,
+        lastCheck: new Date().toISOString()
+      }
+    };
+    
+    res.json(fullHealth);
+  } catch (error) {
+    console.error('❌ Error getting health status:', error);
+    res.status(500).json({
+      error: 'Failed to get health status',
+      details: error instanceof Error ? error.message : 'Unknown error'
+    });
+  }
+});
+
+/**
+ * GET /api/admin/monitoring/performance
+ * Get detailed performance metrics
+ */
+router.get('/monitoring/performance', requireAdmin(), async (req, res) => {
+  try {
+    const performanceStats = performanceMonitor.getStats();
+    res.json(performanceStats);
+  } catch (error) {
+    console.error('❌ Error getting performance stats:', error);
+    res.status(500).json({
+      error: 'Failed to get performance stats',
+      details: error instanceof Error ? error.message : 'Unknown error'
+    });
+  }
+});
+
+/**
+ * POST /api/admin/monitoring/reset
+ * Reset performance metrics (for testing)
+ */
+router.post('/monitoring/reset', requireAdmin(), async (req, res) => {
+  try {
+    performanceMonitor.reset();
+    res.json({
+      success: true,
+      message: 'Performance metrics reset',
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('❌ Error resetting performance metrics:', error);
+    res.status(500).json({
+      error: 'Failed to reset metrics',
+      details: error instanceof Error ? error.message : 'Unknown error'
+    });
+  }
+});
+
+/**
+ * POST /api/admin/keep-alive/ping
+ * Handle external keep-alive ping (from UptimeRobot)
+ */
+router.post('/keep-alive/ping', async (req, res) => {
+  try {
+    const source = req.headers['user-agent'] || 'unknown';
+    await keepAliveService.handleExternalPing(source);
+    
+    res.json({
+      success: true,
+      message: 'Keep-alive ping received',
+      timestamp: new Date().toISOString(),
+      uptime: process.uptime()
+    });
+  } catch (error) {
+    console.error('❌ Error handling keep-alive ping:', error);
+    res.status(500).json({
+      error: 'Failed to process keep-alive ping',
+      details: error instanceof Error ? error.message : 'Unknown error'
     });
   }
 });

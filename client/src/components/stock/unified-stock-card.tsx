@@ -24,12 +24,15 @@ import {
   Calculator,
   DollarSign,
   Loader2,
-  X
+  X,
+  Wifi,
+  WifiOff
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { MiniChart } from "./mini-charts";
 import { FeatureLimiter } from "@/components/beta/feature-limiter";
 import { useStock, useIntrinsicValue } from "@/hooks/use-enhanced-stocks";
+import { useStockQuote } from "@/hooks/use-market-data";
 import { useNormalizedStock, getStockPrice, getStockChangePercent, getStockChange, isStockPositive } from "@/lib/stock-data-normalizer";
 import type { Stock } from "@shared/schema";
 
@@ -83,13 +86,35 @@ export const UnifiedStockCard = memo(function UnifiedStockCard({
     return null;
   }
   
-  // Fetch real data if using symbol prop, otherwise use provided stock data
-  const { data: rawStock, isLoading: stockLoading, error: stockError } = useStock(stockSymbol);
+  // Fetch real-time data using new market data hooks
+  const { 
+    data: realtimeQuote, 
+    isLoading: quoteLoading, 
+    error: quoteError,
+    isRealtime,
+    isColdStart 
+  } = useStockQuote(stockSymbol, { enabled: !propStock });
+  
+  // Fallback to old data source if needed
+  const { data: rawStock, isLoading: stockLoading, error: stockError } = useStock(stockSymbol, { enabled: !propStock && !realtimeQuote });
   const { data: intrinsicValue, isLoading: ivLoading } = useIntrinsicValue(stockSymbol);
   
-  // Use provided stock data or fetched data
-  const stock = propStock || useNormalizedStock(rawStock);
-  const isLoading = !propStock && stockLoading;
+  // Use provided stock data, real-time quote, or fetched data
+  const stock = propStock || (realtimeQuote ? {
+    symbol: realtimeQuote.symbol,
+    name: stockSymbol, // Will be enhanced later
+    price: realtimeQuote.price.toString(),
+    change: realtimeQuote.change.toString(),
+    changePercent: realtimeQuote.changePercent.toString(),
+    volume: realtimeQuote.volume.toString(),
+    marketCap: realtimeQuote.marketCap?.toString() || 'N/A',
+    eps: realtimeQuote.eps?.toString(),
+    peRatio: realtimeQuote.pe?.toString(),
+    intrinsicValue: intrinsicValue?.toString()
+  } : useNormalizedStock(rawStock));
+  
+  const isLoading = !propStock && (quoteLoading || (!realtimeQuote && stockLoading));
+  const error = quoteError || (!realtimeQuote && stockError);
   
   // Memoized calculations
   const calculations = useMemo(() => {
@@ -197,12 +222,12 @@ export const UnifiedStockCard = memo(function UnifiedStockCard({
   
   // Loading state
   if (isLoading) {
-    return <LoadingSkeleton variant={variant} />;
+    return <LoadingSkeleton variant={variant} isColdStart={isColdStart} />;
   }
   
   // Error state
-  if (stockError || !stock) {
-    return <ErrorState variant={variant} symbol={stockSymbol} />;
+  if (error || !stock) {
+    return <ErrorState variant={variant} symbol={stockSymbol} isColdStart={isColdStart} />;
   }
   
   // Render based on variant
@@ -214,6 +239,7 @@ export const UnifiedStockCard = memo(function UnifiedStockCard({
           calculations={calculations}
           showRemove={showRemove}
           showActions={showActions}
+          isRealtime={isRealtime}
           onCardClick={handleCardClick}
           onQuickInfoClick={handleQuickInfoClick}
           onPerformanceClick={handlePerformanceClick}
@@ -233,6 +259,7 @@ export const UnifiedStockCard = memo(function UnifiedStockCard({
           showValuation={showValuation}
           showRemove={showRemove}
           showActions={showActions}
+          isRealtime={isRealtime}
           ivLoading={ivLoading}
           onCardClick={handleCardClick}
           onQuickInfoClick={handleQuickInfoClick}
@@ -253,6 +280,7 @@ export const UnifiedStockCard = memo(function UnifiedStockCard({
           showMiniChart={showMiniChart}
           showValuation={showValuation}
           showActions={showActions}
+          isRealtime={isRealtime}
           onCardClick={handleCardClick}
           onQuickInfoClick={handleQuickInfoClick}
           onPerformanceClick={handlePerformanceClick}
@@ -273,6 +301,7 @@ function CompactVariant({
   calculations, 
   showRemove, 
   showActions,
+  isRealtime,
   onCardClick, 
   onQuickInfoClick, 
   onPerformanceClick, 
@@ -321,7 +350,12 @@ function CompactVariant({
           
           {/* Price and change */}
           <div className="text-right flex-shrink-0">
-            <div className="font-bold text-sm">${calculations.currentPrice.toFixed(2)}</div>
+            <div className="flex items-center gap-1 justify-end">
+              <div className="font-bold text-sm">${calculations.currentPrice.toFixed(2)}</div>
+              {isRealtime && (
+                <Wifi className="w-3 h-3 text-green-500" title="Real-time data" />
+              )}
+            </div>
             <div className={cn(
               "text-xs font-medium",
               calculations.isPositive ? "text-emerald-500" : "text-red-500"
@@ -371,6 +405,7 @@ function StandardVariant({
   showMiniChart, 
   showValuation, 
   showActions,
+  isRealtime,
   onCardClick, 
   onQuickInfoClick, 
   onPerformanceClick,
@@ -437,7 +472,12 @@ function StandardVariant({
 
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <span className="text-2xl font-bold text-foreground">${calculations.currentPrice.toFixed(2)}</span>
+          <div className="flex items-center gap-2">
+            <span className="text-2xl font-bold text-foreground">${calculations.currentPrice.toFixed(2)}</span>
+            {isRealtime && (
+              <Wifi className="w-4 h-4 text-green-500" title="Real-time data" />
+            )}
+          </div>
           <div className={cn(
             "px-2 py-1 rounded-lg text-sm font-semibold",
             calculations.isPositive 
@@ -569,6 +609,7 @@ function EnhancedVariant({
   showValuation, 
   showRemove, 
   showActions,
+  isRealtime,
   ivLoading,
   onCardClick, 
   onQuickInfoClick, 
@@ -649,7 +690,12 @@ function EnhancedVariant({
       >
         {/* Price section */}
         <div className="flex items-center justify-between">
-          <div className="text-2xl font-bold">${calculations.currentPrice.toFixed(2)}</div>
+          <div className="flex items-center gap-2">
+            <div className="text-2xl font-bold">${calculations.currentPrice.toFixed(2)}</div>
+            {isRealtime && (
+              <Wifi className="w-4 h-4 text-green-500" title="Real-time data" />
+            )}
+          </div>
           <div className={cn(
             "px-2 py-1 rounded text-sm font-semibold",
             calculations.isPositive 
@@ -791,7 +837,7 @@ function EnhancedVariant({
 /**
  * LOADING SKELETON
  */
-function LoadingSkeleton({ variant }: { variant: string }) {
+function LoadingSkeleton({ variant, isColdStart }: { variant: string; isColdStart?: boolean }) {
   if (variant === 'compact') {
     return (
       <Card className="cursor-pointer">
@@ -809,6 +855,11 @@ function LoadingSkeleton({ variant }: { variant: string }) {
               <Skeleton className="h-3 w-12" />
             </div>
           </div>
+          {isColdStart && (
+            <div className="mt-2 text-xs text-muted-foreground text-center">
+              Server is waking up...
+            </div>
+          )}
         </CardContent>
       </Card>
     );

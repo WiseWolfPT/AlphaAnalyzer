@@ -379,7 +379,9 @@ export const healthCheckHandler = async (req: Request, res: Response, next: Next
       timestamp: new Date().toISOString(),
       uptime: process.uptime(),
       memory: process.memoryUsage(),
-      requestId: (req as any).requestId
+      requestId: (req as any).requestId,
+      cors: 'enabled',
+      environment: process.env.NODE_ENV || 'development'
     };
     
     res.json(health);

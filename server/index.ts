@@ -11,6 +11,7 @@ import { env, isProduction, isDevelopment } from './config/env';
 
 import express, { type Request, Response, NextFunction } from "express";
 import cors from "cors";
+import { corsOptions, handlePreflightRequests } from './middleware/cors';
 import helmet from "helmet";
 import { 
   apiSecurityMiddleware, 
@@ -40,9 +41,9 @@ import {
   sanitizeInput, 
   auditLogger, 
   financialDataSecurity, 
-  corsConfig, 
   securityErrorHandler 
 } from "./security/security-middleware";
+import { generalLimiter, marketDataLimiter } from './middleware/rate-limit';
 import { errorHandler, notFoundHandler, gracefulShutdownHandler, healthCheckHandler } from './middleware/error-handler';
 import { AuditLogger } from "./security/compliance-audit";
 // BROKEN IMPORTS - WebSocket package removed, CSRF disabled
@@ -104,8 +105,9 @@ import { corsLoggerMiddleware, corsDebugMiddleware } from './middleware/cors-log
 app.use(corsLoggerMiddleware);
 app.use(corsDebugMiddleware);
 
-// CORS configuration
-app.use(cors(corsConfig));
+// CORS - CRITICAL: Must be before routes
+app.use(handlePreflightRequests);
+app.use(cors(corsOptions));
 
 // Trust proxy for accurate IP addresses
 app.set('trust proxy', 1);
@@ -165,6 +167,10 @@ app.use(authLoggingMiddleware);
 app.use(corsLoggingMiddleware);
 app.use(proxyLoggingMiddleware);
 
+// AGENT 5: Add performance monitoring middleware
+import { performanceMonitor } from './services/monitoring/performance-monitor';
+app.use(performanceMonitor.middleware());
+
 // Add request ID and logging middleware
 app.use((req, res, next) => {
   // Generate unique request ID
@@ -218,6 +224,9 @@ app.use(globalBackoffMiddleware());
 // Security middleware
 app.use(auditLogger);
 app.use(sanitizeInput);
+
+// Rate limiting
+app.use('/api/', generalLimiter);
 
 // ROADMAP V4: Apply Upstash rate limiting based on endpoint sensitivity (30 req/min IP using contador KV)
 app.use('/api/auth', upstashRateLimiters.auth);        // 5 req/min for auth
@@ -614,6 +623,44 @@ async function initializeMarketDataServices() {
           }
         }).catch(error => {
           console.warn('⚠️ Performance optimization import failed:', error);
+        });
+      }
+      
+      // AGENT 5: Initialize Cron Manager for scheduled jobs
+      if (process.env.ENABLE_CRON_JOBS !== 'false') {
+        import('./services/cron/cron-manager').then(async ({ cronManager }) => {
+          try {
+            await cronManager.startAll();
+            console.log('🕐 Cron job manager started successfully');
+          } catch (error) {
+            console.warn('⚠️ Cron manager failed to start:', error);
+          }
+        }).catch(error => {
+          console.warn('⚠️ Cron manager import failed:', error);
+        });
+      }
+      
+      // AGENT 5: Initialize Keep-Alive Service to prevent cold starts
+      if (process.env.ENABLE_KEEP_ALIVE !== 'false') {
+        import('./services/keep-alive').then(({ keepAliveService }) => {
+          try {
+            keepAliveService.start();
+            console.log('🫀 Keep-alive service started (prevents Koyeb sleep)');
+          } catch (error) {
+            console.warn('⚠️ Keep-alive service failed to start:', error);
+          }
+        }).catch(error => {
+          console.warn('⚠️ Keep-alive service import failed:', error);
+        });
+      }
+      
+      // AGENT 5: Initialize Performance Monitor middleware
+      if (process.env.ENABLE_PERFORMANCE_MONITOR !== 'false') {
+        import('./services/monitoring/performance-monitor').then(({ performanceMonitor }) => {
+          console.log('📊 Performance monitoring enabled for all requests');
+          // Note: The middleware is already applied at the top of the app
+        }).catch(error => {
+          console.warn('⚠️ Performance monitor import failed:', error);
         });
       }
       

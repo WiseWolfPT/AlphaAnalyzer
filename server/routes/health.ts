@@ -8,7 +8,7 @@ import HealthMonitor from '../services/health-monitor';
 import kvRouter from './health/kv';
 import { getTTFBStats, getTTFBRecommendations } from '../middleware/ttfb-middleware';
 import { getUnifiedAPIService } from '../services/unified-api';
-// import { circuitBreakerManager } from '../services/unified-api/circuit-breaker'; // TODO: Create circuit-breaker module
+import { circuitBreakerManager } from '../services/unified-api/circuit-breaker';
 
 const router = Router();
 const healthMonitor = HealthMonitor.getInstance();
@@ -354,6 +354,8 @@ router.get('/', async (req: Request, res: Response) => {
       version: "1.0.0",
       uptime: Math.floor(result.uptime / 1000),
       env: process.env.NODE_ENV || "development",
+      cors: 'enabled',
+      environment: process.env.NODE_ENV || 'development',
       services
     });
   } catch (error) {

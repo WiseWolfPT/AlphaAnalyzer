@@ -10,6 +10,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { FileText, Search, Calendar, TrendingUp, ExternalLink, Play, Clock, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { TranscriptCardSkeleton } from "@/components/ui/transcript-card-skeleton";
+import { useColdStartHandler } from "@/hooks/use-market-data";
 // Removed date-fns import - using native Date methods
 
 // Mock transcripts data - in real app, this would come from API
@@ -197,6 +199,9 @@ export default function Transcripts() {
   const [selectedQuarter, setSelectedQuarter] = useState("all");
   const [selectedSentiment, setSelectedSentiment] = useState("all");
   const [selectedSort, setSelectedSort] = useState("recent");
+  
+  // Cold start handler
+  const { isColdStart, coldStartMessage } = useColdStartHandler();
 
   // In real app, this would be a proper API call
   const { data: transcripts, isLoading } = useQuery({
@@ -302,10 +307,17 @@ export default function Transcripts() {
           
           <TabsContent value="recent" className="space-y-6">
             {isLoading ? (
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {[...Array(6)].map((_, i) => (
-                  <div key={i} className="h-80 bg-muted animate-pulse rounded-lg" />
-                ))}
+              <div className="space-y-4">
+                {isColdStart && (
+                  <div className="text-center p-4 bg-blue-50 dark:bg-blue-950/50 rounded-lg border border-blue-200 dark:border-blue-800">
+                    <p className="text-sm text-blue-800 dark:text-blue-200">{coldStartMessage}</p>
+                  </div>
+                )}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  {[...Array(6)].map((_, i) => (
+                    <TranscriptCardSkeleton key={i} />
+                  ))}
+                </div>
               </div>
             ) : sortedTranscripts.length > 0 ? (
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

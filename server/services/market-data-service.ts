@@ -2,6 +2,14 @@ import type { Stock } from '../../shared/schema';
 
 import { yahooFinanceService } from './yahoo-finance-service';
 import { globalCache, DataType, CacheKeys } from '../cache/intelligent-cache-manager';
+import { createClient } from '@supabase/supabase-js';
+import { logger } from '../lib/logger';
+
+// Initialize Supabase client for realtime broadcasting
+const supabase = createClient(
+  process.env.SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_KEY!
+);
 
 // Server-side environment access with proper security and validation
 const getServerEnvVar = (key: string, fallbackKey?: string): string => {
@@ -148,6 +156,9 @@ export class ServerMarketDataService {
             provider.name
           );
           
+          // AGENT 5: Broadcast to Supabase Realtime
+          await this.broadcastRealtimeUpdate(enrichedQuote);
+          
           return enrichedQuote;
         } else {
           errors[provider.name] = 'No data returned';
@@ -174,6 +185,9 @@ export class ServerMarketDataService {
           DataType.REAL_TIME_PRICE, 
           'yahoo'
         );
+        
+        // AGENT 5: Broadcast to Supabase Realtime
+        await this.broadcastRealtimeUpdate(enrichedQuote);
         
         return enrichedQuote;
       } else {
@@ -502,4 +516,34 @@ export class ServerMarketDataService {
 
     return results;
   }
+
+  /**
+   * AGENT 5: Broadcast real-time quote updates to Supabase Realtime
+   */
+  private async broadcastRealtimeUpdate(quote: Stock): Promise<void> {
+    try {
+      // Insert into realtime_quotes table which triggers Supabase Realtime
+      const { error } = await supabase
+        .from('realtime_quotes')
+        .insert({
+          symbol: quote.symbol,
+          price: quote.price,
+          change: quote.change,
+          change_percent: quote.changePercent,
+          volume: quote.volume,
+          timestamp: new Date().toISOString()
+        });
+
+      if (error) {
+        logger.error('Failed to broadcast realtime update:', error);
+      } else {
+        logger.info(`📡 Broadcasted realtime update for ${quote.symbol}`);
+      }
+    } catch (error) {
+      logger.error('Error broadcasting realtime update:', error);
+    }
+  }
 }
+
+// Export class for use in other modules
+export { ServerMarketDataService as MarketDataService };

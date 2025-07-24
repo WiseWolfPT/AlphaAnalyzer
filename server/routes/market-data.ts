@@ -13,6 +13,15 @@ import {
   SearchResultSchema 
 } from '../cache/lru-cache';
 import { ServerMarketDataService } from '../services/market-data-service';
+import { 
+  ProviderManager, 
+  PolygonProvider, 
+  AlphaVantageProvider, 
+  FinnhubProvider, 
+  TwelveDataProvider,
+  FMPProvider
+} from '../services/providers';
+import { CacheService } from '../services/cache-service';
 
 const router = Router();
 
@@ -26,6 +35,29 @@ const authService = optionalDemoAuth(); // Always allow public access to market 
 
 // Initialize the enhanced market data service
 const marketDataService = new ServerMarketDataService();
+
+// Initialize the new provider manager
+const providerManager = new ProviderManager();
+
+// Initialize providers in priority order
+if (process.env.POLYGON_API_KEY && process.env.POLYGON_API_KEY !== 'demo') {
+  providerManager.addProvider(new PolygonProvider(process.env.POLYGON_API_KEY));
+}
+if (process.env.ALPHA_VANTAGE_API_KEY && process.env.ALPHA_VANTAGE_API_KEY !== 'demo') {
+  providerManager.addProvider(new AlphaVantageProvider(process.env.ALPHA_VANTAGE_API_KEY));
+}
+if (process.env.FINNHUB_API_KEY && process.env.FINNHUB_API_KEY !== 'demo') {
+  providerManager.addProvider(new FinnhubProvider(process.env.FINNHUB_API_KEY));
+}
+if (process.env.TWELVE_DATA_API_KEY && process.env.TWELVE_DATA_API_KEY !== 'demo') {
+  providerManager.addProvider(new TwelveDataProvider(process.env.TWELVE_DATA_API_KEY));
+}
+if (process.env.FMP_API_KEY && process.env.FMP_API_KEY !== 'demo') {
+  providerManager.addProvider(new FMPProvider(process.env.FMP_API_KEY));
+}
+
+// Initialize cache service (Agent 2's implementation)
+const cacheService = new CacheService();
 
 // SECURITY FIX: Replace simple Map with secure LRU cache to prevent memory exhaustion
 const marketDataCache = createMarketDataCache();
@@ -409,46 +441,29 @@ async function fetchFromTwelveData(symbol: string): Promise<any> {
   };
 }
 
-// Função principal para buscar cotação com fallback
+// Função principal para buscar cotação com fallback (DEPRECATED - use providerManager)
+// Mantida temporariamente para compatibilidade
 async function fetchQuoteWithFallback(symbol: string, userId?: string): Promise<any> {
-  const providers = [
-    { name: 'twelve_data', fetch: fetchFromTwelveData },
-    { name: 'yahoo_finance', fetch: fetchFromYahooFinance },
-    { name: 'finnhub', fetch: fetchFromFinnhub },
-    { name: 'fmp', fetch: fetchFromFMP },
-    { name: 'alpha_vantage', fetch: fetchFromAlphaVantage },
-  ];
-
-  const errors: Record<string, string> = {};
-
-  // Tentar cada provider em ordem
-  for (const provider of providers) {
-    try {
-      console.log(`Trying ${provider.name} for ${symbol}...`);
-      const data = await provider.fetch(symbol);
-      
-      // Log de sucesso
-      if (userId) {
-        dbUtils.logSecurityEvent({
-          user_id: userId,
-          action: 'market_data_fetch',
-          resource: `quote_${symbol}`,
-          success: true,
-          details: { provider: provider.name, symbol },
-        });
-      }
-      
-      return data;
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      errors[provider.name] = errorMessage;
-      console.warn(`${provider.name} failed for ${symbol}:`, errorMessage);
-      continue;
+  console.warn('DEPRECATED: fetchQuoteWithFallback called. Use providerManager.getQuoteWithFallback instead.');
+  
+  try {
+    const quote = await providerManager.getQuoteWithFallback(symbol);
+    
+    // Log de sucesso
+    if (userId) {
+      dbUtils.logSecurityEvent({
+        user_id: userId,
+        action: 'market_data_fetch',
+        resource: `quote_${symbol}`,
+        success: true,
+        details: { provider: quote.provider, symbol },
+      });
     }
+    
+    return quote;
+  } catch (error) {
+    throw error;
   }
-
-  // Se todos falharam, lançar erro com detalhes
-  throw new Error(`All providers failed. Details: ${JSON.stringify(errors)}`);
 }
 
 /**
@@ -473,10 +488,18 @@ router.get('/quote/:symbol',
 
       console.log(`🔍 API request for quote: ${symbol}`);
 
-      // Use the enhanced market data service
-      const stockData = await marketDataService.getRealTimeQuote(symbol);
+      // Try cache first (Agent 2's cache service)
+      const cachedData = await cacheService.getQuote(
+        symbol,
+        async () => {
+          // Cache miss - fetch from providers with fallback
+          return await providerManager.getQuoteWithFallback(symbol);
+        }
+      );
+
+      const quoteData = cachedData.data;
       
-      if (!stockData) {
+      if (!quoteData) {
         return res.status(404).json({
           error: 'QUOTE_NOT_FOUND',
           message: `Unable to fetch quote for ${symbol}. All providers failed.`,
@@ -485,28 +508,15 @@ router.get('/quote/:symbol',
         });
       }
 
-      // Convert Stock to API response format
+      // Add cache information to response
       const quoteResponse = {
-        symbol: stockData.symbol,
-        name: stockData.name,
-        price: stockData.price,
-        change: stockData.change,
-        changePercent: stockData.changePercent,
-        high: stockData.high,
-        low: stockData.low,
-        open: stockData.open,
-        previousClose: stockData.previousClose,
-        volume: stockData.volume,
-        marketCap: stockData.marketCap,
-        eps: stockData.eps,
-        pe: stockData.peRatio,
-        provider: (stockData as any).provider || 'unknown',
-        timestamp: Math.floor(stockData.lastUpdated.getTime() / 1000),
+        ...quoteData,
         _timestamp: Date.now(),
-        _cached: false,
+        _cached: cachedData.cached,
+        _expires_at: cachedData.expires_at,
       };
 
-      console.log(`✅ Successfully fetched ${symbol} via ${quoteResponse.provider}`);
+      console.log(`✅ Successfully fetched ${symbol} via ${quoteData.provider} (cached: ${cachedData.cached})`);
 
       res.json(quoteResponse);
     } catch (error) {
@@ -566,30 +576,24 @@ router.post('/quotes/batch',
       const results: any[] = [];
       const errors: Record<string, string> = {};
 
-      // Use the enhanced market data service for consistency
-      const stockQuotes = await marketDataService.getBatchQuotes(symbols);
+      // Use cache service with provider manager for batch quotes
+      const cachedBatch = await cacheService.getBatchQuotes(
+        symbols,
+        async () => {
+          // Cache miss - fetch from providers with fallback
+          return await providerManager.getBatchQuotesWithFallback(symbols);
+        }
+      );
+
+      const quotes = cachedBatch.data;
       
-      // Transform stock data to API response format
-      for (const stock of stockQuotes) {
-        if (stock) {
+      // Transform to API response format
+      for (const quote of quotes) {
+        if (quote) {
           results.push({
-            symbol: stock.symbol,
-            name: stock.name,
-            price: stock.price,
-            change: stock.change,
-            changePercent: stock.changePercent,
-            high: stock.high,
-            low: stock.low,
-            open: stock.open,
-            previousClose: stock.previousClose,
-            volume: stock.volume,
-            marketCap: stock.marketCap ? parseFloat(stock.marketCap) : null,
-            eps: stock.eps,
-            pe: stock.peRatio,
-            provider: (stock as any).provider || 'unknown',
-            timestamp: Math.floor(stock.lastUpdated.getTime() / 1000),
+            ...quote,
             _timestamp: Date.now(),
-            _cached: false,
+            _cached: cachedBatch.cached,
           });
         }
       }
@@ -601,12 +605,14 @@ router.post('/quotes/batch',
         }
       }
 
-      console.log(`✅ Batch quotes: ${results.length} success, ${Object.keys(errors).length} failed`);
+      console.log(`✅ Batch quotes: ${results.length} success, ${Object.keys(errors).length} failed (cached: ${cachedBatch.cached})`);
 
       res.json({
         quotes: results,
         errors: Object.keys(errors).length > 0 ? errors : undefined,
         _timestamp: Date.now(),
+        _cached: cachedBatch.cached,
+        _expires_at: cachedBatch.expires_at,
       });
     } catch (error) {
       console.error('Batch quotes error:', error);
@@ -915,25 +921,13 @@ router.get('/status',
   authService,
   async (req: Request, res: Response) => {
     try {
-      const apiStatus = marketDataService.getApiStatus();
-      const quotaStatus = Array.from(marketDataService.getQuotaStatus().entries());
+      const providerStatus = providerManager.getProviderStatus();
+      const cacheStats = await cacheService.getCacheStats();
 
       res.json({
-        ...apiStatus,
-        quotas: quotaStatus.map(([provider, quota]) => ({
-          provider,
-          ...quota,
-        })),
-        cache: {
-          marketData: {
-            ...marketDataCache.getStats(),
-            ttl: CACHE_TTL,
-          },
-          search: {
-            ...searchCache.getStats(),
-            ttl: 5 * 60 * 1000,
-          },
-        },
+        providers: providerStatus,
+        cache: cacheStats,
+        marketDataService: marketDataService.getApiStatus(),
         timestamp: new Date().toISOString(),
       });
     } catch (error) {
@@ -1094,6 +1088,153 @@ router.get('/simple-test',
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error',
         timestamp: new Date().toISOString()
+      });
+    }
+  }
+);
+
+/**
+ * GET /api/market-data/chart/:symbol/:period
+ * Get historical chart data for a symbol
+ */
+router.get('/chart/:symbol/:period',
+  authService,
+  marketDataRateLimit,
+  async (req: Request, res: Response) => {
+    try {
+      // Validate symbol
+      const symbolValidation = stockSymbolSchema.safeParse({ symbol: req.params.symbol });
+      if (!symbolValidation.success) {
+        return res.status(400).json({
+          error: 'INVALID_SYMBOL',
+          message: symbolValidation.error.errors[0].message,
+        });
+      }
+
+      const { symbol } = symbolValidation.data;
+      const period = req.params.period.toUpperCase();
+      
+      // Validate period
+      const validPeriods = ['1D', '5D', '1M', '3M', '6M', '1Y', '5Y'];
+      if (!validPeriods.includes(period)) {
+        return res.status(400).json({
+          error: 'INVALID_PERIOD',
+          message: `Invalid period. Valid values: ${validPeriods.join(', ')}`,
+        });
+      }
+
+      console.log(`📊 Chart data request for ${symbol} (${period})`);
+
+      // Try cache first, then fetch with fallback
+      const chartData = await providerManager.getChartDataWithFallback(symbol, period);
+      
+      if (!chartData || !chartData.data || chartData.data.length === 0) {
+        return res.status(404).json({
+          error: 'CHART_DATA_NOT_FOUND',
+          message: `Unable to fetch chart data for ${symbol}`,
+          symbol,
+          period,
+          timestamp: new Date().toISOString(),
+        });
+      }
+
+      console.log(`✅ Successfully fetched chart data for ${symbol} via ${chartData.provider}`);
+
+      res.json({
+        ...chartData,
+        _timestamp: Date.now(),
+      });
+    } catch (error) {
+      console.error('Chart data fetch error:', error);
+      
+      const errorResponse = {
+        error: 'CHART_DATA_UNAVAILABLE',
+        message: 'Unable to fetch chart data. Please try again later.',
+        timestamp: new Date().toISOString(),
+      };
+      
+      if (process.env.NODE_ENV === 'development') {
+        (errorResponse as any).details = error instanceof Error ? error.message : 'Unknown error';
+      }
+      
+      res.status(503).json(errorResponse);
+    }
+  }
+);
+
+/**
+ * GET /api/market-data/market-status
+ * Get current market status (open/closed)
+ */
+router.get('/market-status',
+  authService,
+  async (req: Request, res: Response) => {
+    try {
+      const market = (req.query.market as string) || 'US';
+      console.log(`🏛️ Market status request for ${market}`);
+
+      // Try cache first, then fetch with fallback
+      const status = await providerManager.getMarketStatusWithFallback(market);
+      
+      console.log(`✅ Market status: ${status.isOpen ? 'OPEN' : 'CLOSED'} via ${status.provider}`);
+
+      res.json({
+        ...status,
+        _timestamp: Date.now(),
+      });
+    } catch (error) {
+      console.error('Market status error:', error);
+      
+      // Return calculated status as fallback
+      const now = new Date();
+      const hour = now.getUTCHours();
+      const day = now.getUTCDay();
+      
+      const isWeekday = day >= 1 && day <= 5;
+      const isMarketHours = hour >= 14 && hour < 21;
+      
+      res.json({
+        market: 'US',
+        isOpen: isWeekday && isMarketHours,
+        timezone: 'America/New_York',
+        provider: 'calculated',
+        _timestamp: Date.now(),
+      });
+    }
+  }
+);
+
+/**
+ * POST /api/market-data/reset-provider/:provider?
+ * Reset provider health status (admin only)
+ */
+router.post('/reset-provider/:provider?',
+  authService,
+  async (req: Request, res: Response) => {
+    try {
+      const provider = req.params.provider;
+      
+      if (provider) {
+        providerManager.resetProviderHealth(provider);
+        console.log(`🔄 Reset health status for provider: ${provider}`);
+      } else {
+        providerManager.resetProviderHealth();
+        console.log('🔄 Reset health status for all providers');
+      }
+
+      const status = providerManager.getProviderStatus();
+      
+      res.json({
+        message: provider ? `Provider ${provider} health reset` : 'All providers health reset',
+        providers: status,
+        timestamp: new Date().toISOString(),
+      });
+    } catch (error) {
+      console.error('Provider reset error:', error);
+      res.status(500).json({
+        error: 'RESET_FAILED',
+        message: 'Failed to reset provider health',
+        timestamp: new Date().toISOString(),
       });
     }
   }

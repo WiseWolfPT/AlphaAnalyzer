@@ -11,6 +11,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ErrorBoundary } from '@/components/ui/error-boundary';
 import { StockCardSkeleton } from '@/components/ui/stock-card-skeleton';
+import { MarketStatSkeleton } from '@/components/ui/market-stat-skeleton';
 import { DashboardErrorBoundary } from './dashboard-error-boundary';
 import { LazyDashboardCards } from './lazy-dashboard-cards';
 import { EnhancedErrorBoundary } from '@/components/error/enhanced-error-boundary';
@@ -21,13 +22,14 @@ import { useNotification } from '@/components/notifications/notification-toast';
 import { 
   TrendingUp, Activity, Target, RefreshCw, Zap, AlertCircle, 
   User, Settings, Crown, Calendar, Shield, MonitorSpeaker,
-  BarChart3, LineChart, PieChart, Settings2
+  BarChart3, LineChart, PieChart, Settings2, Loader2
 } from 'lucide-react';
 
 // Enhanced hooks for real data
 import { useStocks, useMarketIndices, useApiQuota, useWarmCache } from '@/hooks/use-enhanced-stocks';
 import { useAuth } from '@/contexts/simple-auth-offline';
 import { usePullToRefresh } from '@/hooks/use-pull-to-refresh';
+import { useColdStartHandler } from '@/hooks/use-market-data';
 import { cn } from '@/lib/utils';
 
 // Dashboard configuration interfaces
@@ -300,6 +302,9 @@ export const UnifiedDashboard: React.FC<UnifiedDashboardProps> = ({
     threshold: 80
   });
 
+  // Cold start handler for Koyeb backend
+  const { isColdStart, coldStartMessage } = useColdStartHandler();
+
   // Extract data from queries
   const { data: stocks, isLoading: stocksLoading, error: stocksError } = stocksQuery || { data: null, isLoading: false, error: null };
   const { data: marketIndices, isLoading: indicesLoading, error: indicesError } = indicesQuery || { data: null, isLoading: false, error: null };
@@ -431,6 +436,16 @@ export const UnifiedDashboard: React.FC<UnifiedDashboardProps> = ({
             </Badge>
           </div>
 
+          {/* Cold Start Alert for Admin */}
+          {isColdStart && (
+            <Alert className="bg-orange-50 border-orange-200 dark:bg-orange-950/50 dark:border-orange-800">
+              <AlertCircle className="h-4 w-4 text-orange-600 dark:text-orange-400" />
+              <AlertDescription className="text-orange-800 dark:text-orange-200">
+                <strong>System is waking up...</strong> The backend server is starting after a period of inactivity. This may take 10-30 seconds.
+              </AlertDescription>
+            </Alert>
+          )}
+
           {config.features.systemStatus && (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               <Card>
@@ -483,7 +498,14 @@ export const UnifiedDashboard: React.FC<UnifiedDashboardProps> = ({
                 <CardTitle>API Quota Status</CardTitle>
               </CardHeader>
               <CardContent>
-                <p>API monitoring would be displayed here</p>
+                {isColdStart ? (
+                  <div className="flex items-center space-x-2 text-sm text-muted-foreground">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <span>Waiting for server to wake up...</span>
+                  </div>
+                ) : (
+                  <p>API monitoring would be displayed here</p>
+                )}
               </CardContent>
             </Card>
           )}
@@ -588,6 +610,16 @@ export const UnifiedDashboard: React.FC<UnifiedDashboardProps> = ({
     return (
       <div className="container mx-auto p-4 sm:p-6 lg:p-8 space-y-6">
         {config.features.betaBanner && <BetaBanner />}
+        
+        {/* Cold Start Banner */}
+        {isColdStart && (
+          <Alert className="bg-blue-50 border-blue-200 dark:bg-blue-950/50 dark:border-blue-800">
+            <AlertCircle className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+            <AlertDescription className="text-blue-800 dark:text-blue-200">
+              {coldStartMessage}
+            </AlertDescription>
+          </Alert>
+        )}
         
         <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
           <div>
@@ -694,42 +726,59 @@ export const UnifiedDashboard: React.FC<UnifiedDashboardProps> = ({
         )}
 
         {/* Market Overview */}
-        {config.features.marketOverview && marketStats.length > 0 && (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {marketStats.map((stat) => {
-              const Icon = stat.icon;
-              const isPositive = stat.change >= 0;
-              
-              return (
-                <div
-                  key={stat.label}
-                  className="bg-card rounded-lg border p-4 hover:shadow-md transition-shadow"
-                >
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm font-medium text-muted-foreground">
-                      {stat.label}
-                    </span>
-                    <Icon className="h-4 w-4 text-muted-foreground" />
+        {config.features.marketOverview && (
+          <>
+            {indicesLoading ? (
+              <div className="space-y-4">
+                {isColdStart && (
+                  <div className="text-center text-sm text-muted-foreground">
+                    {coldStartMessage}
                   </div>
-                  <div className="flex items-baseline justify-between">
-                    <span className="text-2xl font-bold">
-                      {indicesLoading ? "..." : stat.value}
-                    </span>
-                    <span
-                      className={cn(
-                        "text-sm font-medium",
-                        isPositive
-                          ? "text-green-600 dark:text-green-400"
-                          : "text-red-600 dark:text-red-400"
-                      )}
-                    >
-                      {isPositive ? "+" : ""}{stat.change.toFixed(2)}%
-                    </span>
-                  </div>
+                )}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {[...Array(3)].map((_, i) => (
+                    <MarketStatSkeleton key={i} />
+                  ))}
                 </div>
-              );
-            })}
-          </div>
+              </div>
+            ) : marketStats.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {marketStats.map((stat) => {
+                  const Icon = stat.icon;
+                  const isPositive = stat.change >= 0;
+                  
+                  return (
+                    <div
+                      key={stat.label}
+                      className="bg-card rounded-lg border p-4 hover:shadow-md transition-shadow"
+                    >
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-sm font-medium text-muted-foreground">
+                          {stat.label}
+                        </span>
+                        <Icon className="h-4 w-4 text-muted-foreground" />
+                      </div>
+                      <div className="flex items-baseline justify-between">
+                        <span className="text-2xl font-bold">
+                          {stat.value}
+                        </span>
+                        <span
+                          className={cn(
+                            "text-sm font-medium",
+                            isPositive
+                              ? "text-green-600 dark:text-green-400"
+                              : "text-red-600 dark:text-red-400"
+                          )}
+                        >
+                          {isPositive ? "+" : ""}{stat.change.toFixed(2)}%
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : null}
+          </>
         )}
 
         {/* API Usage Alert */}
@@ -749,14 +798,21 @@ export const UnifiedDashboard: React.FC<UnifiedDashboardProps> = ({
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-semibold">Lista de Seguimento</h2>
               <Badge variant="secondary">
-                {stocksLoading ? "Carregando..." : `${displayStocks?.length || 0} Ações`}
+                {stocksLoading ? (isColdStart ? "Server is waking up..." : "Carregando...") : `${displayStocks?.length || 0} Ações`}
               </Badge>
             </div>
             
             {stocksLoading && config.features.lazyLoading ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {[...Array(9)].map((_, i) => (
-                  <StockCardSkeleton key={i} />
+                  <div key={i}>
+                    <StockCardSkeleton />
+                    {isColdStart && i === 0 && (
+                      <div className="text-xs text-center text-muted-foreground mt-2">
+                        {coldStartMessage}
+                      </div>
+                    )}
+                  </div>
                 ))}
               </div>
             ) : displayStocks && displayStocks.length > 0 ? (

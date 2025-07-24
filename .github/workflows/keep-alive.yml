@@ -1,0 +1,124 @@
+name: Keep Backend Alive
+
+on:
+  schedule:
+    # Run every 45 minutes to prevent Koyeb sleep
+    - cron: '*/45 * * * *'
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    
+    steps:
+      - name: Check Backend Health
+        id: health_check
+        run: |
+          echo "🫀 Pinging backend to prevent cold start..."
+          
+          # Try health endpoint
+          response=$(curl -s -o /dev/null -w "%{http_code}" \
+            --connect-timeout 30 \
+            --max-time 60 \
+            https://crucial-ivonne-alfalyzer-90666a9e.koyeb.app/api/health)
+          
+          echo "Health check response: HTTP $response"
+          
+          if [ $response -eq 200 ]; then
+            echo "✅ Backend is healthy"
+            echo "status=healthy" >> $GITHUB_OUTPUT
+          else
+            echo "⚠️ Backend returned HTTP $response"
+            echo "status=unhealthy" >> $GITHUB_OUTPUT
+          fi
+      
+      - name: Check Market Status Endpoint
+        if: steps.health_check.outputs.status == 'healthy'
+        run: |
+          echo "📊 Checking market status endpoint..."
+          
+          response=$(curl -s -o /dev/null -w "%{http_code}" \
+            --connect-timeout 10 \
+            --max-time 30 \
+            https://crucial-ivonne-alfalyzer-90666a9e.koyeb.app/api/v1/market/status)
+          
+          echo "Market status response: HTTP $response"
+          
+          if [ $response -eq 200 ]; then
+            echo "✅ Market status endpoint is working"
+          else
+            echo "⚠️ Market status endpoint returned HTTP $response"
+          fi
+      
+      - name: Trigger Keep-Alive Ping
+        if: steps.health_check.outputs.status == 'healthy'
+        run: |
+          echo "📡 Sending keep-alive ping..."
+          
+          response=$(curl -s -X POST \
+            -H "Content-Type: application/json" \
+            -H "User-Agent: GitHub-Actions-Keep-Alive" \
+            -d '{"source": "github-actions"}' \
+            https://crucial-ivonne-alfalyzer-90666a9e.koyeb.app/api/admin/keep-alive/ping)
+          
+          echo "Keep-alive response: $response"
+      
+      - name: Log Metrics
+        if: always()
+        run: |
+          echo "📊 Keep-alive job metrics:"
+          echo "Timestamp: $(date -u +"%Y-%m-%dT%H:%M:%SZ")"
+          echo "Status: ${{ steps.health_check.outputs.status }}"
+          echo "Next run: in 45 minutes"
+          
+          # Calculate uptime percentage (simplified)
+          if [ "${{ steps.health_check.outputs.status }}" == "healthy" ]; then
+            echo "Uptime: ✅ 100% (last check)"
+          else
+            echo "Uptime: ❌ 0% (last check)"
+          fi
+      
+      - name: Create Issue on Failure
+        if: failure() || steps.health_check.outputs.status == 'unhealthy'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const title = '🚨 Backend Keep-Alive Failed';
+            const body = `
+            The keep-alive ping to the Alfalyzer backend failed.
+            
+            **Details:**
+            - Time: ${new Date().toISOString()}
+            - Health Status: ${{ steps.health_check.outputs.status }}
+            - Workflow Run: [${context.runNumber}](${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId})
+            
+            **Action Required:**
+            1. Check Koyeb dashboard for service status
+            2. Verify the backend URL hasn't changed
+            3. Check for any deployment issues
+            
+            This issue was automatically created by the keep-alive workflow.
+            `;
+            
+            // Check if similar issue already exists
+            const issues = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'backend-health'
+            });
+            
+            const existingIssue = issues.data.find(issue => 
+              issue.title.includes('Backend Keep-Alive Failed')
+            );
+            
+            if (!existingIssue) {
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: title,
+                body: body,
+                labels: ['backend-health', 'automated']
+              });
+            }
