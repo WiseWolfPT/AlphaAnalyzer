@@ -102,12 +102,25 @@ app.use(compression({
 
 // CORS Logger middleware (before CORS)
 import { corsLoggerMiddleware, corsDebugMiddleware } from './middleware/cors-logger';
+import { corsDebugMiddleware as enhancedCorsDebug, forceCorsHeaders, enforceJsonContentType } from './middleware/cors-debug';
+
 app.use(corsLoggerMiddleware);
 app.use(corsDebugMiddleware);
+
+// Enhanced CORS debugging for Koyeb issues
+if (process.env.NODE_ENV === 'production') {
+  app.use(enhancedCorsDebug);
+}
 
 // CORS - CRITICAL: Must be before routes
 app.use(handlePreflightRequests);
 app.use(cors(corsOptions));
+
+// Force CORS headers on all responses (fixes Koyeb POST issues)
+app.use(forceCorsHeaders);
+
+// Ensure JSON content type for API responses
+app.use(enforceJsonContentType);
 
 // Trust proxy for accurate IP addresses
 app.set('trust proxy', 1);

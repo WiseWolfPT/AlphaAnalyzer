@@ -565,6 +565,14 @@ router.post('/quotes/batch',
     console.log('   Body:', req.body);
     console.log('   Origin:', req.headers.origin);
     
+    // Explicitly set CORS headers to fix Koyeb issue
+    const origin = req.headers.origin;
+    if (origin) {
+      res.header('Access-Control-Allow-Origin', origin);
+      res.header('Access-Control-Allow-Credentials', 'true');
+    }
+    res.header('Content-Type', 'application/json; charset=utf-8');
+    
     try {
       // Validar entrada
       const validation = batchSymbolsSchema.safeParse(req.body);
@@ -1031,6 +1039,42 @@ router.post('/warm-cache',
         error: 'CACHE_WARMING_FAILED',
         message: 'Unable to warm cache',
         timestamp: new Date().toISOString(),
+      });
+    }
+  }
+);
+
+/**
+ * POST /api/market-data/test-post
+ * Simple POST endpoint to test if POST requests work on Koyeb
+ */
+router.post('/test-post', 
+  async (req: Request, res: Response) => {
+    console.log('🧪 POST test endpoint hit');
+    console.log('   Headers:', req.headers);
+    console.log('   Body:', req.body);
+    
+    // Explicitly set CORS headers
+    res.header('Access-Control-Allow-Origin', req.headers.origin || '*');
+    res.header('Access-Control-Allow-Credentials', 'true');
+    res.header('Content-Type', 'application/json');
+    
+    try {
+      res.json({
+        success: true,
+        method: 'POST',
+        body: req.body,
+        headers: {
+          origin: req.headers.origin,
+          contentType: req.headers['content-type']
+        },
+        timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      console.error('Error in test-post:', error);
+      res.status(500).json({
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error'
       });
     }
   }

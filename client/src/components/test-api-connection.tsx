@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { CheckCircle, XCircle, Loader2 } from 'lucide-react';
+import { API_CONFIG } from '@/config/api';
 
 interface TestResult {
   name: string;
@@ -14,6 +15,7 @@ export function TestAPIConnection() {
   const [tests, setTests] = useState<TestResult[]>([
     { name: 'Backend Health Check', status: 'pending' },
     { name: 'Stock Quote API (AAPL)', status: 'pending' },
+    { name: 'Simple POST Test', status: 'pending' },
     { name: 'Batch Quotes API', status: 'pending' },
     { name: 'Market Status API', status: 'pending' },
   ]);
@@ -22,10 +24,11 @@ export function TestAPIConnection() {
   const runTests = async () => {
     setIsRunning(true);
     const results: TestResult[] = [];
+    const baseURL = API_CONFIG.baseURL;
 
     // Test 1: Backend Health Check
     try {
-      const healthRes = await fetch('/api/health');
+      const healthRes = await fetch(`${baseURL}/api/health`);
       const healthData = await healthRes.json();
       results.push({
         name: 'Backend Health Check',
@@ -43,7 +46,7 @@ export function TestAPIConnection() {
 
     // Test 2: Stock Quote API
     try {
-      const quoteRes = await fetch('/api/market-data/quote/AAPL');
+      const quoteRes = await fetch(`${baseURL}/api/market-data/quote/AAPL`);
       const quoteData = await quoteRes.json();
       results.push({
         name: 'Stock Quote API (AAPL)',
@@ -59,15 +62,59 @@ export function TestAPIConnection() {
       });
     }
 
-    // Test 3: Batch Quotes API
+    // Test 2.5: Simple POST Test to debug Koyeb issue
     try {
-      const batchRes = await fetch('/api/market-data/batch-quotes', {
+      const postRes = await fetch(`${baseURL}/api/market-data/test-post`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ test: 'data', timestamp: Date.now() }),
+      });
+      
+      const contentType = postRes.headers.get('content-type');
+      let postData;
+      
+      if (contentType && contentType.includes('application/json')) {
+        postData = await postRes.json();
+      } else {
+        const text = await postRes.text();
+        postData = { error: 'Non-JSON response', body: text.substring(0, 100) };
+      }
+      
+      results.push({
+        name: 'Simple POST Test',
+        status: postRes.ok ? 'success' : 'error',
+        message: postRes.ok ? 'POST request successful' : `Failed with status ${postRes.status}`,
+        data: postData,
+      });
+    } catch (error) {
+      results.push({
+        name: 'Simple POST Test',
+        status: 'error',
+        message: `Failed to POST: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      });
+    }
+
+    // Test 3: Batch Quotes API - Fixed endpoint and added proper error handling
+    try {
+      const batchRes = await fetch(`${baseURL}/api/market-data/quotes/batch`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ symbols: ['AAPL', 'GOOGL', 'MSFT'] }),
       });
-      const batchData = await batchRes.json();
-      const quotesCount = Object.keys(batchData).length;
+      
+      // Check if response is JSON
+      const contentType = batchRes.headers.get('content-type');
+      let batchData;
+      
+      if (contentType && contentType.includes('application/json')) {
+        batchData = await batchRes.json();
+      } else {
+        // If not JSON, it's likely an HTML error page
+        const text = await batchRes.text();
+        throw new Error(`Unexpected response format: ${text.substring(0, 100)}...`);
+      }
+      
+      const quotesCount = batchData.quotes ? batchData.quotes.length : 0;
       results.push({
         name: 'Batch Quotes API',
         status: batchRes.ok && quotesCount > 0 ? 'success' : 'error',
@@ -84,7 +131,7 @@ export function TestAPIConnection() {
 
     // Test 4: Market Status API
     try {
-      const statusRes = await fetch('/api/market-data/market-status');
+      const statusRes = await fetch(`${baseURL}/api/market-data/market-status`);
       const statusData = await statusRes.json();
       results.push({
         name: 'Market Status API',
