@@ -112,6 +112,7 @@ export const originValidationMiddleware = (
     'http://localhost:5173',
     'http://localhost:3000',
     'https://alfalyzer.vercel.app',
+    'https://alfalyzerpro4.vercel.app',
     'https://alfalyzer.com'
   ];
   
@@ -149,6 +150,13 @@ export const originValidationMiddleware = (
       console.log(`✅ Origin validation: Allowing Koyeb subdomain: ${origin}`);
       return next();
     }
+    
+    // VERCEL FIX: Check for Vercel preview deployments
+    const vercelPattern = /^https:\/\/alfalyzer[a-z0-9-]*\.vercel\.app$/;
+    if (vercelPattern.test(origin)) {
+      console.log(`✅ Origin validation: Allowing Vercel subdomain: ${origin}`);
+      return next();
+    }
   }
   
   // Verificar se a origem é permitida
@@ -166,6 +174,13 @@ export const originValidationMiddleware = (
       const koyebPattern = /^https:\/\/crucial-ivonne-alfalyzer-[a-z0-9]+\.koyeb\.app/;
       if (koyebPattern.test(referer)) {
         console.log(`✅ Referer validation: Allowing Koyeb subdomain: ${referer}`);
+        return next();
+      }
+      
+      // VERCEL FIX: Check for Vercel preview deployments
+      const vercelPattern = /^https:\/\/alfalyzer[a-z0-9-]*\.vercel\.app/;
+      if (vercelPattern.test(referer)) {
+        console.log(`✅ Referer validation: Allowing Vercel subdomain: ${referer}`);
         return next();
       }
     }
