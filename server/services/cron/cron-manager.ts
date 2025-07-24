@@ -1,12 +1,6 @@
 import cron from 'node-cron';
-import { createClient } from '@supabase/supabase-js';
+import { getSupabaseClient } from '../../lib/supabase-client';
 import { logger } from '../../lib/logger';
-
-// Initialize Supabase client
-const supabase = createClient(
-  process.env.SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_KEY!
-);
 
 export interface CronJob {
   name: string;
@@ -398,9 +392,9 @@ export class CronManager {
    */
   private async getCacheStatistics(): Promise<any> {
     const [quotes, batch, market] = await Promise.all([
-      supabase.from('stock_quotes').select('count'),
-      supabase.from('batch_quotes').select('count'),
-      supabase.from('market_status').select('count')
+      getSupabaseClient()?.from('stock_quotes').select('count'),
+      getSupabaseClient()?.from('batch_quotes').select('count'),
+      getSupabaseClient()?.from('market_status').select('count')
     ]);
     
     return {

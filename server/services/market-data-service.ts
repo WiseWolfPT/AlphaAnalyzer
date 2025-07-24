@@ -2,27 +2,8 @@ import type { Stock } from '../../shared/schema';
 
 import { yahooFinanceService } from './yahoo-finance-service';
 import { globalCache, DataType, CacheKeys } from '../cache/intelligent-cache-manager';
-import { createClient } from '@supabase/supabase-js';
+import { getSupabaseClient } from '../lib/supabase-client';
 import { logger } from '../lib/logger';
-
-// Initialize Supabase client for realtime broadcasting
-// Use lazy initialization to ensure env vars are loaded
-let supabase: ReturnType<typeof createClient> | null = null;
-
-function getSupabaseClient() {
-  if (!supabase) {
-    const url = process.env.SUPABASE_URL;
-    const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_KEY;
-    
-    if (!url || !key) {
-      logger.warn('Supabase credentials not found, realtime features will be disabled');
-      return null;
-    }
-    
-    supabase = createClient(url, key);
-  }
-  return supabase;
-}
 
 // Server-side environment access with proper security and validation
 const getServerEnvVar = (key: string, fallbackKey?: string): string => {

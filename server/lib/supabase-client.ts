@@ -1,27 +1,40 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
-
-// Initialize Supabase client with fallback
-const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || '';
-const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_SERVICE_ROLE_KEY || '';
+import { logger } from './logger';
 
 let supabase: SupabaseClient | null = null;
+let initialized = false;
 
-// Only initialize Supabase if credentials are available
-if (supabaseUrl && supabaseKey && supabaseUrl !== '' && supabaseKey !== '') {
-  try {
-    supabase = createClient(supabaseUrl, supabaseKey);
-    console.log('✅ Supabase client initialized successfully');
-  } catch (error) {
-    console.error('❌ Failed to initialize Supabase client:', error);
-    supabase = null;
+// Initialize Supabase client with lazy loading
+function initializeSupabase() {
+  if (initialized) return;
+  initialized = true;
+
+  const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || '';
+  const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || 
+                      process.env.SUPABASE_SERVICE_KEY ||
+                      process.env.VITE_SUPABASE_SERVICE_ROLE_KEY || 
+                      process.env.SUPABASE_ANON_KEY || '';
+
+  if (supabaseUrl && supabaseKey && supabaseUrl !== '' && supabaseKey !== '') {
+    try {
+      supabase = createClient(supabaseUrl, supabaseKey);
+      logger.info('✅ Supabase client initialized successfully');
+    } catch (error) {
+      logger.error('❌ Failed to initialize Supabase client:', error);
+      supabase = null;
+    }
+  } else {
+    logger.warn('⚠️ Supabase not configured - some features will be disabled');
   }
-} else {
-  console.warn('⚠️ Supabase not configured - some features will be disabled');
-  console.warn('   To enable Supabase features, set SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY in your .env file');
 }
 
-// Export a mock client for development when Supabase is not configured
+// Export a function to get Supabase client
 export const getSupabaseClient = () => {
+  // Initialize on first use
+  if (!initialized) {
+    initializeSupabase();
+  }
+
   if (supabase) {
     return supabase;
   }
@@ -54,6 +67,12 @@ export const getSupabaseClient = () => {
   };
 };
 
-export const isSupabaseConfigured = () => !!supabase;
+export const isSupabaseConfigured = () => {
+  if (!initialized) {
+    initializeSupabase();
+  }
+  return !!supabase;
+};
 
-export default getSupabaseClient();
+// Don't call getSupabaseClient() at module level
+export default { getSupabaseClient, isSupabaseConfigured };
