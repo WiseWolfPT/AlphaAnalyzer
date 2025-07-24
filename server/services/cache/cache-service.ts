@@ -268,20 +268,87 @@ export class CacheService {
   }
 
   /**
+   * Get or fetch chart data with caching
+   */
+  async getChartData(
+    symbol: string,
+    period: string,
+    fetchFn: () => Promise<any>,
+    options: CacheOptions = {}
+  ): Promise<CacheEntry<any>> {
+    // Different TTL based on period
+    let ttl = CACHE_DURATIONS.chartData.daily;
+    if (period === '1D' || period === 'intraday') {
+      ttl = CACHE_DURATIONS.chartData.intraday;
+    } else if (period === '1W' || period === '1M') {
+      ttl = CACHE_DURATIONS.chartData.daily;
+    } else {
+      ttl = CACHE_DURATIONS.chartData.historical;
+    }
+
+    try {
+      // 1. Try to get from cache
+      const cacheClient = getCacheSchemaClient();
+      const { data: cached, error } = await cacheClient
+        .from('chart_data')
+        .select('*')
+        .eq('symbol', symbol)
+        .eq('period', period)
+        .gt('expires_at', new Date().toISOString())
+        .single();
+
+      if (cached && !error) {
+        console.log(`[Cache HIT] Chart data for ${symbol} (${period})`);
+        return {
+          data: cached.chart_data,
+          cached: true,
+          expires_at: cached.expires_at,
+        };
+      }
+
+      // 2. Cache miss - fetch from external API
+      console.log(`[Cache MISS] Fetching chart data for ${symbol} (${period})`);
+      const freshData = await fetchFn();
+
+      // 3. Store in cache
+      const expires_at = new Date(Date.now() + ttl).toISOString();
+
+      await cacheClient.from('chart_data').upsert({
+        symbol,
+        period,
+        chart_data: freshData,
+        provider: freshData.provider,
+        expires_at,
+      });
+
+      return {
+        data: freshData,
+        cached: false,
+        expires_at,
+      };
+    } catch (error) {
+      console.error('Error in chart data cache:', error);
+      throw error;
+    }
+  }
+
+  /**
    * Get cache statistics
    */
   async getCacheStats(): Promise<any> {
     const cacheClient = getCacheSchemaClient();
-    const [quotes, batch, market] = await Promise.all([
+    const [quotes, batch, market, chart] = await Promise.all([
       cacheClient.from('stock_quotes').select('count'),
       cacheClient.from('batch_quotes').select('count'),
       cacheClient.from('market_status').select('count'),
+      cacheClient.from('chart_data').select('count'),
     ]);
 
     return {
       stock_quotes: quotes.data?.[0]?.count || 0,
       batch_quotes: batch.data?.[0]?.count || 0,
       market_status: market.data?.[0]?.count || 0,
+      chart_data: chart.data?.[0]?.count || 0,
       timestamp: new Date().toISOString(),
     };
   }
