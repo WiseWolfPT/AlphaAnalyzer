@@ -20,9 +20,9 @@ import earningsCalendarRouter from "./routes/earnings-calendar";
 import diagnosticRouter from "./routes/diagnostic";
 import cachedDataRouter from "./routes/cached-data";
 import logsRouter from "./routes/logs";
-// REMOVED: Cache and alerts imports due to startup issues
+// REMOVED: Cache imports due to startup issues
 // import cacheAdminRouter from "./routes/cache-admin";
-// import { alertsRouter } from "./routes/alerts";
+import { alertsRouter } from "./routes/alerts";
 // BROKEN IMPORTS - Modules don't exist yet
 // import pushNotificationsRouter from "./routes/push-notifications"; // TODO: Create this file
 // import circuitBreakerRouter from "./routes/circuit-breaker"; // TODO: Create this file
@@ -138,7 +138,7 @@ export async function registerRoutes(app: Express, server: Server): Promise<void
         "/api/portfolios",
         "/api/proxy",
         "/api/ai",
-        // "/api/alerts", // REMOVED: Due to startup issues
+        "/api/alerts",
         "/api/push",
         "/api/circuit-breaker"
       ]
@@ -175,8 +175,8 @@ export async function registerRoutes(app: Express, server: Server): Promise<void
   // Cached data routes (eliminates CORS/Auth issues)
   app.use("/api/cached", cachedDataRouter);
   
-  // REMOVED: Alert system routes due to startup issues
-  // app.use("/api/alerts", alertsRouter);
+  // Alert system routes
+  app.use("/api/alerts", alertsRouter);
   
   // BROKEN - Push notifications routes (module doesn't exist)
   // app.use("/api/push", pushNotificationsRouter);

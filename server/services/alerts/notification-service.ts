@@ -4,7 +4,7 @@
  */
 
 import { EventEmitter } from 'events';
-import { db } from '../../db/index.js';
+import { db } from '../../db';
 import { 
   NotificationChannel, 
   AlertSeverity, 
@@ -14,7 +14,7 @@ import {
   PushNotificationData,
   WebhookPayload,
   NotificationRateLimit
-} from './alert-types.js';
+} from './alert-types';
 
 export class NotificationService extends EventEmitter {
   private rateLimits = new Map<string, NotificationRateLimit>();

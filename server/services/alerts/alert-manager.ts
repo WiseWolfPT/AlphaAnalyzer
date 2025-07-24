@@ -48,6 +48,35 @@ class AlertManager {
   }
 
   /**
+   * Add a new alert (alias for createAlert)
+   */
+  async addAlert(alert: Omit<AlertRule, 'id' | 'createdAt'>): Promise<string> {
+    return this.createAlert(alert);
+  }
+
+  /**
+   * Update an existing alert
+   */
+  async updateAlert(alertId: string, updates: Partial<AlertRule>): Promise<boolean> {
+    const alert = this.alerts.get(alertId);
+    if (!alert) return false;
+
+    Object.assign(alert, updates);
+    return true;
+  }
+
+  /**
+   * Remove an alert
+   */
+  async removeAlert(alertId: string): Promise<boolean> {
+    const alert = this.alerts.get(alertId);
+    if (!alert) return false;
+
+    this.stopMonitoring(alertId);
+    return this.alerts.delete(alertId);
+  }
+
+  /**
    * Toggle alert active status
    */
   async toggleAlert(alertId: string): Promise<boolean> {
