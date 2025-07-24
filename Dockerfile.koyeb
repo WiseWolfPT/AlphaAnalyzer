@@ -1,25 +1,39 @@
-# Simple Dockerfile for Koyeb - Using koyeb-server.ts
+# Simple Dockerfile for Koyeb - Fixed startup script
 FROM node:20-alpine AS koyeb
 
 WORKDIR /app
 
 # Install Python and build dependencies
-RUN apk add --no-cache python3 make g++ cairo-dev pango-dev jpeg-dev giflib-dev
+RUN apk add --no-cache python3 make g++ cairo-dev pango-dev jpeg-dev giflib-dev bash
 
-# Copy essential server files
-COPY server ./server
-COPY shared ./shared
-COPY package*.json ./
-COPY tsconfig*.json ./
+# Copy all files (needed for full app)
+COPY . .
 
-# Create .env file
-RUN touch .env
+# Install ALL dependencies (including devDependencies for TypeScript)
+RUN npm ci
 
-# Install only production dependencies
-RUN npm install express cors dotenv tsx axios @types/express @types/cors @supabase/supabase-js zod
+# Create a startup script with detailed logging
+RUN echo '#!/bin/bash' > /app/start.sh && \
+    echo 'echo "🚀 Koyeb Startup Script"' >> /app/start.sh && \
+    echo 'echo "📍 Environment: $NODE_ENV"' >> /app/start.sh && \
+    echo 'echo "📍 Port: ${PORT:-8000}"' >> /app/start.sh && \
+    echo 'echo "📍 Working Directory: $(pwd)"' >> /app/start.sh && \
+    echo 'echo "📍 Node Version: $(node --version)"' >> /app/start.sh && \
+    echo 'echo ""' >> /app/start.sh && \
+    echo 'echo "📂 Checking files..."' >> /app/start.sh && \
+    echo 'echo "   package.json exists: $(test -f package.json && echo YES || echo NO)"' >> /app/start.sh && \
+    echo 'echo "   start-production.js exists: $(test -f start-production.js && echo YES || echo NO)"' >> /app/start.sh && \
+    echo 'echo "   server/index.ts exists: $(test -f server/index.ts && echo YES || echo NO)"' >> /app/start.sh && \
+    echo 'echo ""' >> /app/start.sh && \
+    echo 'echo "🔧 Starting application with: npm start"' >> /app/start.sh && \
+    echo 'exec npm start' >> /app/start.sh && \
+    chmod +x /app/start.sh
 
-# Expose port
-EXPOSE 3001
+# Set production environment
+ENV NODE_ENV=production
 
-# Use koyeb-production.ts with GET endpoints
-CMD ["npx", "tsx", "server/koyeb-production.ts"]
+# Expose port (Koyeb sets PORT dynamically)
+EXPOSE 8000
+
+# Use the startup script
+CMD ["/app/start.sh"]
