@@ -28,15 +28,15 @@ export const API_ENDPOINTS = {
   // Health check
   health: '/api/health',
   
-  // Market data endpoints (V1 from implementation plan)
+  // Market data endpoints (matching backend routes)
   quotes: {
-    single: (symbol: string) => `/api/v1/quotes/${symbol}`,
-    batch: '/api/v1/quotes/batch',
+    single: (symbol: string) => `/api/market-data/quote/${symbol}`,
+    batch: '/api/market-data/quotes/batch',
   },
   
   // Market status
   market: {
-    status: '/api/v1/market/status',
+    status: '/api/market-data/market-status',
   },
   
   // Cache endpoints
