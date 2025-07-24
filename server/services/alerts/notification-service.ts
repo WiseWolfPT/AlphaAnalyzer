@@ -596,6 +596,91 @@ export class NotificationService extends EventEmitter {
       return false;
     }
   }
+
+  /**
+   * Get in-app notifications for user (alias for getNotificationHistory)
+   */
+  getInAppNotifications(userId: string, limit: number = 20): any[] {
+    try {
+      // TODO: In production, SQLite is disabled. Return empty array for now
+      if (process.env.NODE_ENV === 'production') {
+        return [];
+      }
+      return this.getNotificationHistory(userId, limit);
+    } catch (error) {
+      console.error('[NotificationService] Failed to get in-app notifications:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Mark notification as read (alias for markAsRead)
+   */
+  markNotificationAsRead(userId: string, notificationId: string): boolean {
+    try {
+      return this.markAsRead(parseInt(notificationId), userId);
+    } catch (error) {
+      console.error('[NotificationService] Failed to mark notification as read:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Clear user notifications (alias for clearNotifications)
+   */
+  clearUserNotifications(userId: string): void {
+    this.clearNotifications(userId);
+  }
+
+  /**
+   * Test notification delivery
+   */
+  async testNotification(userId: string, channel: NotificationChannel, message?: string): Promise<{ success: boolean; error?: string }> {
+    try {
+      const testMessage = message || `Test notification sent at ${new Date().toISOString()}`;
+      const success = await this.sendNotification(
+        userId,
+        channel,
+        'Test Notification',
+        testMessage,
+        AlertSeverity.INFO,
+        undefined,
+        { test: true }
+      );
+      
+      return { success };
+    } catch (error: any) {
+      console.error('[NotificationService] Test notification failed:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  /**
+   * Send alert (for compatibility with alert-manager)
+   */
+  async sendAlert(alert: {
+    userId: string;
+    symbol: string;
+    condition: string;
+    targetPrice: number;
+    currentPrice: number;
+    message: string;
+  }): Promise<void> {
+    await this.sendNotification(
+      alert.userId,
+      NotificationChannel.IN_APP,
+      `Price Alert: ${alert.symbol}`,
+      alert.message,
+      AlertSeverity.HIGH,
+      undefined,
+      {
+        symbol: alert.symbol,
+        condition: alert.condition,
+        targetPrice: alert.targetPrice,
+        currentPrice: alert.currentPrice
+      }
+    );
+  }
 }
 
 // Export singleton instance

@@ -239,6 +239,7 @@ export class PerformanceMonitor {
   private async publishMetrics(): Promise<void> {
     try {
       const stats = this.getStats();
+      const supabase = getSupabaseClient();
       
       // Publish to Realtime
       await supabase
@@ -273,6 +274,7 @@ export class PerformanceMonitor {
    */
   private async alertSlowRequest(metric: RequestMetrics): Promise<void> {
     try {
+      const supabase = getSupabaseClient();
       await supabase
         .from('performance_alerts')
         .insert({

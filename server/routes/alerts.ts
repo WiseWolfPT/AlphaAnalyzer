@@ -87,6 +87,17 @@ router.get('/', async (req: Request, res: Response) => {
 
     const { type, enabled, limit = 50, offset = 0 } = req.query;
 
+    // TODO: Production mode - SQLite disabled. Implement Supabase query
+    if (process.env.NODE_ENV === 'production') {
+      // For now, return empty array to prevent crashes
+      return res.json({
+        alerts: [],
+        total: 0,
+        limit: Number(limit),
+        offset: Number(offset)
+      });
+    }
+
     let query = `
       SELECT * FROM alerts_v2 
       WHERE user_id = ?
