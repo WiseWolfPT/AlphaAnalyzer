@@ -247,4 +247,6 @@ export function clearLogs(): void {
   });
 }
 
+// Export both as 'log' and 'logger' for compatibility
+export { log as logger };
 export default log;
