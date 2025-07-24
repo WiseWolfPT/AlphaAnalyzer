@@ -185,10 +185,17 @@ export function serveStatic(app: Express) {
     }));
   }
 
-  // Serve index.html for all non-API, non-asset routes (SPA fallback)
+  // CRITICAL: Ensure API routes are NOT intercepted by SPA fallback
+  // This must be the LAST route handler
   app.get('*', (req, res, next) => {
-    // Skip API routes AND asset requests
-    if (req.path.startsWith('/api/') || req.path.includes('/assets/')) {
+    // Skip ALL API routes, health checks, and asset requests
+    if (req.path.startsWith('/api/') || 
+        req.path.startsWith('/health') ||
+        req.path.includes('/assets/') ||
+        req.path.includes('.js') ||
+        req.path.includes('.css') ||
+        req.path.includes('.json')) {
+      console.log(`🚫 NOT serving index.html for: ${req.path} (API/asset route)`);
       return next();
     }
     

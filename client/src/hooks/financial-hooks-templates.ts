@@ -5,6 +5,8 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useErrorHandler } from '@/hooks/use-error-handler';
 import { apiMetricsCollector } from '@/lib/api-metrics';
+import { api } from '@/lib/api-client';
+import { API_ENDPOINTS } from '@/config/api';
 import type {
   StockData,
   StockQuote,
@@ -94,17 +96,12 @@ export function useStockQuote(
   return useFinancialData<StockQuote>(
     ['stock-quote', symbol],
     async () => {
-      // Use relative path to go through Vercel proxy
-      const response = await fetch(`/api/market-data/quotes/batch`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ symbols: [symbol] }),
-      });
+      // Use API client with full backend URL
+      const data = await api.post<{ quotes: StockQuote[] }>(
+        API_ENDPOINTS.quotes.batch,
+        { symbols: [symbol] }
+      );
       
-      if (!response.ok) throw new Error('Failed to fetch stock quote');
-      const data = await response.json();
       const stockData = data.quotes?.[0];
       
       if (!stockData) throw new Error(`No data found for ${symbol}`);
@@ -126,17 +123,12 @@ export function useStockProfile(symbol: string) {
   return useFinancialData<StockProfile>(
     ['stock-profile', symbol],
     async () => {
-      // Use relative path to go through Vercel proxy
-      const response = await fetch(`/api/market-data/quotes/batch`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ symbols: [symbol] }),
-      });
+      // Use API client with full backend URL
+      const data = await api.post<{ quotes: StockQuote[] }>(
+        API_ENDPOINTS.quotes.batch,
+        { symbols: [symbol] }
+      );
       
-      if (!response.ok) throw new Error('Failed to fetch stock profile');
-      const data = await response.json();
       const stockData = data.quotes?.[0];
       
       if (!stockData) throw new Error(`No data found for ${symbol}`);

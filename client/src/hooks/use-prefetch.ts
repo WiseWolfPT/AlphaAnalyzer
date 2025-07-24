@@ -3,6 +3,8 @@ import { useQueryClient } from '@tanstack/react-query';
 import { queryKeys, prefetchConfigs } from '../lib/query-client';
 import { localCache } from '../services/local-cache';
 import { env } from '@/lib/env';
+import { api } from '@/lib/api-client';
+import { API_ENDPOINTS } from '@/config/api';
 
 interface PrefetchOptions {
   delay?: number; // Delay before prefetching (ms)
@@ -52,17 +54,11 @@ export function usePrefetch() {
             queryKey: queryKeys.stock(symbol),
             queryFn: async () => {
               // Use batch endpoint even for single stock to standardize API usage
-              // Always use relative path to go through Vercel proxy
-              const response = await fetch(`/api/market-data/quotes/batch`, {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ symbols: [symbol] }),
-              });
-              
-              if (!response.ok) throw new Error('Failed to fetch stock data');
-              const data = await response.json();
+              // Use API client with full backend URL
+              const data = await api.post<{ quotes: any[] }>(
+                API_ENDPOINTS.quotes.batch,
+                { symbols: [symbol] }
+              );
               
               // Extract the single stock from batch response
               const stockData = data.quotes?.[0];

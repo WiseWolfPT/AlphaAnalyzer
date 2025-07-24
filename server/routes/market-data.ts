@@ -560,6 +560,11 @@ router.post('/quotes/batch',
   authService,
   marketDataRateLimit,
   async (req: Request, res: Response) => {
+    console.log('📊 POST /api/market-data/quotes/batch endpoint hit');
+    console.log('   Headers:', req.headers);
+    console.log('   Body:', req.body);
+    console.log('   Origin:', req.headers.origin);
+    
     try {
       // Validar entrada
       const validation = batchSymbolsSchema.safeParse(req.body);
@@ -778,6 +783,12 @@ router.get('/config',
  * GET /api/market-data/health
  * Health check endpoint for frontend to check if real data is available
  */
+// Import GET endpoints from Koyeb production config
+import { setupMarketDataGETEndpoints } from '../koyeb-production';
+
+// Setup additional GET endpoints for Koyeb
+setupMarketDataGETEndpoints(router);
+
 router.get('/health', 
   async (req: Request, res: Response) => {
     try {

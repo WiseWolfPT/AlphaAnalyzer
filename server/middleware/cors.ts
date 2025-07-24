@@ -1,13 +1,23 @@
 import cors from 'cors';
 import { Request, Response, NextFunction } from 'express';
 
+// Allow any Vercel deployment in production
+const isDevelopment = process.env.NODE_ENV !== 'production';
+
 const allowedOrigins = [
   process.env.FRONTEND_URL || 'https://alfalyzer.vercel.app',
   'https://alfalyzer.vercel.app',
+  'https://alfalyzerpro4.vercel.app', // Adicionar o domínio específico
   'https://alfalyzer.com',
   'https://www.alfalyzer.com',
   'http://localhost:5173', // desenvolvimento local
   'http://localhost:3000'
+];
+
+// Additional patterns for dynamic Vercel deployments
+const allowedPatterns = [
+  /^https:\/\/alfalyzer.*\.vercel\.app$/,
+  /^https:\/\/.*-antonios-projects-.*\.vercel\.app$/
 ];
 
 export const corsOptions: cors.CorsOptions = {
@@ -15,11 +25,20 @@ export const corsOptions: cors.CorsOptions = {
     // Permitir requisições sem origin (ex: Postman, mobile apps)
     if (!origin) return callback(null, true);
     
+    // Check exact matches
     if (allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
+      return callback(null, true);
     }
+    
+    // Check pattern matches for Vercel deployments
+    const isAllowedPattern = allowedPatterns.some(pattern => pattern.test(origin));
+    if (isAllowedPattern) {
+      console.log(`✅ CORS: Allowing Vercel deployment: ${origin}`);
+      return callback(null, true);
+    }
+    
+    console.warn(`❌ CORS: Blocked origin: ${origin}`);
+    callback(new Error('Not allowed by CORS'));
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
@@ -31,10 +50,37 @@ export const corsOptions: cors.CorsOptions = {
 // Middleware para lidar com preflight requests
 export const handlePreflightRequests = (req: Request, res: Response, next: NextFunction) => {
   if (req.method === 'OPTIONS') {
-    res.header('Access-Control-Allow-Origin', req.headers.origin || '*');
+    console.log(`🔄 OPTIONS preflight request from ${req.headers.origin} to ${req.path}`);
+    
+    const origin = req.headers.origin;
+    
+    // Check if origin is allowed
+    if (origin) {
+      // Check exact matches
+      if (allowedOrigins.includes(origin)) {
+        res.header('Access-Control-Allow-Origin', origin);
+      } else {
+        // Check pattern matches
+        const isAllowedPattern = allowedPatterns.some(pattern => pattern.test(origin));
+        if (isAllowedPattern) {
+          res.header('Access-Control-Allow-Origin', origin);
+        } else {
+          // For development, allow all origins
+          if (process.env.NODE_ENV !== 'production') {
+            res.header('Access-Control-Allow-Origin', origin);
+          }
+        }
+      }
+    } else {
+      res.header('Access-Control-Allow-Origin', '*');
+    }
+    
     res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
-    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
+    res.header('Access-Control-Allow-Credentials', 'true');
     res.header('Access-Control-Max-Age', '86400');
+    
+    console.log('✅ OPTIONS preflight response sent');
     res.sendStatus(204);
   } else {
     next();

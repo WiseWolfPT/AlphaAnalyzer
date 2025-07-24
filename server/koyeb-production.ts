@@ -1,336 +1,179 @@
-// Production server for Koyeb with all market data routes
+/**
+ * Koyeb Production Configuration
+ * This file contains specific configurations for running on Koyeb
+ */
+
 import express from 'express';
-import cors from 'cors';
-import dotenv from 'dotenv';
-import axios from 'axios';
+import { createServer } from 'http';
 
-// Load environment variables
-dotenv.config();
-
-const app = express();
-const PORT = process.env.PORT || 3001;
-
-// CORS configuration for production
-const corsOptions: cors.CorsOptions = {
-  origin: (origin, callback) => {
-    const allowedOrigins = [
-      'https://alfalyzer.vercel.app',
-      'https://alfalyzer.com',
-      'https://www.alfalyzer.com',
-      'http://localhost:5173',
-      'http://localhost:3000'
-    ];
-
-    // Allow requests with no origin (like mobile apps or curl)
-    if (!origin) return callback(null, true);
+export function startKoyebServer(app: express.Application) {
+  const port = parseInt(process.env.PORT || '8000', 10);
+  const server = createServer(app);
+  
+  // CRITICAL: Koyeb requires binding to 0.0.0.0
+  const host = '0.0.0.0';
+  
+  console.log('🚀 Starting Koyeb Production Server...');
+  console.log(`📍 Environment: ${process.env.NODE_ENV}`);
+  console.log(`📍 Port: ${port}`);
+  console.log(`📍 Host: ${host}`);
+  
+  // Add Koyeb-specific middleware
+  app.use((req, res, next) => {
+    // Log all incoming requests for debugging
+    console.log(`${new Date().toISOString()} ${req.method} ${req.path} from ${req.headers.origin || 'no-origin'}`);
+    next();
+  });
+  
+  // Health check endpoint with detailed info
+  app.get('/api/health/koyeb', (req, res) => {
+    res.json({
+      status: 'healthy',
+      platform: 'koyeb',
+      timestamp: new Date().toISOString(),
+      env: {
+        NODE_ENV: process.env.NODE_ENV,
+        PORT: port,
+        KOYEB_APP_URL: process.env.KOYEB_APP_URL,
+        KOYEB_SERVICE_NAME: process.env.KOYEB_SERVICE_NAME,
+        KOYEB_REGION: process.env.KOYEB_REGION,
+      },
+      request: {
+        origin: req.headers.origin,
+        host: req.headers.host,
+        ip: req.ip,
+        protocol: req.protocol,
+      }
+    });
+  });
+  
+  // Start server with error handling
+  server.listen(port, host, () => {
+    console.log('✅ Koyeb server started successfully!');
+    console.log(`🌐 Server listening on ${host}:${port}`);
+    console.log(`🔗 Health check: http://${host}:${port}/health`);
+    console.log(`🔗 API health: http://${host}:${port}/api/health`);
+    console.log(`🔗 Market data health: http://${host}:${port}/api/market-data/health`);
     
-    if (allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      console.warn(`CORS blocked origin: ${origin}`);
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
-  maxAge: 86400, // 24 hours
-  optionsSuccessStatus: 200
-};
-
-// Middleware
-app.use(cors(corsOptions));
-app.use(express.json());
-
-// Simple in-memory cache
-const cache = new Map();
-const CACHE_TTL = 5 * 60 * 1000; // 5 minutes for quotes
-const CHART_CACHE_TTL = 60 * 60 * 1000; // 1 hour for chart data
-
-// API Provider configuration
-const API_PROVIDERS = {
-  ALPHA_VANTAGE: {
-    key: process.env.ALPHA_VANTAGE_API_KEY,
-    baseUrl: 'https://www.alphavantage.co/query'
-  },
-  FINNHUB: {
-    key: process.env.FINNHUB_API_KEY,
-    baseUrl: 'https://finnhub.io/api/v1'
-  },
-  FMP: {
-    key: process.env.FMP_API_KEY,
-    baseUrl: 'https://financialmodelingprep.com/api/v3'
-  },
-  TWELVE_DATA: {
-    key: process.env.TWELVE_DATA_API_KEY,
-    baseUrl: 'https://api.twelvedata.com'
-  },
-  POLYGON: {
-    key: process.env.POLYGON_API_KEY,
-    baseUrl: 'https://api.polygon.io'
-  }
-};
-
-// Request logging
-app.use((req, res, next) => {
-  console.log(`${new Date().toISOString()} - ${req.method} ${req.path}`);
-  next();
-});
-
-// Health check
-app.get('/api/health', (req, res) => {
-  res.json({
-    status: 'ok',
-    timestamp: new Date().toISOString(),
-    environment: process.env.NODE_ENV || 'production',
-    uptime: process.uptime(),
-    version: 'koyeb-production-2.0',
-    cache: {
-      size: cache.size,
-      ttl: CACHE_TTL
-    },
-    apis: {
-      alphaVantage: !!API_PROVIDERS.ALPHA_VANTAGE.key,
-      finnhub: !!API_PROVIDERS.FINNHUB.key,
-      fmp: !!API_PROVIDERS.FMP.key,
-      twelveData: !!API_PROVIDERS.TWELVE_DATA.key,
-      polygon: !!API_PROVIDERS.POLYGON.key
-    }
+    // Test endpoints
+    testEndpoints(port);
   });
-});
-
-// Keep-alive endpoint for UptimeRobot
-app.get('/api/keep-alive', (req, res) => {
-  console.log('🫀 Keep-alive ping received');
-  res.json({ 
-    alive: true, 
-    timestamp: new Date().toISOString(),
-    uptime: process.uptime()
-  });
-});
-
-// Helper function to fetch quote from different providers
-async function fetchQuoteFromProvider(symbol: string, provider: string): Promise<any> {
-  try {
-    switch (provider) {
-      case 'ALPHA_VANTAGE':
-        if (!API_PROVIDERS.ALPHA_VANTAGE.key) return null;
-        const avResponse = await axios.get(
-          `${API_PROVIDERS.ALPHA_VANTAGE.baseUrl}?function=GLOBAL_QUOTE&symbol=${symbol}&apikey=${API_PROVIDERS.ALPHA_VANTAGE.key}`,
-          { timeout: 5000 }
-        );
-        const globalQuote = avResponse.data['Global Quote'];
-        if (globalQuote && globalQuote['05. price']) {
-          return {
-            symbol,
-            price: parseFloat(globalQuote['05. price']),
-            change: parseFloat(globalQuote['09. change']),
-            changePercent: parseFloat(globalQuote['10. change percent'].replace('%', '')),
-            high: parseFloat(globalQuote['03. high']),
-            low: parseFloat(globalQuote['04. low']),
-            open: parseFloat(globalQuote['02. open']),
-            previousClose: parseFloat(globalQuote['08. previous close']),
-            volume: parseInt(globalQuote['06. volume']),
-            provider: 'alpha_vantage',
-            timestamp: Date.now()
-          };
-        }
-        break;
-
-      case 'FINNHUB':
-        if (!API_PROVIDERS.FINNHUB.key) return null;
-        const fhResponse = await axios.get(
-          `${API_PROVIDERS.FINNHUB.baseUrl}/quote?symbol=${symbol}&token=${API_PROVIDERS.FINNHUB.key}`,
-          { timeout: 5000 }
-        );
-        const data = fhResponse.data;
-        if (data && data.c) {
-          return {
-            symbol,
-            price: data.c,
-            change: data.d,
-            changePercent: data.dp,
-            high: data.h,
-            low: data.l,
-            open: data.o,
-            previousClose: data.pc,
-            volume: 0,
-            provider: 'finnhub',
-            timestamp: Date.now()
-          };
-        }
-        break;
-
-      case 'TWELVE_DATA':
-        if (!API_PROVIDERS.TWELVE_DATA.key) return null;
-        const tdResponse = await axios.get(
-          `${API_PROVIDERS.TWELVE_DATA.baseUrl}/quote?symbol=${symbol}&apikey=${API_PROVIDERS.TWELVE_DATA.key}`,
-          { timeout: 5000 }
-        );
-        const tdData = tdResponse.data;
-        if (tdData && tdData.price) {
-          return {
-            symbol,
-            price: parseFloat(tdData.price),
-            change: parseFloat(tdData.change),
-            changePercent: parseFloat(tdData.percent_change),
-            high: parseFloat(tdData.high),
-            low: parseFloat(tdData.low),
-            open: parseFloat(tdData.open),
-            previousClose: parseFloat(tdData.previous_close),
-            volume: parseInt(tdData.volume),
-            provider: 'twelve_data',
-            timestamp: Date.now()
-          };
-        }
-        break;
-
-      case 'POLYGON':
-        if (!API_PROVIDERS.POLYGON.key) return null;
-        const pgResponse = await axios.get(
-          `${API_PROVIDERS.POLYGON.baseUrl}/v2/aggs/ticker/${symbol}/prev?apiKey=${API_PROVIDERS.POLYGON.key}`,
-          { timeout: 5000 }
-        );
-        const pgData = pgResponse.data;
-        if (pgData && pgData.results && pgData.results.length > 0) {
-          const result = pgData.results[0];
-          return {
-            symbol,
-            price: result.c,
-            change: result.c - result.o,
-            changePercent: ((result.c - result.o) / result.o) * 100,
-            high: result.h,
-            low: result.l,
-            open: result.o,
-            previousClose: result.c,
-            volume: result.v,
-            provider: 'polygon',
-            timestamp: Date.now()
-          };
-        }
-        break;
+  
+  server.on('error', (error: any) => {
+    console.error('❌ Server error:', error);
+    if (error.code === 'EADDRINUSE') {
+      console.error(`Port ${port} is already in use`);
+    } else if (error.code === 'EACCES') {
+      console.error(`Permission denied to bind to port ${port}`);
     }
-  } catch (error) {
-    console.error(`Error fetching ${symbol} from ${provider}:`, error.message);
-  }
-  return null;
+    process.exit(1);
+  });
+  
+  return server;
 }
 
-// Market data batch quotes - GET endpoint
-app.get('/api/market-data/quotes/batch', async (req, res) => {
-  try {
-    const symbols = req.query.symbols as string;
-    if (!symbols) {
-      return res.status(400).json({ error: 'Symbols parameter required' });
-    }
-
-    const symbolList = symbols.split(',').map(s => s.trim().toUpperCase());
-    console.log('📊 Fetching quotes for:', symbolList);
-
-    // Check cache first
-    const cacheKey = `batch_${symbolList.join('_')}`;
-    const cached = cache.get(cacheKey);
-    if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
-      console.log('✅ Returning cached data');
-      return res.json(cached.data);
-    }
-
-    const quotes = [];
-    const errors = {};
-
-    // Try providers in order of preference
-    const providers = ['POLYGON', 'ALPHA_VANTAGE', 'FINNHUB', 'TWELVE_DATA'];
-    
-    for (const symbol of symbolList) {
-      let quote = null;
+function testEndpoints(port: number) {
+  // Import dynamically to avoid module loading issues
+  import('http').then(http => {
+    setTimeout(() => {
+      console.log('🧪 Testing endpoints...');
       
-      // Try each provider until we get data
-      for (const provider of providers) {
-        quote = await fetchQuoteFromProvider(symbol, provider);
-        if (quote) {
-          console.log(`✅ Got ${symbol} from ${provider}`);
-          break;
-        }
-      }
+      // Test health endpoint
+      http.get(`http://localhost:${port}/health`, (res) => {
+        console.log(`✅ /health endpoint: ${res.statusCode}`);
+      }).on('error', (err) => {
+        console.error('❌ /health endpoint error:', err.message);
+      });
+      
+      // Test API health
+      http.get(`http://localhost:${port}/api/health`, (res) => {
+        console.log(`✅ /api/health endpoint: ${res.statusCode}`);
+      }).on('error', (err) => {
+        console.error('❌ /api/health endpoint error:', err.message);
+      });
+      
+      // Test market data health
+      http.get(`http://localhost:${port}/api/market-data/health`, (res) => {
+        console.log(`✅ /api/market-data/health endpoint: ${res.statusCode}`);
+      }).on('error', (err) => {
+        console.error('❌ /api/market-data/health endpoint error:', err.message);
+      });
+    }, 2000); // Wait 2 seconds for server to fully start
+  });
+}
 
-      if (quote) {
-        quotes.push(quote);
-      } else {
-        // Generate mock data if all providers fail
-        console.log(`⚠️ Using mock data for ${symbol}`);
-        quotes.push({
-          symbol,
-          price: 100 + Math.random() * 100,
-          change: (Math.random() - 0.5) * 10,
-          changePercent: (Math.random() - 0.5) * 5,
-          high: 110 + Math.random() * 10,
-          low: 90 + Math.random() * 10,
-          open: 100 + Math.random() * 5,
-          previousClose: 100,
-          volume: Math.floor(Math.random() * 1000000),
-          provider: 'mock',
-          timestamp: Date.now()
-        });
-        errors[symbol] = 'All providers failed';
-      }
+// Export GET endpoints for market data that were missing
+export function setupMarketDataGETEndpoints(router: express.Router) {
+  // GET version of batch quotes for simple testing
+  router.get('/quotes', (req, res) => {
+    const symbols = (req.query.symbols as string)?.split(',') || [];
+    
+    if (symbols.length === 0) {
+      return res.status(400).json({
+        error: 'INVALID_REQUEST',
+        message: 'No symbols provided. Use ?symbols=AAPL,GOOGL,MSFT'
+      });
     }
-
-    const result = {
-      quotes,
-      errors: Object.keys(errors).length > 0 ? errors : undefined,
+    
+    // Return mock data for testing
+    const mockQuotes = symbols.map(symbol => ({
+      symbol: symbol.toUpperCase(),
+      price: 100 + Math.random() * 200,
+      change: (Math.random() - 0.5) * 10,
+      changePercent: (Math.random() - 0.5) * 5,
+      volume: Math.floor(Math.random() * 10000000),
       timestamp: Date.now(),
-      cached: false
-    };
-
-    // Cache the result
-    cache.set(cacheKey, { data: result, timestamp: Date.now() });
-
-    res.json(result);
-  } catch (error) {
-    console.error('Error in batch quotes:', error);
-    res.status(500).json({ 
-      error: 'Failed to fetch quotes', 
-      message: error.message 
+      provider: 'mock'
+    }));
+    
+    res.json({
+      quotes: mockQuotes,
+      _timestamp: Date.now(),
+      _cached: false
     });
-  }
-});
-
-// Single quote endpoint
-app.get('/api/market-data/quote/:symbol', async (req, res) => {
-  const { symbol } = req.params;
-  
-  // Use batch endpoint logic
-  const result = await fetch(`http://localhost:${PORT}/api/market-data/quotes/batch?symbols=${symbol}`);
-  const data = await result.json();
-  
-  if (data.quotes && data.quotes.length > 0) {
-    res.json(data.quotes[0]);
-  } else {
-    res.status(404).json({ error: 'Quote not found' });
-  }
-});
-
-// Catch all 404
-app.use((req, res) => {
-  res.status(404).json({
-    error: 'Not found',
-    path: req.path,
-    method: req.method,
-    timestamp: new Date().toISOString()
   });
-});
-
-// Start server
-app.listen(PORT, () => {
-  console.log(`🚀 Koyeb production server running on port ${PORT}`);
-  console.log(`📍 Environment: ${process.env.NODE_ENV || 'production'}`);
-  console.log(`🏥 Health check: http://localhost:${PORT}/api/health`);
-  console.log(`📊 Market data: http://localhost:${PORT}/api/market-data/quotes/batch?symbols=AAPL,GOOGL`);
-  console.log(`🔑 API Keys configured:`, {
-    alphaVantage: !!process.env.ALPHA_VANTAGE_API_KEY,
-    finnhub: !!process.env.FINNHUB_API_KEY,
-    fmp: !!process.env.FMP_API_KEY,
-    twelveData: !!process.env.TWELVE_DATA_API_KEY,
-    polygon: !!process.env.POLYGON_API_KEY
+  
+  // Market status endpoint
+  router.get('/status', (req, res) => {
+    const now = new Date();
+    const hour = now.getUTCHours();
+    const day = now.getUTCDay();
+    
+    // Simple market hours check (NYSE: 9:30 AM - 4:00 PM ET, which is 14:30 - 21:00 UTC)
+    const isWeekday = day >= 1 && day <= 5;
+    const isMarketHours = hour >= 14 && hour < 21;
+    const isOpen = isWeekday && isMarketHours;
+    
+    res.json({
+      market: 'NYSE',
+      isOpen,
+      session: isOpen ? 'regular' : 'closed',
+      timestamp: now.toISOString(),
+      nextOpen: isOpen ? null : getNextMarketOpen(now),
+      nextClose: isOpen ? getNextMarketClose(now) : null
+    });
   });
-});
+}
+
+function getNextMarketOpen(now: Date): string {
+  const next = new Date(now);
+  next.setUTCHours(14, 30, 0, 0);
+  
+  // If it's already past market open today, move to next day
+  if (now.getUTCHours() >= 14) {
+    next.setDate(next.getDate() + 1);
+  }
+  
+  // Skip to Monday if it's weekend
+  while (next.getUTCDay() === 0 || next.getUTCDay() === 6) {
+    next.setDate(next.getDate() + 1);
+  }
+  
+  return next.toISOString();
+}
+
+function getNextMarketClose(now: Date): string {
+  const close = new Date(now);
+  close.setUTCHours(21, 0, 0, 0);
+  return close.toISOString();
+}

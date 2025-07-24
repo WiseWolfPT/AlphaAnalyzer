@@ -3,6 +3,8 @@ import { MainLayout } from "@/components/layout/main-layout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { RefreshCw } from "lucide-react";
+import { api } from "@/lib/api-client";
+import { API_ENDPOINTS } from "@/config/api";
 
 export default function ApiTest() {
   const [data, setData] = useState(null);
@@ -14,21 +16,10 @@ export default function ApiTest() {
     setError(null);
     
     try {
-      const response = await fetch('/api/market-data/quotes/batch', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          symbols: ['AAPL', 'MSFT', 'GOOGL', 'AMZN', 'TSLA']
-        })
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const result = await response.json();
+      const result = await api.post(
+        API_ENDPOINTS.quotes.batch,
+        { symbols: ['AAPL', 'MSFT', 'GOOGL', 'AMZN', 'TSLA'] }
+      );
       setData(result);
     } catch (err) {
       setError(err.message);

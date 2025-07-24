@@ -140,14 +140,27 @@ RUN echo "===== BUILD PHASE START =====" && \
 # Don't remove dependencies - tsx is needed for production
 # RUN npm prune --production
 
-# Expose port
-EXPOSE 3001
+# Expose port - Koyeb will set PORT dynamically
+EXPOSE 8000
 
 ENV NODE_ENV=production
-ENV PORT=3001
+# Don't hardcode PORT - let Koyeb set it
+# ENV PORT=3001
 
-# Use the start script instead of backend
-CMD ["npm", "run", "start"]
+# Create a specific start script for Koyeb
+RUN echo '#!/bin/sh\n\
+echo "🚀 Starting Alfalyzer on Koyeb..."\n\
+echo "📍 Environment: $NODE_ENV"\n\
+echo "📍 Port: $PORT"\n\
+echo "📍 PWD: $(pwd)"\n\
+echo "📍 Node version: $(node --version)"\n\
+echo "📍 Available scripts:"\n\
+npm run | grep -E "(start|server)" || echo "No scripts found"\n\
+echo "📍 Starting server..."\n\
+npm run start' > /start.sh && chmod +x /start.sh
+
+# Use the start script
+CMD ["/start.sh"]
 
 # Multi-Access Development (default)
 FROM development AS multi-access

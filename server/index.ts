@@ -716,7 +716,8 @@ async function initializeMarketDataServices() {
     }
 
     // SIMPLIFIED: Start with single server instance
-    const host = process.env.NODE_ENV === 'production' ? '0.0.0.0' : '127.0.0.1';
+    // CRITICAL: Koyeb requires binding to 0.0.0.0 to accept external connections
+    const host = '0.0.0.0'; // Always bind to all interfaces for Koyeb
     console.log(`🔄 Starting server on ${host}:${port}...`);
     server.listen(port, host, () => {
       console.log(`🚀 MAIN SERVER ACTIVE!`);
@@ -740,8 +741,8 @@ async function initializeMarketDataServices() {
       // Test the server internally
       console.log('🔍 Testing internal connection...');
       import('node:http').then(http => {
-        const testHost = process.env.NODE_ENV === 'production' ? '0.0.0.0' : 'localhost';
-        http.get(`http://${testHost}:${port}/health`, (res) => {
+        // Always use localhost for internal testing, even when binding to 0.0.0.0
+        http.get(`http://localhost:${port}/health`, (res) => {
           console.log('✅ Internal test successful, status:', res.statusCode);
         }).on('error', (err) => {
           console.log('⚠️  Internal test note:', err.message);
