@@ -1,221 +1,260 @@
-# 🔍 Sistema de Testes - Solução 401
+# 🧪 Suíte de Testes - Alfalyzer
 
-Sistema completo de validação para a solução do erro 401 no Alfalyzer.
+Esta suíte de testes valida o fluxo completo do sistema: Frontend → Backend → Cache → Realtime.
 
-## 📋 Visão Geral
-
-Este sistema de testes foi criado para validar todos os componentes da solução implementada para resolver o erro 401 (Unauthorized) que estava ocorrendo nas chamadas de API.
-
-### Componentes Testados
-
-1. **Variáveis de Ambiente** ✅
-   - Verificação de todas as chaves de API
-   - Validação do prefixo VITE_
-   - Checagem do arquivo .env.local
-
-2. **Proxy Vercel** ✅
-   - Configuração do vercel.json
-   - Rewrites funcionando
-   - Headers sendo passados
-
-3. **Headers de Autenticação** ✅
-   - x-vercel-proxy-auth presente
-   - Rejeição de headers inválidos
-   - Middleware funcionando
-
-4. **CORS** ✅
-   - Origins permitidas
-   - Métodos aceitos
-   - Credentials configurados
-
-5. **Sistema de Cache** ✅
-   - Cache hit performance
-   - Headers de cache
-   - Invalidação funcionando
-
-6. **APIs** ✅
-   - Conectividade com providers
-   - Fallback entre APIs
-   - Rate limiting respeitado
-
-## 🚀 Como Executar
-
-### Teste Rápido (Bash)
-
-```bash
-# Torna o script executável
-chmod +x scripts/test-401-solution.sh
-
-# Executa todos os testes
-./scripts/test-401-solution.sh
-```
-
-### Suite Completa (TypeScript)
-
-```bash
-# Instala dependências
-npm install
-
-# Executa teste principal
-npx tsx tests/validation/test-401-solution.ts
-```
-
-### Testes E2E (Playwright)
-
-```bash
-# Instala Playwright
-npm install -D @playwright/test
-
-# Executa testes E2E
-npx playwright test tests/e2e/test-401-full-flow.spec.ts
-```
-
-### Dashboard Visual
-
-Abra o arquivo `tests/validation/dashboard.html` no navegador para visualizar os resultados em tempo real.
-
-## 📊 Estrutura dos Testes
+## 📋 Estrutura dos Testes
 
 ```
 tests/
-├── validation/
-│   ├── test-401-solution.ts    # Suite principal
-│   └── dashboard.html          # Dashboard visual
-├── e2e/
-│   └── test-401-full-flow.spec.ts  # Testes E2E
-└── README.md                   # Este arquivo
+├── e2e/                    # Testes end-to-end com Playwright
+│   └── full-flow.spec.ts   # Fluxo completo do sistema
+├── integration/            # Testes de integração
+│   └── resilience.test.ts  # Testes de resiliência e fallback
+├── performance/            # Testes de performance
+│   └── load-test.ts        # Testes de carga e latência
+├── monitoring/             # Dashboard de monitoramento
+│   └── dashboard.html      # Interface visual de monitoramento
+└── README.md              # Este arquivo
 ```
+
+## 🚀 Como Executar os Testes
+
+### Instalação de Dependências
+
+```bash
+# Instalar Playwright (se ainda não instalado)
+npx playwright install
+
+# Instalar outras dependências
+npm install
+```
+
+### Execução Rápida
+
+```bash
+# Executar todos os testes
+./scripts/run-tests.sh all
+
+# Executar tipo específico
+./scripts/run-tests.sh e2e          # Testes E2E
+./scripts/run-tests.sh performance  # Testes de performance
+./scripts/run-tests.sh integration  # Testes de integração
+./scripts/run-tests.sh monitoring   # Abrir dashboard
+```
+
+### Execução Manual
+
+#### Testes E2E (Playwright)
+
+```bash
+# Executar todos os testes E2E
+npx playwright test
+
+# Executar com interface visual
+npx playwright test --ui
+
+# Executar com navegador visível
+npx playwright test --headed
+
+# Executar teste específico
+npx playwright test tests/e2e/full-flow.spec.ts
+
+# Ver relatório após execução
+npx playwright show-report
+```
+
+#### Testes de Integração (Vitest)
+
+```bash
+# Executar testes de resiliência
+npx vitest run tests/integration/resilience.test.ts
+
+# Modo watch
+npx vitest watch tests/integration/
+
+# Com coverage
+npx vitest run --coverage
+```
+
+#### Testes de Performance
+
+```bash
+# Executar testes de carga
+npx playwright test tests/performance/load-test.ts
+
+# Com métricas detalhadas
+VERBOSE=true npx playwright test tests/performance/
+```
+
+### Dashboard de Monitoramento
+
+```bash
+# Abrir dashboard no navegador
+open tests/monitoring/dashboard.html
+
+# Ou usar o script
+./scripts/run-tests.sh monitoring
+```
+
+## 📊 O Que é Testado
+
+### 1. Fluxo Completo (E2E)
+- ✅ Cache hit vs cache miss
+- ✅ Atualizações realtime via Supabase
+- ✅ Visualização de dados no frontend
+- ✅ Fallback quando backend offline
+- ✅ Rate limiting
+- ✅ Cold start do Koyeb
+
+### 2. Performance
+- ⚡ Latência com cache hit/miss
+- ⚡ Requisições concorrentes
+- ⚡ Latência WebSocket/Realtime
+- ⚡ Teste de stress sustentado
+- ⚡ Métricas e percentis (P50, P90, P99)
+
+### 3. Resiliência
+- 🛡️ Backend offline
+- 🛡️ APIs externas falhando
+- 🛡️ Circuit breaker
+- 🛡️ Reconexão automática
+- 🛡️ Degradação graciosa
+- 🛡️ Proteção contra sobrecarga
+
+### 4. Monitoramento em Tempo Real
+- 📈 Status dos serviços
+- 📈 Métricas de performance
+- 📈 Uso de APIs externas
+- 📈 Estatísticas realtime
+- 📈 Logs em tempo real
 
 ## 🔧 Configuração
 
-### Variáveis de Ambiente Necessárias
+### Variáveis de Ambiente
 
-```env
-# Backend (sem VITE_ prefix)
-ALPHA_VANTAGE_API_KEY=sua_chave
-FINNHUB_API_KEY=sua_chave
-FMP_API_KEY=sua_chave
-TWELVE_DATA_API_KEY=sua_chave
-POLYGON_API_KEY=sua_chave
-SUPABASE_SERVICE_KEY=sua_chave
-VERCEL_PROXY_AUTH_SECRET=sua_chave_secreta
+```bash
+# URLs dos serviços
+export BACKEND_URL=http://localhost:3001
+export FRONTEND_URL=http://localhost:3000
+export KOYEB_URL=https://seu-app.koyeb.app
 
-# Frontend (com VITE_ prefix)
-VITE_SUPABASE_URL=https://seu-projeto.supabase.co
-VITE_SUPABASE_ANON_KEY=sua_chave_anon
-VITE_BACKEND_URL=http://localhost:3001
+# Supabase (necessário para testes realtime)
+export VITE_SUPABASE_URL=sua-url
+export VITE_SUPABASE_ANON_KEY=sua-chave
 ```
 
-### CI/CD
+### Arquivo .env.test
 
-O arquivo `.github/workflows/test-401-solution.yml` configura testes automáticos que rodam:
+Crie um arquivo `.env.test` para configurações de teste:
 
-- A cada push para main/develop
-- A cada pull request
-- A cada 6 horas (scheduled)
-- Manualmente (workflow_dispatch)
+```env
+BACKEND_URL=http://localhost:3001
+FRONTEND_URL=http://localhost:3000
+VITE_SUPABASE_URL=sua-url
+VITE_SUPABASE_ANON_KEY=sua-chave
+```
 
-## 📈 Métricas de Sucesso
+## 📈 Interpretando os Resultados
 
-### ✅ Critérios de Aprovação
+### Métricas de Performance
 
-1. **Sem erros 401**: Nenhuma chamada de API deve retornar 401
-2. **Performance**: Respostas < 1s (cache < 100ms)
-3. **Disponibilidade**: 100% uptime durante testes
-4. **Segurança**: Nenhuma chave exposta no frontend
+- **Latência Média**: Deve ser < 100ms para cache hit
+- **Cache Hit Rate**: Ideal > 80%
+- **Taxa de Erro**: Deve ser < 1%
+- **P99**: Deve ser < 500ms mesmo sob carga
 
-### 📊 Dashboard de Resultados
+### Indicadores de Saúde
 
-O dashboard mostra:
-- Total de testes executados
-- Taxa de sucesso/falha
-- Tempo de resposta por endpoint
-- Gráfico de performance
-- Recomendações automáticas
+🟢 **Healthy**: Sistema funcionando normalmente
+🟡 **Warning**: Degradação parcial, mas funcional
+🔴 **Error**: Falha crítica necessitando atenção
 
 ## 🐛 Troubleshooting
 
-### Erro: "Backend não está respondendo"
+### Testes falhando com "connection refused"
 
 ```bash
-# Inicia o backend manualmente
-npm run server
+# Verificar se os serviços estão rodando
+npm run health
 
-# Em outra janela, executa os testes
-./scripts/test-401-solution.sh
+# Iniciar serviços manualmente
+npm run dev
 ```
 
-### Erro: "401 Unauthorized"
+### Testes de realtime falhando
 
-1. Verifique se `VERCEL_PROXY_AUTH_SECRET` está definido
-2. Confirme que o valor é o mesmo no backend e nas variáveis
-3. Verifique se o middleware está ativo em `server/middleware/vercel-proxy-auth.ts`
+1. Verificar credenciais do Supabase
+2. Confirmar que o canal está configurado corretamente
+3. Verificar logs do backend para erros de broadcast
 
-### Erro: "CORS blocked"
+### Performance abaixo do esperado
 
-1. Verifique as origins permitidas em `server/middleware/cors.ts`
-2. Adicione sua URL se necessário
-3. Reinicie o servidor
+1. Verificar se o cache Redis está funcionando
+2. Confirmar rate limits das APIs
+3. Analisar logs de performance no dashboard
 
-## 📝 Relatórios
-
-Os relatórios são salvos em:
-- `test-results/401-solution-{timestamp}.json` - Formato JSON
-- `test-results/401-solution-report-{timestamp}.txt` - Formato texto
-- Dashboard HTML atualizado em tempo real
-
-## 🔄 Integração Contínua
+## 🚀 CI/CD
 
 ### GitHub Actions
 
 ```yaml
-# Executa em cada push
-on:
-  push:
-    branches: [ main ]
+name: Tests
+
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+      - run: npm ci
+      - run: npx playwright install
+      - run: npm run test:ci
+      - uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: test-results
+          path: test-results/
 ```
 
-### Badges de Status
+## 📝 Adicionando Novos Testes
 
-```markdown
-![401 Solution Status](https://github.com/seu-usuario/alfalyzer/actions/workflows/test-401-solution.yml/badge.svg)
+### Teste E2E
+
+```typescript
+// tests/e2e/novo-teste.spec.ts
+import { test, expect } from '@playwright/test';
+
+test.describe('Nova funcionalidade', () => {
+  test('deve fazer algo específico', async ({ page }) => {
+    await page.goto('/');
+    // seu teste aqui
+  });
+});
+```
+
+### Teste de Integração
+
+```typescript
+// tests/integration/novo-teste.test.ts
+import { describe, it, expect } from 'vitest';
+
+describe('Nova integração', () => {
+  it('deve integrar corretamente', async () => {
+    // seu teste aqui
+  });
+});
 ```
 
 ## 🎯 Próximos Passos
 
-1. **Monitoramento em Produção**
-   - Implementar APM (Application Performance Monitoring)
-   - Alertas em tempo real
-   - Dashboard público de status
-
-2. **Testes de Carga**
-   - Artillery para stress testing
-   - K6 para testes de performance
-   - Simulação de picos de tráfego
-
-3. **Segurança Avançada**
-   - Penetration testing
-   - Análise de vulnerabilidades
-   - Compliance checks
-
-## 🤝 Contribuindo
-
-Para adicionar novos testes:
-
-1. Crie o teste em `tests/validation/`
-2. Adicione ao script principal
-3. Atualize o dashboard
-4. Documente aqui
-
-## 📞 Suporte
-
-Em caso de problemas:
-1. Verifique os logs em `test-results/`
-2. Execute com modo debug: `DEBUG=* ./scripts/test-401-solution.sh`
-3. Abra uma issue com os logs
+1. Adicionar testes de segurança
+2. Implementar testes de acessibilidade
+3. Criar testes de regressão visual
+4. Adicionar monitoramento de SLA
+5. Implementar alertas automáticos
 
 ---
 
-**Última atualização**: Janeiro 2025
-**Versão**: 1.0.0
-**Status**: ✅ Todos os testes passando
+💡 **Dica**: Use o dashboard de monitoramento durante o desenvolvimento para acompanhar métricas em tempo real!

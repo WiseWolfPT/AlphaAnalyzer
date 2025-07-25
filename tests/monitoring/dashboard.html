@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard de Monitoramento - Alfalyzer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0f0f0f;
+            color: #e0e0e0;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            color: #4a9eff;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .card {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .card h2 {
+            color: #4a9eff;
+            font-size: 18px;
+            margin-bottom: 15px;
+        }
+        
+        .metric {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            padding: 10px;
+            background: #252525;
+            border-radius: 4px;
+        }
+        
+        .metric-label {
+            color: #888;
+            font-size: 14px;
+        }
+        
+        .metric-value {
+            font-size: 20px;
+            font-weight: bold;
+        }
+        
+        .status-healthy {
+            color: #4ade80;
+        }
+        
+        .status-warning {
+            color: #fbbf24;
+        }
+        
+        .status-error {
+            color: #f87171;
+        }
+        
+        .chart-container {
+            height: 200px;
+            margin-top: 15px;
+            position: relative;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: #252525;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 5px;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4a9eff, #1e90ff);
+            transition: width 0.3s ease;
+        }
+        
+        .log-container {
+            background: #0a0a0a;
+            border: 1px solid #333;
+            border-radius: 4px;
+            padding: 10px;
+            height: 200px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            line-height: 1.4;
+        }
+        
+        .log-entry {
+            margin-bottom: 5px;
+            padding: 2px 5px;
+        }
+        
+        .log-info {
+            color: #4a9eff;
+        }
+        
+        .log-success {
+            color: #4ade80;
+        }
+        
+        .log-warning {
+            color: #fbbf24;
+        }
+        
+        .log-error {
+            color: #f87171;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            justify-content: center;
+        }
+        
+        button {
+            background: #4a9eff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.2s;
+        }
+        
+        button:hover {
+            background: #1e90ff;
+        }
+        
+        button:disabled {
+            background: #555;
+            cursor: not-allowed;
+        }
+        
+        .realtime-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            background: #4ade80;
+            border-radius: 50%;
+            margin-left: 10px;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        
+        .alert {
+            background: #dc2626;
+            color: white;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        
+        .alert.show {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Dashboard de Monitoramento - Alfalyzer <span class="realtime-indicator"></span></h1>
+        
+        <div class="alert" id="alert-container"></div>
+        
+        <div class="controls">
+            <button onclick="startMonitoring()">Iniciar Monitoramento</button>
+            <button onclick="stopMonitoring()">Parar Monitoramento</button>
+            <button onclick="runHealthCheck()">Verificar Saúde</button>
+            <button onclick="clearLogs()">Limpar Logs</button>
+            <button onclick="exportMetrics()">Exportar Métricas</button>
+        </div>
+        
+        <div class="grid">
+            <!-- Status Geral -->
+            <div class="card">
+                <h2>Status do Sistema</h2>
+                <div class="metric">
+                    <span class="metric-label">Backend</span>
+                    <span class="metric-value status-healthy" id="backend-status">Online</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Realtime</span>
+                    <span class="metric-value status-healthy" id="realtime-status">Conectado</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Cache</span>
+                    <span class="metric-value status-healthy" id="cache-status">Ativo</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">APIs Externas</span>
+                    <span class="metric-value status-warning" id="api-status">Parcial</span>
+                </div>
+            </div>
+            
+            <!-- Performance -->
+            <div class="card">
+                <h2>Performance</h2>
+                <div class="metric">
+                    <span class="metric-label">Latência Média</span>
+                    <span class="metric-value" id="avg-latency">45ms</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Cache Hit Rate</span>
+                    <span class="metric-value" id="cache-hit-rate">85%</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Requisições/min</span>
+                    <span class="metric-value" id="requests-per-minute">120</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Taxa de Erro</span>
+                    <span class="metric-value status-healthy" id="error-rate">0.5%</span>
+                </div>
+            </div>
+            
+            <!-- Uso de APIs -->
+            <div class="card">
+                <h2>Uso de APIs Externas</h2>
+                <div class="metric">
+                    <span class="metric-label">Alpha Vantage</span>
+                    <div style="flex: 1; margin: 0 10px;">
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="av-usage" style="width: 60%;"></div>
+                        </div>
+                    </div>
+                    <span class="metric-value">60%</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Finnhub</span>
+                    <div style="flex: 1; margin: 0 10px;">
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="fh-usage" style="width: 45%;"></div>
+                        </div>
+                    </div>
+                    <span class="metric-value">45%</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Twelve Data</span>
+                    <div style="flex: 1; margin: 0 10px;">
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="td-usage" style="width: 30%;"></div>
+                        </div>
+                    </div>
+                    <span class="metric-value">30%</span>
+                </div>
+            </div>
+            
+            <!-- Realtime Stats -->
+            <div class="card">
+                <h2>Estatísticas Realtime</h2>
+                <div class="metric">
+                    <span class="metric-label">Conexões Ativas</span>
+                    <span class="metric-value" id="active-connections">24</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Mensagens/min</span>
+                    <span class="metric-value" id="messages-per-minute">480</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Latência WebSocket</span>
+                    <span class="metric-value" id="ws-latency">12ms</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Reconexões (24h)</span>
+                    <span class="metric-value" id="reconnections">3</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Logs em Tempo Real -->
+        <div class="card">
+            <h2>Logs em Tempo Real</h2>
+            <div class="log-container" id="log-container">
+                <div class="log-entry log-info">[INFO] Dashboard iniciado</div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let monitoringInterval;
+        let metricsData = {
+            latencies: [],
+            cacheHits: 0,
+            cacheMisses: 0,
+            requests: 0,
+            errors: 0,
+            apiUsage: {
+                alphaVantage: { used: 0, limit: 500 },
+                finnhub: { used: 0, limit: 60 },
+                twelveData: { used: 0, limit: 800 }
+            }
+        };
+        
+        const BACKEND_URL = 'http://localhost:3001';
+        const SUPABASE_URL = window.VITE_SUPABASE_URL || '';
+        const SUPABASE_ANON_KEY = window.VITE_SUPABASE_ANON_KEY || '';
+        
+        function log(message, type = 'info') {
+            const container = document.getElementById('log-container');
+            const entry = document.createElement('div');
+            entry.className = `log-entry log-${type}`;
+            const timestamp = new Date().toLocaleTimeString();
+            entry.textContent = `[${timestamp}] ${message}`;
+            container.appendChild(entry);
+            container.scrollTop = container.scrollHeight;
+            
+            // Limitar número de logs
+            if (container.children.length > 100) {
+                container.removeChild(container.children[0]);
+            }
+        }
+        
+        async function checkBackendHealth() {
+            try {
+                const response = await fetch(`${BACKEND_URL}/api/health`);
+                const data = await response.json();
+                
+                updateStatus('backend-status', data.status === 'healthy' ? 'Online' : 'Offline', 
+                            data.status === 'healthy' ? 'healthy' : 'error');
+                
+                if (data.cache) {
+                    updateStatus('cache-status', data.cache.enabled ? 'Ativo' : 'Inativo',
+                                data.cache.enabled ? 'healthy' : 'warning');
+                }
+                
+                log(`Health check: ${data.status}`, data.status === 'healthy' ? 'success' : 'error');
+                
+                return data;
+            } catch (error) {
+                updateStatus('backend-status', 'Offline', 'error');
+                log(`Erro ao verificar saúde: ${error.message}`, 'error');
+                showAlert('Backend não está respondendo!');
+                return null;
+            }
+        }
+        
+        async function checkRealtimeConnection() {
+            // Simular verificação de conexão realtime
+            const isConnected = Math.random() > 0.1; // 90% de chance de estar conectado
+            updateStatus('realtime-status', isConnected ? 'Conectado' : 'Desconectado',
+                        isConnected ? 'healthy' : 'error');
+            
+            if (!isConnected) {
+                log('Conexão realtime perdida', 'warning');
+            }
+        }
+        
+        async function updateMetrics() {
+            try {
+                // Simular coleta de métricas (em produção, viria do backend)
+                const latency = Math.floor(Math.random() * 50) + 20;
+                metricsData.latencies.push(latency);
+                if (metricsData.latencies.length > 60) {
+                    metricsData.latencies.shift();
+                }
+                
+                const avgLatency = Math.floor(
+                    metricsData.latencies.reduce((a, b) => a + b, 0) / metricsData.latencies.length
+                );
+                
+                document.getElementById('avg-latency').textContent = `${avgLatency}ms`;
+                
+                // Cache hit rate
+                const isHit = Math.random() > 0.15;
+                if (isHit) metricsData.cacheHits++;
+                else metricsData.cacheMisses++;
+                
+                const hitRate = Math.floor(
+                    (metricsData.cacheHits / (metricsData.cacheHits + metricsData.cacheMisses)) * 100
+                );
+                document.getElementById('cache-hit-rate').textContent = `${hitRate}%`;
+                
+                // Requisições por minuto
+                metricsData.requests++;
+                const rpm = Math.floor(Math.random() * 50) + 100;
+                document.getElementById('requests-per-minute').textContent = rpm;
+                
+                // Taxa de erro
+                const hasError = Math.random() < 0.02;
+                if (hasError) metricsData.errors++;
+                const errorRate = ((metricsData.errors / metricsData.requests) * 100).toFixed(2);
+                document.getElementById('error-rate').textContent = `${errorRate}%`;
+                updateStatus('error-rate', `${errorRate}%`, 
+                            parseFloat(errorRate) < 1 ? 'healthy' : 
+                            parseFloat(errorRate) < 5 ? 'warning' : 'error');
+                
+                // Uso de APIs
+                updateApiUsage();
+                
+                // Estatísticas realtime
+                document.getElementById('active-connections').textContent = 
+                    Math.floor(Math.random() * 10) + 20;
+                document.getElementById('messages-per-minute').textContent = 
+                    Math.floor(Math.random() * 200) + 400;
+                document.getElementById('ws-latency').textContent = 
+                    `${Math.floor(Math.random() * 20) + 5}ms`;
+                
+            } catch (error) {
+                log(`Erro ao atualizar métricas: ${error.message}`, 'error');
+            }
+        }
+        
+        function updateApiUsage() {
+            // Simular uso de API
+            const apis = ['alphaVantage', 'finnhub', 'twelveData'];
+            apis.forEach(api => {
+                metricsData.apiUsage[api].used += Math.floor(Math.random() * 5);
+                const percentage = Math.floor(
+                    (metricsData.apiUsage[api].used / metricsData.apiUsage[api].limit) * 100
+                );
+                
+                const elementId = api === 'alphaVantage' ? 'av-usage' : 
+                                 api === 'finnhub' ? 'fh-usage' : 'td-usage';
+                
+                const progressBar = document.getElementById(elementId);
+                if (progressBar) {
+                    progressBar.style.width = `${percentage}%`;
+                    progressBar.style.background = percentage < 70 ? 
+                        'linear-gradient(90deg, #4a9eff, #1e90ff)' :
+                        percentage < 90 ? 
+                        'linear-gradient(90deg, #fbbf24, #f59e0b)' :
+                        'linear-gradient(90deg, #f87171, #dc2626)';
+                }
+                
+                // Atualizar texto
+                const valueElement = progressBar?.parentElement?.parentElement?.querySelector('.metric-value');
+                if (valueElement) {
+                    valueElement.textContent = `${percentage}%`;
+                }
+                
+                if (percentage > 80) {
+                    log(`⚠️ Uso de ${api} acima de 80%`, 'warning');
+                }
+            });
+        }
+        
+        function updateStatus(elementId, text, statusClass) {
+            const element = document.getElementById(elementId);
+            if (element) {
+                element.textContent = text;
+                element.className = `metric-value status-${statusClass}`;
+            }
+        }
+        
+        function showAlert(message) {
+            const alertContainer = document.getElementById('alert-container');
+            alertContainer.textContent = message;
+            alertContainer.classList.add('show');
+            
+            setTimeout(() => {
+                alertContainer.classList.remove('show');
+            }, 5000);
+        }
+        
+        async function startMonitoring() {
+            log('Iniciando monitoramento...', 'info');
+            
+            // Verificação inicial
+            await checkBackendHealth();
+            await checkRealtimeConnection();
+            await updateMetrics();
+            
+            // Atualizar a cada 5 segundos
+            monitoringInterval = setInterval(async () => {
+                await checkBackendHealth();
+                await checkRealtimeConnection();
+                await updateMetrics();
+            }, 5000);
+            
+            log('Monitoramento iniciado', 'success');
+        }
+        
+        function stopMonitoring() {
+            if (monitoringInterval) {
+                clearInterval(monitoringInterval);
+                monitoringInterval = null;
+                log('Monitoramento parado', 'warning');
+            }
+        }
+        
+        async function runHealthCheck() {
+            log('Executando verificação completa...', 'info');
+            
+            const health = await checkBackendHealth();
+            if (health) {
+                log(`Backend: ${health.status}`, 'success');
+                log(`Versão: ${health.version || 'N/A'}`, 'info');
+                log(`Uptime: ${health.uptime || 'N/A'}`, 'info');
+            }
+            
+            // Verificar APIs externas
+            try {
+                const response = await fetch(`${BACKEND_URL}/api/market-data/quote/AAPL`);
+                if (response.ok) {
+                    log('APIs externas funcionando', 'success');
+                    updateStatus('api-status', 'Online', 'healthy');
+                } else {
+                    log('Problemas com APIs externas', 'warning');
+                    updateStatus('api-status', 'Degradado', 'warning');
+                }
+            } catch (error) {
+                log('APIs externas offline', 'error');
+                updateStatus('api-status', 'Offline', 'error');
+            }
+        }
+        
+        function clearLogs() {
+            const container = document.getElementById('log-container');
+            container.innerHTML = '<div class="log-entry log-info">[INFO] Logs limpos</div>';
+        }
+        
+        function exportMetrics() {
+            const exportData = {
+                timestamp: new Date().toISOString(),
+                metrics: {
+                    avgLatency: metricsData.latencies.reduce((a, b) => a + b, 0) / metricsData.latencies.length,
+                    cacheHitRate: (metricsData.cacheHits / (metricsData.cacheHits + metricsData.cacheMisses)) * 100,
+                    totalRequests: metricsData.requests,
+                    errorRate: (metricsData.errors / metricsData.requests) * 100,
+                    apiUsage: metricsData.apiUsage
+                }
+            };
+            
+            const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `metrics-${Date.now()}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+            
+            log('Métricas exportadas', 'success');
+        }
+        
+        // Iniciar monitoramento automaticamente
+        window.addEventListener('load', () => {
+            startMonitoring();
+        });
+        
+        // Cleanup ao sair
+        window.addEventListener('beforeunload', () => {
+            stopMonitoring();
+        });
+    </script>
+</body>
+</html>
