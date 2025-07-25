@@ -38,7 +38,7 @@ RUN echo '#!/bin/bash' > /app/start.sh && \
 ENV NODE_ENV=production
 
 # Expose port (Koyeb sets PORT dynamically)
-EXPOSE 8000
+EXPOSE 3001
 
 # Use the startup script
 CMD ["/app/start.sh"]

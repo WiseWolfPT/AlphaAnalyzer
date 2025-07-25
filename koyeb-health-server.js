@@ -4,7 +4,7 @@
  */
 
 const http = require('http');
-const PORT = process.env.PORT || 8000;
+const PORT = process.env.PORT || 3001;
 
 const server = http.createServer((req, res) => {
   console.log(`${new Date().toISOString()} ${req.method} ${req.url}`);
