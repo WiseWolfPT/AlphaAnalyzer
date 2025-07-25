@@ -22,7 +22,8 @@ import {
   Percent,
   ArrowUp,
   ArrowDown,
-  Info
+  Info,
+  Wifi
 } from "lucide-react";
 import { ResponsiveContainer } from "@/components/ui/lightweight-chart";
 import { 
@@ -38,6 +39,7 @@ import {
   Legend 
 } from "recharts";
 import { motion } from "framer-motion";
+import { useRealtimeQuote } from "@/hooks/use-realtime-quotes";
 import type { Stock } from "@shared/schema";
 
 interface ValuationResult {
@@ -60,6 +62,7 @@ export default function IntrinsicValue() {
   const [searchQuery, setSearchQuery] = useState("");
   const [isCalculating, setIsCalculating] = useState(false);
   const [calculation, setCalculation] = useState<IntrinsicCalculation | null>(null);
+  const [useRealtime, setUseRealtime] = useState(true);
 
   // Manual calculation inputs
   const [eps, setEps] = useState("6.13");
@@ -67,6 +70,11 @@ export default function IntrinsicValue() {
   const [discountRate, setDiscountRate] = useState(10);
   const [terminalGrowth, setTerminalGrowth] = useState(3);
   const [years, setYears] = useState(10);
+  
+  // Get realtime quote if enabled and stock is selected
+  const { quote: realtimeQuote, isConnected } = useRealtimeQuote(selectedStock?.symbol || '', {
+    enabled: useRealtime && !!selectedStock?.symbol
+  });
 
   const { data: searchResults, error: searchError, isLoading: searchLoading } = useQuery<Stock[]>({
     queryKey: [`/api/stocks/search?q=${encodeURIComponent(searchQuery)}`],
@@ -82,13 +90,31 @@ export default function IntrinsicValue() {
       console.log('Search results:', searchResults);
     }
   }, [searchQuery, searchResults, searchError, searchLoading]);
+  
+  // Recalculate when realtime price changes
+  useEffect(() => {
+    if (selectedStock && realtimeQuote && calculation) {
+      // Update calculation with new price
+      const newPrice = realtimeQuote.price;
+      const valuationDiff = calculation.intrinsicValue ? 
+        ((newPrice - calculation.intrinsicValue) / calculation.intrinsicValue) * 100 : 0;
+      
+      setCalculation(prev => prev ? {
+        ...prev,
+        currentPrice: newPrice,
+        discount: valuationDiff,
+        isUndervalued: valuationDiff < 0
+      } : null);
+    }
+  }, [realtimeQuote]);
 
   const calculateIntrinsicValue = (stock: Stock) => {
     setIsCalculating(true);
     
     // Simulate calculation delay
     setTimeout(() => {
-      const currentPrice = typeof stock.price === 'number' ? stock.price : parseFloat(stock.price || '0');
+      // Use realtime price if available
+      const currentPrice = realtimeQuote?.price || (typeof stock.price === 'number' ? stock.price : parseFloat(stock.price || '0'));
       const epsValue = typeof stock.eps === 'number' ? stock.eps : parseFloat(stock.eps || eps);
       
       // Different valuation methods
@@ -205,14 +231,27 @@ export default function IntrinsicValue() {
       <div className="container mx-auto px-6 py-8 max-w-7xl">
         {/* Header */}
         <div className="mb-8">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="p-2 bg-teya-green/10 rounded-xl">
-              <Calculator className="h-6 w-6 text-primary" />
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-teya-green/10 rounded-xl">
+                <Calculator className="h-6 w-6 text-primary" />
+              </div>
+              <div>
+                <h1 className="text-3xl font-bold text-foreground">Intrinsic Value Calculator</h1>
+                <p className="text-muted-foreground">Calculate the true worth of any stock with advanced valuation methods</p>
+              </div>
             </div>
-            <div>
-              <h1 className="text-3xl font-bold text-foreground">Intrinsic Value Calculator</h1>
-              <p className="text-muted-foreground">Calculate the true worth of any stock with advanced valuation methods</p>
-            </div>
+            
+            <Button
+              variant={useRealtime ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setUseRealtime(!useRealtime)}
+              className={useRealtime ? 'bg-teya-green hover:bg-teya-green-dark text-black' : ''}
+              title="Alternar atualizações em tempo real"
+            >
+              <Wifi className="w-4 h-4" />
+              <span className="ml-1 hidden sm:inline">Tempo Real</span>
+            </Button>
           </div>
 
           {/* Search Bar */}
@@ -249,16 +288,31 @@ export default function IntrinsicValue() {
                       <Badge variant="secondary">{selectedStock.sector}</Badge>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <div className="text-3xl font-bold">{formatCurrency(parseFloat(selectedStock.price))}</div>
+                  <div className="text-right relative">
+                    {/* Realtime indicator */}
+                    {useRealtime && isConnected && realtimeQuote && (
+                      <div className="absolute -top-2 -right-2">
+                        <span className="inline-flex h-2 w-2 rounded-full bg-green-500 animate-pulse" 
+                              title="Dados em tempo real" />
+                      </div>
+                    )}
+                    
+                    <div className="text-3xl font-bold">
+                      {formatCurrency(realtimeQuote?.price || parseFloat(selectedStock.price))}
+                    </div>
                     <div className={`flex items-center gap-1 ${
-                      parseFloat(selectedStock.changePercent) >= 0 ? 'text-green-600' : 'text-red-600'
+                      (realtimeQuote ? realtimeQuote.change >= 0 : parseFloat(selectedStock.changePercent) >= 0) ? 'text-green-600' : 'text-red-600'
                     }`}>
-                      {parseFloat(selectedStock.changePercent) >= 0 ? 
+                      {(realtimeQuote ? realtimeQuote.change >= 0 : parseFloat(selectedStock.changePercent) >= 0) ? 
                         <ArrowUp className="h-4 w-4" /> : 
                         <ArrowDown className="h-4 w-4" />
                       }
-                      <span>{selectedStock.changePercent}%</span>
+                      <span>
+                        {realtimeQuote ? 
+                          `${realtimeQuote.change >= 0 ? '+' : ''}${realtimeQuote.change_percent.toFixed(2)}%` : 
+                          `${selectedStock.changePercent}%`
+                        }
+                      </span>
                     </div>
                   </div>
                 </div>

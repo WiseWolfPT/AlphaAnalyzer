@@ -14,6 +14,7 @@ import transcriptsRouter from "./routes/transcripts";
 import apiProxyRouter from "./routes/api-proxy";
 import { imageProxyRouter } from "./routes/image-proxy";
 import cronRouter from "./routes/cron";
+import cronManagerRouter from "./routes/cron-manager";
 import aiAnalysisRouter from "./routes/ai-analysis";
 import portfoliosRouter from "./routes/portfolios";
 import earningsCalendarRouter from "./routes/earnings-calendar";
@@ -149,6 +150,7 @@ export async function registerRoutes(app: Express, server: Server): Promise<void
   app.use("/api/auth", authRouter);
   app.use("/api/admin", adminSecurityMiddleware, adminRouter);
   app.use("/api/cron", cronRouter);
+  app.use("/api/cron-manager", cronManagerRouter);
   // REMOVED: Cache admin router due to startup issues
   // app.use("/api/admin/cache", cacheAdminRouter);
   app.use("/api/subscriptions", subscriptionsRouter);

@@ -3,6 +3,7 @@ import { useParams, useLocation } from "wouter";
 import { MainLayout } from "@/components/layout/main-layout";
 import { AdvancedTradingChart } from "@/components/charts/advanced-trading-chart";
 import { StockHeaderV2 } from "@/components/stock/stock-header-v2";
+import { RealtimeStockHeaderV2 } from "@/components/stock/realtime-stock-header-v2";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -19,9 +20,11 @@ import {
   Plus,
   ChartLine,
   BarChart3,
-  Activity
+  Activity,
+  Wifi
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useRealtimeQuote } from "@/hooks/use-realtime-quotes";
 
 // Mock company data
 const getCompanyData = (symbol: string) => {
@@ -101,6 +104,12 @@ export default function StockDetail() {
   const [, setLocation] = useLocation();
   const symbol = params.symbol?.toUpperCase() || 'AAPL';
   const [isInWatchlist, setIsInWatchlist] = useState(false);
+  const [useRealtime, setUseRealtime] = useState(true);
+  
+  // Get realtime quote if enabled
+  const { quote: realtimeQuote, isConnected } = useRealtimeQuote(symbol, {
+    enabled: useRealtime
+  });
   
   const company = getCompanyData(symbol);
   const isPositive = company.change >= 0;
@@ -122,7 +131,7 @@ export default function StockDetail() {
     <MainLayout>
       <div className="space-y-6">
         {/* Header */}
-        <div className="flex items-center gap-4">
+        <div className="flex items-center justify-between">
           <Button 
             variant="ghost" 
             size="sm"
@@ -132,15 +141,29 @@ export default function StockDetail() {
             <ArrowLeft className="w-4 h-4" />
             Back to Find Stocks
           </Button>
+          
+          <Button
+            variant={useRealtime ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setUseRealtime(!useRealtime)}
+            className={useRealtime ? 'bg-teya-green hover:bg-teya-green-dark text-black' : ''}
+            title="Alternar atualizações em tempo real"
+          >
+            <Wifi className="w-4 h-4" />
+            <span className="ml-1 hidden sm:inline">Tempo Real</span>
+          </Button>
         </div>
 
         {/* Stock Header - New Layout */}
-        <StockHeaderV2
-          symbol={symbol}
-          company={company}
-          isInWatchlist={isInWatchlist}
-          onAddToWatchlist={handleAddToWatchlist}
-          onShare={() => {
+        {useRealtime ? (
+          <RealtimeStockHeaderV2
+            symbol={symbol}
+            company={company}
+            isInWatchlist={isInWatchlist}
+            onAddToWatchlist={handleAddToWatchlist}
+            realtimeQuote={realtimeQuote}
+            isConnected={isConnected}
+            onShare={() => {
             // Handle share functionality
             if (navigator.share) {
               navigator.share({
@@ -153,7 +176,28 @@ export default function StockDetail() {
               navigator.clipboard.writeText(window.location.href);
             }
           }}
-        />
+          />
+        ) : (
+          <StockHeaderV2
+            symbol={symbol}
+            company={company}
+            isInWatchlist={isInWatchlist}
+            onAddToWatchlist={handleAddToWatchlist}
+            onShare={() => {
+              // Handle share functionality
+              if (navigator.share) {
+                navigator.share({
+                  title: `${company.name} (${symbol})`,
+                  text: `Check out ${company.name} stock analysis on Alfalyzer`,
+                  url: window.location.href,
+                });
+              } else {
+                // Fallback to copying to clipboard
+                navigator.clipboard.writeText(window.location.href);
+              }
+            }}
+          />
+        )}
 
         {/* Price Information */}
         <Card className="border-teya-green/20">
@@ -161,9 +205,13 @@ export default function StockDetail() {
             <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6">
               <div>
                 <p className="text-sm text-muted-foreground mb-1">Current Price</p>
-                <p className="text-3xl font-bold">${company.price.toFixed(2)}</p>
-                <p className={cn("text-sm font-medium", isPositive ? "text-green-500" : "text-red-500")}>
-                  {isPositive ? "+" : ""}{company.change.toFixed(2)} ({isPositive ? "+" : ""}{company.changePercent.toFixed(2)}%)
+                <p className="text-3xl font-bold">${(realtimeQuote?.price || company.price).toFixed(2)}</p>
+                <p className={cn("text-sm font-medium", 
+                  (realtimeQuote ? realtimeQuote.change >= 0 : isPositive) ? "text-green-500" : "text-red-500")}>
+                  {(realtimeQuote ? realtimeQuote.change >= 0 : isPositive) ? "+" : ""}
+                  {Math.abs(realtimeQuote?.change || company.change).toFixed(2)} 
+                  ({(realtimeQuote ? realtimeQuote.change >= 0 : isPositive) ? "+" : ""}
+                  {Math.abs(realtimeQuote?.change_percent || company.changePercent).toFixed(2)}%)
                 </p>
               </div>
               <div>

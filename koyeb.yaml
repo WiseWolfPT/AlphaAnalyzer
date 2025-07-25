@@ -12,12 +12,12 @@ env:
   
 service:
   ports:
-    - port: 3001
+    - port: 8000
       protocol: http
   
   routes:
     - path: /
-      port: 3001
+      port: 8000
   
   healthcheck:
     path: /api/health

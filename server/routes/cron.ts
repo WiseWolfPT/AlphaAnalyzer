@@ -2,8 +2,14 @@ import { Router, Request, Response } from 'express';
 import { jobQueue } from '../services/job-queue';
 import { jobProcessor } from '../services/job-processor';
 import { DataOrchestrator } from '../services/data-orchestrator';
+import { cronSecurityMiddleware, cronLoggingMiddleware, cronRateLimitMiddleware } from '../middleware/cron-security';
 
 const router = Router();
+
+// Apply security middleware to all cron routes
+router.use(cronSecurityMiddleware);
+router.use(cronLoggingMiddleware);
+router.use(cronRateLimitMiddleware(30, 60)); // 30 requests per hour
 
 /**
  * Vercel Cron endpoint for Tier 1 updates (every 15 minutes)

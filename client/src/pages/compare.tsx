@@ -22,11 +22,13 @@ import {
   DollarSign,
   BarChart3,
   Target,
-  Search
+  Search,
+  Wifi
 } from "lucide-react";
 import { useStock, useIntrinsicValue } from "@/hooks/use-enhanced-stocks";
 import { useNormalizedStock, getStockPrice, getStockChangePercent, isStockPositive } from "@/lib/stock-data-normalizer";
 import { MiniChart } from "@/components/stock/mini-charts";
+import { useRealtimeQuote } from "@/hooks/use-realtime-quotes";
 
 interface ComparisonStock {
   symbol: string;
@@ -41,6 +43,7 @@ export default function ComparePage() {
     { symbol: "MSFT" }
   ]);
   const [searchSymbol, setSearchSymbol] = useState("");
+  const [useRealtime, setUseRealtime] = useState(true);
 
   const addStock = () => {
     if (searchSymbol.trim() && comparisonStocks.length < 4) {
@@ -74,6 +77,17 @@ export default function ComparePage() {
 
         {/* Add Stock Input */}
         <div className="flex items-center gap-2">
+          <Button
+            variant={useRealtime ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setUseRealtime(!useRealtime)}
+            className={useRealtime ? 'bg-teya-green hover:bg-teya-green-dark text-black' : ''}
+            title="Alternar atualizações em tempo real"
+          >
+            <Wifi className="w-4 h-4" />
+            <span className="ml-1 hidden sm:inline">Tempo Real</span>
+          </Button>
+          
           <Input
             placeholder="Símbolo (ex: TSLA)"
             value={searchSymbol}
@@ -101,6 +115,7 @@ export default function ComparePage() {
               symbol={stockItem.symbol}
               onRemove={() => removeStock(stockItem.symbol)}
               canRemove={comparisonStocks.length > 1}
+              useRealtime={useRealtime}
             />
           ))}
         </div>
@@ -132,23 +147,29 @@ export default function ComparePage() {
 function ComparisonCard({ 
   symbol, 
   onRemove, 
-  canRemove 
+  canRemove,
+  useRealtime 
 }: { 
   symbol: string; 
   onRemove: () => void;
   canRemove: boolean;
+  useRealtime: boolean;
 }) {
   const { data: rawStock, isLoading: stockLoading } = useStock(symbol);
   const { data: intrinsicValue, isLoading: ivLoading } = useIntrinsicValue(symbol);
+  const { quote: realtimeQuote, isConnected } = useRealtimeQuote(symbol, {
+    enabled: useRealtime
+  });
   
   const stock = useNormalizedStock(rawStock);
   
   const calculations = useMemo(() => {
-    if (!stock) return null;
+    if (!stock && !realtimeQuote) return null;
     
-    const currentPrice = getStockPrice(stock);
-    const changePercent = getStockChangePercent(stock);
-    const isPositive = isStockPositive(stock);
+    // Use realtime data if available, otherwise fall back to stock data
+    const currentPrice = realtimeQuote?.price || getStockPrice(stock);
+    const changePercent = realtimeQuote?.change_percent || getStockChangePercent(stock);
+    const isPositive = realtimeQuote ? realtimeQuote.change >= 0 : isStockPositive(stock);
     
     const valuationDiff = intrinsicValue ? 
       ((currentPrice - intrinsicValue) / intrinsicValue) * 100 : 
@@ -164,7 +185,7 @@ function ComparisonCard({
       valuationDiff,
       isUndervalued
     };
-  }, [stock, intrinsicValue]);
+  }, [stock, intrinsicValue, realtimeQuote]);
 
   if (stockLoading) {
     return (
@@ -195,6 +216,14 @@ function ComparisonCard({
 
   return (
     <Card className="h-[400px] relative group">
+      {/* Realtime indicator */}
+      {useRealtime && isConnected && realtimeQuote && (
+        <div className="absolute top-2 left-2 z-10">
+          <span className="inline-flex h-2 w-2 rounded-full bg-green-500 animate-pulse" 
+                title="Dados em tempo real" />
+        </div>
+      )}
+      
       {/* Remove button */}
       {canRemove && (
         <Button

@@ -6,18 +6,18 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { BarChart3, PieChart, Activity, TrendingUp, TrendingDown, Target, DollarSign, Percent, Plus, ExternalLink } from "lucide-react";
+import { BarChart3, PieChart, Activity, TrendingUp, TrendingDown, Target, DollarSign, Percent, Plus, ExternalLink, Wifi } from "lucide-react";
 import { SectorPerformance } from "@/components/stock/sector-performance";
 import { LightweightLineChart, LightweightPriceChart, LightweightChartContainer } from "@/components/ui/lightweight-chart";
 import { useStock } from "@/hooks/use-enhanced-stocks";
-import { useMarketQuote } from "@/hooks/use-market-data";
 import { cn } from "@/lib/utils";
+import { RealtimePortfolioHolding } from "@/components/portfolio/realtime-portfolio-holding";
 import type { MockStock } from "@/lib/mock-api";
 
 // Enhanced portfolio holding component with real data
 function PortfolioHolding({ holding }: { holding: any }) {
   const [, setLocation] = useLocation();
-  const { data: quote } = useMarketQuote(holding.symbol);
+  const { data: quote } = useStock(holding.symbol);
 
   const handleClick = () => {
     setLocation(`/stock/${holding.symbol}/charts`);
@@ -67,6 +67,8 @@ function PortfolioHolding({ holding }: { holding: any }) {
 }
 
 export default function Portfolios() {
+  const [useRealtime, setUseRealtime] = useState(true);
+  
   // Get all stocks for sector analysis
   const { data: allStocks, isLoading } = useQuery<MockStock[]>({
     queryKey: ["/api/stocks"],
@@ -142,10 +144,23 @@ export default function Portfolios() {
               <p className="text-muted-foreground">Comprehensive analysis of your investment portfolio</p>
             </div>
           </div>
-          <Button className="bg-gradient-to-r from-teya-green via-teya-green-dark to-teya-green hover:from-teya-green-dark hover:via-teya-green hover:to-teya-green-dark text-rich-black font-semibold shadow-lg shadow-teya-green/30 hover:shadow-teya-green/50 hover:scale-105 transition-all duration-300 border-0">
-            <Plus className="h-4 w-4 mr-2" />
-            Add Holding
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              variant={useRealtime ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setUseRealtime(!useRealtime)}
+              className={useRealtime ? 'bg-teya-green hover:bg-teya-green-dark text-black' : ''}
+              title="Alternar atualizações em tempo real"
+            >
+              <Wifi className="w-4 h-4" />
+              <span className="ml-1 hidden sm:inline">Tempo Real</span>
+            </Button>
+            
+            <Button className="bg-gradient-to-r from-teya-green via-teya-green-dark to-teya-green hover:from-teya-green-dark hover:via-teya-green hover:to-teya-green-dark text-rich-black font-semibold shadow-lg shadow-teya-green/30 hover:shadow-teya-green/50 hover:scale-105 transition-all duration-300 border-0">
+              <Plus className="h-4 w-4 mr-2" />
+              Add Holding
+            </Button>
+          </div>
         </div>
 
         <Tabs defaultValue="overview" className="w-full">
@@ -270,7 +285,11 @@ export default function Portfolios() {
               <CardContent>
                 <div className="space-y-3">
                   {portfolioData.holdings.map((holding) => (
-                    <PortfolioHolding key={holding.symbol} holding={holding} />
+                    useRealtime ? (
+                      <RealtimePortfolioHolding key={holding.symbol} holding={holding} />
+                    ) : (
+                      <PortfolioHolding key={holding.symbol} holding={holding} />
+                    )
                   ))}
                 </div>
               </CardContent>

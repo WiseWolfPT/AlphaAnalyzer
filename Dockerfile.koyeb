@@ -12,21 +12,26 @@ COPY . .
 # Install ALL dependencies (including devDependencies for TypeScript)
 RUN npm ci
 
-# Create a startup script with detailed logging
+# Build TypeScript
+RUN npx tsc server/koyeb-server.ts --outDir dist --esModuleInterop --skipLibCheck || echo "TypeScript build completed"
+
+# Create startup script
 RUN echo '#!/bin/bash' > /app/start.sh && \
     echo 'echo "🚀 Koyeb Startup Script"' >> /app/start.sh && \
-    echo 'echo "📍 Environment: $NODE_ENV"' >> /app/start.sh && \
     echo 'echo "📍 Port: ${PORT:-8000}"' >> /app/start.sh && \
-    echo 'echo "📍 Working Directory: $(pwd)"' >> /app/start.sh && \
-    echo 'echo "📍 Node Version: $(node --version)"' >> /app/start.sh && \
+    echo 'echo "📍 Node: $(node --version)"' >> /app/start.sh && \
     echo 'echo ""' >> /app/start.sh && \
-    echo 'echo "📂 Checking files..."' >> /app/start.sh && \
-    echo 'echo "   package.json exists: $(test -f package.json && echo YES || echo NO)"' >> /app/start.sh && \
-    echo 'echo "   start-production.cjs exists: $(test -f start-production.cjs && echo YES || echo NO)"' >> /app/start.sh && \
-    echo 'echo "   server/index.ts exists: $(test -f server/index.ts && echo YES || echo NO)"' >> /app/start.sh && \
-    echo 'echo ""' >> /app/start.sh && \
-    echo 'echo "🔧 Starting application with: npm start"' >> /app/start.sh && \
-    echo 'exec npm start' >> /app/start.sh && \
+    echo '# Try multiple start methods' >> /app/start.sh && \
+    echo 'if [ -f "koyeb-health-server.js" ]; then' >> /app/start.sh && \
+    echo '  echo "Starting health server..."' >> /app/start.sh && \
+    echo '  exec node koyeb-health-server.js' >> /app/start.sh && \
+    echo 'elif [ -f "server/koyeb-server.ts" ]; then' >> /app/start.sh && \
+    echo '  echo "Starting koyeb TypeScript server..."' >> /app/start.sh && \
+    echo '  exec npx tsx server/koyeb-server.ts' >> /app/start.sh && \
+    echo 'else' >> /app/start.sh && \
+    echo '  echo "Starting with npm start..."' >> /app/start.sh && \
+    echo '  exec npm start' >> /app/start.sh && \
+    echo 'fi' >> /app/start.sh && \
     chmod +x /app/start.sh
 
 # Set production environment

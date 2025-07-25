@@ -8,11 +8,12 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Plus, Edit, Trash2, TrendingUp, TrendingDown, Heart, ExternalLink } from "lucide-react";
+import { Plus, Edit, Trash2, TrendingUp, TrendingDown, Heart, ExternalLink, Wifi } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useStock } from "@/hooks/use-enhanced-stocks";
 import { cn } from "@/lib/utils";
+import { RealtimeWatchlistStockItem } from "@/components/watchlist/realtime-watchlist-stock-item";
 import type { Watchlist, WatchlistStock, Stock } from "@shared/schema";
 
 // Component for individual stock item with real data
@@ -88,6 +89,7 @@ export default function Watchlists() {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isAddStockDialogOpen, setIsAddStockDialogOpen] = useState(false);
   const [stockSymbolToAdd, setStockSymbolToAdd] = useState("");
+  const [useRealtime, setUseRealtime] = useState(true);
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
@@ -197,6 +199,17 @@ export default function Watchlists() {
             </div>
             
             <div className="flex items-center space-x-2">
+              <Button
+                variant={useRealtime ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setUseRealtime(!useRealtime)}
+                className={useRealtime ? 'bg-teya-green hover:bg-teya-green-dark text-black' : ''}
+                title="Alternar atualizações em tempo real"
+              >
+                <Wifi className="w-4 h-4" />
+                <span className="ml-1 hidden sm:inline">Tempo Real</span>
+              </Button>
+              
               <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
                 <DialogTrigger asChild>
                   <Button size="sm" className="bg-gradient-to-r from-teya-green via-teya-green-dark to-teya-green hover:from-teya-green-dark hover:via-teya-green hover:to-teya-green-dark text-rich-black font-semibold shadow-lg shadow-teya-green/30 hover:shadow-teya-green/50 hover:scale-105 transition-all duration-300 border-0">
@@ -355,7 +368,11 @@ export default function Watchlists() {
                       {watchlistStocks?.length ? (
                         <div className="space-y-3">
                           {watchlistStocks.map((ws) => (
-                            <WatchlistStockItem key={ws.id} ws={ws} />
+                            useRealtime ? (
+                              <RealtimeWatchlistStockItem key={ws.id} ws={ws} />
+                            ) : (
+                              <WatchlistStockItem key={ws.id} ws={ws} />
+                            )
                           ))}
                         </div>
                       ) : (

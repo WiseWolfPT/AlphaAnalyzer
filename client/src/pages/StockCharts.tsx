@@ -3,12 +3,13 @@ import { useParams, useLocation } from "wouter";
 import { MainLayout } from "@/components/layout/main-layout";
 import { Button } from "@/components/ui/button";
 import { Breadcrumb, BreadcrumbList, BreadcrumbItem, BreadcrumbLink, BreadcrumbSeparator, BreadcrumbPage } from "@/components/ui/breadcrumb";
-import { ArrowLeft, TrendingUp, TrendingDown, ExternalLink, Home, Calendar, DollarSign, Activity, Target, Clock, Info } from "lucide-react";
+import { ArrowLeft, TrendingUp, TrendingDown, ExternalLink, Home, Calendar, DollarSign, Activity, Target, Clock, Info, Wifi } from "lucide-react";
 import { Link } from "wouter";
 import { cn } from "@/lib/utils";
 import { MetricTooltip } from "@/components/ui/metric-tooltip";
 import { OptimizedImage } from "@/components/ui/optimized-image";
 import { dataAggregatorService, type AggregatedStockData } from "@/services/data-aggregator";
+import { useRealtimeQuote } from "@/hooks/use-realtime-quotes";
 
 // Chart Components
 import { PriceChart } from "@/components/charts/price-chart";
@@ -34,6 +35,12 @@ export default function AdvancedCharts() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [chartPeriod, setChartPeriod] = useState<'quarterly' | 'annual'>('quarterly');
+  const [useRealtime, setUseRealtime] = useState(true);
+  
+  // Get realtime quote if enabled
+  const { quote: realtimeQuote, isConnected } = useRealtimeQuote(symbol || '', {
+    enabled: useRealtime && !!symbol
+  });
 
   useEffect(() => {
     if (symbol && typeof symbol === 'string') {
@@ -273,10 +280,23 @@ export default function AdvancedCharts() {
             </BreadcrumbList>
           </Breadcrumb>
           
-          <Button variant="outline" className="flex items-center gap-2">
-            <ExternalLink className="h-4 w-4" />
-            Company Website
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              variant={useRealtime ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setUseRealtime(!useRealtime)}
+              className={useRealtime ? 'bg-teya-green hover:bg-teya-green-dark text-black' : ''}
+              title="Alternar atualizações em tempo real"
+            >
+              <Wifi className="w-4 h-4" />
+              <span className="ml-1 hidden sm:inline">Tempo Real</span>
+            </Button>
+            
+            <Button variant="outline" className="flex items-center gap-2">
+              <ExternalLink className="h-4 w-4" />
+              Company Website
+            </Button>
+          </div>
         </div>
 
         {/* Main Content Layout */}
@@ -314,20 +334,31 @@ export default function AdvancedCharts() {
               </div>
 
               <div className="space-y-3">
-                <div className="text-center p-4 bg-secondary/20 rounded-lg">
+                <div className="text-center p-4 bg-secondary/20 rounded-lg relative">
+                  {/* Realtime indicator */}
+                  {useRealtime && isConnected && realtimeQuote && (
+                    <div className="absolute top-2 right-2">
+                      <span className="inline-flex h-2 w-2 rounded-full bg-green-500 animate-pulse" 
+                            title="Dados em tempo real" />
+                    </div>
+                  )}
+                  
                   <div className="text-2xl font-bold text-foreground">
-                    ${currentPrice.price.toFixed(2)}
+                    ${(realtimeQuote?.price || currentPrice.price).toFixed(2)}
                   </div>
                   <div className={cn(
                     "flex items-center justify-center gap-1 text-sm font-medium",
-                    isPositive ? "text-emerald-500" : "text-red-500"
+                    (realtimeQuote ? realtimeQuote.change >= 0 : isPositive) ? "text-emerald-500" : "text-red-500"
                   )}>
-                    {isPositive ? (
+                    {(realtimeQuote ? realtimeQuote.change >= 0 : isPositive) ? (
                       <TrendingUp className="h-3 w-3" />
                     ) : (
                       <TrendingDown className="h-3 w-3" />
                     )}
-                    {isPositive ? '+' : ''}${currentPrice.change.toFixed(2)} ({isPositive ? '+' : ''}{currentPrice.changePercent.toFixed(2)}%)
+                    {(realtimeQuote ? realtimeQuote.change >= 0 : isPositive) ? '+' : ''}
+                    ${Math.abs(realtimeQuote?.change || currentPrice.change).toFixed(2)} 
+                    ({(realtimeQuote ? realtimeQuote.change >= 0 : isPositive) ? '+' : ''}
+                    {Math.abs(realtimeQuote?.change_percent || currentPrice.changePercent).toFixed(2)}%)
                   </div>
                   
                   {/* After Hours Price */}

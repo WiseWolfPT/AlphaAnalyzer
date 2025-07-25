@@ -4,12 +4,13 @@ import { MainLayout } from "@/components/layout/main-layout";
 import { StockSearch } from "@/components/stock/stock-search";
 import { EnhancedStockCard } from "@/components/stock/enhanced-stock-card";
 import { CompactStockCard } from "@/components/stock/compact-stock-card";
+import { RealtimeStockCard } from "@/components/stock/realtime-stock-card";
 import { BetaBanner } from "@/components/beta/beta-banner";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Search, TrendingUp, TrendingDown, Activity, Target, RefreshCw, Zap, AlertCircle, Filter, Grid3X3, List } from "lucide-react";
+import { Search, TrendingUp, TrendingDown, Activity, Target, RefreshCw, Zap, AlertCircle, Filter, Grid3X3, List, Wifi } from "lucide-react";
 import { useAuth } from "@/contexts/simple-auth-offline";
 import { cn } from "@/lib/utils";
 import { useBatchQuotes } from "@/hooks/use-market-data";
@@ -101,6 +102,7 @@ export default function FindStocks() {
   });
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [searchQuery, setSearchQuery] = useState('');
+  const [useRealtime, setUseRealtime] = useState(true);
   
   // Use real market data
   const { data: quotesData, isLoading, error, refetch, status, fetchStatus } = useBatchQuotes(displayedSymbols);
@@ -234,21 +236,33 @@ export default function FindStocks() {
                 <RefreshCw className={cn("w-4 h-4", isLoading && "animate-spin")} />
               </Button>
               <Button
-                variant={viewMode === 'grid' ? 'default' : 'outline'}
+                variant={useRealtime ? 'default' : 'outline'}
                 size="sm"
-                onClick={() => setViewMode('grid')}
-                className={viewMode === 'grid' ? 'bg-teya-green hover:bg-teya-green-dark text-black' : ''}
+                onClick={() => setUseRealtime(!useRealtime)}
+                className={useRealtime ? 'bg-teya-green hover:bg-teya-green-dark text-black' : ''}
+                title="Alternar atualizações em tempo real"
               >
-                <Grid3X3 className="w-4 h-4" />
+                <Wifi className="w-4 h-4" />
+                <span className="ml-1 hidden sm:inline">Tempo Real</span>
               </Button>
-              <Button
-                variant={viewMode === 'list' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setViewMode('list')}
-                className={viewMode === 'list' ? 'bg-teya-green hover:bg-teya-green-dark text-black' : ''}
-              >
-                <List className="w-4 h-4" />
-              </Button>
+              <div className="border-l pl-2 ml-2 flex items-center gap-1">
+                <Button
+                  variant={viewMode === 'grid' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setViewMode('grid')}
+                  className={viewMode === 'grid' ? 'bg-teya-green hover:bg-teya-green-dark text-black' : ''}
+                >
+                  <Grid3X3 className="w-4 h-4" />
+                </Button>
+                <Button
+                  variant={viewMode === 'list' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setViewMode('list')}
+                  className={viewMode === 'list' ? 'bg-teya-green hover:bg-teya-green-dark text-black' : ''}
+                >
+                  <List className="w-4 h-4" />
+                </Button>
+              </div>
             </div>
           </div>
 
@@ -365,50 +379,69 @@ export default function FindStocks() {
               ? "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4"
               : "space-y-4"
           )}>
-            {filteredStocks.map((stock) => (
-              <Card 
-                key={stock.id}
-                className="group hover:shadow-lg transition-all duration-200 cursor-pointer border-border/50 hover:border-teya-green/30 overflow-hidden"
-                onClick={() => handleStockSelect(stock.symbol)}
-              >
-                <CardContent className="p-4">
-                  <div className="flex justify-between items-start mb-3">
-                    <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white text-sm font-bold">
-                        {stock.symbol.charAt(0)}
-                      </div>
-                      <div>
-                        <h3 className="font-semibold text-sm">{stock.symbol}</h3>
-                        <p className="text-xs text-muted-foreground truncate max-w-[120px]">
-                          {stock.name}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <div className="flex justify-between items-center">
-                      <span className="text-lg font-bold">${parseFloat(stock.price).toFixed(2)}</span>
-                      <div className={cn(
-                        "flex items-center gap-1 text-sm font-medium",
-                        parseFloat(stock.changePercent) >= 0 ? "text-green-600" : "text-red-600"
-                      )}>
-                        {parseFloat(stock.changePercent) >= 0 ? (
-                          <TrendingUp className="w-3 h-3" />
-                        ) : (
-                          <TrendingDown className="w-3 h-3" />
-                        )}
-                        {parseFloat(stock.changePercent) >= 0 ? '+' : ''}{parseFloat(stock.changePercent).toFixed(2)}%
+            {useRealtime && viewMode === 'grid' ? (
+              // Render realtime cards for displayed symbols
+              displayedSymbols.map((symbol) => (
+                <RealtimeStockCard
+                  key={symbol}
+                  symbol={symbol}
+                  companyName={getCompanyName(symbol)}
+                  industry={getIndustry(symbol)}
+                  sector={getSector(symbol)}
+                  onRemove={() => {
+                    const newSymbols = displayedSymbols.filter(s => s !== symbol);
+                    setDisplayedSymbols(newSymbols);
+                    localStorage.setItem('alfalyzer-watchlist', JSON.stringify(newSymbols));
+                  }}
+                />
+              ))
+            ) : (
+              // Render standard cards
+              filteredStocks.map((stock) => (
+                <Card 
+                  key={stock.id}
+                  className="group hover:shadow-lg transition-all duration-200 cursor-pointer border-border/50 hover:border-teya-green/30 overflow-hidden"
+                  onClick={() => handleStockSelect(stock.symbol)}
+                >
+                  <CardContent className="p-4">
+                    <div className="flex justify-between items-start mb-3">
+                      <div className="flex items-center gap-2">
+                        <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white text-sm font-bold">
+                          {stock.symbol.charAt(0)}
+                        </div>
+                        <div>
+                          <h3 className="font-semibold text-sm">{stock.symbol}</h3>
+                          <p className="text-xs text-muted-foreground truncate max-w-[120px]">
+                            {stock.name}
+                          </p>
+                        </div>
                       </div>
                     </div>
                     
-                    <div className="text-xs text-muted-foreground">
-                      <span>{stock.sector}</span>
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-center">
+                        <span className="text-lg font-bold">${parseFloat(stock.price).toFixed(2)}</span>
+                        <div className={cn(
+                          "flex items-center gap-1 text-sm font-medium",
+                          parseFloat(stock.changePercent) >= 0 ? "text-green-600" : "text-red-600"
+                        )}>
+                          {parseFloat(stock.changePercent) >= 0 ? (
+                            <TrendingUp className="w-3 h-3" />
+                          ) : (
+                            <TrendingDown className="w-3 h-3" />
+                          )}
+                          {parseFloat(stock.changePercent) >= 0 ? '+' : ''}{parseFloat(stock.changePercent).toFixed(2)}%
+                        </div>
+                      </div>
+                      
+                      <div className="text-xs text-muted-foreground">
+                        <span>{stock.sector}</span>
+                      </div>
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+                  </CardContent>
+                </Card>
+              ))
+            )}
           </div>
 
           {filteredStocks.length === 0 && (
