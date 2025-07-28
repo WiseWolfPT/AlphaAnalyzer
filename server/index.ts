@@ -469,7 +469,13 @@ async function initializeMarketDataServices() {
     const port = Number(env.PORT) || 3001;
     
     // ULTRATHINK PARALLEL EXECUTION: Multiple binding strategies
-    const bindingStrategies = [
+    // In production (Koyeb), prioritize 0.0.0.0 for container accessibility
+    const bindingStrategies = isProduction ? [
+      { host: '0.0.0.0', name: 'All Interfaces' },
+      { host: undefined, name: 'Default' },
+      { host: '127.0.0.1', name: 'IPv4 Loopback' },
+      { host: 'localhost', name: 'Localhost' }
+    ] : [
       { host: '127.0.0.1', name: 'IPv4 Loopback' },
       { host: 'localhost', name: 'Localhost' },
       { host: '0.0.0.0', name: 'All Interfaces' },
@@ -537,10 +543,11 @@ async function initializeMarketDataServices() {
           tryNextPort();
         });
 
-        serverInstance.listen(altPort, '127.0.0.1', () => {
+        const bindHost = isProduction ? '0.0.0.0' : '127.0.0.1';
+        serverInstance.listen(altPort, bindHost, () => {
           if (!serverStarted) {
             serverStarted = true;
-            onServerSuccess(serverInstance, altPort, '127.0.0.1');
+            onServerSuccess(serverInstance, altPort, bindHost);
           }
         });
       }

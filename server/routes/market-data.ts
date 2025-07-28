@@ -686,6 +686,19 @@ router.post('/reset-provider/:provider?',
   }
 );
 
+/**
+ * GET /api/market-data/test
+ * Simple test endpoint for connectivity checking
+ */
+router.get('/test', async (req: Request, res: Response) => {
+  res.json({
+    status: 'ok',
+    message: 'Market data API is running',
+    timestamp: new Date().toISOString(),
+    version: '1.0.0'
+  });
+});
+
 // Setup additional GET endpoints for Koyeb
 setupMarketDataGETEndpoints(router);
 

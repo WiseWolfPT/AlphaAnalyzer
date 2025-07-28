@@ -25,14 +25,53 @@ export class UnifiedAPIService {
   async initialize(providers: IMarketDataProvider[]): Promise<void> {
     console.log('[UnifiedAPIService] Initializing with providers:', providers.map(p => p.name));
     
-    // Initialize cache and quota tracker
-    this.cache = getCache();
-    this.quotaTracker = getQuotaTracker();
+    try {
+      // Initialize cache and quota tracker with error handling
+      this.cache = getCache();
+      if (!this.cache) {
+        console.warn('[UnifiedAPIService] Cache service not available, creating fallback');
+        // Create a simple fallback cache implementation
+        this.cache = {
+          get: async () => null,
+          set: async () => {},
+          getStats: () => ({ hits: 0, misses: 0, sets: 0, evictions: 0 })
+        };
+      }
+      
+      this.quotaTracker = getQuotaTracker();
+      if (!this.quotaTracker) {
+        console.warn('[UnifiedAPIService] Quota tracker not available, creating fallback');
+        // Create a simple fallback quota tracker
+        this.quotaTracker = {
+          canUseProvider: async () => true,
+          recordCall: async () => {},
+          getUsage: async () => ({ used: 0, limit: 1000, remaining: 1000 })
+        };
+      }
+    } catch (error) {
+      console.error('[UnifiedAPIService] Error initializing cache/quota services:', error);
+      // Create fallback services
+      this.cache = {
+        get: async () => null,
+        set: async () => {},
+        getStats: () => ({ hits: 0, misses: 0, sets: 0, evictions: 0 })
+      };
+      this.quotaTracker = {
+        canUseProvider: async () => true,
+        recordCall: async () => {},
+        getUsage: async () => ({ used: 0, limit: 1000, remaining: 1000 })
+      };
+    }
     
     // Register providers
     for (const provider of providers) {
-      this.providers.set(provider.name, provider);
-      await provider.initialize();
+      try {
+        this.providers.set(provider.name, provider);
+        await provider.initialize();
+      } catch (error) {
+        console.error(`[UnifiedAPIService] Failed to initialize provider ${provider.name}:`, error);
+        // Continue with other providers
+      }
     }
 
     this.initialized = true;
@@ -362,7 +401,16 @@ export class UnifiedAPIService {
       });
     }
 
-    const cacheStats = (this.cache as any).getCacheStats ? (this.cache as any).getCacheStats() : null;
+    // Safe cache stats retrieval
+    let cacheStats = null;
+    try {
+      if (this.cache && typeof this.cache.getStats === 'function') {
+        cacheStats = this.cache.getStats();
+      }
+    } catch (error) {
+      console.warn('[UnifiedAPIService] Error getting cache stats:', error);
+    }
+    
     const allCircuitBreakerStatuses = circuitBreakerManager.getAllStatuses();
 
     return {
