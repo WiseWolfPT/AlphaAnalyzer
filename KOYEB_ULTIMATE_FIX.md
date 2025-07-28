@@ -10,7 +10,7 @@ O Koyeb tem requisitos **muito específicos**:
 
 ## ✅ Solução Implementada
 
-Criámos `koyeb-server-fixed.js` que:
+Criámos `koyeb-server-fixed.cjs` que:
 1. Responde ao health check instantaneamente
 2. Usa a PORT do ambiente do Koyeb
 3. Carrega o servidor principal depois
@@ -20,7 +20,7 @@ Criámos `koyeb-server-fixed.js` que:
 
 ### 1. Fazer commit das correções
 ```bash
-git add koyeb-server-fixed.js test-koyeb-locally.sh
+git add koyeb-server-fixed.cjs test-koyeb-locally.sh
 git commit -m "fix: Add Koyeb-specific server with immediate health checks"
 git push
 ```
@@ -76,7 +76,7 @@ chmod +x test-koyeb-locally.sh
 
 ## 📝 Checklist Final
 
-- [ ] `npm start` aponta para `koyeb-server-fixed.js`
+- [ ] `npm start` aponta para `koyeb-server-fixed.cjs`
 - [ ] Todas as variáveis de ambiente no Koyeb
 - [ ] Health check configurado para `/health`
 - [ ] Sem portas hardcoded nas configurações

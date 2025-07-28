@@ -10,7 +10,7 @@ export NODE_ENV=production
 echo "📍 Testing with PORT=$PORT"
 
 # Start server in background
-node koyeb-server-fixed.js &
+node koyeb-server-fixed.cjs &
 SERVER_PID=$!
 
 # Wait for server to start
@@ -25,7 +25,7 @@ echo ""
 echo "📍 Testing with PORT=3001"
 kill $SERVER_PID 2>/dev/null
 export PORT=3001
-node koyeb-server-fixed.js &
+node koyeb-server-fixed.cjs &
 SERVER_PID=$!
 sleep 3
 curl -s http://localhost:$PORT/health | jq
