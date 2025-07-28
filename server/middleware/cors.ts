@@ -44,45 +44,10 @@ export const corsOptions: cors.CorsOptions = {
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
   exposedHeaders: ['X-Total-Count', 'X-Page-Count'],
-  maxAge: 86400 // 24 horas
+  maxAge: 86400, // 24 horas
+  optionsSuccessStatus: 204 // Important for legacy browsers
 };
 
-// Middleware para lidar com preflight requests
-export const handlePreflightRequests = (req: Request, res: Response, next: NextFunction) => {
-  if (req.method === 'OPTIONS') {
-    console.log(`🔄 OPTIONS preflight request from ${req.headers.origin} to ${req.path}`);
-    
-    const origin = req.headers.origin;
-    
-    // Check if origin is allowed
-    if (origin) {
-      // Check exact matches
-      if (allowedOrigins.includes(origin)) {
-        res.header('Access-Control-Allow-Origin', origin);
-      } else {
-        // Check pattern matches
-        const isAllowedPattern = allowedPatterns.some(pattern => pattern.test(origin));
-        if (isAllowedPattern) {
-          res.header('Access-Control-Allow-Origin', origin);
-        } else {
-          // For development, allow all origins
-          if (process.env.NODE_ENV !== 'production') {
-            res.header('Access-Control-Allow-Origin', origin);
-          }
-        }
-      }
-    } else {
-      res.header('Access-Control-Allow-Origin', '*');
-    }
-    
-    res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
-    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
-    res.header('Access-Control-Allow-Credentials', 'true');
-    res.header('Access-Control-Max-Age', '86400');
-    
-    console.log('✅ OPTIONS preflight response sent');
-    res.sendStatus(204);
-  } else {
-    next();
-  }
-};
+// REMOVED: handlePreflightRequests middleware
+// This was causing "Cannot set headers after they are sent" error
+// The cors() middleware from npm already handles OPTIONS requests correctly

@@ -11,7 +11,7 @@ import { env, isProduction, isDevelopment } from './config/env';
 
 import express, { type Request, Response, NextFunction } from "express";
 import cors from "cors";
-import { corsOptions, handlePreflightRequests } from './middleware/cors';
+import { corsOptions } from './middleware/cors';
 import helmet from "helmet";
 import { 
   apiSecurityMiddleware, 
@@ -107,17 +107,16 @@ import { corsDebugMiddleware as enhancedCorsDebug, forceCorsHeaders, enforceJson
 app.use(corsLoggerMiddleware);
 app.use(corsDebugMiddleware);
 
-// Enhanced CORS debugging for Koyeb issues
-if (process.env.NODE_ENV === 'production') {
+// Enhanced CORS debugging for Koyeb issues (optional)
+if (process.env.NODE_ENV === 'production' && process.env.DEBUG_CORS === 'true') {
   app.use(enhancedCorsDebug);
 }
 
 // CORS - CRITICAL: Must be before routes
-app.use(handlePreflightRequests);
+// FIXED: Removed handlePreflightRequests that was causing header conflicts
 app.use(cors(corsOptions));
 
-// Force CORS headers on all responses (fixes Koyeb POST issues)
-app.use(forceCorsHeaders);
+// REMOVED: forceCorsHeaders - was causing "Cannot set headers" error
 
 // Ensure JSON content type for API responses
 app.use(enforceJsonContentType);
