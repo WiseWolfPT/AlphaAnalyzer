@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react';
 import { createClient } from '@supabase/supabase-js';
-import { config } from '../config';
+import { env } from '../config/env';
 
 // Initialize Supabase client
 const supabase = createClient(
-  config.supabase.url,
-  config.supabase.anonKey
+  env.getSupabaseConfig().url,
+  env.getSupabaseConfig().anonKey
 );
 
 interface RealtimeQuote {
