@@ -4,8 +4,9 @@
  */
 
 export const API_CONFIG = {
-  // Koyeb backend URL
-  baseURL: import.meta.env.VITE_API_URL || 'https://crucial-ivonne-alfalyzer-90666a9e.koyeb.app',
+  // Use empty baseURL to work with Vercel proxy
+  // The proxy is configured in vercel.json to redirect /api/* to Koyeb backend
+  baseURL: '',
   
   // Request timeout - 30 seconds to handle cold starts
   timeout: 30000,

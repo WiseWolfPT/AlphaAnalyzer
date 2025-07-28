@@ -509,6 +509,7 @@ function Router() {
         <Route path="/test/stock-header" component={StockHeaderTest} />
         <Route path="/test/api" component={lazy(() => import("@/pages/api-test"))} />
         <Route path="/test/api-verification" component={lazy(() => import("@/test/api-verification.test"))} />
+        <Route path="/api-debug" component={lazy(() => import("@/pages/api-debug"))} />
         <Route component={NotFound} />
       </Switch>
     </Suspense>

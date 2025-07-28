@@ -8,6 +8,8 @@ build:
 env:
   - key: NODE_ENV
     value: production
+  - key: SERVE_STATIC
+    value: "false"  # API-only mode
   # Remove PORT from here, let Koyeb assign it
   
 service:

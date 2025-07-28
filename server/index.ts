@@ -424,12 +424,31 @@ async function initializeMarketDataServices() {
     app.use('/api/intrinsic-values', financialDataSecurity);
     app.use('/api/earnings', financialDataSecurity);
 
-    // Setup static file serving AFTER API routes (to avoid intercepting API calls)
+    // In production on Koyeb, we don't serve static files
+    // Frontend is served by Vercel
     if (process.env.NODE_ENV === "development") {
       console.log('Setting up Vite development server...');
       await setupVite(app, server);
-    } else {
+    } else if (process.env.SERVE_STATIC === 'true') {
+      // Only serve static files if explicitly enabled (for local testing)
+      console.log('🔍 Static file serving explicitly enabled');
       serveStatic(app);
+    } else {
+      console.log('📡 API-only mode: Frontend served by Vercel');
+      console.log('🔗 Frontend URL:', process.env.VITE_APP_URL || 'https://alfalyzer.vercel.app');
+      console.log('✅ Skipping static file setup - this is intentional for production API server');
+      
+      // Add a simple handler to inform about the API-only nature
+      app.get('/', (req, res) => {
+        res.json({
+          message: 'Alfalyzer API Server',
+          status: 'operational',
+          mode: 'api-only',
+          frontend: process.env.VITE_APP_URL || 'https://alfalyzer.vercel.app',
+          health: '/health',
+          api: '/api/*'
+        });
+      });
     }
 
     // Add 404 handler for undefined routes (AFTER static file serving)

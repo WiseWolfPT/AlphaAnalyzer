@@ -9,7 +9,8 @@ export const AppInitializer: React.FC<{ children: React.ReactNode }> = ({ childr
     console.log('📍 AppInitializer useEffect running');
     
     // Warm up cache with popular symbols during idle time
-    warmupCache();
+    // TEMPORARILY DISABLED: warmupCache causing errors on initialization
+    // warmupCache();
     
     // Log loading metrics after initial render
     const logMetrics = () => {

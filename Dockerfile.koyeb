@@ -17,34 +17,36 @@ RUN npx tsc server/koyeb-server.ts --outDir dist --esModuleInterop --skipLibChec
 
 # Create startup script
 RUN echo '#!/bin/bash' > /app/start.sh && \
-    echo 'echo "🚀 Koyeb Startup Script"' >> /app/start.sh && \
+    echo 'echo "🚀 Koyeb API Server Startup"' >> /app/start.sh && \
     echo 'echo "📍 Port: ${PORT:-8000}"' >> /app/start.sh && \
     echo 'echo "📍 Node: $(node --version)"' >> /app/start.sh && \
+    echo 'echo "📡 Mode: API-only (no static files)"' >> /app/start.sh && \
+    echo 'echo "🌐 Frontend: ${VITE_APP_URL:-https://alfalyzer.vercel.app}"' >> /app/start.sh && \
     echo 'echo ""' >> /app/start.sh && \
+    echo '# Set API-only mode' >> /app/start.sh && \
+    echo 'export SERVE_STATIC=false' >> /app/start.sh && \
     echo '# Try multiple start methods' >> /app/start.sh && \
-    echo 'if [ -f "koyeb-production-server.js" ]; then' >> /app/start.sh && \
-    echo '  echo "Starting production server with full backend..."' >> /app/start.sh && \
+    echo 'if [ -f "koyeb-api-server.js" ]; then' >> /app/start.sh && \
+    echo '  echo "Starting API-only server..."' >> /app/start.sh && \
+    echo '  exec node koyeb-api-server.js' >> /app/start.sh && \
+    echo 'elif [ -f "koyeb-production-server.js" ]; then' >> /app/start.sh && \
+    echo '  echo "Starting production server (API-only mode)..."' >> /app/start.sh && \
+    echo '  export SERVE_STATIC=false' >> /app/start.sh && \
     echo '  exec node koyeb-production-server.js' >> /app/start.sh && \
-    echo 'elif [ -f "koyeb-server-with-cache.js" ]; then' >> /app/start.sh && \
-    echo '  echo "Starting server with caching and market data..."' >> /app/start.sh && \
-    echo '  exec node koyeb-server-with-cache.js' >> /app/start.sh && \
-    echo 'elif [ -f "koyeb-full-server.js" ]; then' >> /app/start.sh && \
-    echo '  echo "Starting full backend server with market data routes..."' >> /app/start.sh && \
-    echo '  exec node koyeb-full-server.js' >> /app/start.sh && \
-    echo 'elif [ -f "koyeb-health-server.js" ]; then' >> /app/start.sh && \
-    echo '  echo "Starting health server..."' >> /app/start.sh && \
-    echo '  exec node koyeb-health-server.js' >> /app/start.sh && \
-    echo 'elif [ -f "server/koyeb-server.ts" ]; then' >> /app/start.sh && \
-    echo '  echo "Starting koyeb TypeScript server..."' >> /app/start.sh && \
-    echo '  exec npx tsx server/koyeb-server.ts' >> /app/start.sh && \
+    echo 'elif [ -f "server/index.ts" ]; then' >> /app/start.sh && \
+    echo '  echo "Starting TypeScript server (API-only mode)..."' >> /app/start.sh && \
+    echo '  export SERVE_STATIC=false' >> /app/start.sh && \
+    echo '  exec npx tsx server/index.ts' >> /app/start.sh && \
     echo 'else' >> /app/start.sh && \
-    echo '  echo "Starting with npm start..."' >> /app/start.sh && \
+    echo '  echo "Starting with npm start (API-only mode)..."' >> /app/start.sh && \
+    echo '  export SERVE_STATIC=false' >> /app/start.sh && \
     echo '  exec npm start' >> /app/start.sh && \
     echo 'fi' >> /app/start.sh && \
     chmod +x /app/start.sh
 
 # Set production environment
 ENV NODE_ENV=production
+ENV SERVE_STATIC=false
 
 # Expose port (Koyeb sets PORT dynamically)
 EXPOSE 3001
