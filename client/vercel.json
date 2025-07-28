@@ -3,6 +3,7 @@
   "name": "alphaanalyzer-frontend",
   "regions": ["iad1"],
   "public": true,
+  "framework": "vite",
   "buildCommand": "npm install && npm run build:dev",
   "outputDirectory": "dist",
   "rewrites": [
