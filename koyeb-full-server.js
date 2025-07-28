@@ -6,7 +6,7 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import marketDataRoutes from './server/routes/market-data.js';
+import marketDataRoutes from './server/routes/market-data.ts';
 
 // Load environment variables
 dotenv.config();

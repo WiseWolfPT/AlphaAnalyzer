@@ -22,7 +22,10 @@ RUN echo '#!/bin/bash' > /app/start.sh && \
     echo 'echo "📍 Node: $(node --version)"' >> /app/start.sh && \
     echo 'echo ""' >> /app/start.sh && \
     echo '# Try multiple start methods' >> /app/start.sh && \
-    echo 'if [ -f "koyeb-server-with-cache.js" ]; then' >> /app/start.sh && \
+    echo 'if [ -f "koyeb-production-server.js" ]; then' >> /app/start.sh && \
+    echo '  echo "Starting production server with full backend..."' >> /app/start.sh && \
+    echo '  exec node koyeb-production-server.js' >> /app/start.sh && \
+    echo 'elif [ -f "koyeb-server-with-cache.js" ]; then' >> /app/start.sh && \
     echo '  echo "Starting server with caching and market data..."' >> /app/start.sh && \
     echo '  exec node koyeb-server-with-cache.js' >> /app/start.sh && \
     echo 'elif [ -f "koyeb-full-server.js" ]; then' >> /app/start.sh && \
