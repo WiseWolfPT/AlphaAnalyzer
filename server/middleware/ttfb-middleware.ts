@@ -44,17 +44,17 @@ export const ttfbMiddleware = () => {
     
     const startTime = Date.now();
     
-    // Capture the original methods
-    const originalSend = res.send;
-    const originalJson = res.json;
-    const originalWrite = res.write;
+    // Store start time in res.locals
+    if (!res.locals) res.locals = {};
+    res.locals.ttfbStartTime = startTime;
     
     let responseStarted = false;
+    let ttfbCalculated = false;
     
     // Function to calculate and set TTFB
     const calculateTTFB = () => {
-      if (responseStarted) return;
-      responseStarted = true;
+      if (ttfbCalculated) return;
+      ttfbCalculated = true;
       
       const ttfb = Date.now() - startTime;
       
@@ -91,19 +91,20 @@ export const ttfbMiddleware = () => {
       }
     };
     
-    // Override response methods to capture TTFB at first byte
-    res.send = function(data: any) {
+    // Use res.writeHead to capture TTFB at first byte
+    const originalWriteHead = res.writeHead;
+    res.writeHead = function(...args: any[]) {
       calculateTTFB();
-      return originalSend.call(this, data);
+      return originalWriteHead.apply(this, args);
     };
     
-    res.json = function(data: any) {
-      calculateTTFB();
-      return originalJson.call(this, data);
-    };
-    
+    // Also monitor write for streaming responses
+    const originalWrite = res.write;
     res.write = function(chunk: any, encoding?: any) {
-      calculateTTFB();
+      if (!responseStarted) {
+        responseStarted = true;
+        calculateTTFB();
+      }
       return originalWrite.call(this, chunk, encoding);
     };
     

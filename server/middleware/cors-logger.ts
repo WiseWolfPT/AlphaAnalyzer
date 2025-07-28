@@ -24,9 +24,8 @@ export const corsLoggerMiddleware = (req: Request, res: Response, next: NextFunc
     console.log(`🌐 CORS Request: ${method} ${path} from ${origin}`);
   }
   
-  // Intercept response to log CORS headers
-  const originalSend = res.send;
-  res.send = function(data) {
+  // Log CORS headers after response is sent
+  res.on('finish', () => {
     // Log CORS response headers
     const corsHeaders = {
       'Access-Control-Allow-Origin': res.getHeader('Access-Control-Allow-Origin'),
@@ -43,9 +42,7 @@ export const corsLoggerMiddleware = (req: Request, res: Response, next: NextFunc
         if (value) console.log(`   ${key}: ${value}`);
       });
     }
-    
-    return originalSend.call(this, data);
-  };
+  });
   
   next();
 };

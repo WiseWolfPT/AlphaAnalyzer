@@ -18,11 +18,8 @@ const RESET_INTERVAL = 60 * 1000; // 1 minute
  */
 export const globalBackoffMiddleware = () => {
   return async (req: Request, res: Response, next: NextFunction) => {
-    // Intercept response to detect 429 status
-    const originalSend = res.send;
-    const originalJson = res.json;
+    // Track status code using res.on('finish')
     const originalStatus = res.status;
-    
     let statusCode = 200;
     
     // Override status method to capture status code
@@ -31,21 +28,12 @@ export const globalBackoffMiddleware = () => {
       return originalStatus.call(this, code);
     };
     
-    // Override send method
-    res.send = function(data: any) {
-      if (statusCode === 429) {
+    // Handle 429 responses after they're sent
+    res.on('finish', () => {
+      if (statusCode === 429 || res.statusCode === 429) {
         handle429Response(req);
       }
-      return originalSend.call(this, data);
-    };
-    
-    // Override json method
-    res.json = function(data: any) {
-      if (statusCode === 429) {
-        handle429Response(req);
-      }
-      return originalJson.call(this, data);
-    };
+    });
     
     next();
   };

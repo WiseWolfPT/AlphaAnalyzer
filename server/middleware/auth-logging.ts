@@ -62,17 +62,11 @@ export const corsLoggingMiddleware = (req: Request, res: Response, next: NextFun
     });
   }
   
-  // Monitor CORS headers in response
-  const originalSetHeader = res.setHeader;
-  res.setHeader = function(name: string, value: string | string[] | number) {
-    if (name.toLowerCase().startsWith('access-control-')) {
-      log.debug('📤 CORS Header Set', {
-        header: name,
-        value,
-        origin: req.headers.origin,
-      });
-    }
-    return originalSetHeader.call(this, name, value);
+  // Store CORS info in res.locals for logging
+  res.locals.corsInfo = {
+    origin: req.headers.origin,
+    method: req.method,
+    path: req.path
   };
   
   next();
@@ -129,18 +123,23 @@ export const proxyLoggingMiddleware = (req: Request, res: Response, next: NextFu
       query: req.query,
     });
     
-    // Monitor proxy response
-    const originalSend = res.send;
-    res.send = function(data: any) {
-      log.debug('🔄 Proxy Response', {
-        targetUrl,
-        status: res.statusCode,
-        hasData: !!data,
-        dataLength: typeof data === 'string' ? data.length : JSON.stringify(data).length,
-      });
-      
-      return originalSend.call(this, data);
+    // Store proxy info in res.locals for logging
+    res.locals.proxyInfo = {
+      targetUrl,
+      method: req.method,
+      startTime: Date.now()
     };
+    
+    // Log response after it's sent
+    res.on('finish', () => {
+      if (res.locals.proxyInfo) {
+        log.debug('🔄 Proxy Response', {
+          targetUrl: res.locals.proxyInfo.targetUrl,
+          status: res.statusCode,
+          responseTime: Date.now() - res.locals.proxyInfo.startTime
+        });
+      }
+    });
   }
   
   next();

@@ -150,10 +150,15 @@ export const requestLogger = (req: Request, res: Response, next: NextFunction) =
     correlationId,
   });
   
-  // Capture response
-  const originalSend = res.send;
-  res.send = function(data: any) {
-    res.send = originalSend;
+  // Store request info in res.locals for centralized handler
+  if (!res.locals) res.locals = {};
+  res.locals.requestInfo = {
+    startTime,
+    correlationId
+  };
+  
+  // Log response after it's sent
+  res.on('finish', () => {
     const duration = Date.now() - startTime;
     
     // Log response
@@ -167,9 +172,7 @@ export const requestLogger = (req: Request, res: Response, next: NextFunction) =
         correlationId,
       });
     }
-    
-    return res.send(data);
-  };
+  });
   
   next();
 };

@@ -262,29 +262,36 @@ async function checkCostAffordability(provider: ProviderName): Promise<boolean> 
  * Track response and record costs
  */
 function trackResponse(req: Request, res: Response, options: CostProtectionOptions) {
-  const originalSend = res.send;
+  // Store cost protection data in res.locals
+  if (!res.locals) res.locals = {};
+  res.locals.costProtection = {
+    provider: options.provider,
+    startTime: req.costProtection?.startTime,
+    bypassChecks: req.costProtection?.bypassChecks
+  };
   
-  res.send = function(body) {
+  // Track response after it's sent
+  res.on('finish', () => {
     const endTime = Date.now();
-    const responseTime = req.costProtection?.startTime ? endTime - req.costProtection.startTime : 0;
+    const responseTime = res.locals.costProtection.startTime ? endTime - res.locals.costProtection.startTime : 0;
     const success = res.statusCode < 400;
 
     // Record the API call for budget monitoring
-    if (options.provider && !req.costProtection?.bypassChecks) {
-      budgetMonitor.recordAPICall(options.provider, req.path, responseTime, success)
+    if (res.locals.costProtection.provider && !res.locals.costProtection.bypassChecks) {
+      budgetMonitor.recordAPICall(res.locals.costProtection.provider, req.path, responseTime, success)
         .catch(error => {
           console.error('[CostProtection] Failed to record API call:', error);
         });
 
       // Record success/failure for circuit breaker
       if (success) {
-        emergencySwitches.recordSuccess(options.provider, responseTime)
+        emergencySwitches.recordSuccess(res.locals.costProtection.provider, responseTime)
           .catch(error => {
             console.error('[CostProtection] Failed to record success:', error);
           });
       } else {
         emergencySwitches.recordFailure(
-          options.provider, 
+          res.locals.costProtection.provider, 
           req.path, 
           `HTTP ${res.statusCode}`, 
           responseTime, 
@@ -294,9 +301,7 @@ function trackResponse(req: Request, res: Response, options: CostProtectionOptio
         });
       }
     }
-
-    return originalSend.call(this, body);
-  };
+  });
 }
 
 /**

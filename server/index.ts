@@ -108,9 +108,10 @@ app.use(corsLoggerMiddleware);
 app.use(corsDebugMiddleware);
 
 // Enhanced CORS debugging for Koyeb issues (optional)
-if (process.env.NODE_ENV === 'production' && process.env.DEBUG_CORS === 'true') {
-  app.use(enhancedCorsDebug);
-}
+// DISABLED: enhancedCorsDebug - replaced by centralized response handler
+// if (process.env.NODE_ENV === 'production' && process.env.DEBUG_CORS === 'true') {
+//   app.use(enhancedCorsDebug);
+// }
 
 // CORS - CRITICAL: Must be before routes
 // FIXED: Removed handlePreflightRequests that was causing header conflicts
@@ -160,7 +161,11 @@ const csrfProtection = null; // BROKEN: csurf package removed
 // Add security middleware layers
 app.use(originValidationMiddleware);
 app.use(inputSanitationMiddleware);
-app.use(securityLoggingMiddleware);
+// DISABLED: securityLoggingMiddleware - replaced by centralized response handler
+// app.use(securityLoggingMiddleware);
+
+// Import centralized response handler
+import responseHandlerMiddleware from './middleware/response-handler';
 
 // Import and add enhanced logging middleware
 import { 
@@ -172,18 +177,23 @@ import {
 } from './middleware/auth-logging';
 import { requestLogger, errorLogger } from './lib/logger';
 
+// Apply centralized response handler middleware
+// This replaces the conflicting middleware that were wrapping res.send/res.json
+responseHandlerMiddleware.forEach(middleware => app.use(middleware));
+
 // Add comprehensive logging middleware
-app.use(environmentLoggingMiddleware);
+// DISABLED: These are now handled by the centralized response handler
+// app.use(environmentLoggingMiddleware);
 app.use(requestLogger);
 app.use(authLoggingMiddleware);
-app.use(corsLoggingMiddleware);
-app.use(proxyLoggingMiddleware);
+// app.use(corsLoggingMiddleware); // DISABLED: Handled by response handler
+// app.use(proxyLoggingMiddleware); // DISABLED: Handled by response handler
 
 // AGENT 5: Add performance monitoring middleware
 import { performanceMonitor } from './services/monitoring/performance-monitor';
 app.use(performanceMonitor.middleware());
 
-// Add request ID and logging middleware
+// Add request ID middleware (response tracking now handled by centralized handler)
 app.use((req, res, next) => {
   // Generate unique request ID
   const requestId = crypto.randomUUID();
@@ -192,37 +202,6 @@ app.use((req, res, next) => {
   // Add request ID to response headers
   res.setHeader('X-Request-ID', requestId);
   res.setHeader('X-API-Version', APP_VERSION);
-  
-  // Log request start
-  const startTime = Date.now();
-  
-  // Capture response for logging
-  const originalSend = res.send;
-  res.send = function(data) {
-    res.locals.responseBody = data;
-    return originalSend.call(this, data);
-  };
-  
-  res.on('finish', () => {
-    const duration = Date.now() - startTime;
-    const logData = {
-      requestId,
-      method: req.method,
-      path: req.path,
-      statusCode: res.statusCode,
-      duration,
-      userAgent: req.headers['user-agent'],
-      ip: req.ip
-    };
-    
-    if (isProduction) {
-      // Structured logging in production
-      console.log(JSON.stringify(logData));
-    } else {
-      // Human-readable logging in development
-      console.log(`${req.method} ${req.path} ${res.statusCode} in ${duration}ms`);
-    }
-  });
   
   next();
 });

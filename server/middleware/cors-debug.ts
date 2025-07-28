@@ -18,9 +18,16 @@ export const corsDebugMiddleware = (req: Request, res: Response, next: NextFunct
     'x-requested-with': req.headers['x-requested-with']
   });
 
-  // Log response headers being sent
-  const originalSend = res.send;
-  res.send = function(data) {
+  // Store debug info in res.locals
+  res.locals.corsDebug = {
+    method,
+    path,
+    origin,
+    startTime: Date.now()
+  };
+  
+  // Log response after it's sent
+  res.on('finish', () => {
     console.log(`📤 Response for ${method} ${path}:`);
     console.log(`   Status: ${res.statusCode}`);
     console.log(`   CORS Headers:`, {
@@ -30,14 +37,8 @@ export const corsDebugMiddleware = (req: Request, res: Response, next: NextFunct
       'access-control-allow-headers': res.getHeader('access-control-allow-headers')
     });
     console.log(`   Content-Type: ${res.getHeader('content-type')}`);
-    
-    // If status 0 or error, log the response body
-    if (res.statusCode >= 400 || res.statusCode === 0) {
-      console.log(`   Response Body:`, data?.toString().substring(0, 500));
-    }
-    
-    return originalSend.call(this, data);
-  };
+    console.log(`   Response Time: ${Date.now() - res.locals.corsDebug.startTime}ms`);
+  });
 
   next();
 };
@@ -57,24 +58,25 @@ export const forceCorsHeaders = (req: Request, res: Response, next: NextFunction
     }
   });
   
-  // Intercept res.json and res.send to ensure headers are set
-  const originalJson = res.json.bind(res);
-  const originalSend = res.send.bind(res);
-  
-  res.json = function(data: any) {
-    ensureCorsHeaders(req, res);
-    return originalJson(data);
-  };
-  
-  res.send = function(data: any) {
-    ensureCorsHeaders(req, res);
-    return originalSend(data);
+  // Ensure CORS headers are set before any response
+  // This runs on every request before the response is sent
+  const originalWriteHead = res.writeHead;
+  res.writeHead = function(...args: any[]) {
+    if (!res.headersSent) {
+      ensureCorsHeaders(req, res);
+    }
+    return originalWriteHead.apply(res, args);
   };
   
   next();
 };
 
 function ensureCorsHeaders(req: Request, res: Response) {
+  // Safety check - don't set headers if already sent
+  if (res.headersSent) {
+    return;
+  }
+  
   const origin = req.headers.origin;
   
   // If no CORS headers are set, add them
@@ -97,18 +99,28 @@ export const enforceJsonContentType = (req: Request, res: Response, next: NextFu
     return next();
   }
   
-  // Intercept res.send to ensure JSON content type
-  const originalSend = res.send.bind(res);
+  // Set JSON content type early if not already set
+  // This runs before the response is sent
+  const originalJson = res.json;
+  res.json = function(data: any) {
+    if (!res.headersSent && !res.getHeader('content-type')) {
+      res.setHeader('Content-Type', 'application/json; charset=utf-8');
+    }
+    return originalJson.call(this, data);
+  };
   
-  res.send = function(data: any) {
-    // If sending an object or array, ensure JSON content type
-    if (typeof data === 'object' && !Buffer.isBuffer(data)) {
-      if (!res.getHeader('content-type')) {
+  // Also handle res.send for objects
+  const originalWriteHead = res.writeHead;
+  res.writeHead = function(...args: any[]) {
+    if (!res.headersSent && req.path.startsWith('/api/')) {
+      const [statusCode, statusMessage, headers] = args;
+      const contentType = headers?.['content-type'] || res.getHeader('content-type');
+      if (!contentType) {
+        // Check if we're about to send JSON data
         res.setHeader('Content-Type', 'application/json; charset=utf-8');
       }
     }
-    
-    return originalSend(data);
+    return originalWriteHead.apply(res, args);
   };
   
   next();

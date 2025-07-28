@@ -77,15 +77,41 @@ export const adminSecurityMiddleware = async (
   next: NextFunction
 ) => {
   try {
-    // Primeiro aplicar segurança geral
-    await apiSecurityMiddleware(req, res, () => {});
+    // Verificar autenticação primeiro
+    if (!req.user || !req.user.id) {
+      return res.status(401).json({ 
+        error: 'Authentication required',
+        message: 'You must be authenticated to access this resource'
+      });
+    }
     
     // Verificar se o usuário é admin
-    if (!req.user || req.user.role !== 'admin') {
+    if (req.user.role !== 'admin') {
       return res.status(403).json({
         error: 'Insufficient permissions',
         message: 'Administrator access required'
       });
+    }
+    
+    // Aplicar rate limiting
+    const userLimit = await rateLimitTracker.checkUserLimit(req.user.id);
+    if (!userLimit.allowed) {
+      return res.status(429).json({ 
+        error: 'Rate limit exceeded',
+        message: 'Too many requests. Please try again later.',
+        retryAfter: userLimit.retryAfter 
+      });
+    }
+    
+    // Aplicar headers de segurança
+    if (!res.headersSent) {
+      res.setHeader('X-Content-Type-Options', 'nosniff');
+      res.setHeader('X-Frame-Options', 'DENY');
+      res.setHeader('X-XSS-Protection', '1; mode=block');
+      res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+      res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+      res.setHeader('Pragma', 'no-cache');
+      res.setHeader('Expires', '0');
     }
     
     next();
@@ -276,9 +302,15 @@ export const securityLoggingMiddleware = (
     timestamp: new Date().toISOString()
   });
   
-  // Hook para log da resposta
-  const originalSend = res.send;
-  res.send = function(data) {
+  // Store security info in res.locals
+  res.locals.securityLog = {
+    startTime,
+    userId: req.user?.id,
+    endpoint: req.originalUrl
+  };
+  
+  // Log response after it's sent
+  res.on('finish', () => {
     const responseTime = Date.now() - startTime;
     
     // Log responses com erro
@@ -290,9 +322,7 @@ export const securityLoggingMiddleware = (
         statusCode: res.statusCode
       });
     }
-    
-    return originalSend.call(this, data);
-  };
+  });
   
   next();
 };
