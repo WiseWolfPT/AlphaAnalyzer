@@ -1,8 +1,31 @@
 # Use Node.js 20 Alpine for smaller image
 FROM node:20-alpine
 
-# Install dependencies for building native modules
-RUN apk add --no-cache python3 make g++
+# Install build dependencies for node-canvas and other native modules
+RUN apk add --no-cache \
+    build-base \
+    g++ \
+    cairo-dev \
+    jpeg-dev \
+    pango-dev \
+    giflib-dev \
+    pixman-dev \
+    pangomm-dev \
+    libjpeg-turbo-dev \
+    freetype-dev \
+    python3 \
+    make \
+    pkgconfig
+
+# Install runtime dependencies for canvas
+RUN apk add --no-cache \
+    cairo \
+    jpeg \
+    pango \
+    giflib \
+    pixman \
+    libjpeg-turbo \
+    freetype
 
 # Set working directory
 WORKDIR /app
