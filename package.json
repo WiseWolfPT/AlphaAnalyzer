@@ -83,7 +83,7 @@
     "start:full": "NODE_ENV=production tsx server/index.ts",
     "start:simple": "NODE_ENV=production tsx server/simple-server.ts",
     "start:compiled": "NODE_ENV=production node dist/index.js",
-    "start:coolify": "NODE_ENV=production node server/coolify-server.cjs",
+    "start:coolify": "NODE_ENV=production node server/simple-coolify-server.cjs",
     "check": "tsc",
     "db:push": "drizzle-kit push",
     "migrate": "tsx server/db/migrations.ts up",
