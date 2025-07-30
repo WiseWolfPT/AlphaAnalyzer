@@ -1,0 +1,22 @@
+{
+  "name": "alfalyzer-backend",
+  "description": "Alfalyzer Financial Analysis Platform - Backend API",
+  "buildpack": "nixpacks",
+  "build": {
+    "command": "npm install --production=false",
+    "installCommand": "npm ci"
+  },
+  "start": {
+    "command": "npm run start:coolify"
+  },
+  "env": {
+    "NODE_ENV": "production",
+    "PORT": "3001"
+  },
+  "healthCheck": {
+    "path": "/health",
+    "interval": 30,
+    "timeout": 10,
+    "retries": 3
+  }
+}
