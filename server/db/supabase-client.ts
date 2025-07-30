@@ -5,16 +5,20 @@
 
 import { createClient } from '@supabase/supabase-js';
 import { Database } from '../../shared/types/supabase';
+import { SUPABASE_CONFIG } from '../config/api-keys';
 
 // Verificar variáveis de ambiente
-if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+const SUPABASE_URL = process.env.SUPABASE_URL || SUPABASE_CONFIG.URL;
+const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || SUPABASE_CONFIG.ANON_KEY;
+
+if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
   throw new Error('SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are required');
 }
 
 // Cliente administrativo (para operações do servidor)
 export const supabaseAdmin = createClient<Database>(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY,
+  SUPABASE_URL,
+  SUPABASE_SERVICE_ROLE_KEY,
   {
     auth: {
       autoRefreshToken: false,
@@ -28,8 +32,8 @@ export const supabaseAdmin = createClient<Database>(
 
 // Cliente público (para operações do cliente)
 export const supabasePublic = createClient<Database>(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_ANON_KEY || '',
+  SUPABASE_URL,
+  process.env.SUPABASE_ANON_KEY || SUPABASE_CONFIG.ANON_KEY,
   {
     auth: {
       autoRefreshToken: true,

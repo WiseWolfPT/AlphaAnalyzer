@@ -11,8 +11,6 @@ build
 .idea
 *.md
 docker-compose.yml
-Dockerfile
-Dockerfile.*
 .husky
 coverage
 .nyc_output

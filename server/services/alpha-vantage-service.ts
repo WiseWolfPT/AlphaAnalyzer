@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { API_KEYS } from '../config/api-keys';
 
 interface AlphaVantageConfig {
   apiKey: string;
@@ -46,7 +47,7 @@ class AlphaVantageService {
   private baseUrl = 'https://www.alphavantage.co/query';
 
   constructor(config: AlphaVantageConfig) {
-    this.apiKey = config.apiKey || process.env.ALPHA_VANTAGE_API_KEY || 'demo';
+    this.apiKey = config.apiKey || API_KEYS.ALPHA_VANTAGE_API_KEY || process.env.ALPHA_VANTAGE_API_KEY || 'demo';
   }
 
   async getCompanyOverview(symbol: string): Promise<CompanyOverview | null> {
@@ -214,5 +215,5 @@ class AlphaVantageService {
 }
 
 export const alphaVantageService = new AlphaVantageService({
-  apiKey: process.env.ALPHA_VANTAGE_API_KEY || 'demo'
+  apiKey: API_KEYS.ALPHA_VANTAGE_API_KEY || process.env.ALPHA_VANTAGE_API_KEY || 'demo'
 });

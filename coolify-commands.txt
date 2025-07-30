@@ -1,0 +1,13 @@
+# Comandos para instalar Coolify - cole um por vez:
+
+# 1. Atualizar sistema (2-3 minutos)
+apt update && apt upgrade -y
+
+# 2. Instalar Docker (2-3 minutos)
+curl -fsSL https://get.docker.com | sh
+
+# 3. Instalar Coolify (5-10 minutos)
+curl -fsSL https://cdn.coollabs.io/coolify/install.sh | bash
+
+# 4. Verificar instalação
+docker ps

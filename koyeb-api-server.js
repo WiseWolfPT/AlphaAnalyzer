@@ -1,17 +1,22 @@
 #!/usr/bin/env node
 
 /**
- * Koyeb API Server
+ * Koyeb API Server - Fixed for proper environment handling
  * API-only server for Koyeb deployment (no static file serving)
  * Frontend is served separately on Vercel
  */
 
-import { spawn } from 'child_process';
-import path from 'path';
-import { fileURLToPath } from 'url';
+// Use CommonJS for better compatibility
+const { spawn } = require('child_process');
+const path = require('path');
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+// Fix path aliases FIRST
+require('./path-resolver');
+
+// Load environment variables
+require('dotenv').config();
+
+const __dirname = __dirname || process.cwd();
 
 console.log('🚀 Starting Koyeb API Server...');
 console.log(`📍 Port: ${process.env.PORT || 3001}`);
