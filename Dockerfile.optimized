@@ -1,0 +1,62 @@
+# Multi-stage build for optimized image size
+# Stage 1: Build stage
+FROM node:20-alpine AS builder
+
+# Install build dependencies for node-canvas and other native modules
+RUN apk add --no-cache \
+    build-base \
+    g++ \
+    cairo-dev \
+    jpeg-dev \
+    pango-dev \
+    giflib-dev \
+    pixman-dev \
+    pangomm-dev \
+    libjpeg-turbo-dev \
+    freetype-dev \
+    python3 \
+    make \
+    pkgconfig
+
+# Set working directory
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+
+# Install dependencies (including dev dependencies for building)
+RUN npm ci --production=false
+
+# Copy application files
+COPY . .
+
+# Build the application if needed
+# RUN npm run build
+
+# Stage 2: Runtime stage
+FROM node:20-alpine
+
+# Install only runtime dependencies for canvas
+RUN apk add --no-cache \
+    cairo \
+    jpeg \
+    pango \
+    giflib \
+    pixman \
+    libjpeg-turbo \
+    freetype
+
+# Set working directory
+WORKDIR /app
+
+# Copy node_modules from builder stage
+COPY --from=builder /app/node_modules ./node_modules
+
+# Copy application files
+COPY --from=builder /app .
+
+# Expose port
+EXPOSE 3001
+
+# Start the application
+CMD ["npm", "run", "start:coolify"]
