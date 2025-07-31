@@ -43,4 +43,4 @@ COPY . .
 EXPOSE 3001
 
 # Start the application
-CMD ["npm", "run", "start:coolify"]
+CMD ["npm", "run", "start:coolify-fixed"]
