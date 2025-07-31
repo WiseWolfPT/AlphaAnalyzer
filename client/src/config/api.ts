@@ -40,6 +40,18 @@ export const API_ENDPOINTS = {
     status: '/api/market-data/market-status',
   },
   
+  // API v1 endpoints (real data with Alpha Vantage)
+  v1: {
+    stock: {
+      quote: (symbol: string) => `/api/v1/stock/${symbol}/quote`,
+      search: '/api/v1/search',
+    },
+    cache: {
+      stats: '/api/v1/cache/stats',
+    },
+    health: '/api/v1/health',
+  },
+  
   // Cache endpoints
   cache: {
     stats: '/api/v1/cache/stats',
@@ -83,6 +95,17 @@ export const COLD_START_CONFIG = {
   retryDelay: 2000,
 };
 
+// Feature flags for progressive API rollout
+export const API_FEATURE_FLAGS = {
+  // Enable real API for specific symbols (Steel Thread approach)
+  realApiSymbols: ['AAPL'],
+  
+  // Check if a symbol should use real API
+  useRealApi: (symbol: string) => {
+    return API_FEATURE_FLAGS.realApiSymbols.includes(symbol.toUpperCase());
+  }
+};
+
 // Development helpers
 if (import.meta.env.DEV) {
   console.log(
@@ -90,6 +113,7 @@ if (import.meta.env.DEV) {
     'color: blue; font-size: 14px; font-weight: bold;',
     '\nBackend URL:', API_CONFIG.baseURL,
     '\nSupabase URL:', SUPABASE_CONFIG.url,
-    '\nEnvironment:', import.meta.env.MODE
+    '\nEnvironment:', import.meta.env.MODE,
+    '\nReal API enabled for:', API_FEATURE_FLAGS.realApiSymbols
   );
 }

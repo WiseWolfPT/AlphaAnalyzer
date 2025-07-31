@@ -45,6 +45,15 @@ app.use((req, res, next) => {
   next();
 });
 
+// Mount API v1 routes (real data with cache)
+try {
+  const apiV1Routes = require('./routes/api-v1.cjs');
+  app.use('/api/v1', apiV1Routes);
+  console.log('✅ API v1 routes mounted');
+} catch (error) {
+  console.error('❌ Failed to mount API v1 routes:', error.message);
+}
+
 // Realistic mock data
 const mockStocks = {
   'AAPL': { 

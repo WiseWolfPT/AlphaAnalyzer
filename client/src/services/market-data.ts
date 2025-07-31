@@ -4,7 +4,7 @@
  */
 
 import { apiClient } from './api-client';
-import { API_ENDPOINTS } from '@/config/api';
+import { API_ENDPOINTS, API_FEATURE_FLAGS } from '@/config/api';
 
 export interface StockQuote {
   symbol: string;
@@ -76,11 +76,29 @@ export class MarketDataService {
     try {
       console.log(`📊 Fetching quote for ${symbol}...`);
       
-      const quote = await apiClient.get<StockQuote>(
-        API_ENDPOINTS.quotes.single(symbol)
-      );
+      // Use v1 API for symbols in feature flag
+      let endpoint: string;
+      if (API_FEATURE_FLAGS.useRealApi(symbol)) {
+        console.log(`🔥 Using real API (v1) for ${symbol}`);
+        endpoint = API_ENDPOINTS.v1.stock.quote(symbol);
+      } else {
+        endpoint = API_ENDPOINTS.quotes.single(symbol);
+      }
       
-      console.log(`✅ Quote received for ${symbol}:`, quote.price);
+      const response = await apiClient.get<any>(endpoint);
+      
+      // Handle v1 API response format
+      let quote: StockQuote;
+      if (response.data && response.success) {
+        // v1 API format
+        quote = response.data;
+        console.log(`✅ Real quote received for ${symbol}:`, quote.price, 'from', quote.provider || 'v1');
+      } else {
+        // Legacy format
+        quote = response;
+        console.log(`✅ Quote received for ${symbol}:`, quote.price);
+      }
+      
       return quote;
     } catch (error: any) {
       console.error(`❌ Failed to fetch quote for ${symbol}:`, error);
@@ -101,25 +119,58 @@ export class MarketDataService {
     try {
       console.log(`📊 Fetching batch quotes for ${symbols.length} symbols...`);
       
-      const response = await apiClient.post<BatchQuotesResponse>(
-        API_ENDPOINTS.quotes.batch,
-        { symbols }
-      );
+      // Separate symbols that should use real API
+      const realApiSymbols = symbols.filter(s => API_FEATURE_FLAGS.useRealApi(s));
+      const mockApiSymbols = symbols.filter(s => !API_FEATURE_FLAGS.useRealApi(s));
       
-      console.log(`✅ Received ${response.quotes?.length || 0} quotes`);
+      const promises: Promise<any>[] = [];
       
-      // Ensure response has the expected format
-      if (!response.quotes) {
-        console.warn('⚠️ Backend response missing quotes array, wrapping response');
-        return {
-          quotes: Array.isArray(response) ? response : [],
-          errors: {},
-          timestamp: Date.now(),
-          _timestamp: Date.now() / 1000
-        };
+      // Fetch real API symbols individually
+      if (realApiSymbols.length > 0) {
+        console.log(`🔥 Using real API for: ${realApiSymbols.join(', ')}`);
+        realApiSymbols.forEach(symbol => {
+          promises.push(this.getQuote(symbol).catch(err => ({
+            symbol,
+            error: err.message
+          })));
+        });
       }
       
-      return response;
+      // Fetch mock API symbols in batch
+      if (mockApiSymbols.length > 0) {
+        promises.push(
+          apiClient.post<BatchQuotesResponse>(
+            API_ENDPOINTS.quotes.batch,
+            { symbols: mockApiSymbols }
+          ).then(response => response.quotes || [])
+          .catch(() => [])
+        );
+      }
+      
+      const results = await Promise.all(promises);
+      
+      // Flatten and combine results
+      const allQuotes: StockQuote[] = [];
+      const errors: Record<string, string> = {};
+      
+      results.forEach(result => {
+        if (Array.isArray(result)) {
+          allQuotes.push(...result);
+        } else if (result.error) {
+          errors[result.symbol] = result.error;
+        } else {
+          allQuotes.push(result);
+        }
+      });
+      
+      console.log(`✅ Received ${allQuotes.length} quotes`);
+      
+      return {
+        quotes: allQuotes,
+        errors,
+        timestamp: Date.now(),
+        _timestamp: Date.now() / 1000
+      };
     } catch (error: any) {
       console.error('❌ Failed to fetch batch quotes:', error);
       
