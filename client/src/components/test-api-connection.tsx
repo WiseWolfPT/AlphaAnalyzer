@@ -26,9 +26,9 @@ export function TestAPIConnection() {
     const results: TestResult[] = [];
     const baseURL = API_CONFIG.baseURL;
 
-    // Test 1: Backend Health Check
+    // Test 1: Backend Health Check (v1)
     try {
-      const healthRes = await fetch(`${baseURL}/api/health`);
+      const healthRes = await fetch(`${baseURL}/api/v1/health`);
       const healthData = await healthRes.json();
       results.push({
         name: 'Backend Health Check',
@@ -44,14 +44,15 @@ export function TestAPIConnection() {
       });
     }
 
-    // Test 2: Stock Quote API
+    // Test 2: Stock Quote API (Real Alpha Vantage)
     try {
-      const quoteRes = await fetch(`${baseURL}/api/market-data/quote/AAPL`);
+      const quoteRes = await fetch(`${baseURL}/api/v1/stock/AAPL/quote`);
       const quoteData = await quoteRes.json();
+      const price = quoteData.success && quoteData.data ? quoteData.data.price : quoteData.price;
       results.push({
         name: 'Stock Quote API (AAPL)',
-        status: quoteRes.ok && quoteData.price ? 'success' : 'error',
-        message: quoteRes.ok ? `AAPL Price: $${quoteData.price}` : 'Failed to fetch quote',
+        status: quoteRes.ok && price ? 'success' : 'error',
+        message: quoteRes.ok ? `AAPL Price: $${price} (Real-time)` : 'Failed to fetch quote',
         data: quoteData,
       });
     } catch (error) {
