@@ -139,10 +139,16 @@ export class MarketDataService {
       // Fetch mock API symbols in batch
       if (mockApiSymbols.length > 0) {
         promises.push(
-          apiClient.post<BatchQuotesResponse>(
+          apiClient.post<any>(
             API_ENDPOINTS.quotes.batch,
             { symbols: mockApiSymbols }
-          ).then(response => response.quotes || [])
+          ).then(response => {
+            // Handle both array and object response formats
+            if (Array.isArray(response)) {
+              return response;
+            }
+            return response.quotes || [];
+          })
           .catch(() => [])
         );
       }
@@ -163,7 +169,11 @@ export class MarketDataService {
         }
       });
       
-      console.log(`✅ Received ${allQuotes.length} quotes`);
+      console.log(`✅ Received ${allQuotes.length} quotes:`, allQuotes.map(q => ({
+        symbol: q.symbol,
+        price: q.price,
+        provider: q.provider || 'unknown'
+      })));
       
       return {
         quotes: allQuotes,
