@@ -8,7 +8,7 @@
 const axios = require('axios').default;
 
 // Configuration
-const BACKEND_URL = process.env.BACKEND_URL || 'https://crucial-ivonne-alfalyzer-90666a9e.koyeb.app';
+const BACKEND_URL = process.env.BACKEND_URL || 'http://jsg00k40sgo0k4swsoc4gcsg.128.140.45.28.sslip.io';
 const FRONTEND_URL = process.env.FRONTEND_URL || 'https://alfalyzerpro4.vercel.app';
 
 // Colors for console output

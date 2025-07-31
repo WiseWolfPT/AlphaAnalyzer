@@ -188,7 +188,7 @@ export function APIVerificationTest() {
       <CardContent className="space-y-4">
         <div className="flex items-center justify-between">
           <div className="text-sm text-muted-foreground">
-            <p>API URL: <code className="text-xs bg-muted px-1 py-0.5 rounded">{import.meta.env.VITE_API_URL || 'https://crucial-ivonne-alfalyzer-90666a9e.koyeb.app'}</code></p>
+            <p>API URL: <code className="text-xs bg-muted px-1 py-0.5 rounded">{import.meta.env.VITE_API_URL || 'http://jsg00k40sgo0k4swsoc4gcsg.128.140.45.28.sslip.io'}</code></p>
           </div>
           <Button
             onClick={runTests}

@@ -9,7 +9,7 @@
   "rewrites": [
     {
       "source": "/api/:path*",
-      "destination": "https://crucial-ivonne-alfalyzer-90666a9e.koyeb.app/api/:path*"
+      "destination": "http://jsg00k40sgo0k4swsoc4gcsg.128.140.45.28.sslip.io/api/:path*"
     },
     {
       "source": "/(.*)",

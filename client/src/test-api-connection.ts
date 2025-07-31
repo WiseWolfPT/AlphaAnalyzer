@@ -2,7 +2,7 @@
 import { env } from './lib/env';
 
 export async function testAPIConnection() {
-  const apiUrl = env.VITE_API_URL || 'https://crucial-ivonne-alfalyzer-90666a9e.koyeb.app';
+  const apiUrl = env.VITE_API_URL || 'http://jsg00k40sgo0k4swsoc4gcsg.128.140.45.28.sslip.io';
   console.log('🔍 Testing API connection to:', apiUrl);
   
   try {

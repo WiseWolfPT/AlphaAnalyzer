@@ -45,3 +45,6 @@ workspace/
 .env.status.json
 test-deploy/
 zen-mcp-server/
+
+# Backup files
+backups/

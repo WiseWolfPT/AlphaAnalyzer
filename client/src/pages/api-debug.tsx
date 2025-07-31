@@ -74,13 +74,13 @@ export default function ApiDebugPage() {
         <CardContent className="space-y-4">
           <Alert>
             <AlertDescription>
-              This page tests the connection between Vercel frontend and Koyeb backend.
+              This page tests the connection between Vercel frontend and Coolify backend.
             </AlertDescription>
           </Alert>
 
           <div className="space-y-2">
             <p><strong>Frontend URL:</strong> {window.location.origin}</p>
-            <p><strong>Backend Proxy:</strong> /api/* → https://crucial-ivonne-alfalyzer-90666a9e.koyeb.app/api/*</p>
+            <p><strong>Backend Proxy:</strong> /api/* → http://jsg00k40sgo0k4swsoc4gcsg.128.140.45.28.sslip.io/api/*</p>
           </div>
 
           <Button onClick={testEndpoints} disabled={testing} className="w-full">

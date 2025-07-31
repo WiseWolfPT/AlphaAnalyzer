@@ -437,9 +437,9 @@ export const corsConfig = {
     // PRODUCTION DYNAMIC PATTERNS
     if (process.env.NODE_ENV === 'production' && origin) {
       // KOYEB FIX: Dynamically handle Koyeb subdomains
-      const koyebPattern = /^https:\/\/crucial-ivonne-alfalyzer-[a-z0-9]+\.koyeb\.app$/;
-      if (koyebPattern.test(origin)) {
-        console.log(`✅ CORS: Allowing Koyeb subdomain: ${origin}`);
+      const coolifyPattern = /^http:\/\/[a-z0-9]+\.128\.140\.45\.28\.sslip\.io$/;
+      if (coolifyPattern.test(origin)) {
+        console.log(`✅ CORS: Allowing Coolify subdomain: ${origin}`);
         return callback(null, true);
       }
       

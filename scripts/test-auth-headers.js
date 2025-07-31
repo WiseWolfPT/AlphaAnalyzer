@@ -16,9 +16,9 @@ const environments = {
     protocol: 'http:',
   },
   production: {
-    hostname: 'crucial-ivonne-alfalyzer-90666a9e.koyeb.app',
-    port: 443,
-    protocol: 'https:',
+    hostname: 'jsg00k40sgo0k4swsoc4gcsg.128.140.45.28.sslip.io',
+    port: 80,
+    protocol: 'http:',
   },
 };
 

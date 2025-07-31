@@ -4,7 +4,7 @@
 
 import fetch from 'node-fetch';
 
-const API_BASE_URL = process.env.API_URL || 'https://crucial-ivonne-alfalyzer-90666a9e.koyeb.app';
+const API_BASE_URL = process.env.API_URL || 'http://jsg00k40sgo0k4swsoc4gcsg.128.140.45.28.sslip.io';
 const AUTH_TOKEN = process.env.AUTH_TOKEN || null;
 
 interface EndpointTest {

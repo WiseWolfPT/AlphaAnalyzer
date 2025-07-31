@@ -2,7 +2,7 @@ import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import fetch from 'node-fetch';
 
 // Test configuration
-const KOYEB_URL = 'https://crucial-ivonne-alfalyzer-90666a9e.koyeb.app';
+const KOYEB_URL = 'http://jsg00k40sgo0k4swsoc4gcsg.128.140.45.28.sslip.io';
 const LOCAL_URL = 'http://localhost:3001';
 const TEST_SYMBOLS = ['AAPL', 'MSFT', 'GOOGL'];
 

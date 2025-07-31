@@ -171,9 +171,9 @@ export const originValidationMiddleware = (
   
   // KOYEB FIX: Check for dynamic Koyeb subdomains
   if (process.env.NODE_ENV === 'production' && origin) {
-    const koyebPattern = /^https:\/\/crucial-ivonne-alfalyzer-[a-z0-9]+\.koyeb\.app$/;
-    if (koyebPattern.test(origin)) {
-      console.log(`✅ Origin validation: Allowing Koyeb subdomain: ${origin}`);
+    const coolifyPattern = /^http:\/\/[a-z0-9]+\.128\.140\.45\.28\.sslip\.io$/;
+    if (coolifyPattern.test(origin)) {
+      console.log(`✅ Origin validation: Allowing Coolify subdomain: ${origin}`);
       return next();
     }
     
@@ -197,9 +197,9 @@ export const originValidationMiddleware = (
   // KOYEB FIX: Check referer for dynamic Koyeb subdomains
   if (['POST', 'PUT', 'DELETE'].includes(req.method)) {
     if (process.env.NODE_ENV === 'production' && referer) {
-      const koyebPattern = /^https:\/\/crucial-ivonne-alfalyzer-[a-z0-9]+\.koyeb\.app/;
-      if (koyebPattern.test(referer)) {
-        console.log(`✅ Referer validation: Allowing Koyeb subdomain: ${referer}`);
+      const coolifyPattern = /^http:\/\/[a-z0-9]+\.128\.140\.45\.28\.sslip\.io/;
+      if (coolifyPattern.test(referer)) {
+        console.log(`✅ Referer validation: Allowing Coolify subdomain: ${referer}`);
         return next();
       }
       
