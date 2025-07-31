@@ -11,7 +11,8 @@ export function ApiDiagnostic() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const apiUrl = env.VITE_API_URL || 'http://jsg00k40sgo0k4swsoc4gcsg.128.140.45.28.sslip.io';
+  // Use relative URL to leverage Vercel proxy
+  const apiUrl = '';
 
   const checkHealth = async () => {
     setIsLoading(true);

@@ -2,8 +2,8 @@ import React from 'react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { useRealtimeQuote } from '@/hooks/use-realtime-quotes';
-import { ArrowUpIcon, ArrowDownIcon, TrendingUp, Activity, Loader2 } from 'lucide-react';
+import { useStockQuote } from '@/hooks/use-market-data';
+import { ArrowUpIcon, ArrowDownIcon, TrendingUp, Activity, Loader2, Wifi } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useLocation } from 'wouter';
 
@@ -25,13 +25,14 @@ export function RealtimeStockCard({
   className 
 }: RealtimeStockCardProps) {
   const [, setLocation] = useLocation();
-  const { quote, isConnected, error } = useRealtimeQuote(symbol);
+  // Use the same hook that works in UnifiedStockCard
+  const { data: quote, isLoading, error, isRealtime } = useStockQuote(symbol);
 
   const handleCardClick = () => {
     setLocation(`/stock/${symbol}/charts`);
   };
 
-  const isPositive = quote ? quote.change >= 0 : false;
+  const isPositive = quote ? (quote.change ?? 0) >= 0 : false;
   const changeColor = isPositive ? 'text-green-600' : 'text-red-600';
   const bgColor = isPositive ? 'bg-green-50' : 'bg-red-50';
 
@@ -48,9 +49,8 @@ export function RealtimeStockCard({
           <div className="flex-1">
             <div className="flex items-center gap-2">
               <h3 className="text-lg font-semibold">{symbol}</h3>
-              {isConnected && (
-                <span className="inline-flex h-2 w-2 rounded-full bg-green-500 animate-pulse" 
-                      title="Dados em tempo real" />
+              {isRealtime && (
+                <Wifi className="w-3 h-3 text-green-500" title="Dados em tempo real" />
               )}
             </div>
             {companyName && (
@@ -66,11 +66,11 @@ export function RealtimeStockCard({
       <CardContent className="space-y-3">
         {error ? (
           <div className="text-sm text-red-600">Erro ao carregar dados</div>
-        ) : !quote ? (
+        ) : isLoading ? (
           <div className="flex items-center justify-center h-20">
             <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
           </div>
-        ) : (
+        ) : quote ? (
           <>
             <div className="flex items-end justify-between">
               <div>
@@ -81,15 +81,15 @@ export function RealtimeStockCard({
                   ) : (
                     <ArrowDownIcon className="h-4 w-4" />
                   )}
-                  <span>{Math.abs(quote.change).toFixed(2)}</span>
-                  <span>({Math.abs(quote.change_percent).toFixed(2)}%)</span>
+                  <span>{Math.abs(quote.change ?? 0).toFixed(2)}</span>
+                  <span>({Math.abs(quote.changePercent ?? 0).toFixed(2)}%)</span>
                 </div>
               </div>
               
               <div className="text-right">
                 <p className="text-xs text-muted-foreground">Volume</p>
                 <p className="text-sm font-medium">
-                  {(quote.volume / 1000000).toFixed(2)}M
+                  {quote.volume ? (quote.volume / 1000000).toFixed(2) + 'M' : 'N/A'}
                 </p>
               </div>
             </div>
@@ -122,6 +122,10 @@ export function RealtimeStockCard({
               isPositive ? "from-green-500/10" : "from-red-500/10"
             )} />
           </>
+        ) : (
+          <div className="text-sm text-muted-foreground text-center">
+            Sem dados disponíveis
+          </div>
         )}
       </CardContent>
     </Card>
