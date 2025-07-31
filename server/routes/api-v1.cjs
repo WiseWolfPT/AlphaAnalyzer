@@ -13,9 +13,9 @@ let cacheService;
 // Initialize services
 (async () => {
   try {
-    // Dynamic import of TypeScript modules
-    const { AlphaVantageRealService } = await import('../services/alpha-vantage-real.ts');
-    const { SupabaseCacheService } = await import('../services/cache/supabase-cache-service.ts');
+    // Import CommonJS modules
+    const { AlphaVantageRealService } = require('../services/alpha-vantage-real.cjs');
+    const { SupabaseCacheService } = require('../services/cache/supabase-cache-service.cjs');
     
     alphaVantageService = new AlphaVantageRealService();
     cacheService = new SupabaseCacheService();
