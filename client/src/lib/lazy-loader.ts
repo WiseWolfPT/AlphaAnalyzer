@@ -134,7 +134,7 @@ function preloadComponentByName(name: string) {
   const preloadMap: Record<string, () => Promise<any>> = {
     'login': () => import('@/pages/auth/login'),
     'register': () => import('@/pages/auth/register'),
-    'dashboard': () => import('@/components/dashboard/unified-dashboard'),
+    'dashboard': () => import('@/components/dashboard/fallback-dashboard'),
     'find-stocks': () => import('@/pages/find-stocks'),
     'stock-detail': () => import('@/pages/stock-detail'),
     'charts': () => import('@/pages/AdvancedCharts'),

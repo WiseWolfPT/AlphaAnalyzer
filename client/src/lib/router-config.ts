@@ -146,7 +146,7 @@ export const routeConfig: Record<string, RouteConfig> = {
   '/dashboard': {
     path: '/dashboard',
     component: createIntersectionObserverLazy(
-      () => import('../components/dashboard/unified-dashboard').then(m => ({ default: m.UserDashboard })),
+      () => import('../components/dashboard/fallback-dashboard'),
       { name: 'UserDashboard' }
     ),
     preloadTargets: ['/find-stocks', '/watchlists', '/portfolios'],
@@ -303,7 +303,7 @@ export const routeConfig: Record<string, RouteConfig> = {
   '/admin': {
     path: '/admin',
     component: createIntersectionObserverLazy(
-      () => import('../components/dashboard/unified-dashboard').then(m => ({ default: m.AdminDashboard })),
+      () => import('../pages/admin/admin-dashboard'),
       { name: 'AdminDashboard' }
     ),
     chunkName: 'route-admin',

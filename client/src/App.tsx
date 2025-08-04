@@ -61,41 +61,11 @@ const AdminUsers = createLazyComponent(
   }
 );
 
-const ValuationDashboard = createLazyComponent(
-  () => import("@/components/dashboard/unified-dashboard")
-    .then(module => ({ default: module.ValuationDashboard })),
-  {
-    name: 'ValuationDashboard',
-    fallback: FallbackDashboard
-  }
-);
-
-const DebugDashboard = createLazyComponent(
-  () => import("@/components/dashboard/unified-dashboard")
-    .then(module => ({ default: module.DebugDashboard })),
-  {
-    name: 'DebugDashboard',
-    fallback: FallbackDashboard
-  }
-);
-
-const SimpleDashboard = createLazyComponent(
-  () => import("@/components/dashboard/unified-dashboard")
-    .then(module => ({ default: module.SimpleDashboard })),
-  {
-    name: 'SimpleDashboard',
-    fallback: FallbackDashboard
-  }
-);
-
-const TestDashboard = createLazyComponent(
-  () => import("@/components/dashboard/unified-dashboard")
-    .then(module => ({ default: module.TestDashboard })),
-  {
-    name: 'TestDashboard',
-    fallback: FallbackDashboard
-  }
-);
+// Use FallbackDashboard for all dashboard variants since unified-dashboard is not available
+const ValuationDashboard = FallbackDashboard;
+const DebugDashboard = FallbackDashboard;
+const SimpleDashboard = FallbackDashboard;
+const TestDashboard = FallbackDashboard;
 
 // Critical route micro-bundles (high priority)
 const Landing = createLazyComponent(
