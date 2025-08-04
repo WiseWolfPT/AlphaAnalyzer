@@ -2,7 +2,7 @@
   "rewrites": [
     {
       "source": "/api/:path*",
-      "destination": "http://jsg00k40sgo0k4swsoc4gcsg.128.140.45.28.sslip.io/api/:path*"
+      "destination": "https://jsg00k40sgo0k4swsoc4gcsg.128.140.45.28.sslip.io/api/:path*"
     }
   ],
   "headers": [
