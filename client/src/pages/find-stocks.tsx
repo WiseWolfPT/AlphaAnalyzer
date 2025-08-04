@@ -10,7 +10,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Search, TrendingUp, TrendingDown, Activity, Target, RefreshCw, Zap, AlertCircle, Filter, Grid3X3, List, Wifi } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Search, TrendingUp, TrendingDown, Activity, Target, RefreshCw, Zap, AlertCircle, Filter, Grid3X3, List, Wifi, ArrowUpIcon, ArrowDownIcon, Clock, BarChart3 } from "lucide-react";
 import { useAuth } from "@/contexts/simple-auth-offline";
 import { cn } from "@/lib/utils";
 import { useBatchQuotes } from "@/hooks/use-market-data";
@@ -21,73 +22,221 @@ import { ConnectionTest } from "@/components/debug/connection-test";
 import { AuthTest } from "@/test/auth-test";
 import { testAPIConnection } from "@/test-api-connection";
 
-// Popular stocks to display
-const POPULAR_SYMBOLS = [
-  'AAPL', 'MSFT', 'GOOGL', 'AMZN', 'TSLA',
-  'META', 'NVDA', 'JPM', 'V', 'JNJ',
-  'WMT', 'PG', 'UNH', 'DIS', 'MA'
+// All stocks from Supabase - expanded list
+const ALL_STOCKS = [
+  // Tech Giants
+  'AAPL', 'MSFT', 'GOOGL', 'AMZN', 'META', 'NVDA',
+  // Financial
+  'JPM', 'V', 'MA', 'BAC', 'WFC', 'BRK.B',
+  // Healthcare
+  'JNJ', 'UNH', 'PFE', 'ABBV', 'TMO', 'ABT', 'CVS', 'MDT', 'BMY',
+  // Consumer
+  'WMT', 'PG', 'DIS', 'NKE', 'MCD', 'COST', 'LOW', 'HD', 'PEP',
+  // Energy & Industrials
+  'XOM', 'CVX', 'UPS', 'UNP', 'HON', 'LIN', 'DHR',
+  // Tech/Software
+  'CRM', 'ORCL', 'ADBE', 'NFLX', 'PYPL', 'TXN', 'QCOM', 'AVGO', 'INTC',
+  // Telecom & Others
+  'VZ', 'CMCSA', 'NEE', 'PM', 'TSLA', 'ACN'
 ];
 
-// Mock data helpers (same as dashboard-enhanced)
+// Popular stocks for initial display
+const POPULAR_SYMBOLS = ALL_STOCKS.slice(0, 15);
+
+// Comprehensive company information
 function getCompanyName(symbol: string): string {
   const companyNames: Record<string, string> = {
+    // Tech Giants
     'AAPL': 'Apple Inc.',
     'MSFT': 'Microsoft Corporation',
     'GOOGL': 'Alphabet Inc.',
     'AMZN': 'Amazon.com Inc.',
-    'TSLA': 'Tesla Inc.',
     'META': 'Meta Platforms Inc.',
     'NVDA': 'NVIDIA Corporation',
+    // Financial
     'JPM': 'JPMorgan Chase & Co.',
     'V': 'Visa Inc.',
+    'MA': 'Mastercard Incorporated',
+    'BAC': 'Bank of America Corp.',
+    'WFC': 'Wells Fargo & Company',
+    'BRK.B': 'Berkshire Hathaway Inc.',
+    // Healthcare
     'JNJ': 'Johnson & Johnson',
+    'UNH': 'UnitedHealth Group Inc.',
+    'PFE': 'Pfizer Inc.',
+    'ABBV': 'AbbVie Inc.',
+    'TMO': 'Thermo Fisher Scientific Inc.',
+    'ABT': 'Abbott Laboratories',
+    'CVS': 'CVS Health Corporation',
+    'MDT': 'Medtronic plc',
+    'BMY': 'Bristol-Myers Squibb Co.',
+    // Consumer
     'WMT': 'Walmart Inc.',
     'PG': 'Procter & Gamble Co.',
-    'UNH': 'UnitedHealth Group Inc.',
     'DIS': 'The Walt Disney Company',
-    'MA': 'Mastercard Incorporated'
+    'NKE': 'Nike Inc.',
+    'MCD': 'McDonald\'s Corporation',
+    'COST': 'Costco Wholesale Corporation',
+    'LOW': 'Lowe\'s Companies Inc.',
+    'HD': 'The Home Depot Inc.',
+    'PEP': 'PepsiCo Inc.',
+    // Energy & Industrials
+    'XOM': 'Exxon Mobil Corporation',
+    'CVX': 'Chevron Corporation',
+    'UPS': 'United Parcel Service Inc.',
+    'UNP': 'Union Pacific Corporation',
+    'HON': 'Honeywell International Inc.',
+    'LIN': 'Linde plc',
+    'DHR': 'Danaher Corporation',
+    // Tech/Software
+    'CRM': 'Salesforce Inc.',
+    'ORCL': 'Oracle Corporation',
+    'ADBE': 'Adobe Inc.',
+    'NFLX': 'Netflix Inc.',
+    'PYPL': 'PayPal Holdings Inc.',
+    'TXN': 'Texas Instruments Inc.',
+    'QCOM': 'QUALCOMM Inc.',
+    'AVGO': 'Broadcom Inc.',
+    'INTC': 'Intel Corporation',
+    // Telecom & Others
+    'VZ': 'Verizon Communications Inc.',
+    'CMCSA': 'Comcast Corporation',
+    'NEE': 'NextEra Energy Inc.',
+    'PM': 'Philip Morris International Inc.',
+    'TSLA': 'Tesla Inc.',
+    'ACN': 'Accenture plc'
   };
   return companyNames[symbol] || `${symbol} Corporation`;
 }
 
 function getIndustry(symbol: string): string {
   const industries: Record<string, string> = {
+    // Tech Giants
     'AAPL': 'Consumer Electronics',
     'MSFT': 'Software',
     'GOOGL': 'Internet Services',
     'AMZN': 'E-Commerce',
-    'TSLA': 'Automotive',
     'META': 'Social Media',
     'NVDA': 'Semiconductors',
+    // Financial
     'JPM': 'Banking',
     'V': 'Payment Services',
+    'MA': 'Payment Services',
+    'BAC': 'Banking',
+    'WFC': 'Banking',
+    'BRK.B': 'Insurance & Investments',
+    // Healthcare
     'JNJ': 'Pharmaceuticals',
+    'UNH': 'Health Insurance',
+    'PFE': 'Pharmaceuticals',
+    'ABBV': 'Biotechnology',
+    'TMO': 'Medical Equipment',
+    'ABT': 'Medical Devices',
+    'CVS': 'Healthcare Services',
+    'MDT': 'Medical Devices',
+    'BMY': 'Pharmaceuticals',
+    // Consumer
     'WMT': 'Retail',
     'PG': 'Consumer Goods',
-    'UNH': 'Health Insurance',
     'DIS': 'Entertainment',
-    'MA': 'Payment Services'
+    'NKE': 'Apparel & Footwear',
+    'MCD': 'Restaurants',
+    'COST': 'Retail',
+    'LOW': 'Home Improvement',
+    'HD': 'Home Improvement',
+    'PEP': 'Beverages',
+    // Energy & Industrials
+    'XOM': 'Oil & Gas',
+    'CVX': 'Oil & Gas',
+    'UPS': 'Logistics',
+    'UNP': 'Railroads',
+    'HON': 'Industrial Conglomerate',
+    'LIN': 'Industrial Gases',
+    'DHR': 'Industrial Conglomerate',
+    // Tech/Software
+    'CRM': 'Software',
+    'ORCL': 'Software',
+    'ADBE': 'Software',
+    'NFLX': 'Streaming Services',
+    'PYPL': 'Payment Services',
+    'TXN': 'Semiconductors',
+    'QCOM': 'Semiconductors',
+    'AVGO': 'Semiconductors',
+    'INTC': 'Semiconductors',
+    // Telecom & Others
+    'VZ': 'Telecommunications',
+    'CMCSA': 'Media & Cable',
+    'NEE': 'Utilities',
+    'PM': 'Tobacco',
+    'TSLA': 'Automotive',
+    'ACN': 'IT Services'
   };
   return industries[symbol] || 'Technology';
 }
 
 function getSector(symbol: string): string {
   const sectors: Record<string, string> = {
+    // Technology
     'AAPL': 'Technology',
     'MSFT': 'Technology',
     'GOOGL': 'Technology',
-    'AMZN': 'Consumer Discretionary',
-    'TSLA': 'Consumer Discretionary',
     'META': 'Technology',
     'NVDA': 'Technology',
+    'CRM': 'Technology',
+    'ORCL': 'Technology',
+    'ADBE': 'Technology',
+    'PYPL': 'Technology',
+    'TXN': 'Technology',
+    'QCOM': 'Technology',
+    'AVGO': 'Technology',
+    'INTC': 'Technology',
+    'ACN': 'Technology',
+    // Financial Services
     'JPM': 'Financial Services',
     'V': 'Financial Services',
+    'MA': 'Financial Services',
+    'BAC': 'Financial Services',
+    'WFC': 'Financial Services',
+    'BRK.B': 'Financial Services',
+    // Healthcare
     'JNJ': 'Healthcare',
+    'UNH': 'Healthcare',
+    'PFE': 'Healthcare',
+    'ABBV': 'Healthcare',
+    'TMO': 'Healthcare',
+    'ABT': 'Healthcare',
+    'CVS': 'Healthcare',
+    'MDT': 'Healthcare',
+    'BMY': 'Healthcare',
+    // Consumer Staples
     'WMT': 'Consumer Staples',
     'PG': 'Consumer Staples',
-    'UNH': 'Healthcare',
+    'COST': 'Consumer Staples',
+    'PEP': 'Consumer Staples',
+    'PM': 'Consumer Staples',
+    // Consumer Discretionary
+    'AMZN': 'Consumer Discretionary',
+    'TSLA': 'Consumer Discretionary',
+    'NKE': 'Consumer Discretionary',
+    'MCD': 'Consumer Discretionary',
+    'LOW': 'Consumer Discretionary',
+    'HD': 'Consumer Discretionary',
+    // Communication Services
     'DIS': 'Communication Services',
-    'MA': 'Financial Services'
+    'NFLX': 'Communication Services',
+    'CMCSA': 'Communication Services',
+    'VZ': 'Communication Services',
+    // Energy
+    'XOM': 'Energy',
+    'CVX': 'Energy',
+    // Industrials
+    'UPS': 'Industrials',
+    'UNP': 'Industrials',
+    'HON': 'Industrials',
+    'LIN': 'Industrials',
+    'DHR': 'Industrials',
+    // Utilities
+    'NEE': 'Utilities'
   };
   return sectors[symbol] || 'Technology';
 }
@@ -96,13 +245,14 @@ export default function FindStocks() {
   const [, setLocation] = useLocation();
   const { user } = useAuth();
   const [displayedSymbols, setDisplayedSymbols] = useState(() => {
-    // Load from localStorage or use default
-    const saved = localStorage.getItem('alfalyzer-watchlist');
-    return saved ? JSON.parse(saved) : POPULAR_SYMBOLS.slice(0, 9);
+    // Show all stocks by default
+    return ALL_STOCKS;
   });
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [searchQuery, setSearchQuery] = useState('');
   const [useRealtime, setUseRealtime] = useState(true);
+  const [activeFilter, setActiveFilter] = useState<string>('all');
+  const [sortBy, setSortBy] = useState<string>('alphabetical');
   
   // Use real market data
   const { data: quotesData, isLoading, error, refetch, status, fetchStatus } = useBatchQuotes(displayedSymbols);
@@ -112,6 +262,42 @@ export default function FindStocks() {
     console.log('🚀 Running API connection test...');
     testAPIConnection();
   }, []);
+
+  // Helper function to count stocks by sector
+  const countStocksBySector = (sector: string): number => {
+    if (sector === 'all') return ALL_STOCKS.length;
+    return ALL_STOCKS.filter(symbol => getSector(symbol) === sector).length;
+  };
+
+  // Function to filter stocks by sector
+  const filterBySector = (sector: string) => {
+    setActiveFilter(sector);
+    if (sector === 'all') {
+      setDisplayedSymbols(ALL_STOCKS);
+    } else {
+      const filtered = ALL_STOCKS.filter(symbol => getSector(symbol) === sector);
+      setDisplayedSymbols(filtered);
+    }
+    setSearchQuery(''); // Clear search when filtering
+  };
+
+  // Track stock popularity
+  const trackStockView = (symbol: string) => {
+    const views = JSON.parse(localStorage.getItem('stock-views') || '{}');
+    views[symbol] = (views[symbol] || 0) + 1;
+    views.lastUpdated = Date.now();
+    localStorage.setItem('stock-views', JSON.stringify(views));
+  };
+
+  // Get most popular stocks
+  const getMostPopularStocks = (limit: number = 10): string[] => {
+    const views = JSON.parse(localStorage.getItem('stock-views') || '{}');
+    delete views.lastUpdated;
+    return Object.entries(views)
+      .sort(([,a]: [string, any], [,b]: [string, any]) => b - a)
+      .slice(0, limit)
+      .map(([symbol]) => symbol);
+  };
 
   // Debug logs
   console.log('Find Stocks Debug:', {
@@ -151,11 +337,41 @@ export default function FindStocks() {
   })) || [];
 
   const handleStockSelect = (symbol: string) => {
+    trackStockView(symbol); // Track popularity
     setLocation(`/stock/${symbol}/charts`);
   };
 
   const handleQuickInfoClick = (symbol: string) => {
+    trackStockView(symbol); // Track popularity
     setLocation(`/stock/${symbol}`);
+  };
+
+  // Function to handle special sections
+  const showTopGainers = () => {
+    const sorted = [...displayedSymbols].sort((a, b) => {
+      const aChange = quotesData?.quotes?.find(q => q.symbol === a)?.changePercent || 0;
+      const bChange = quotesData?.quotes?.find(q => q.symbol === b)?.changePercent || 0;
+      return bChange - aChange;
+    });
+    setDisplayedSymbols(sorted.slice(0, 10));
+    setActiveFilter('gainers');
+  };
+
+  const showTopLosers = () => {
+    const sorted = [...displayedSymbols].sort((a, b) => {
+      const aChange = quotesData?.quotes?.find(q => q.symbol === a)?.changePercent || 0;
+      const bChange = quotesData?.quotes?.find(q => q.symbol === b)?.changePercent || 0;
+      return aChange - bChange;
+    });
+    setDisplayedSymbols(sorted.slice(0, 10));
+    setActiveFilter('losers');
+  };
+
+  const showMostPopular = () => {
+    const popular = getMostPopularStocks(15);
+    const validPopular = popular.filter(s => ALL_STOCKS.includes(s));
+    setDisplayedSymbols(validPopular.length > 0 ? validPopular : POPULAR_SYMBOLS);
+    setActiveFilter('popular');
   };
 
   // Show loading state
@@ -204,11 +420,20 @@ export default function FindStocks() {
     );
   }
 
-  const filteredStocks = stocks.filter(stock => 
-    stock.symbol.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    stock.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    stock.sector.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredStocks = stocks.filter(stock => {
+    // First check if stock is in displayed symbols (sector filter)
+    if (!displayedSymbols.includes(stock.symbol)) return false;
+    
+    // Then apply search filter
+    if (!searchQuery) return true;
+    
+    return (
+      stock.symbol.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      stock.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      stock.sector.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      stock.industry.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  });
 
   return (
     <MainLayout>
@@ -274,7 +499,7 @@ export default function FindStocks() {
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5" />
                   <input
                     type="text"
-                    placeholder="Search stocks by symbol, name, or sector..."
+                    placeholder="Search 50+ stocks by symbol, name, or sector..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className="w-full pl-10 pr-4 py-3 border border-teya-green/20 rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-teya-green/50 focus:border-teya-green"
@@ -282,41 +507,101 @@ export default function FindStocks() {
                 </div>
                 <div className="flex flex-wrap gap-2">
                   <Badge 
-                    variant="outline" 
-                    className="cursor-pointer border-teya-green/30 hover:bg-teya-green/10"
-                    onClick={() => setSearchQuery('Technology')}
+                    variant={activeFilter === 'all' ? 'default' : 'outline'}
+                    className={cn(
+                      "cursor-pointer",
+                      activeFilter === 'all' 
+                        ? "bg-teya-green text-black hover:bg-teya-green-dark" 
+                        : "border-teya-green/30 hover:bg-teya-green/10"
+                    )}
+                    onClick={() => filterBySector('all')}
                   >
-                    Technology
+                    All Stocks ({countStocksBySector('all')})
                   </Badge>
                   <Badge 
-                    variant="outline" 
-                    className="cursor-pointer border-teya-green/30 hover:bg-teya-green/10"
-                    onClick={() => setSearchQuery('Healthcare')}
+                    variant={activeFilter === 'Technology' ? 'default' : 'outline'}
+                    className={cn(
+                      "cursor-pointer",
+                      activeFilter === 'Technology'
+                        ? "bg-teya-green text-black hover:bg-teya-green-dark" 
+                        : "border-teya-green/30 hover:bg-teya-green/10"
+                    )}
+                    onClick={() => filterBySector('Technology')}
                   >
-                    Healthcare
+                    Technology ({countStocksBySector('Technology')})
                   </Badge>
                   <Badge 
-                    variant="outline" 
-                    className="cursor-pointer border-teya-green/30 hover:bg-teya-green/10"
-                    onClick={() => setSearchQuery('Financial')}
+                    variant={activeFilter === 'Healthcare' ? 'default' : 'outline'}
+                    className={cn(
+                      "cursor-pointer",
+                      activeFilter === 'Healthcare'
+                        ? "bg-teya-green text-black hover:bg-teya-green-dark" 
+                        : "border-teya-green/30 hover:bg-teya-green/10"
+                    )}
+                    onClick={() => filterBySector('Healthcare')}
                   >
-                    Financial
+                    Healthcare ({countStocksBySector('Healthcare')})
                   </Badge>
                   <Badge 
-                    variant="outline" 
-                    className="cursor-pointer border-teya-green/30 hover:bg-teya-green/10"
-                    onClick={() => setSearchQuery('Consumer')}
+                    variant={activeFilter === 'Financial Services' ? 'default' : 'outline'}
+                    className={cn(
+                      "cursor-pointer",
+                      activeFilter === 'Financial Services'
+                        ? "bg-teya-green text-black hover:bg-teya-green-dark" 
+                        : "border-teya-green/30 hover:bg-teya-green/10"
+                    )}
+                    onClick={() => filterBySector('Financial Services')}
                   >
-                    Consumer
+                    Financial ({countStocksBySector('Financial Services')})
                   </Badge>
-                  <Button 
-                    variant="ghost" 
-                    size="sm"
-                    onClick={() => setSearchQuery('')}
-                    className="text-teya-green hover:bg-teya-green/10"
+                  <Badge 
+                    variant={activeFilter === 'Consumer Staples' ? 'default' : 'outline'}
+                    className={cn(
+                      "cursor-pointer",
+                      activeFilter === 'Consumer Staples'
+                        ? "bg-teya-green text-black hover:bg-teya-green-dark" 
+                        : "border-teya-green/30 hover:bg-teya-green/10"
+                    )}
+                    onClick={() => filterBySector('Consumer Staples')}
                   >
-                    Clear
-                  </Button>
+                    Consumer Staples ({countStocksBySector('Consumer Staples')})
+                  </Badge>
+                  <Badge 
+                    variant={activeFilter === 'Consumer Discretionary' ? 'default' : 'outline'}
+                    className={cn(
+                      "cursor-pointer",
+                      activeFilter === 'Consumer Discretionary'
+                        ? "bg-teya-green text-black hover:bg-teya-green-dark" 
+                        : "border-teya-green/30 hover:bg-teya-green/10"
+                    )}
+                    onClick={() => filterBySector('Consumer Discretionary')}
+                  >
+                    Consumer ({countStocksBySector('Consumer Discretionary')})
+                  </Badge>
+                  <Badge 
+                    variant={activeFilter === 'Energy' ? 'default' : 'outline'}
+                    className={cn(
+                      "cursor-pointer",
+                      activeFilter === 'Energy'
+                        ? "bg-teya-green text-black hover:bg-teya-green-dark" 
+                        : "border-teya-green/30 hover:bg-teya-green/10"
+                    )}
+                    onClick={() => filterBySector('Energy')}
+                  >
+                    Energy ({countStocksBySector('Energy')})
+                  </Badge>
+                  <Badge 
+                    variant={activeFilter === 'Industrials' ? 'default' : 'outline'}
+                    className={cn(
+                      "cursor-pointer",
+                      activeFilter === 'Industrials'
+                        ? "bg-teya-green text-black hover:bg-teya-green-dark" 
+                        : "border-teya-green/30 hover:bg-teya-green/10"
+                    )}
+                    onClick={() => filterBySector('Industrials')}
+                  >
+                    Industrials ({countStocksBySector('Industrials')})
+                  </Badge>
                 </div>
               </div>
             </CardContent>
@@ -325,6 +610,53 @@ export default function FindStocks() {
 
         {/* Beta Banner */}
         <BetaBanner />
+
+        {/* Dynamic Sections - Special Categories */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <Card 
+            className="p-4 cursor-pointer hover:bg-secondary/10 transition-colors border-teya-green/20"
+            onClick={showTopGainers}
+          >
+            <div className="flex items-center gap-2 mb-2">
+              <ArrowUpIcon className="w-5 h-5 text-green-500" />
+              <h3 className="font-semibold">Top Gainers</h3>
+            </div>
+            <p className="text-sm text-muted-foreground">Biggest % gains today</p>
+          </Card>
+
+          <Card 
+            className="p-4 cursor-pointer hover:bg-secondary/10 transition-colors border-teya-green/20"
+            onClick={showTopLosers}
+          >
+            <div className="flex items-center gap-2 mb-2">
+              <ArrowDownIcon className="w-5 h-5 text-red-500" />
+              <h3 className="font-semibold">Top Losers</h3>
+            </div>
+            <p className="text-sm text-muted-foreground">Biggest % losses today</p>
+          </Card>
+
+          <Card 
+            className="p-4 cursor-pointer hover:bg-secondary/10 transition-colors border-teya-green/20"
+            onClick={showMostPopular}
+          >
+            <div className="flex items-center gap-2 mb-2">
+              <TrendingUp className="w-5 h-5 text-orange-500" />
+              <h3 className="font-semibold">Most Popular</h3>
+            </div>
+            <p className="text-sm text-muted-foreground">Most viewed stocks</p>
+          </Card>
+
+          <Card 
+            className="p-4 cursor-pointer hover:bg-secondary/10 transition-colors border-teya-green/20"
+            onClick={() => filterBySector('all')}
+          >
+            <div className="flex items-center gap-2 mb-2">
+              <BarChart3 className="w-5 h-5 text-blue-500" />
+              <h3 className="font-semibold">All Stocks</h3>
+            </div>
+            <p className="text-sm text-muted-foreground">{ALL_STOCKS.length} total stocks</p>
+          </Card>
+        </div>
 
         {/* API Diagnostic (Temporary - Remove in production) */}
         {env.NODE_ENV === 'development' || window.location.search.includes('debug') ? (
@@ -336,8 +668,9 @@ export default function FindStocks() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <p className="text-sm text-muted-foreground">
-                Showing {filteredStocks.length} stocks
+                Showing {filteredStocks.length} of {ALL_STOCKS.length} stocks
                 {searchQuery && ` for "${searchQuery}"`}
+                {activeFilter !== 'all' && ` in ${activeFilter}`}
               </p>
               {quotesData && quotesData.quotes && quotesData.quotes.some(q => q._cached) && (
                 <Badge variant="outline" className="text-xs">
@@ -348,10 +681,50 @@ export default function FindStocks() {
                 </Badge>
               )}
             </div>
-            <Button variant="outline" size="sm" className="gap-2">
-              <Filter className="w-4 h-4" />
-              More Filters
-            </Button>
+            <div className="flex items-center gap-2">
+              <Select value={sortBy} onValueChange={(value) => {
+                setSortBy(value);
+                // Apply sorting logic here
+                const sorted = [...displayedSymbols].sort((a, b) => {
+                  const aStock = stocks.find(s => s.symbol === a);
+                  const bStock = stocks.find(s => s.symbol === b);
+                  if (!aStock || !bStock) return 0;
+                  
+                  switch(value) {
+                    case 'alphabetical':
+                      return a.localeCompare(b);
+                    case 'gainers':
+                      return parseFloat(bStock.changePercent) - parseFloat(aStock.changePercent);
+                    case 'losers':
+                      return parseFloat(aStock.changePercent) - parseFloat(bStock.changePercent);
+                    case 'volume':
+                      return (bStock.volume || 0) - (aStock.volume || 0);
+                    case 'marketCap':
+                      const aMarket = parseFloat(aStock.marketCap.replace(/[^0-9.-]+/g,"")) || 0;
+                      const bMarket = parseFloat(bStock.marketCap.replace(/[^0-9.-]+/g,"")) || 0;
+                      return bMarket - aMarket;
+                    default:
+                      return 0;
+                  }
+                });
+                setDisplayedSymbols(sorted);
+              }}>
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue placeholder="Sort by..." />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="alphabetical">A-Z</SelectItem>
+                  <SelectItem value="gainers">Top Gainers</SelectItem>
+                  <SelectItem value="losers">Top Losers</SelectItem>
+                  <SelectItem value="volume">Most Active</SelectItem>
+                  <SelectItem value="marketCap">Market Cap</SelectItem>
+                </SelectContent>
+              </Select>
+              <Button variant="outline" size="sm" className="gap-2">
+                <Filter className="w-4 h-4" />
+                More Filters
+              </Button>
+            </div>
           </div>
 
           {/* Error Alert - Non-blocking */}
