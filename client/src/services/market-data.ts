@@ -119,65 +119,25 @@ export class MarketDataService {
     try {
       console.log(`📊 Fetching batch quotes for ${symbols.length} symbols...`);
       
-      // Separate symbols that should use real API
-      const realApiSymbols = symbols.filter(s => API_FEATURE_FLAGS.useRealApi(s));
-      const mockApiSymbols = symbols.filter(s => !API_FEATURE_FLAGS.useRealApi(s));
+      // Always use batch endpoint to avoid rate limiting
+      const symbolsParam = symbols.join(',');
       
-      const promises: Promise<any>[] = [];
+      const response = await apiClient.get<any>(
+        `${API_ENDPOINTS.quotes.batch}?symbols=${symbolsParam}`
+      );
       
-      // Fetch real API symbols individually
-      if (realApiSymbols.length > 0) {
-        console.log(`🔥 Using real API for: ${realApiSymbols.join(', ')}`);
-        realApiSymbols.forEach(symbol => {
-          promises.push(this.getQuote(symbol).catch(err => ({
-            symbol,
-            error: err.message
-          })));
-        });
-      }
+      // Handle both array and object response formats
+      const quotes = Array.isArray(response) ? response : (response.quotes || []);
       
-      // Fetch mock API symbols in batch
-      if (mockApiSymbols.length > 0) {
-        promises.push(
-          apiClient.post<any>(
-            API_ENDPOINTS.quotes.batch,
-            { symbols: mockApiSymbols }
-          ).then(response => {
-            // Handle both array and object response formats
-            if (Array.isArray(response)) {
-              return response;
-            }
-            return response.quotes || [];
-          })
-          .catch(() => [])
-        );
-      }
-      
-      const results = await Promise.all(promises);
-      
-      // Flatten and combine results
-      const allQuotes: StockQuote[] = [];
-      const errors: Record<string, string> = {};
-      
-      results.forEach(result => {
-        if (Array.isArray(result)) {
-          allQuotes.push(...result);
-        } else if (result.error) {
-          errors[result.symbol] = result.error;
-        } else {
-          allQuotes.push(result);
-        }
-      });
-      
-      console.log(`✅ Received ${allQuotes.length} quotes:`, allQuotes.map(q => ({
+      console.log(`✅ Received ${quotes.length} quotes:`, quotes.map((q: any) => ({
         symbol: q.symbol,
         price: q.price,
         provider: q.provider || 'unknown'
       })));
       
       return {
-        quotes: allQuotes,
-        errors,
+        quotes,
+        errors: {},
         timestamp: Date.now(),
         _timestamp: Date.now() / 1000
       };
