@@ -34,18 +34,8 @@ import { PortfolioProvider } from './contexts/portfolio-context';
 const FallbackDashboard = lazy(() => import("@/components/dashboard/fallback-dashboard"));
 
 // Dashboard micro-bundles with enhanced error handling and preloading
-const UserDashboard = createLazyComponent(
-  () => import("@/components/dashboard/unified-dashboard")
-    .then(module => ({ default: module.UserDashboard })),
-  {
-    name: 'UserDashboard',
-    fallback: FallbackDashboard,
-    preload: [
-      () => import("@/components/stock/enhanced-stock-card"),
-      () => import("@/components/stock/stock-search")
-    ]
-  }
-);
+// Use FallbackDashboard directly since unified-dashboard is not available
+const UserDashboard = FallbackDashboard;
 
 const AdminDashboard = createLazyComponent(
   () => import("@/pages/admin/admin-dashboard"),
