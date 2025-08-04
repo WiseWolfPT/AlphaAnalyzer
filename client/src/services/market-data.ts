@@ -119,38 +119,82 @@ export class MarketDataService {
     try {
       console.log(`📊 Fetching batch quotes for ${symbols.length} symbols...`);
       
-      // Always use batch endpoint to avoid rate limiting
-      const symbolsParam = symbols.join(',');
+      // Chunk symbols to avoid timeout on large requests
+      const CHUNK_SIZE = 20;
+      const chunks: string[][] = [];
       
-      const response = await apiClient.get<any>(
-        `${API_ENDPOINTS.quotes.batch}?symbols=${symbolsParam}`
-      );
+      for (let i = 0; i < symbols.length; i += CHUNK_SIZE) {
+        chunks.push(symbols.slice(i, i + CHUNK_SIZE));
+      }
       
-      // Handle both array and object response formats
-      const quotes = Array.isArray(response) ? response : (response.quotes || []);
+      console.log(`📦 Splitting into ${chunks.length} chunks of max ${CHUNK_SIZE} symbols`);
       
-      console.log(`✅ Received ${quotes.length} quotes:`, quotes.map((q: any) => ({
-        symbol: q.symbol,
-        price: q.price,
-        provider: q.provider || 'unknown'
-      })));
+      // Process chunks in parallel with timeout
+      const chunkPromises = chunks.map(async (chunk, index) => {
+        const symbolsParam = chunk.join(',');
+        
+        // Create a timeout promise
+        const timeoutPromise = new Promise((_, reject) => {
+          setTimeout(() => reject(new Error('Request timeout')), 8000); // 8 second timeout
+        });
+        
+        // Race between the API call and timeout
+        try {
+          const response = await Promise.race([
+            apiClient.get<any>(`${API_ENDPOINTS.quotes.batch}?symbols=${symbolsParam}`),
+            timeoutPromise
+          ]) as any;
+          
+          console.log(`✅ Chunk ${index + 1}/${chunks.length} completed`);
+          
+          // Handle both array and object response formats
+          return Array.isArray(response) ? response : (response.quotes || []);
+        } catch (chunkError: any) {
+          console.error(`❌ Chunk ${index + 1} failed:`, chunkError.message);
+          // Return empty array for failed chunk instead of throwing
+          return [];
+        }
+      });
+      
+      // Wait for all chunks with proper error handling
+      const results = await Promise.allSettled(chunkPromises);
+      
+      // Combine successful results
+      const allQuotes: StockQuote[] = [];
+      const errors: Record<string, string> = {};
+      let failedChunks = 0;
+      
+      results.forEach((result, index) => {
+        if (result.status === 'fulfilled' && Array.isArray(result.value)) {
+          allQuotes.push(...result.value);
+        } else {
+          failedChunks++;
+          const chunkSymbols = chunks[index];
+          chunkSymbols.forEach(symbol => {
+            errors[symbol] = 'Failed to fetch quote';
+          });
+        }
+      });
+      
+      console.log(`✅ Batch complete: ${allQuotes.length} quotes received, ${failedChunks} chunks failed`);
       
       return {
-        quotes,
-        errors: {},
+        quotes: allQuotes,
+        errors,
+        failed: Object.keys(errors),
         timestamp: Date.now(),
         _timestamp: Date.now() / 1000
       };
     } catch (error: any) {
       console.error('❌ Failed to fetch batch quotes:', error);
       
-      // Return empty response with error info
+      // Even on total failure, return a valid structure
       return {
         quotes: [],
         errors: { 
           general: error.isColdStart 
             ? 'Server is starting up. Data will load in a moment.' 
-            : error.message 
+            : error.message || 'Failed to fetch market data'
         },
         failed: symbols,
         timestamp: Date.now(),

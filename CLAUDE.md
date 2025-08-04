@@ -19,8 +19,9 @@ Financial analysis platform with real-time market data, earnings transcripts, an
 - Transcripts feature missing
 - Authentication needs enhancement
 
-🚧 **In Progress:**
-- Backend migration: Koyeb → Hetzner CX22 + Coolify
+✅ **Recently Completed:**
+- Backend migrated to Hetzner CX22 + Coolify
+- POST → GET migration for batch quotes endpoint
 
 ## TECH STACK
 

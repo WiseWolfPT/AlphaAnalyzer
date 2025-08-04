@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Batch Quotes Fix</title>
+</head>
+<body>
+    <h1>Testing Batch Quotes Fix</h1>
+    <button onclick="testBatch()">Test Batch Endpoint</button>
+    <div id="results"></div>
+    
+    <script>
+        async function testBatch() {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '<p>Loading...</p>';
+            
+            const symbols = ['AAPL', 'MSFT', 'GOOGL', 'AMZN', 'META', 'NVDA', 'JPM', 'V', 'MA', 'BAC'];
+            
+            try {
+                const response = await fetch(`https://alfalyzerpro4.vercel.app/api/market-data/quotes/batch?symbols=${symbols.join(',')}`);
+                const data = await response.json();
+                
+                resultsDiv.innerHTML = `
+                    <h2>Success! ✅</h2>
+                    <p>Status: ${response.status}</p>
+                    <p>Received ${Array.isArray(data) ? data.length : (data.quotes ? data.quotes.length : 0)} quotes</p>
+                    <pre>${JSON.stringify(data, null, 2)}</pre>
+                `;
+            } catch (error) {
+                resultsDiv.innerHTML = `
+                    <h2>Error ❌</h2>
+                    <p>${error.message}</p>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>

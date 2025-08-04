@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { MainLayout } from "@/components/layout/main-layout";
 import { StockSearch } from "@/components/stock/stock-search";
@@ -312,29 +312,36 @@ export default function FindStocks() {
     symbolsLength: displayedSymbols.length
   });
 
-  // Transform the quotes data to match the component's expected format
-  const stocks = quotesData?.quotes?.map((quote, index) => ({
-    id: index + 1,
-    symbol: quote.symbol,
-    name: getCompanyName(quote.symbol),
-    price: typeof quote.price === 'number' ? quote.price.toFixed(2) : '0.00',
-    change: typeof quote.change === 'number' ? quote.change.toFixed(2) : '0.00',
-    changePercent: typeof quote.changePercent === 'number' ? quote.changePercent.toFixed(2) : '0.00',
-    marketCap: quote.marketCap ? `$${(quote.marketCap / 1e9).toFixed(2)}B` : 'N/A',
-    sector: getSector(quote.symbol),
-    industry: getIndustry(quote.symbol),
-    eps: typeof quote.eps === 'number' ? quote.eps.toFixed(2) : 'N/A',
-    peRatio: typeof quote.pe === 'number' ? quote.pe.toFixed(2) : 'N/A',
-    logo: `/api/placeholder/40/40`,
-    lastUpdated: new Date((quote.timestamp || Date.now() / 1000) * 1000),
-    volume: quote.volume,
-    high: quote.high,
-    low: quote.low,
-    open: quote.open,
-    _isRealData: !quote._cached,
-    _provider: quote.provider,
-    _cached: quote._cached
-  })) || [];
+  // Transform the quotes data to match the component's expected format with error handling
+  const stocks = React.useMemo(() => {
+    try {
+      return quotesData?.quotes?.map((quote, index) => ({
+        id: index + 1,
+        symbol: quote.symbol || 'UNKNOWN',
+        name: getCompanyName(quote.symbol || 'UNKNOWN'),
+        price: typeof quote.price === 'number' && !isNaN(quote.price) ? quote.price.toFixed(2) : '0.00',
+        change: typeof quote.change === 'number' && !isNaN(quote.change) ? quote.change.toFixed(2) : '0.00',
+        changePercent: typeof quote.changePercent === 'number' && !isNaN(quote.changePercent) ? quote.changePercent.toFixed(2) : '0.00',
+        marketCap: quote.marketCap && !isNaN(quote.marketCap) ? `$${(quote.marketCap / 1e9).toFixed(2)}B` : 'N/A',
+        sector: getSector(quote.symbol || 'UNKNOWN'),
+        industry: getIndustry(quote.symbol || 'UNKNOWN'),
+        eps: typeof quote.eps === 'number' && !isNaN(quote.eps) ? quote.eps.toFixed(2) : 'N/A',
+        peRatio: typeof quote.pe === 'number' && !isNaN(quote.pe) ? quote.pe.toFixed(2) : 'N/A',
+        logo: `/api/placeholder/40/40`,
+        lastUpdated: new Date(quote.timestamp || Date.now()),
+        volume: quote.volume || 0,
+        high: quote.high || 0,
+        low: quote.low || 0,
+        open: quote.open || 0,
+        _isRealData: !quote._cached,
+        _provider: quote.provider || 'unknown',
+        _cached: quote._cached || false
+      })) || [];
+    } catch (err) {
+      console.error('Error transforming quotes data:', err);
+      return [];
+    }
+  }, [quotesData]);
 
   const handleStockSelect = (symbol: string) => {
     trackStockView(symbol); // Track popularity

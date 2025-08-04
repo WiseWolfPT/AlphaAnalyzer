@@ -23,7 +23,6 @@ import {
   FiscalAIProvider
 } from '../services/providers';
 import { CacheService } from '../services/cache/cache-service';
-import { setupMarketDataGETEndpoints } from '../koyeb-production';
 
 const router = Router();
 
@@ -173,85 +172,6 @@ router.get('/quote/:symbol',
   }
 );
 
-/**
- * POST /api/market-data/quotes/batch
- * Get multiple quotes at once with caching
- */
-router.post('/quotes/batch',
-  authService,
-  marketDataRateLimit,
-  async (req: Request, res: Response) => {
-    console.log('📊 POST /api/market-data/quotes/batch endpoint hit');
-    
-    // Explicitly set CORS headers to fix Koyeb issue
-    const origin = req.headers.origin;
-    if (origin) {
-      res.header('Access-Control-Allow-Origin', origin);
-      res.header('Access-Control-Allow-Credentials', 'true');
-    }
-    res.header('Content-Type', 'application/json; charset=utf-8');
-    
-    try {
-      const validation = batchSymbolsSchema.safeParse(req.body);
-      if (!validation.success) {
-        return res.status(400).json({
-          error: 'INVALID_REQUEST',
-          message: validation.error.errors[0].message,
-        });
-      }
-
-      const { symbols } = validation.data;
-      console.log(`📊 Batch quotes request for: ${symbols.join(', ')}`);
-      
-      const results: any[] = [];
-      const errors: Record<string, string> = {};
-
-      // Use cache service with provider manager for batch quotes
-      const cachedBatch = await cacheService.getBatchQuotes(
-        symbols,
-        async () => {
-          return await providerManager.getBatchQuotesWithFallback(symbols);
-        }
-      );
-
-      const quotes = cachedBatch.data;
-      
-      // Transform to API response format
-      for (const quote of quotes) {
-        if (quote) {
-          results.push({
-            ...quote,
-            _timestamp: Date.now(),
-            _cached: cachedBatch.cached,
-          });
-        }
-      }
-
-      // Add errors for symbols that failed
-      for (const symbol of symbols) {
-        if (!results.find(r => r.symbol === symbol)) {
-          errors[symbol] = 'Failed to fetch quote';
-        }
-      }
-
-      console.log(`✅ Batch quotes: ${results.length} success, ${Object.keys(errors).length} failed (cached: ${cachedBatch.cached})`);
-
-      res.json({
-        quotes: results,
-        errors: Object.keys(errors).length > 0 ? errors : undefined,
-        _timestamp: Date.now(),
-        _cached: cachedBatch.cached,
-        _expires_at: cachedBatch.expires_at,
-      });
-    } catch (error) {
-      console.error('Batch quotes error:', error);
-      res.status(500).json({
-        error: 'BATCH_FETCH_ERROR',
-        message: 'Failed to fetch batch quotes',
-      });
-    }
-  }
-);
 
 /**
  * GET /api/market-data/chart/:symbol/:period
@@ -703,52 +623,89 @@ router.get('/test', async (req: Request, res: Response) => {
   });
 });
 
-// Setup additional GET endpoints for Koyeb
-setupMarketDataGETEndpoints(router);
 
 /**
  * GET /api/market-data/quotes/batch
- * Get batch quotes from cache
+ * Get multiple quotes at once with caching
  */
-router.get('/quotes/batch', async (req: Request, res: Response) => {
-  try {
-    const symbols = req.query.symbols?.toString().split(',') || [];
+router.get('/quotes/batch',
+  authService,
+  marketDataRateLimit,
+  async (req: Request, res: Response) => {
+    console.log('📊 GET /api/market-data/quotes/batch endpoint hit');
     
-    if (symbols.length === 0) {
-      return res.json([]);
-    }
+    // Set Cache-Control headers (5 minutes)
+    res.header('Cache-Control', 'public, max-age=300');
+    res.header('Content-Type', 'application/json; charset=utf-8');
     
-    // Import supabaseAdmin
-    const { supabaseAdmin } = await import('../db/supabase-client');
-    
-    // Buscar do cache
-    const keys = symbols.map(s => `quote_${s}`);
-    const { data, error } = await supabaseAdmin
-      .from('cache_quotes')
-      .select('*')
-      .in('key', keys)
-      .gte('expires_at', new Date().toISOString());
+    try {
+      // Parse symbols from query string
+      const symbolsParam = req.query.symbols?.toString() || '';
+      if (!symbolsParam) {
+        return res.status(400).json({
+          error: 'INVALID_REQUEST',
+          message: 'symbols query parameter is required',
+        });
+      }
       
-    if (error) throw error;
-    
-    // Transformar resposta
-    const quotes = data?.map(item => ({
-      symbol: item.data.symbol,
-      price: item.data.price,
-      change: item.data.change,
-      change_percent: item.data.change_percent,
-      high: item.data.high,
-      low: item.data.low,
-      open: item.data.open,
-      previous_close: item.data.previous_close,
-      timestamp: item.data.timestamp
-    })) || [];
-    
-    res.json(quotes);
-  } catch (error) {
-    console.error('Error fetching quotes:', error);
-    res.status(500).json({ error: 'Failed to fetch quotes' });
+      const symbols = symbolsParam.split(',').filter(s => s.trim());
+      if (symbols.length === 0) {
+        return res.status(400).json({
+          error: 'INVALID_REQUEST',
+          message: 'At least one symbol is required',
+        });
+      }
+
+      console.log(`📊 Batch quotes request for: ${symbols.join(', ')}`);
+      
+      const results: any[] = [];
+      const errors: Record<string, string> = {};
+
+      // Use cache service with provider manager for batch quotes
+      const cachedBatch = await cacheService.getBatchQuotes(
+        symbols,
+        async () => {
+          return await providerManager.getBatchQuotesWithFallback(symbols);
+        }
+      );
+
+      const quotes = cachedBatch.data;
+      
+      // Transform to API response format
+      for (const quote of quotes) {
+        if (quote) {
+          results.push({
+            ...quote,
+            _timestamp: Date.now(),
+            _cached: cachedBatch.cached,
+          });
+        }
+      }
+
+      // Add errors for symbols that failed
+      for (const symbol of symbols) {
+        if (!results.find(r => r.symbol === symbol)) {
+          errors[symbol] = 'Failed to fetch quote';
+        }
+      }
+
+      console.log(`✅ Batch quotes: ${results.length} success, ${Object.keys(errors).length} failed (cached: ${cachedBatch.cached})`);
+
+      res.json({
+        quotes: results,
+        errors: Object.keys(errors).length > 0 ? errors : undefined,
+        _timestamp: Date.now(),
+        _cached: cachedBatch.cached,
+        _expires_at: cachedBatch.expires_at,
+      });
+    } catch (error) {
+      console.error('Batch quotes error:', error);
+      res.status(500).json({
+        error: 'BATCH_FETCH_ERROR',
+        message: 'Failed to fetch batch quotes',
+      });
+    }
   }
-});
+);
 
 export default router;
