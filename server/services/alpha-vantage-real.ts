@@ -43,7 +43,10 @@ export class AlphaVantageRealService {
   private lastRequestTime = 0;
 
   constructor() {
-    this.apiKey = process.env.ALPHA_VANTAGE_API_KEY || 'W21HQCR1V5KMQYZ4';
+    this.apiKey = process.env.ALPHA_VANTAGE_API_KEY || 'demo';
+    if (!this.apiKey || this.apiKey === 'demo') {
+      console.warn('⚠️ Alpha Vantage Real API key not configured properly');
+    }
     this.cache = new SupabaseCacheService();
     
     console.log('🏦 Alpha Vantage Real Service initialized');

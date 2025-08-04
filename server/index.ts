@@ -75,6 +75,9 @@ import { upstashRateLimiters } from './middleware/upstash-rate-limit';
 // ROADMAP V4: Import Supabase authentication middleware
 import { requireAuth, requireAdmin, optionalAuth } from './middleware/supabase-auth';
 
+// Import Finnhub realtime worker
+import './workers/finnhub-realtime';
+
 const app = express();
 const APP_VERSION = process.env.npm_package_version || '1.0.0';
 
@@ -288,6 +291,15 @@ if (process.env.NODE_ENV === 'production' && csrfProtection) {
     }
   });
 }
+
+// Add endpoint to check worker status
+app.get('/api/worker/status', (req, res) => {
+  res.json({
+    status: 'running',
+    worker: 'finnhub-realtime',
+    timestamp: new Date().toISOString()
+  });
+});
 
 // PRIORITY 1: Initialize Market Data Services with all providers
 async function initializeMarketDataServices() {

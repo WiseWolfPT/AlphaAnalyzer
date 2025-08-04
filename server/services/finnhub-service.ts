@@ -1,5 +1,4 @@
 import axios from 'axios';
-import { API_KEYS } from '../config/api-keys';
 
 interface FinnhubConfig {
   apiKey: string;
@@ -36,7 +35,10 @@ class FinnhubService {
   private baseUrl = 'https://finnhub.io/api/v1';
 
   constructor(config: FinnhubConfig) {
-    this.apiKey = config.apiKey || API_KEYS.FINNHUB_API_KEY || process.env.FINNHUB_API_KEY || 'demo';
+    this.apiKey = config.apiKey || process.env.FINNHUB_API_KEY || 'demo';
+    if (!this.apiKey || this.apiKey === 'demo') {
+      console.warn('⚠️ Finnhub API key not configured properly');
+    }
   }
 
   async getCompanyProfile(symbol: string): Promise<CompanyProfile | null> {
@@ -159,5 +161,5 @@ class FinnhubService {
 export { FinnhubService };
 
 export const finnhubService = new FinnhubService({
-  apiKey: API_KEYS.FINNHUB_API_KEY || process.env.FINNHUB_API_KEY || 'demo'
+  apiKey: process.env.FINNHUB_API_KEY || 'demo'
 });

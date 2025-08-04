@@ -34,23 +34,28 @@ export function useRealtimeQuotes({ symbols, onUpdate }: UseRealtimeQuotesOption
 
     // Subscribe to realtime updates
     const channel = supabase
-      .channel('quotes-channel')
+      .channel('quotes-updates')
       .on(
         'postgres_changes',
         {
-          event: 'INSERT',
+          event: '*', // INSERT and UPDATE
           schema: 'public',
-          table: 'realtime_quotes',
-          filter: symbols.length === 1 
-            ? `symbol=eq.${symbols[0]}` 
-            : undefined // Can't filter multiple symbols easily
+          table: 'cache_quotes',
+          filter: symbols.length > 0
+            ? `key=in.(${symbols.map(s => `quote_${s}`).join(',')})`
+            : undefined
         },
         (payload) => {
-          const quote = payload.new as RealtimeQuote;
-          
-          // Only process if it's one of our symbols
-          if (symbols.includes(quote.symbol)) {
-            console.log('📊 Realtime quote update:', quote);
+          if (payload.new && payload.new.data) {
+            const data = payload.new.data as any;
+            const quote: RealtimeQuote = {
+              symbol: data.symbol,
+              price: data.price,
+              change: data.change,
+              change_percent: data.change_percent,
+              volume: data.volume || 0,
+              timestamp: data.timestamp
+            };
             
             setQuotes(prev => ({
               ...prev,

@@ -11,8 +11,7 @@ import { CacheUpdaterJob } from './services/cache-updater-job';
 // Load environment variables
 dotenv.config();
 
-// Import API keys configuration
-import { API_KEYS, SUPABASE_CONFIG } from './config/api-keys';
+// API keys are now loaded from environment variables
 
 // Test Supabase connection
 testConnection().then(connected => {
@@ -78,21 +77,21 @@ app.get('/api/diagnostic/minimal', (req, res) => {
       SERVICE: process.env.KOYEB_SERVICE_NAME || 'NOT_ON_KOYEB'
     },
     apiKeys: {
-      ALPHA_VANTAGE: maskKey(API_KEYS.ALPHA_VANTAGE_API_KEY),
-      FINNHUB: maskKey(API_KEYS.FINNHUB_API_KEY),
-      FMP: maskKey(API_KEYS.FMP_API_KEY),
-      TWELVE_DATA: maskKey(API_KEYS.TWELVE_DATA_API_KEY),
-      POLYGON: maskKey(API_KEYS.POLYGON_API_KEY),
-      FISCAL_AI: maskKey(API_KEYS.FISCAL_AI_API_KEY)
+      ALPHA_VANTAGE: maskKey(process.env.ALPHA_VANTAGE_API_KEY),
+      FINNHUB: maskKey(process.env.FINNHUB_API_KEY),
+      FMP: maskKey(process.env.FMP_API_KEY),
+      TWELVE_DATA: maskKey(process.env.TWELVE_DATA_API_KEY),
+      POLYGON: maskKey(process.env.POLYGON_API_KEY),
+      FISCAL_AI: maskKey(process.env.FISCAL_AI_API_KEY)
     },
     summary: {
       totalConfigured: [
-        API_KEYS.ALPHA_VANTAGE_API_KEY,
-        API_KEYS.FINNHUB_API_KEY,
-        API_KEYS.FMP_API_KEY,
-        API_KEYS.TWELVE_DATA_API_KEY,
-        API_KEYS.POLYGON_API_KEY,
-        API_KEYS.FISCAL_AI_API_KEY
+        process.env.ALPHA_VANTAGE_API_KEY,
+        process.env.FINNHUB_API_KEY,
+        process.env.FMP_API_KEY,
+        process.env.TWELVE_DATA_API_KEY,
+        process.env.POLYGON_API_KEY,
+        process.env.FISCAL_AI_API_KEY
       ].filter(key => key && key !== 'demo').length
     }
   });
@@ -135,19 +134,19 @@ app.get('/api/diagnostic/test-connectivity', async (req, res) => {
 // Market data health check
 app.get('/api/market-data/health', (req, res) => {
   const hasRealData = !!(
-    API_KEYS.ALPHA_VANTAGE_API_KEY ||
-    API_KEYS.FINNHUB_API_KEY ||
-    API_KEYS.FMP_API_KEY
+    process.env.ALPHA_VANTAGE_API_KEY ||
+    process.env.FINNHUB_API_KEY ||
+    process.env.FMP_API_KEY
   );
   
   res.json({
     status: 'healthy',
     hasRealData,
     providers: {
-      alphaVantage: !!API_KEYS.ALPHA_VANTAGE_API_KEY,
-      finnhub: !!API_KEYS.FINNHUB_API_KEY,
-      fmp: !!API_KEYS.FMP_API_KEY,
-      fiscalAI: !!API_KEYS.FISCAL_AI_API_KEY
+      alphaVantage: !!process.env.ALPHA_VANTAGE_API_KEY,
+      finnhub: !!process.env.FINNHUB_API_KEY,
+      fmp: !!process.env.FMP_API_KEY,
+      fiscalAI: !!process.env.FISCAL_AI_API_KEY
     }
   });
 });
@@ -229,7 +228,7 @@ app.get('/api/market-data/quote/:symbol', async (req, res) => {
     }
     
     // If not in cache, fetch from API
-    const apiKey = API_KEYS.ALPHA_VANTAGE_API_KEY;
+    const apiKey = process.env.ALPHA_VANTAGE_API_KEY;
     
     if (!apiKey) {
       return res.status(500).json({ error: 'API key not configured' });
@@ -276,7 +275,7 @@ app.get('/api/market-data/quote/:symbol', async (req, res) => {
 // Basic stock data endpoint (using Alpha Vantage)
 app.get('/api/stocks/:symbol/price', async (req, res) => {
   const { symbol } = req.params;
-  const apiKey = API_KEYS.ALPHA_VANTAGE_API_KEY;
+  const apiKey = process.env.ALPHA_VANTAGE_API_KEY;
   
   if (!apiKey) {
     return res.status(500).json({ error: 'API key not configured' });
@@ -310,7 +309,7 @@ app.get('/api/stocks/:symbol/price', async (req, res) => {
 // Stock profile endpoint
 app.get('/api/stocks/:symbol/profile', async (req, res) => {
   const { symbol } = req.params;
-  const apiKey = API_KEYS.ALPHA_VANTAGE_API_KEY;
+  const apiKey = process.env.ALPHA_VANTAGE_API_KEY;
   
   if (!apiKey) {
     return res.status(500).json({ error: 'API key not configured' });
@@ -349,7 +348,7 @@ app.get('/api/stocks/:symbol/profile', async (req, res) => {
 // Market data proxy endpoints
 app.use('/api/market-data/alpha-vantage', async (req, res) => {
   const path = req.url.substring(1);
-  const apiKey = API_KEYS.ALPHA_VANTAGE_API_KEY;
+  const apiKey = process.env.ALPHA_VANTAGE_API_KEY;
   
   if (!apiKey) {
     return res.status(500).json({ error: 'Alpha Vantage API key not configured' });
@@ -368,7 +367,7 @@ app.use('/api/market-data/alpha-vantage', async (req, res) => {
 // FMP proxy
 app.use('/api/market-data/fmp', async (req, res) => {
   const path = req.url.substring(1);
-  const apiKey = API_KEYS.FMP_API_KEY;
+  const apiKey = process.env.FMP_API_KEY;
   
   if (!apiKey) {
     return res.status(500).json({ error: 'FMP API key not configured' });
@@ -387,7 +386,7 @@ app.use('/api/market-data/fmp', async (req, res) => {
 // Finnhub proxy
 app.use('/api/market-data/finnhub', async (req, res) => {
   const path = req.url.substring(1);
-  const apiKey = API_KEYS.FINNHUB_API_KEY;
+  const apiKey = process.env.FINNHUB_API_KEY;
   
   if (!apiKey) {
     return res.status(500).json({ error: 'Finnhub API key not configured' });

@@ -19,7 +19,8 @@ import {
   AlphaVantageProvider, 
   FinnhubProvider, 
   TwelveDataProvider,
-  FMPProvider
+  FMPProvider,
+  FiscalAIProvider
 } from '../services/providers';
 import { CacheService } from '../services/cache/cache-service';
 import { setupMarketDataGETEndpoints } from '../koyeb-production';
@@ -38,6 +39,9 @@ const marketDataService = new ServerMarketDataService();
 const providerManager = new ProviderManager();
 
 // Initialize providers in priority order
+if (process.env.FISCAL_AI_API_KEY && process.env.FISCAL_AI_API_KEY !== 'demo') {
+  providerManager.addProvider(new FiscalAIProvider(process.env.FISCAL_AI_API_KEY));
+}
 if (process.env.POLYGON_API_KEY && process.env.POLYGON_API_KEY !== 'demo') {
   providerManager.addProvider(new PolygonProvider(process.env.POLYGON_API_KEY));
 }
@@ -701,5 +705,50 @@ router.get('/test', async (req: Request, res: Response) => {
 
 // Setup additional GET endpoints for Koyeb
 setupMarketDataGETEndpoints(router);
+
+/**
+ * GET /api/market-data/quotes/batch
+ * Get batch quotes from cache
+ */
+router.get('/quotes/batch', async (req: Request, res: Response) => {
+  try {
+    const symbols = req.query.symbols?.toString().split(',') || [];
+    
+    if (symbols.length === 0) {
+      return res.json([]);
+    }
+    
+    // Import supabaseAdmin
+    const { supabaseAdmin } = await import('../db/supabase-client');
+    
+    // Buscar do cache
+    const keys = symbols.map(s => `quote_${s}`);
+    const { data, error } = await supabaseAdmin
+      .from('cache_quotes')
+      .select('*')
+      .in('key', keys)
+      .gte('expires_at', new Date().toISOString());
+      
+    if (error) throw error;
+    
+    // Transformar resposta
+    const quotes = data?.map(item => ({
+      symbol: item.data.symbol,
+      price: item.data.price,
+      change: item.data.change,
+      change_percent: item.data.change_percent,
+      high: item.data.high,
+      low: item.data.low,
+      open: item.data.open,
+      previous_close: item.data.previous_close,
+      timestamp: item.data.timestamp
+    })) || [];
+    
+    res.json(quotes);
+  } catch (error) {
+    console.error('Error fetching quotes:', error);
+    res.status(500).json({ error: 'Failed to fetch quotes' });
+  }
+});
 
 export default router;
