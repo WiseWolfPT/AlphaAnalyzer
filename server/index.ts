@@ -111,7 +111,7 @@ import { corsDebugMiddleware as enhancedCorsDebug, forceCorsHeaders, enforceJson
 app.use(corsLoggerMiddleware);
 app.use(corsDebugMiddleware);
 
-// Enhanced CORS debugging for Koyeb issues (optional)
+// Enhanced CORS debugging for production issues (optional)
 // DISABLED: enhancedCorsDebug - replaced by centralized response handler
 // if (process.env.NODE_ENV === 'production' && process.env.DEBUG_CORS === 'true') {
 //   app.use(enhancedCorsDebug);
@@ -417,7 +417,7 @@ async function initializeMarketDataServices() {
     app.use('/api/intrinsic-values', financialDataSecurity);
     app.use('/api/earnings', financialDataSecurity);
 
-    // In production on Koyeb, we don't serve static files
+    // In production on Coolify, we don't serve static files
     // Frontend is served by Vercel
     if (process.env.NODE_ENV === "development") {
       console.log('Setting up Vite development server...');
@@ -462,7 +462,7 @@ async function initializeMarketDataServices() {
     const port = Number(env.PORT) || 3001;
     
     // ULTRATHINK PARALLEL EXECUTION: Multiple binding strategies
-    // In production (Koyeb), prioritize 0.0.0.0 for container accessibility
+    // In production (Coolify), prioritize 0.0.0.0 for container accessibility
     const bindingStrategies = isProduction ? [
       { host: '0.0.0.0', name: 'All Interfaces' },
       { host: undefined, name: 'Default' },
@@ -677,7 +677,7 @@ async function initializeMarketDataServices() {
         import('./services/keep-alive').then(({ keepAliveService }) => {
           try {
             keepAliveService.start();
-            console.log('🫀 Keep-alive service started (prevents Koyeb sleep)');
+            console.log('🫀 Keep-alive service started (prevents Coolify sleep)');
           } catch (error) {
             console.warn('⚠️ Keep-alive service failed to start:', error);
           }
@@ -748,8 +748,8 @@ async function initializeMarketDataServices() {
     }
 
     // SIMPLIFIED: Start with single server instance
-    // CRITICAL: Koyeb requires binding to 0.0.0.0 to accept external connections
-    const host = '0.0.0.0'; // Always bind to all interfaces for Koyeb
+    // CRITICAL: Coolify requires binding to 0.0.0.0 to accept external connections
+    const host = '0.0.0.0'; // Always bind to all interfaces for Coolify
     console.log(`🔄 Starting server on ${host}:${port}...`);
     server.listen(port, host, () => {
       console.log(`🚀 MAIN SERVER ACTIVE!`);
@@ -786,14 +786,14 @@ async function initializeMarketDataServices() {
         });
       });
       
-      // Setup self-pings to prevent Koyeb sleep after 60 minutes
+      // Setup self-pings to prevent Coolify sleep after 60 minutes
       if (process.env.NODE_ENV === 'production' && process.env.ENABLE_SELF_PING !== 'false') {
         import('node-cron').then(cron => {
           import('axios').then(({ default: axios }) => {
             // Schedule ping every 50 minutes (before 60 minute timeout)
             cron.schedule('*/50 * * * *', async () => {
               try {
-                const appUrl = process.env.KOYEB_APP_URL || process.env.APP_URL || `http://localhost:${port}`;
+                const appUrl = process.env.APP_URL || `http://localhost:${port}`;
                 await axios.get(`${appUrl}/health`, { 
                   timeout: 5000,
                   headers: { 'User-Agent': 'Alfalyzer-Self-Ping' }
