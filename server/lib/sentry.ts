@@ -102,10 +102,10 @@ export function setupSentryMiddleware(app: Express) {
   }
   
   // The request handler must be the first middleware on the app
-  app.use(Sentry.Handlers.requestHandler());
+  app.use(Sentry.requestHandler());
   
   // TracingHandler creates a trace for every incoming request
-  app.use(Sentry.Handlers.tracingHandler());
+  app.use(Sentry.tracingHandler());
 }
 
 export function setupSentryErrorHandler(app: Express) {
@@ -114,12 +114,8 @@ export function setupSentryErrorHandler(app: Express) {
   }
   
   // The error handler must be before any other error middleware and after all controllers
-  app.use(Sentry.Handlers.errorHandler({
-    shouldHandleError(error) {
-      // Only capture 4xx and 5xx errors
-      return error.status >= 400;
-    },
-  }));
+  // In Sentry v10, setupExpressErrorHandler replaces the old Handlers.errorHandler
+  Sentry.setupExpressErrorHandler(app);
 }
 
 // Custom error reporting
