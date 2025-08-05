@@ -32,8 +32,8 @@ export class TwelveDataProvider extends BaseMarketDataProvider {
 
   constructor() {
     super();
-    // Set API key after name is defined
-    this.apiKey = this.getApiKey();
+    // Use the correct environment variable name
+    this.apiKey = process.env.TWELVE_DATA_API_KEY || 'demo';
     this.isDemo = this.apiKey === 'demo';
     this.client = axios.create({
       baseURL: this.baseUrl,

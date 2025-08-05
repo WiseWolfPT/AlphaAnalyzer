@@ -32,8 +32,8 @@ export class AlphaVantageProvider extends BaseMarketDataProvider {
 
   constructor() {
     super();
-    // Set API key after name is defined
-    this.apiKey = this.getApiKey();
+    // Use the correct environment variable name
+    this.apiKey = process.env.ALPHA_VANTAGE_API_KEY || 'demo';
     this.isDemo = this.apiKey === 'demo';
     this.client = axios.create({
       baseURL: this.baseUrl,
