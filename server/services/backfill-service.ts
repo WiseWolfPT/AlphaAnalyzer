@@ -153,13 +153,14 @@ export class BackfillService {
           continue;
         }
 
+        // DISABLED: Rate limit tracking to avoid SQL errors
         // Check rate limits before starting
-        const canProceed = await rateLimitTracker.checkLimit(nextJob.provider, 'aggregates');
-        if (!canProceed.allowed) {
-          console.log(`⏱️ [BackfillService] Rate limit exceeded for ${nextJob.provider}, waiting...`);
-          await this.sleep(60000); // Wait 1 minute
-          continue;
-        }
+        // const canProceed = await rateLimitTracker.checkLimit(nextJob.provider, 'aggregates');
+        // if (!canProceed.allowed) {
+        //   console.log(`⏱️ [BackfillService] Rate limit exceeded for ${nextJob.provider}, waiting...`);
+        //   await this.sleep(60000); // Wait 1 minute
+        //   continue;
+        // }
 
         // Start processing the job
         await this.processJob(nextJob);
@@ -211,13 +212,14 @@ export class BackfillService {
         const toStr = batchEndDate.toISOString().split('T')[0];
 
         try {
+          // DISABLED: Rate limit tracking to avoid SQL errors
           // Check rate limits before each batch
-          const canProceed = await rateLimitTracker.checkLimit(job.provider, 'aggregates');
-          if (!canProceed.allowed) {
-            console.log(`⏱️ [BackfillService] Rate limit hit during ${job.symbol} backfill, waiting...`);
-            await this.sleep(60000); // Wait 1 minute
-            continue; // Retry the same batch
-          }
+          // const canProceed = await rateLimitTracker.checkLimit(job.provider, 'aggregates');
+          // if (!canProceed.allowed) {
+          //   console.log(`⏱️ [BackfillService] Rate limit hit during ${job.symbol} backfill, waiting...`);
+          //   await this.sleep(60000); // Wait 1 minute
+          //   continue; // Retry the same batch
+          // }
 
           // Fetch data based on job data types
           let batchDataPoints = 0;

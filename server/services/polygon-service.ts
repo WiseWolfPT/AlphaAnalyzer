@@ -1,4 +1,5 @@
-import { rateLimitTracker } from './rate-limit-tracker';
+// DISABLED: Rate limit tracker to avoid SQL function errors
+// import { rateLimitTracker } from './rate-limit-tracker';
 
 /**
  * Polygon.io Service
@@ -24,6 +25,11 @@ export class PolygonService {
    * Check rate limits using persistent rate limiting system
    */
   private async checkRateLimit(endpoint: string): Promise<boolean> {
+    // DISABLED: Rate limit tracking to avoid SQL errors
+    // Rely on in-memory quota tracking instead
+    return true;
+    
+    /* Original implementation:
     try {
       const result = await rateLimitTracker.checkLimit('polygon', endpoint);
       
@@ -39,12 +45,17 @@ export class PolygonService {
       // Fail open - allow the request
       return true;
     }
+    */
   }
 
   /**
    * Record API call usage
    */
   private async recordApiCall(endpoint: string, responseTimeMs?: number, statusCode?: number): Promise<void> {
+    // DISABLED: Rate limit tracking to avoid SQL errors
+    return;
+    
+    /* Original implementation:
     try {
       await rateLimitTracker.recordCall('polygon', endpoint, {
         responseTimeMs,
@@ -53,6 +64,7 @@ export class PolygonService {
     } catch (error) {
       console.error('❌ Failed to record Polygon API call:', error);
     }
+    */
   }
 
   /**

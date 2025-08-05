@@ -1,14 +1,10 @@
 import { finnhubService } from '../services/finnhub-service';
 import { supabaseAdmin } from '../db/supabase-client';
 
-// Top 50 US stocks por volume
+// Top 10 most traded US stocks - reduced to minimize API usage
 const TOP_STOCKS = [
-  'AAPL', 'MSFT', 'GOOGL', 'AMZN', 'NVDA', 'TSLA', 'META', 'BRK.B',
-  'V', 'JNJ', 'WMT', 'JPM', 'PG', 'MA', 'UNH', 'DIS', 'HD', 'PYPL',
-  'BAC', 'NFLX', 'ADBE', 'CRM', 'XOM', 'CMCSA', 'VZ', 'PFE', 'TMO',
-  'COST', 'ABT', 'PEP', 'ABBV', 'NKE', 'CVX', 'ACN', 'AVGO', 'MCD',
-  'WFC', 'QCOM', 'TXN', 'MDT', 'BMY', 'NEE', 'UNP', 'DHR', 'LIN',
-  'LOW', 'ORCL', 'PM', 'HON', 'UPS'
+  'AAPL', 'MSFT', 'GOOGL', 'AMZN', 'NVDA', 
+  'TSLA', 'META', 'BRK.B', 'JPM', 'V'
 ];
 
 class FinnhubRealtimeWorker {

@@ -262,12 +262,13 @@ export class WebSocketService {
       return true;
     }
 
+    // DISABLED: Rate limit tracking to avoid SQL errors
     // Check rate limits before subscribing
-    const canSubscribe = await rateLimitTracker.checkLimit('twelve_data', 'websocket_subscribe');
-    if (!canSubscribe.allowed) {
-      console.warn(`⏱️ [WebSocketService] Rate limit exceeded, cannot subscribe to ${symbol}`);
-      return false;
-    }
+    // const canSubscribe = await rateLimitTracker.checkLimit('twelve_data', 'websocket_subscribe');
+    // if (!canSubscribe.allowed) {
+    //   console.warn(`⏱️ [WebSocketService] Rate limit exceeded, cannot subscribe to ${symbol}`);
+    //   return false;
+    // }
 
     console.log(`📊 [WebSocketService] Subscribing to ${symbol}`);
 
@@ -283,8 +284,9 @@ export class WebSocketService {
       this.sendMessage(subscribeMessage);
       this.subscriptions.set(symbol, new Date());
       
+      // DISABLED: Rate limit tracking to avoid SQL errors
       // Record the API call
-      await rateLimitTracker.recordCall('twelve_data', 'websocket_subscribe');
+      // await rateLimitTracker.recordCall('twelve_data', 'websocket_subscribe');
       
       return true;
     } else {

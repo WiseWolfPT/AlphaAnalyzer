@@ -76,7 +76,8 @@ import { upstashRateLimiters } from './middleware/upstash-rate-limit';
 import { requireAuth, requireAdmin, optionalAuth } from './middleware/supabase-auth';
 
 // Import Finnhub realtime worker
-import './workers/finnhub-realtime';
+// DISABLED: To reduce API usage and prevent hitting rate limits
+// import './workers/finnhub-realtime';
 
 const app = express();
 const APP_VERSION = process.env.npm_package_version || '1.0.0';

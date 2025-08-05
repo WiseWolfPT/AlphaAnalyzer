@@ -57,11 +57,8 @@ export const getCache = () => {
   }
 };
 
+import { getDynamicCacheTTLs } from '../../utils/market-hours';
+
 // Backward compatibility for old CACHE_TTL usage
-export const CACHE_TTL = {
-  PRICE: 30 * 1000,           // 30 seconds
-  FUNDAMENTALS: 60 * 60 * 1000, // 1 hour
-  HISTORICAL: 24 * 60 * 60 * 1000, // 24 hours
-  COMPANY_INFO: 24 * 60 * 60 * 1000, // 24 hours
-  NEWS: 10 * 60 * 1000,       // 10 minutes
-};
+// Now returns dynamic TTLs based on market hours
+export const CACHE_TTL = getDynamicCacheTTLs();

@@ -15,6 +15,7 @@ import {
   CircuitBreaker, 
   CircuitBreakerState 
 } from './circuit-breaker';
+import { requestQueue } from './request-queue';
 
 export class UnifiedAPIService {
   private providers: Map<ProviderName, IMarketDataProvider> = new Map();
@@ -303,9 +304,12 @@ export class UnifiedAPIService {
       try {
         console.log(`[UnifiedAPIService] Trying ${providerName} for ${dataType} (Circuit: ${circuitBreaker.getState()})`);
         
-        // Execute operation with circuit breaker protection
+        // Execute operation with circuit breaker protection and rate limiting
         const result = await circuitBreaker.execute(async () => {
-          return await operation(provider);
+          // Use request queue to manage rate limits
+          return await requestQueue.enqueue(providerName as ProviderName, async () => {
+            return await operation(provider);
+          });
         });
         
         // Record successful call
