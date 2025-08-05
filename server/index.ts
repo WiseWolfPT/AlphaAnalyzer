@@ -374,6 +374,8 @@ async function initializeMarketDataServices() {
       console.log(`📊 Available providers: ${providers.map(p => p.name).join(', ')}`);
     } else {
       console.warn('⚠️ No API providers available - market data will use fallback mode');
+      // Still initialize the service even without providers to set initialized flag
+      await unifiedAPI.initialize([]);
     }
     
   } catch (error) {
@@ -754,6 +756,11 @@ async function initializeMarketDataServices() {
       console.log(`🔧 API:      http://localhost:${port}/api/stocks`);
       console.log(`🔧 Health:   http://localhost:${port}/health`);
       console.log('✅ Ready to accept connections...');
+      
+      // Initialize Market Data APIs
+      initializeMarketDataServices().catch(error => {
+        console.warn('⚠️ Market data services initialization failed:', error);
+      });
       
       // PHASE 1 - DAY 1: Initialize Background Job Processor (simplified startup)
       if (process.env.ENABLE_BACKGROUND_JOBS !== 'false') {
