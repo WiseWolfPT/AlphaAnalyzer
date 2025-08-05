@@ -29,8 +29,7 @@ export function initializeSentry() {
     
     // Performance monitoring
     integrations: [
-      // Enable HTTP tracking
-      new Sentry.Integrations.Http({ tracing: true }),
+      // HTTP tracking is now automatic in @sentry/node v10
       // Enable profiling
       nodeProfilingIntegration(),
     ],
