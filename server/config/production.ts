@@ -1,4 +1,4 @@
-// Production configuration for Koyeb deployment
+// Production configuration for Coolify deployment
 export const productionConfig = {
   // Server configuration
   port: process.env.PORT || 8000,

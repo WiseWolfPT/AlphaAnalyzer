@@ -8,17 +8,17 @@ We've identified and fixed multiple issues causing the black screen:
 - ✅ **React CDN loading**: Removed all CDN loading, React is now bundled with Vite
 - ✅ **Service Worker crash**: Fixed chrome-extension:// URL handling
 
-### 2. Koyeb Deployment Status
+### 2. Coolify Deployment Status
 - **Status**: ❌ Failed/Not responding (404 on all endpoints)
 - **Last push**: 22:48 WEST (10 minutes ago)
 - **Commits pushed**:
   - `fix: service worker crashing on chrome-extension:// URLs`
-  - `fix: remove React CDN loading to fix CSP issues on Koyeb`
-  - `fix: temporarily disable CSP to debug Koyeb deployment`
+  - `fix: remove React CDN loading to fix CSP issues on Coolify`
+  - `fix: temporarily disable CSP to debug Coolify deployment`
 
 ### 3. Next Steps - Vercel Deployment
 
-Since Koyeb is having issues, we should proceed with deploying the frontend to Vercel:
+Since Coolify is having issues, we should proceed with deploying the frontend to Vercel:
 
 #### Step 1: Create Vercel Account
 1. Go to https://vercel.com
@@ -34,7 +34,7 @@ Since Koyeb is having issues, we should proceed with deploying the frontend to V
 The `vercel.json` file is already configured with:
 - Build command: `npm install && npm run build:client`
 - Output directory: `dist/public`
-- API rewrites to Koyeb backend
+- API rewrites to Coolify backend
 
 #### Step 4: Set Environment Variables
 Add these in Vercel dashboard:
@@ -48,8 +48,8 @@ Click "Deploy" and wait for the build to complete.
 
 ### 4. Alternative Backend Options
 
-If Koyeb continues to fail, consider:
-1. **Railway.app**: Similar to Koyeb, easy deployment
+If Coolify continues to fail, consider:
+1. **Railway.app**: Similar to Coolify, easy deployment
 2. **Render.com**: Free tier available
 3. **Fly.io**: More complex but reliable
 4. **Local development**: Run backend locally with ngrok
@@ -67,6 +67,6 @@ If Koyeb continues to fail, consider:
 - CSP is temporarily disabled but can be re-enabled once working
 
 ## Immediate Action Required
-1. Check Koyeb dashboard for deployment logs
-2. If Koyeb is still failing after 15 minutes, proceed with Vercel frontend deployment
-3. Consider alternative backend hosting if Koyeb continues to fail
+1. Check Coolify dashboard for deployment logs
+2. If Coolify is still failing after 15 minutes, proceed with Vercel frontend deployment
+3. Consider alternative backend hosting if Coolify continues to fail

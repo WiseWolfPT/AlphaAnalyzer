@@ -1,11 +1,11 @@
 /**
  * API Configuration for Alfalyzer Frontend
- * Using Koyeb backend with cold start handling
+ * Using Coolify backend with cold start handling
  */
 
 export const API_CONFIG = {
   // Use empty baseURL to work with Vercel proxy
-  // The proxy is configured in vercel.json to redirect /api/* to Koyeb backend
+  // The proxy is configured in vercel.json to redirect /api/* to Coolify backend
   baseURL: '',
   
   // Request timeout - 30 seconds to handle cold starts

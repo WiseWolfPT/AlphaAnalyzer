@@ -63,7 +63,7 @@ export const env = {
   VITE_WHOP_CLIENT_ID: getEnvVar('VITE_WHOP_CLIENT_ID', ''), // Client ID é público
   
   // API Base URLs - CRITICAL: Always use relative paths for Vercel proxy
-  // The proxy is configured in vercel.json to redirect /api/* to the Koyeb backend
+  // The proxy is configured in vercel.json to redirect /api/* to the Coolify backend
   VITE_API_BASE_URL: '/api', // Fixed to use proxy
   VITE_API_URL: '', // Deprecated - should not be used
   

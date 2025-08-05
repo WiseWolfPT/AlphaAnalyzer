@@ -154,7 +154,7 @@ export class CronManager {
   }
 
   /**
-   * Keep server alive to prevent Koyeb sleep
+   * Keep server alive to prevent Coolify sleep
    */
   private async keepAlive(): Promise<void> {
     logger.info('🫀 Keep-alive ping to prevent cold start...');

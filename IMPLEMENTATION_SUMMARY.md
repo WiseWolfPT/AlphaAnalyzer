@@ -4,9 +4,9 @@
 ### ✅ COMPLETED TASKS
 
 #### 1. **Infrastructure & Deployment**
-- ✅ Backend deployed on Koyeb (free tier)
-- ✅ Frontend on Vercel (connected to Koyeb backend)
-- ✅ CORS properly configured between Vercel and Koyeb
+- ✅ Backend deployed on Coolify (free tier)
+- ✅ Frontend on Vercel (connected to Coolify backend)
+- ✅ CORS properly configured between Vercel and Coolify
 - ✅ Environment variables configured on both platforms
 - ✅ UptimeRobot monitoring configured to prevent cold starts
 - ✅ Fixed all SQLite errors in production (returns empty data instead of crashing)
@@ -77,7 +77,7 @@
 
 ```
 ┌─────────────┐     ┌──────────────┐     ┌──────────────┐     ┌──────────────┐
-│   Browser   │────▶│    Vercel    │────▶│    Koyeb     │────▶│  Supabase    │
+│   Browser   │────▶│    Vercel    │────▶│    Coolify     │────▶│  Supabase    │
 │   (User)    │     │  (Frontend)  │     │  (Backend)   │     │  (Cache DB)  │
 └─────────────┘     └──────────────┘     └──────┬───────┘     └──────────────┘
                                                  │                      
@@ -146,7 +146,7 @@ Before considering the system production-ready:
    - Provider implementations consistent
 
 2. **Challenges Faced**
-   - Koyeb cold starts require workarounds
+   - Coolify cold starts require workarounds
    - SQLite not available in production
    - Multiple API rate limits to manage
    - Complex caching strategy needed
@@ -176,7 +176,7 @@ Before considering the system production-ready:
 
 4. **Deploy Updates**
    - Push code to GitHub
-   - Monitor Koyeb deployment
+   - Monitor Coolify deployment
    - Check error logs
 
 ---

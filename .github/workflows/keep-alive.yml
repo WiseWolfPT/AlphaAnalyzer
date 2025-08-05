@@ -2,7 +2,7 @@ name: Keep Backend Alive
 
 on:
   schedule:
-    # Run every 45 minutes to prevent Koyeb sleep
+    # Run every 45 minutes to prevent Coolify sleep
     - cron: '*/45 * * * *'
   workflow_dispatch: # Allow manual trigger
 
@@ -21,7 +21,7 @@ jobs:
           response=$(curl -s -o /dev/null -w "%{http_code}" \
             --connect-timeout 30 \
             --max-time 60 \
-            https://crucial-ivonne-alfalyzer-90666a9e.koyeb.app/api/health)
+            https://crucial-ivonne-alfalyzer-90666a9e.coolify.app/api/health)
           
           echo "Health check response: HTTP $response"
           
@@ -41,7 +41,7 @@ jobs:
           response=$(curl -s -o /dev/null -w "%{http_code}" \
             --connect-timeout 10 \
             --max-time 30 \
-            https://crucial-ivonne-alfalyzer-90666a9e.koyeb.app/api/v1/market/status)
+            https://crucial-ivonne-alfalyzer-90666a9e.coolify.app/api/v1/market/status)
           
           echo "Market status response: HTTP $response"
           
@@ -60,7 +60,7 @@ jobs:
             -H "Content-Type: application/json" \
             -H "User-Agent: GitHub-Actions-Keep-Alive" \
             -d '{"source": "github-actions"}' \
-            https://crucial-ivonne-alfalyzer-90666a9e.koyeb.app/api/admin/keep-alive/ping)
+            https://crucial-ivonne-alfalyzer-90666a9e.coolify.app/api/admin/keep-alive/ping)
           
           echo "Keep-alive response: $response"
       
@@ -94,7 +94,7 @@ jobs:
             - Workflow Run: [${context.runNumber}](${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId})
             
             **Action Required:**
-            1. Check Koyeb dashboard for service status
+            1. Check Coolify dashboard for service status
             2. Verify the backend URL hasn't changed
             3. Check for any deployment issues
             

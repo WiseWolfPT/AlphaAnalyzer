@@ -1,5 +1,5 @@
 /**
- * API Client for making requests to the Koyeb backend
+ * API Client for making requests to the Coolify backend
  * Handles base URL configuration and common request patterns
  */
 

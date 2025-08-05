@@ -56,5 +56,5 @@ const API_BASE_URL = env.VITE_API_URL || 'http://localhost:3001';
 
 ## Next Steps
 1. Test the application to ensure all API connections work properly
-2. For production deployment on Koyeb, ensure `VITE_API_URL` is set to the correct backend URL
+2. For production deployment on Coolify, ensure `VITE_API_URL` is set to the correct backend URL
 3. Monitor console logs for any remaining connection issues

@@ -37,7 +37,7 @@ Crie um ficheiro `client/.vercel/output/config.json`:
 {
   "version": 3,
   "routes": [
-    { "src": "/api/(.*)", "dest": "https://alphaanalyzer-wisewolfpt.koyeb.app/api/$1" },
+    { "src": "/api/(.*)", "dest": "https://alphaanalyzer-wisewolfpt.coolify.app/api/$1" },
     { "src": "/(.*)", "dest": "/index.html" }
   ]
 }

@@ -2,9 +2,9 @@
 ## Migração do Frontend AlphaAnalyzer para Vercel
 
 ### 📋 CONTEXTO E OBJETIVO
-- **Problema**: Frontend no Koyeb com tela preta persistente
+- **Problema**: Frontend no Coolify com tela preta persistente
 - **Solução**: Migrar frontend para Vercel (especializada em SPAs)
-- **Arquitetura Final**: Frontend (Vercel) + Backend (Koyeb)
+- **Arquitetura Final**: Frontend (Vercel) + Backend (Coolify)
 - **Tempo Estimado**: 30-45 minutos
 
 ### 🎯 ESTRATÉGIA DE EXECUÇÃO
@@ -47,9 +47,9 @@ AÇÕES:
 ```bash
 TAREFA: Documentar configurações atuais
 AÇÕES:
-1. Listar URLs atuais do Koyeb:
-   - Frontend: https://crucial-ivonne-alfalyzer-90666a9e.koyeb.app
-   - Backend: https://alphaanalyzer-wisewolfpt.koyeb.app
+1. Listar URLs atuais do Coolify:
+   - Frontend: https://crucial-ivonne-alfalyzer-90666a9e.coolify.app
+   - Backend: https://alphaanalyzer-wisewolfpt.coolify.app
 2. Identificar variáveis de ambiente necessárias:
    - VITE_SUPABASE_URL
    - VITE_SUPABASE_ANON_KEY
@@ -125,16 +125,16 @@ SEQUÊNCIA:
 
 #### AGENTE 8 - Conectar Backend
 ```bash
-TAREFA: Configurar conexão com backend Koyeb
+TAREFA: Configurar conexão com backend Coolify
 MODO: --ultrathink
 DEPENDÊNCIA: Preview URL do Agente 7
 AÇÕES:
 1. Adicionar variáveis no Vercel Dashboard:
    - VITE_SUPABASE_URL=[valor do .env]
    - VITE_SUPABASE_ANON_KEY=[valor do .env]
-   - VITE_API_URL=https://alphaanalyzer-wisewolfpt.koyeb.app
+   - VITE_API_URL=https://alphaanalyzer-wisewolfpt.coolify.app
 2. Atualizar CORS no backend com Preview URL
-3. Fazer deploy do backend atualizado no Koyeb
+3. Fazer deploy do backend atualizado no Coolify
 4. Trigger redeploy no Vercel
 ```
 
@@ -199,10 +199,10 @@ AÇÕES:
 
 #### AGENTE 13 - Limpeza
 ```bash
-TAREFA: Descomissionar frontend Koyeb
+TAREFA: Descomissionar frontend Coolify
 AGUARDAR: 24 horas de estabilidade
 AÇÕES:
-1. Parar serviço frontend no Koyeb
+1. Parar serviço frontend no Coolify
 2. Remover configurações desnecessárias
 3. Manter apenas backend rodando
 4. Atualizar documentação
@@ -214,7 +214,7 @@ AÇÕES:
 
 ### Se algo der errado:
 1. **Na Vercel**: Use "Instant Rollback" para deploy anterior
-2. **No DNS**: Reverta para apontar Koyeb
+2. **No DNS**: Reverta para apontar Coolify
 3. **No Backend**: Reverta commit de CORS se necessário
 
 ### Sinais de problema:
@@ -229,7 +229,7 @@ AÇÕES:
 
 - [ ] Frontend carregando na Vercel sem tela preta
 - [ ] Todas as funcionalidades testadas e funcionando
-- [ ] Backend no Koyeb respondendo normalmente
+- [ ] Backend no Coolify respondendo normalmente
 - [ ] CORS configurado corretamente
 - [ ] Variáveis de ambiente funcionando
 - [ ] Zero downtime durante migração
@@ -245,7 +245,7 @@ curl -I https://alphaanalyzer.vercel.app
 
 # Testar CORS
 curl -H "Origin: https://alphaanalyzer.vercel.app" \
-     -I https://alphaanalyzer-wisewolfpt.koyeb.app/api/health
+     -I https://alphaanalyzer-wisewolfpt.coolify.app/api/health
 
 # Limpar cache do navegador (instruir usuário)
 Cmd+Shift+R (Mac) ou Ctrl+Shift+R (Windows/Linux)

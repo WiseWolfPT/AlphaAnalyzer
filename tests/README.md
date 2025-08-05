@@ -104,7 +104,7 @@ open tests/monitoring/dashboard.html
 - ✅ Visualização de dados no frontend
 - ✅ Fallback quando backend offline
 - ✅ Rate limiting
-- ✅ Cold start do Koyeb
+- ✅ Cold start do Coolify
 
 ### 2. Performance
 - ⚡ Latência com cache hit/miss
@@ -136,7 +136,7 @@ open tests/monitoring/dashboard.html
 # URLs dos serviços
 export BACKEND_URL=http://localhost:3001
 export FRONTEND_URL=http://localhost:3000
-export KOYEB_URL=https://seu-app.koyeb.app
+export COOLIFY_URL=https://seu-app.coolify.app
 
 # Supabase (necessário para testes realtime)
 export VITE_SUPABASE_URL=sua-url

@@ -31,7 +31,7 @@ This document summarizes the Backend CORS & Infrastructure implementation comple
 ### 4. Environment Variables ✅
 - Updated `.env.example` with all required variables:
   - `FRONTEND_URL`
-  - `KOYEB_APP_URL`
+  - `COOLIFY_APP_URL`
   - `CRON_SECRET`
   - `JWT_SECRET`
   - `UPTIME_ROBOT_KEY`
@@ -121,9 +121,9 @@ To test the CORS implementation:
    - Access-Control-Allow-Methods: GET,POST,PUT,DELETE,OPTIONS
    - Access-Control-Allow-Headers: Content-Type, Authorization
 
-## Koyeb Deployment
+## Coolify Deployment
 
-The Koyeb configuration is ready with:
+The Coolify configuration is ready with:
 - Health check endpoint: `/api/health`
 - Port: 3001
 - Auto-scaling: min 1, max 1 (free tier)
@@ -142,7 +142,7 @@ For other agents:
 1. **Security**: Never commit real API keys. Use environment variables.
 2. **CORS**: Always test from actual frontend domain to verify CORS works.
 3. **Rate Limiting**: Monitor API usage to stay within free tier limits.
-4. **Health Checks**: The `/health` endpoint must remain accessible without authentication for Koyeb monitoring.
+4. **Health Checks**: The `/health` endpoint must remain accessible without authentication for Coolify monitoring.
 
 ---
 Implementation completed by AGENT 1 on 2025-07-23

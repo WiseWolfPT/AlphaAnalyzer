@@ -2,7 +2,7 @@
 
 ## 🚀 Decisão: Migrar Frontend para Vercel
 
-Baseado na análise de especialistas em IA, vamos migrar o frontend para Vercel mantendo o backend no Koyeb.
+Baseado na análise de especialistas em IA, vamos migrar o frontend para Vercel mantendo o backend no Coolify.
 
 ## 📋 Checklist de Migração (30 minutos)
 
@@ -28,7 +28,7 @@ No painel da Vercel, adicione:
 ```
 VITE_SUPABASE_URL=your_supabase_url
 VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
-VITE_API_URL=https://alphaanalyzer-wisewolfpt.koyeb.app
+VITE_API_URL=https://alphaanalyzer-wisewolfpt.coolify.app
 ```
 
 ### 5. Deploy (5 min)
@@ -36,7 +36,7 @@ VITE_API_URL=https://alphaanalyzer-wisewolfpt.koyeb.app
 - [ ] Aguarde o build (~3-5 minutos)
 - [ ] Teste a URL fornecida pela Vercel
 
-### 6. Configurar CORS no Backend Koyeb (5 min)
+### 6. Configurar CORS no Backend Coolify (5 min)
 Adicione a URL da Vercel ao CORS permitido:
 
 ```javascript
@@ -63,7 +63,7 @@ const corsOptions = {
 ## ⚠️ Pontos de Atenção
 
 1. **CORS**: O backend precisa permitir a origem Vercel
-2. **API URL**: Use variável de ambiente para a URL do Koyeb
+2. **API URL**: Use variável de ambiente para a URL do Coolify
 3. **Custos**: Vercel free tier é generoso mas tem limites
 
 ## 🔄 Próximos Passos (Após Migração)
@@ -75,7 +75,7 @@ const corsOptions = {
 
 ## 📊 Comparação Final
 
-| Aspecto | Koyeb (atual) | Vercel (proposto) |
+| Aspecto | Coolify (atual) | Vercel (proposto) |
 |---------|---------------|-------------------|
 | Tempo para resolver | Incerto | < 30 minutos |
 | Especialização SPA | Não | Sim |

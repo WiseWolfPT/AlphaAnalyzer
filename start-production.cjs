@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * Production starter script for Koyeb deployment
+ * Production starter script for Coolify deployment
  * Ensures the server starts correctly in production environment
  */
 
@@ -15,7 +15,7 @@ process.env.NODE_ENV = 'production';
 console.log('🚀 Starting Alfalyzer Production Server');
 console.log('📍 Environment:', process.env.NODE_ENV);
 console.log('📍 Port:', process.env.PORT || 8000);
-console.log('📍 Platform:', process.env.KOYEB_SERVICE_NAME ? 'Koyeb' : 'Unknown');
+console.log('📍 Platform:', process.env.COOLIFY_SERVICE_NAME ? 'Coolify' : 'Unknown');
 console.log('📍 Node Version:', process.version);
 console.log('📍 Working Directory:', process.cwd());
 

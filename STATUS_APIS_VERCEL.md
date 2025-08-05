@@ -2,11 +2,11 @@
 
 ## ✅ Resumo Executivo
 - **Frontend**: https://alfalyzer.vercel.app (Funcionando)
-- **Backend**: https://crucial-ivonne-alfalyzer-90666a9e.koyeb.app (Funcionando)
+- **Backend**: https://crucial-ivonne-alfalyzer-90666a9e.coolify.app (Funcionando)
 - **APIs**: Todas as 5 APIs configuradas e retornando dados reais
 - **401 Error**: RESOLVIDO - Proxy Vercel funcionando perfeitamente
 
-## 📊 APIs Configuradas no Koyeb
+## 📊 APIs Configuradas no Coolify
 
 1. **Alpha Vantage** ✅
    - Status: Funcionando

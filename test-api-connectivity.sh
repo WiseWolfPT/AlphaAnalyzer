@@ -4,7 +4,7 @@
 # Tests both direct backend and Vercel proxy endpoints
 
 echo "=== Alfalyzer API Connectivity Test ==="
-echo "Backend: https://crucial-ivonne-alfalyzer-90666a9e.koyeb.app"
+echo "Backend: https://crucial-ivonne-alfalyzer-90666a9e.coolify.app"
 echo "Frontend: https://alfalyzerpro4.vercel.app"
 echo ""
 
@@ -17,9 +17,9 @@ NC='\033[0m' # No Color
 # Test health endpoint (both direct and proxy)
 echo "1. Testing Health Endpoint..."
 echo "   Direct backend:"
-if curl -s -f https://crucial-ivonne-alfalyzer-90666a9e.koyeb.app/api/market-data/health > /dev/null; then
+if curl -s -f https://crucial-ivonne-alfalyzer-90666a9e.coolify.app/api/market-data/health > /dev/null; then
     echo -e "   ${GREEN}✓ Success${NC}"
-    curl -s https://crucial-ivonne-alfalyzer-90666a9e.koyeb.app/api/market-data/health | jq '.'
+    curl -s https://crucial-ivonne-alfalyzer-90666a9e.coolify.app/api/market-data/health | jq '.'
 else
     echo -e "   ${RED}✗ Failed${NC}"
 fi

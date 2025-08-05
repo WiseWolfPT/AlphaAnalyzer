@@ -1,4 +1,4 @@
-# Debug Dockerfile to understand Koyeb build issues
+# Debug Dockerfile to understand Coolify build issues
 FROM node:20-alpine
 
 WORKDIR /app
@@ -38,8 +38,8 @@ RUN echo "console.log('Test file works');" > test.js && \
 RUN echo "=== TESTING SERVER FILES ===" && \
     echo "Testing simple.js:" && \
     node server/simple.js --version || echo "simple.js failed" && \
-    echo "Testing koyeb-direct.js:" && \
-    node server/koyeb-direct.js --version || echo "koyeb-direct.js not ready yet"
+    echo "Testing coolify-direct.js:" && \
+    node server/coolify-direct.js --version || echo "coolify-direct.js not ready yet"
 
 EXPOSE 3001
 

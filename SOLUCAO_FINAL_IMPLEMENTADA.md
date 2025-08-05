@@ -23,7 +23,7 @@ Modificados para usar `res.locals` em vez de wrap:
 - `scripts/monitor-headers-error.js` - monitorização em tempo real
 - Valida que o erro não ocorre mais
 
-## 📋 Próximos Passos no Koyeb
+## 📋 Próximos Passos no Coolify
 
 ### 1. Verificar Settings:
 - Build command: `npm install`
@@ -37,15 +37,15 @@ NODE_ENV=production
 # Todas as API keys...
 ```
 
-### 3. Fazer Redeploy no Koyeb
+### 3. Fazer Redeploy no Coolify
 
 ### 4. Monitorizar após Deploy:
 ```bash
 # Health check
-curl https://crucial-ivonne-alfalyzer-90666a9e.koyeb.app/health
+curl https://crucial-ivonne-alfalyzer-90666a9e.coolify.app/health
 
 # Monitor em tempo real
-API_URL=https://crucial-ivonne-alfalyzer-90666a9e.koyeb.app node scripts/monitor-headers-error.js
+API_URL=https://crucial-ivonne-alfalyzer-90666a9e.coolify.app node scripts/monitor-headers-error.js
 ```
 
 ## 🎯 Resumo da Solução
@@ -59,7 +59,7 @@ API_URL=https://crucial-ivonne-alfalyzer-90666a9e.koyeb.app node scripts/monitor
 
 **RESULTADO ESPERADO**: 
 - ✅ Sem mais erros "ERR_HTTP_HEADERS_SENT"
-- ✅ Servidor estável no Koyeb
+- ✅ Servidor estável no Coolify
 - ✅ Todos os middlewares funcionam em harmonia
 
 ## 🚨 Se Ainda Falhar

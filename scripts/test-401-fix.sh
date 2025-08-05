@@ -12,7 +12,7 @@ NC='\033[0m' # No Color
 
 # URLs
 FRONTEND_URL="https://alfalyzer.vercel.app"
-BACKEND_URL="https://crucial-ivonne-alfalyzer-90666a9e.koyeb.app"
+BACKEND_URL="https://crucial-ivonne-alfalyzer-90666a9e.coolify.app"
 
 echo ""
 echo "1️⃣  Testing Backend Health (Direct)"
@@ -80,7 +80,7 @@ echo "=============================================="
 echo -e "${GREEN}🎉 All tests passed! The 401 fix is working!${NC}"
 echo ""
 echo "Summary:"
-echo "✅ Backend on Koyeb is running"
+echo "✅ Backend on Coolify is running"
 echo "✅ Frontend on Vercel is deployed"
 echo "✅ Vercel proxy is correctly configured"
 echo "✅ VITE_API_URL is not exposing backend URL"

@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Test AlphaAnalyzer Deployment
-# This script tests both Koyeb and Vercel deployments
+# This script tests both Coolify and Vercel deployments
 
 echo "🔍 Testing AlphaAnalyzer Deployments"
 echo "===================================="
@@ -48,14 +48,14 @@ test_url() {
     fi
 }
 
-# Test Koyeb deployment
-echo "1. Testing Koyeb Backend + Frontend"
-test_url "https://alphaanalyzer-wisewolfpt.koyeb.app" "Koyeb"
+# Test Coolify deployment
+echo "1. Testing Coolify Backend + Frontend"
+test_url "https://alphaanalyzer-wisewolfpt.coolify.app" "Coolify"
 
 # Test API health endpoint
 echo ""
 echo "2. Testing API Health Endpoint"
-api_response=$(curl -s "https://alphaanalyzer-wisewolfpt.koyeb.app/api/health")
+api_response=$(curl -s "https://alphaanalyzer-wisewolfpt.coolify.app/api/health")
 if [[ "$api_response" == *"status"* ]] && [[ "$api_response" == *"ok"* ]]; then
     echo "✅ API is healthy: $api_response"
 else
@@ -79,5 +79,5 @@ echo "- Ensure all environment variables are configured"
 echo "- Check that Service Worker is not causing issues"
 echo ""
 echo "🔗 Useful URLs:"
-echo "- Koyeb Dashboard: https://app.koyeb.com/apps/alphaanalyzer"
+echo "- Coolify Dashboard: https://app.coolify.com/apps/alphaanalyzer"
 echo "- Vercel Dashboard: https://vercel.com/dashboard"

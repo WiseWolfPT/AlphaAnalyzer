@@ -13,13 +13,13 @@
 ## 🔍 Status Atual
 
 ### ✅ O que está funcionando:
-- **Backend no Koyeb**: API rodando em `https://crucial-ivonne-alfalyzer-90666a9e.koyeb.app`
+- **Backend no Coolify**: API rodando em `https://crucial-ivonne-alfalyzer-90666a9e.coolify.app`
 - **Frontend no Vercel**: Deployado (mas precisa verificar conexão)
-- **APIs configuradas**: Todas as chaves estão no Koyeb
+- **APIs configuradas**: Todas as chaves estão no Coolify
 - **ALLOWED_ORIGINS**: Configurado para permitir CORS
 
 ### ⚠️ Problemas identificados:
-- Erro "index.html not found" no Koyeb (inofensivo - ignorar)
+- Erro "index.html not found" no Coolify (inofensivo - ignorar)
 - Polygon API com erros 403/429 (limite excedido)
 - Conexão frontend-backend ainda não testada
 
@@ -28,7 +28,7 @@
 ```
 ┌─────────────────┐         ┌─────────────────┐
 │   Frontend      │         │    Backend      │
-│   (Vercel)      │ <-----> │    (Koyeb)      │
+│   (Vercel)      │ <-----> │    (Coolify)      │
 │                 │  HTTPS  │                 │
 │  React + Vite   │         │  Express + TS   │
 └─────────────────┘         └─────────────────┘
@@ -140,17 +140,17 @@ Erro gracioso com dados mock
    https://alfalyzerpro4-20n9vt0bo-antonios-projects-f9cd3cd0.vercel.app
    
    # Verificar console (F12) para erros
-   # Testar se faz chamadas para o backend Koyeb
+   # Testar se faz chamadas para o backend Coolify
    ```
 
 2. **Testar Conexão Backend**:
    ```bash
    # Testar health check:
-   curl https://crucial-ivonne-alfalyzer-90666a9e.koyeb.app/health
+   curl https://crucial-ivonne-alfalyzer-90666a9e.coolify.app/health
    
    # Testar API com CORS:
    curl -H "Origin: https://alfalyzerpro4-20n9vt0bo-antonios-projects-f9cd3cd0.vercel.app" \
-        https://crucial-ivonne-alfalyzer-90666a9e.koyeb.app/api/market-data/stocks
+        https://crucial-ivonne-alfalyzer-90666a9e.coolify.app/api/market-data/stocks
    ```
 
 ### Fase 2: Otimizações Rápidas (1-2 dias)
@@ -206,7 +206,7 @@ Erro gracioso com dados mock
 
 2. **Verifique o Console (F12)**:
    - Não deve ter erros CORS
-   - Deve mostrar chamadas para o backend Koyeb
+   - Deve mostrar chamadas para o backend Coolify
 
 3. **Teste Funcionalidades**:
    - Buscar uma ação (ex: AAPL)
@@ -217,10 +217,10 @@ Erro gracioso com dados mock
 
 1. **Verificar variáveis no Vercel**:
    ```
-   VITE_API_URL=https://crucial-ivonne-alfalyzer-90666a9e.koyeb.app
+   VITE_API_URL=https://crucial-ivonne-alfalyzer-90666a9e.coolify.app
    ```
 
-2. **Verificar ALLOWED_ORIGINS no Koyeb**:
+2. **Verificar ALLOWED_ORIGINS no Coolify**:
    ```
    ALLOWED_ORIGINS=https://alfalyzerpro4-20n9vt0bo-antonios-projects-f9cd3cd0.vercel.app,https://alfalyzer.vercel.app
    ```
@@ -237,14 +237,14 @@ Erro gracioso com dados mock
 
 ```bash
 # Testar backend
-curl https://crucial-ivonne-alfalyzer-90666a9e.koyeb.app/health
+curl https://crucial-ivonne-alfalyzer-90666a9e.coolify.app/health
 
 # Testar CORS
 curl -I -H "Origin: https://alfalyzerpro4-20n9vt0bo-antonios-projects-f9cd3cd0.vercel.app" \
-     https://crucial-ivonne-alfalyzer-90666a9e.koyeb.app/api/market-data/stocks
+     https://crucial-ivonne-alfalyzer-90666a9e.coolify.app/api/market-data/stocks
 
-# Ver logs no Koyeb
-# Acessar dashboard Koyeb → Logs
+# Ver logs no Coolify
+# Acessar dashboard Coolify → Logs
 
 # Ver logs no Vercel  
 # Acessar dashboard Vercel → Functions → Logs

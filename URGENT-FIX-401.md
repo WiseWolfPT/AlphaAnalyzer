@@ -43,10 +43,10 @@ Se retornar `{status: "ok"}`, está funcionando! 🎉
 
 ```
 ❌ COM VITE_API_URL:
-   Browser → Koyeb direto = CORS + 401
+   Browser → Coolify direto = CORS + 401
 
 ✅ SEM VITE_API_URL:
-   Browser → Vercel → Koyeb = Sem CORS, Sem 401
+   Browser → Vercel → Coolify = Sem CORS, Sem 401
 ```
 
 ## 🆘 SE NÃO FUNCIONAR

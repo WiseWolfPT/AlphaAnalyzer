@@ -44,7 +44,7 @@ function detectEnvironment(): Environment {
       hostname.includes('herokuapp.com') ||
       protocol === 'https:') { // Also detect production by https
     // CRITICAL: Always use relative paths to go through Vercel proxy
-    // The proxy is configured in vercel.json to redirect /api/* to the Koyeb backend
+    // The proxy is configured in vercel.json to redirect /api/* to the Coolify backend
     return {
       name: 'production',
       apiBase: '/api',

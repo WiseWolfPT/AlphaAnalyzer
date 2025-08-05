@@ -1,4 +1,4 @@
-// Simplified server for Koyeb deployment
+// Simplified server for Coolify deployment
 console.log('✅ RUNNING SIMPLE-SERVER.TS - WITH SUPABASE CACHE');
 import express from 'express';
 import cors from 'cors';
@@ -21,7 +21,7 @@ testConnection().then(connected => {
 });
 
 const app = express();
-// IMPORTANT: Koyeb assigns the PORT dynamically, we must use it
+// IMPORTANT: Coolify assigns the PORT dynamically, we must use it
 const PORT = process.env.PORT || 3001;
 
 // Basic middleware
@@ -70,7 +70,7 @@ try {
         message: 'Using inline minimal diagnostic endpoint',
         timestamp: new Date().toISOString(),
         environment: process.env.NODE_ENV || 'development',
-        koyeb: !!process.env.KOYEB_SERVICE_NAME,
+        coolify: !!process.env.COOLIFY_SERVICE_NAME,
         error: 'Both diagnostic modules failed to load'
       });
     });
@@ -312,11 +312,11 @@ app.get('/api/diagnostic/minimal', async (req, res) => {
     platform: process.platform,
     nodeVersion: process.version,
     
-    koyebInfo: {
-      IS_KOYEB: !!process.env.KOYEB_SERVICE_NAME,
-      KOYEB_SERVICE_NAME: process.env.KOYEB_SERVICE_NAME || 'NOT_ON_KOYEB',
-      KOYEB_APP_NAME: process.env.KOYEB_APP_NAME || 'NOT_ON_KOYEB',
-      KOYEB_REGION: process.env.KOYEB_REGION || 'NOT_ON_KOYEB'
+    coolifyInfo: {
+      IS_COOLIFY: !!process.env.COOLIFY_SERVICE_NAME,
+      COOLIFY_SERVICE_NAME: process.env.COOLIFY_SERVICE_NAME || 'NOT_ON_COOLIFY',
+      COOLIFY_APP_NAME: process.env.COOLIFY_APP_NAME || 'NOT_ON_COOLIFY',
+      COOLIFY_REGION: process.env.COOLIFY_REGION || 'NOT_ON_COOLIFY'
     },
     
     envVars: {
@@ -352,11 +352,11 @@ app.get('/api/diagnostic/minimal', async (req, res) => {
   
   // Add recommendations
   if (diagnostics.summary.configuredApis.length === 0) {
-    diagnostics.summary.recommendations.push('No API keys configured. Please set environment variables on Koyeb.');
+    diagnostics.summary.recommendations.push('No API keys configured. Please set environment variables on Coolify.');
   }
   
-  if (process.env.NODE_ENV !== 'production' && diagnostics.koyebInfo.IS_KOYEB) {
-    diagnostics.summary.recommendations.push('NODE_ENV should be set to "production" on Koyeb.');
+  if (process.env.NODE_ENV !== 'production' && diagnostics.coolifyInfo.IS_COOLIFY) {
+    diagnostics.summary.recommendations.push('NODE_ENV should be set to "production" on Coolify.');
   }
 
   res.json(diagnostics);
@@ -419,7 +419,7 @@ app.get('/api/diagnostic/test-connectivity', async (req, res) => {
   
   res.json({
     timestamp: new Date().toISOString(),
-    koyeb: !!process.env.KOYEB_SERVICE_NAME,
+    coolify: !!process.env.COOLIFY_SERVICE_NAME,
     tests,
     summary: allSuccess ? 'All connectivity tests passed' : 'Some connectivity tests failed',
     recommendation: allSuccess ? 

@@ -1,5 +1,5 @@
 /**
- * Enhanced API Client with Koyeb Cold Start Handling
+ * Enhanced API Client with Coolify Cold Start Handling
  * Implements retry logic, error handling, and graceful cold start management
  */
 

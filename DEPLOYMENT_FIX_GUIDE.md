@@ -2,36 +2,36 @@
 
 ## Current Issue Analysis
 
-Your Koyeb deployment is failing because:
-1. **Port Configuration**: Server hardcoded to 3001, but Koyeb sets PORT env var (usually 8000)
-2. **Health Check Timing**: Koyeb checks health before TypeScript server fully starts
+Your Coolify deployment is failing because:
+1. **Port Configuration**: Server hardcoded to 3001, but Coolify sets PORT env var (usually 8000)
+2. **Health Check Timing**: Coolify checks health before TypeScript server fully starts
 3. **CORS Configuration**: Already correct, but frontend can't reach unhealthy backend
 
-## Solution 1: Fix Koyeb Deployment
+## Solution 1: Fix Coolify Deployment
 
 ### Step 1: Test Locally
 ```bash
 # Run the test script
-./test-koyeb-locally.sh
+./test-coolify-locally.sh
 ```
 
 ### Step 2: Commit Changes
 ```bash
-git add koyeb-server-fixed.js package.json test-koyeb-locally.sh
-git commit -m "fix: Koyeb deployment with proper PORT handling and health checks"
+git add coolify-server-fixed.js package.json test-coolify-locally.sh
+git commit -m "fix: Coolify deployment with proper PORT handling and health checks"
 git push origin phase-0-main
 ```
 
-### Step 3: Update Koyeb Configuration
-1. Go to Koyeb Dashboard
+### Step 3: Update Coolify Configuration
+1. Go to Coolify Dashboard
 2. Update your service:
    - **Build command**: `npm install`
    - **Start command**: `npm start` (now uses fixed server)
-   - **Port**: Leave empty (Koyeb will set PORT env var)
+   - **Port**: Leave empty (Coolify will set PORT env var)
    - **Health check path**: `/health`
    - **Health check port**: Leave as "exposed port"
 
-### Step 4: Add Environment Variables in Koyeb
+### Step 4: Add Environment Variables in Coolify
 Make sure all your API keys are set:
 ```
 ALPHA_VANTAGE_API_KEY=your_key
@@ -45,7 +45,7 @@ FRONTEND_URL=https://alfalyzerpro4.vercel.app
 ```
 
 ### Step 5: Redeploy
-Click "Redeploy" in Koyeb dashboard
+Click "Redeploy" in Coolify dashboard
 
 ## Solution 2: Migrate to Railway (RECOMMENDED)
 
@@ -99,7 +99,7 @@ VITE_API_URL=https://alfalyzer-api.up.railway.app
 
 ## Quick Comparison
 
-| Feature | Koyeb | Railway |
+| Feature | Coolify | Railway |
 |---------|-------|---------|
 | Free Tier | $5.50/month | $5/month |
 | Setup Difficulty | Complex | Simple |
@@ -141,11 +141,11 @@ curl https://your-backend-url/api/stocks/AAPL \
 ## If Everything Fails
 
 Contact me with:
-1. Full Koyeb logs
+1. Full Coolify logs
 2. Browser console errors
 3. Network tab screenshots
 
-The fixed server (`koyeb-server-fixed.js`) addresses all known issues:
+The fixed server (`coolify-server-fixed.js`) addresses all known issues:
 - ✅ Uses process.env.PORT
 - ✅ Immediate health check response
 - ✅ Proper 0.0.0.0 binding

@@ -15,7 +15,7 @@ Place these agent files in `.claude/agents/` directory in your project root. Eac
 ```markdown
 ---
 name: alfalyzer-api-integration-specialist
-description: Use this agent when you need to diagnose, fix, and implement real-time API integrations for the Alfalyzer financial platform, particularly when dealing with frontend-backend connectivity issues, deployment configurations across Vercel/Koyeb/Supabase, and optimizing the architecture for a free-tier deployment supporting 500 concurrent users. This agent also reviews UI/UX implementation and suggests infrastructure improvements.
+description: Use this agent when you need to diagnose, fix, and implement real-time API integrations for the Alfalyzer financial platform, particularly when dealing with frontend-backend connectivity issues, deployment configurations across Vercel/Coolify/Supabase, and optimizing the architecture for a free-tier deployment supporting 500 concurrent users. This agent also reviews UI/UX implementation and suggests infrastructure improvements.
 tools: Read, Write, Edit, MultiEdit, Grep, Glob, Bash, LS, WebFetch
 ---
 
@@ -35,7 +35,7 @@ You are an expert API integration specialist for the Alfalyzer financial platfor
 - Backend: Node.js + Express + TypeScript
 - Database: SQLite (local) → Supabase (production)
 - Real-time: WebSockets + Supabase Realtime
-- Deployment: Vercel (frontend) + Koyeb/Railway (backend)
+- Deployment: Vercel (frontend) + Coolify/Railway (backend)
 
 ### Critical Implementation Patterns
 
@@ -701,7 +701,7 @@ class DatabaseService {
   }
 }
 
-# Koyeb deployment config
+# Coolify deployment config
 {
   "name": "alfalyzer-backend",
   "regions": ["fra"],
@@ -3454,7 +3454,7 @@ For UI/UX implementation:
 ```markdown
 ---
 name: devops-infrastructure-engineer
-description: DevOps and infrastructure specialist for zero-cost deployment strategies. Use proactively for CI/CD pipelines, deployment configurations, monitoring setup, and scaling strategies across Vercel, Koyeb, Supabase, and GitHub Actions. Expert in optimizing for free tiers. MUST BE USED for deployment and infrastructure decisions.
+description: DevOps and infrastructure specialist for zero-cost deployment strategies. Use proactively for CI/CD pipelines, deployment configurations, monitoring setup, and scaling strategies across Vercel, Coolify, Supabase, and GitHub Actions. Expert in optimizing for free tiers. MUST BE USED for deployment and infrastructure decisions.
 tools: Read, Write, Edit, MultiEdit, Grep, Glob, Bash, WebFetch
 ---
 
@@ -3481,7 +3481,7 @@ Frontend:
     - Domains: Unlimited
     
 Backend:
-  provider: Koyeb
+  provider: Coolify
   limits:
     - Apps: 2
     - Services: 2 per app
@@ -3571,12 +3571,12 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       
-      - name: Deploy to Koyeb
+      - name: Deploy to Coolify
         env:
-          KOYEB_API_TOKEN: ${{ secrets.KOYEB_API_TOKEN }}
+          COOLIFY_API_TOKEN: ${{ secrets.COOLIFY_API_TOKEN }}
         run: |
-          curl -X POST https://app.koyeb.com/v1/services/${{ secrets.KOYEB_SERVICE_ID }}/redeploy \
-            -H "Authorization: Bearer $KOYEB_API_TOKEN" \
+          curl -X POST https://app.coolify.com/v1/services/${{ secrets.COOLIFY_SERVICE_ID }}/redeploy \
+            -H "Authorization: Bearer $COOLIFY_API_TOKEN" \
             -H "Content-Type: application/json"
 ```
 
@@ -3621,9 +3621,9 @@ jobs:
 }
 ```
 
-### Koyeb Deployment
+### Coolify Deployment
 ```yaml
-# koyeb.yaml
+# coolify.yaml
 app:
   name: alfalyzer-backend
   
@@ -3797,7 +3797,7 @@ export const scalingConfig = {
   // Phase 1: Free tier (0-1000 users)
   free: {
     frontend: 'Vercel Free',
-    backend: 'Koyeb Free',
+    backend: 'Coolify Free',
     database: 'Supabase Free',
     cache: 'In-memory',
     cdn: 'Vercel Edge Network',

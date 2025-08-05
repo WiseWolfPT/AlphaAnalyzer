@@ -1,4 +1,4 @@
-# 🚀 Koyeb Deployment Summary - Express.js Middleware Fixes
+# 🚀 Coolify Deployment Summary - Express.js Middleware Fixes
 
 ## ✅ Issue Resolution Status
 
@@ -65,7 +65,7 @@ npm run build
 NODE_ENV=production npm start
 ```
 
-### 2. Deploy to Koyeb
+### 2. Deploy to Coolify
 ```bash
 # Commit and push
 git add .
@@ -74,22 +74,22 @@ git push origin main
 ```
 
 ### 3. Monitor Deployment
-- Watch Koyeb build logs
-- Verify health endpoint: `https://your-app.koyeb.app/health`
+- Watch Coolify build logs
+- Verify health endpoint: `https://your-app.coolify.app/health`
 - Run monitoring script: `node scripts/monitor-headers-error.js`
 
 ## 🔍 Post-Deployment Verification
 
 ### Quick Health Check
 ```bash
-curl -i https://your-app.koyeb.app/health
+curl -i https://your-app.coolify.app/health
 ```
 
 ### Concurrent Request Test
 ```bash
 # Test 10 concurrent requests
 for i in {1..10}; do
-  curl https://your-app.koyeb.app/api/stocks/AAPL/quote &
+  curl https://your-app.coolify.app/api/stocks/AAPL/quote &
 done
 wait
 ```
@@ -97,7 +97,7 @@ wait
 ### Monitor for 24 Hours
 Use the monitoring script to watch for any headers errors:
 ```bash
-API_URL=https://your-app.koyeb.app node scripts/monitor-headers-error.js
+API_URL=https://your-app.coolify.app node scripts/monitor-headers-error.js
 ```
 
 ## 📈 Expected Outcomes
@@ -111,13 +111,13 @@ API_URL=https://your-app.koyeb.app node scripts/monitor-headers-error.js
 ## 🚨 If Issues Persist
 
 ### Immediate Actions
-1. Check Koyeb logs for error patterns
+1. Check Coolify logs for error patterns
 2. Run `test-e2e-complete.js` against production
 3. Use monitoring script to identify patterns
 
 ### Rollback Process
 ```bash
-# In Koyeb Dashboard
+# In Coolify Dashboard
 1. Go to Deployments
 2. Select previous working version
 3. Click "Rollback"
@@ -152,7 +152,7 @@ tail -50 server/index.ts | grep -A5 "errorHandler"
 
 If you encounter issues:
 1. Check monitoring script output
-2. Review Koyeb deployment logs
+2. Review Coolify deployment logs
 3. Run E2E tests against production
 4. Check this summary for troubleshooting steps
 

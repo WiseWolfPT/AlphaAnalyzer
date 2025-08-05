@@ -26,8 +26,8 @@ Alfalyzer is a financial analysis platform deployed across three cloud services 
                                   │
                                   ▼
 ┌─────────────────────────────────────────────────────────────┐
-│                    KOYEB (Backend)                          │
-│           alfalyzer-4rjhp-koyeb.app                         │
+│                    COOLIFY (Backend)                          │
+│           alfalyzer-4rjhp-coolify.app                         │
 │                                                             │
 │  • Node.js + Express + TypeScript                           │
 │  • RESTful API endpoints                                    │
@@ -71,14 +71,14 @@ Alfalyzer is a financial analysis platform deployed across three cloud services 
 
 **Environment Variables**:
 ```env
-VITE_API_URL=https://alfalyzer-4rjhp-koyeb.app
+VITE_API_URL=https://alfalyzer-4rjhp-coolify.app
 VITE_SUPABASE_URL=<your-supabase-url>
 VITE_SUPABASE_ANON_KEY=<your-supabase-anon-key>
 ```
 
-### 2. Backend (Koyeb)
+### 2. Backend (Coolify)
 
-**URL**: https://alfalyzer-4rjhp-koyeb.app
+**URL**: https://alfalyzer-4rjhp-coolify.app
 
 **Technology Stack**:
 - Node.js with Express
@@ -137,7 +137,7 @@ PORT=8000
 
 ### 1. User requests stock data:
 ```
-User → Vercel Frontend → Koyeb Backend → Cache Check
+User → Vercel Frontend → Coolify Backend → Cache Check
                                             ↓ (if miss)
                                          External API
                                             ↓
@@ -148,7 +148,7 @@ User → Vercel Frontend → Koyeb Backend → Cache Check
 
 ### 2. User manages watchlist:
 ```
-User → Vercel Frontend → Koyeb Backend → Supabase
+User → Vercel Frontend → Coolify Backend → Supabase
                                             ↓
                                          RLS Check
                                             ↓
@@ -199,7 +199,7 @@ const CACHE_DURATIONS = {
 ## Security Considerations
 
 ### API Key Security
-- All sensitive API keys stored in Koyeb environment variables
+- All sensitive API keys stored in Coolify environment variables
 - Never exposed to frontend (no VITE_ prefix)
 - Backend acts as proxy for all external API calls
 
@@ -227,9 +227,9 @@ app.use(cors({
 2. Vercel automatically builds and deploys
 3. Preview deployments for pull requests
 
-### Backend (Koyeb)
+### Backend (Coolify)
 1. Push to GitHub main branch
-2. Koyeb detects changes
+2. Coolify detects changes
 3. Builds Docker container
 4. Deploys with zero downtime
 
@@ -242,7 +242,7 @@ app.use(cors({
 
 ### Health Checks
 - Frontend: Check https://alfalyzer.vercel.app
-- Backend: Check https://alfalyzer-4rjhp-koyeb.app/api/health
+- Backend: Check https://alfalyzer-4rjhp-coolify.app/api/health
 - Database: Check Supabase dashboard
 
 ### Common Issues
@@ -271,7 +271,7 @@ app.use(cors({
 ### Debugging Steps
 1. Check browser console for errors
 2. Verify backend health endpoint
-3. Check Koyeb logs for backend errors
+3. Check Coolify logs for backend errors
 4. Review Supabase logs for database issues
 5. Verify environment variables are set correctly
 
@@ -302,7 +302,7 @@ app.use(cors({
    - Share cache across instances
 
 3. **Horizontal Scaling**:
-   - Multiple Koyeb instances
+   - Multiple Coolify instances
    - Load balancer
    - Shared Redis cache
 
@@ -310,20 +310,20 @@ app.use(cors({
 
 ### Current (Free Tier)
 - Vercel: $0/month
-- Koyeb: $0/month
+- Coolify: $0/month
 - Supabase: $0/month
 - **Total**: $0/month
 
 ### Growth Phase
 - Vercel Pro: $20/month
-- Koyeb (2 instances): $10/month
+- Coolify (2 instances): $10/month
 - Supabase Pro: $25/month
 - Redis Cloud: $10/month
 - **Total**: ~$65/month
 
 ### Scale Phase
 - Vercel Pro: $20/month
-- Koyeb (4 instances): $40/month
+- Coolify (4 instances): $40/month
 - Supabase Pro: $25/month
 - Redis Cloud: $30/month
 - API Upgrades: $100/month

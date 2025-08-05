@@ -1,8 +1,8 @@
 # Solução Rápida para o Problema do Polygon
 
-## Opção 1: Adicionar ALLOWED_ORIGINS no Koyeb (RECOMENDADO)
+## Opção 1: Adicionar ALLOWED_ORIGINS no Coolify (RECOMENDADO)
 
-No painel do Koyeb, adicione esta variável de ambiente:
+No painel do Coolify, adicione esta variável de ambiente:
 
 ```
 ALLOWED_ORIGINS=https://alfalyzerpro4-20n9vt0bo-antonios-projects-f9cd3cd0.vercel.app,https://alfalyzer.vercel.app
@@ -77,7 +77,7 @@ async getQuote(symbol: string): Promise<StockQuote> {
 
 ## Ações Imediatas
 
-1. **No Koyeb**: Adicione `ALLOWED_ORIGINS` com os URLs do Vercel
+1. **No Coolify**: Adicione `ALLOWED_ORIGINS` com os URLs do Vercel
 2. **Commit e Push**: 
    ```bash
    git add .
@@ -88,8 +88,8 @@ async getQuote(symbol: string): Promise<StockQuote> {
 ## Verificação
 
 Após o deploy:
-1. Teste: `https://crucial-ivonne-alfalyzer-90666a9e.koyeb.app/health`
-2. Verifique logs no Koyeb - os erros 403 devem parar
+1. Teste: `https://crucial-ivonne-alfalyzer-90666a9e.coolify.app/health`
+2. Verifique logs no Coolify - os erros 403 devem parar
 3. O sistema deve usar automaticamente outras APIs quando o Polygon falhar
 
 ## Nota Importante

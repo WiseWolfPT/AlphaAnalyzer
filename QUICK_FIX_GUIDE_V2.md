@@ -1,7 +1,7 @@
 # 🚨 GUIA COMPLETO - RESOLVER ERRO 401 DEFINITIVAMENTE
 
 ## 🔴 PROBLEMA IDENTIFICADO
-Frontend não funciona porque VITE_API_URL está fazendo chamadas diretas para Koyeb, causando:
+Frontend não funciona porque VITE_API_URL está fazendo chamadas diretas para Coolify, causando:
 - ❌ Erro 401 (Unauthorized) 
 - ❌ CORS errors
 - ❌ Headers de autenticação não são enviados
@@ -38,7 +38,7 @@ https://vercel.com/dashboard
 3. Fazer login/ação que gera erro
 4. Verificar Request URL:
    - ✅ CORRETO: `https://alfalyzer.vercel.app/api/...`
-   - ❌ ERRADO: `https://crucial-ivonne...koyeb.app/api/...`
+   - ❌ ERRADO: `https://crucial-ivonne...coolify.app/api/...`
 
 ---
 
@@ -48,7 +48,7 @@ https://vercel.com/dashboard
 **Arquivo**: `client/src/services/market-data-client.ts`
 ```typescript
 // Adicionar no início do arquivo
-const API_BASE_URL = typeof window !== 'undefined' ? '' : (env.VITE_API_URL || 'https://crucial-ivonne-alfalyzer-90666a9e.koyeb.app');
+const API_BASE_URL = typeof window !== 'undefined' ? '' : (env.VITE_API_URL || 'https://crucial-ivonne-alfalyzer-90666a9e.coolify.app');
 console.log('[MarketDataClient] API Base URL:', API_BASE_URL || '(relative paths)');
 console.log('[MarketDataClient] Environment:', { 
   isClient: typeof window !== 'undefined',
@@ -56,7 +56,7 @@ console.log('[MarketDataClient] Environment:', {
 });
 ```
 
-### B. Verificar Headers no Backend (Koyeb)
+### B. Verificar Headers no Backend (Coolify)
 **Arquivo**: `server/middleware/logging.js`
 ```javascript
 // Adicionar middleware de debug temporário
@@ -132,7 +132,7 @@ export function middleware(request) {
     }
     
     return NextResponse.rewrite(
-      new URL(request.url.replace('vercel.app', 'koyeb.app')),
+      new URL(request.url.replace('vercel.app', 'coolify.app')),
       { request: { headers: requestHeaders } }
     );
   }

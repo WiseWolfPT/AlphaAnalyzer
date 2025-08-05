@@ -2,12 +2,12 @@ import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import fetch from 'node-fetch';
 
 // Test configuration
-const KOYEB_URL = 'http://jsg00k40sgo0k4swsoc4gcsg.128.140.45.28.sslip.io';
+const COOLIFY_URL = 'http://jsg00k40sgo0k4swsoc4gcsg.128.140.45.28.sslip.io';
 const LOCAL_URL = 'http://localhost:3001';
 const TEST_SYMBOLS = ['AAPL', 'MSFT', 'GOOGL'];
 
-// Use Koyeb in production, local for development
-const API_URL = process.env.NODE_ENV === 'production' ? KOYEB_URL : LOCAL_URL;
+// Use Coolify in production, local for development
+const API_URL = process.env.NODE_ENV === 'production' ? COOLIFY_URL : LOCAL_URL;
 
 describe('Cache System Validation', () => {
   // Test if backend is reachable

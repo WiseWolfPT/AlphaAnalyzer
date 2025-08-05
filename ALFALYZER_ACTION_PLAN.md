@@ -7,13 +7,13 @@
 ### Sintomas Identificados:
 1. **Erro 401 (Unauthorized)** em todas as chamadas API
 2. **CORS errors** quando frontend tenta acessar backend
-3. **VITE_API_URL** está configurado com URL direta do Koyeb
+3. **VITE_API_URL** está configurado com URL direta do Coolify
 4. **Health check funciona** mas chamadas reais falham
-5. **Frontend ignora proxy do Vercel** e chama Koyeb diretamente
+5. **Frontend ignora proxy do Vercel** e chama Coolify diretamente
 
 ### Diagnóstico:
-- Frontend está usando `VITE_API_URL=https://crucial-ivonne-alfalyzer-90666a9e.koyeb.app`
-- Isso faz as chamadas irem direto para Koyeb, ignorando o proxy do Vercel
+- Frontend está usando `VITE_API_URL=https://crucial-ivonne-alfalyzer-90666a9e.coolify.app`
+- Isso faz as chamadas irem direto para Coolify, ignorando o proxy do Vercel
 - Resultado: CORS errors e problemas de autenticação
 
 ## 🛠️ SOLUÇÃO IMEDIATA (FASE 1 - URGENTE)
@@ -38,7 +38,7 @@
 **Arquivo**: `client/src/services/market-data-client.ts`
 ```typescript
 // Linha 6 deve estar assim:
-const API_BASE_URL = typeof window !== 'undefined' ? '' : (env.VITE_API_URL || 'https://crucial-ivonne-alfalyzer-90666a9e.koyeb.app');
+const API_BASE_URL = typeof window !== 'undefined' ? '' : (env.VITE_API_URL || 'https://crucial-ivonne-alfalyzer-90666a9e.coolify.app');
 
 // Isso garante que no browser usa '' (relativo)
 ```
@@ -60,7 +60,7 @@ export const vercelProxyAuth = (req, res, next) => {
 };
 ```
 
-### 1.4 Configurar CORS no Koyeb
+### 1.4 Configurar CORS no Coolify
 **Responsável**: Agent 4
 **Tempo**: 10 minutos
 **Arquivo**: `server/index.js` ou `server/app.js`

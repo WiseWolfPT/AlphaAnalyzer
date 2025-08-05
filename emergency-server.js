@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 
 /**
- * Emergency Koyeb Server
- * Minimal server that will definitely work on Koyeb
+ * Emergency Coolify Server
+ * Minimal server that will definitely work on Coolify
  * This bypasses all build steps and runs directly
  */
 

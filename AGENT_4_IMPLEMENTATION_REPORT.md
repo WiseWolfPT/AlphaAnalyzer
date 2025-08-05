@@ -1,13 +1,13 @@
 # Agent 4 Implementation Report - Frontend Migration
 
 ## Summary
-Agent 4 has successfully completed all required frontend migration tasks for the Alfalyzer platform, migrating the entire frontend to use the new Koyeb backend with Supabase Realtime integration.
+Agent 4 has successfully completed all required frontend migration tasks for the Alfalyzer platform, migrating the entire frontend to use the new Coolify backend with Supabase Realtime integration.
 
 ## Completed Tasks
 
 ### 1. ✅ API Configuration (`client/src/config/api.ts`)
 Created centralized configuration for:
-- Koyeb backend URL: `https://crucial-ivonne-alfalyzer-90666a9e.koyeb.app`
+- Coolify backend URL: `https://crucial-ivonne-alfalyzer-90666a9e.coolify.app`
 - Supabase configuration with environment variables
 - Cold start detection settings (5-second threshold)
 - Retry configuration with exponential backoff
@@ -30,7 +30,7 @@ Created comprehensive realtime service with:
 
 ### 4. ✅ Market Data Service Update (`client/src/services/market-data.ts`)
 New backend-integrated service replacing direct API calls:
-- All requests proxied through Koyeb backend
+- All requests proxied through Coolify backend
 - Batch quote fetching support
 - Error handling with fallbacks
 - Integration with new API client
@@ -114,7 +114,7 @@ Created reusable skeleton components:
 
 1. **Cold Start Experience**:
    ```bash
-   # Wait 1 hour for Koyeb to sleep
+   # Wait 1 hour for Coolify to sleep
    # Access the app and observe cold start banner
    # Should see "Server is waking up..." message
    ```
@@ -138,7 +138,7 @@ Created reusable skeleton components:
 
 ```bash
 # Frontend (.env)
-VITE_API_URL=https://crucial-ivonne-alfalyzer-90666a9e.koyeb.app
+VITE_API_URL=https://crucial-ivonne-alfalyzer-90666a9e.coolify.app
 VITE_SUPABASE_URL=your-supabase-url
 VITE_SUPABASE_ANON_KEY=your-supabase-anon-key
 ```
@@ -156,7 +156,7 @@ VITE_SUPABASE_ANON_KEY=your-supabase-anon-key
    - Configure Supabase Realtime policies
 
 3. **DevOps (Agent 5)**:
-   - Monitor Koyeb cold start frequency
+   - Monitor Coolify cold start frequency
    - Set up external monitoring (UptimeRobot)
    - Configure alerts for slow responses
 
@@ -175,7 +175,7 @@ VITE_SUPABASE_ANON_KEY=your-supabase-anon-key
 
 ## Conclusion
 
-Agent 4 has successfully migrated the entire Alfalyzer frontend to use the new Koyeb backend with comprehensive cold start handling and Supabase Realtime integration. The implementation provides a robust, secure, and user-friendly experience that gracefully handles the challenges of free-tier hosting while delivering professional-grade features.
+Agent 4 has successfully migrated the entire Alfalyzer frontend to use the new Coolify backend with comprehensive cold start handling and Supabase Realtime integration. The implementation provides a robust, secure, and user-friendly experience that gracefully handles the challenges of free-tier hosting while delivering professional-grade features.
 
 The migration eliminates security vulnerabilities from direct API calls, adds real-time capabilities, and ensures users always understand what's happening when the server is waking up from sleep.
 

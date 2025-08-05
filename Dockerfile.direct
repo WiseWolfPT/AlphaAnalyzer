@@ -1,10 +1,10 @@
-# Ultra-simple Dockerfile for Koyeb - direct JavaScript, no build
+# Ultra-simple Dockerfile for Coolify - direct JavaScript, no build
 FROM node:20-alpine
 
 WORKDIR /app
 
 # Copy only the server file
-COPY server/koyeb-direct.js ./server/koyeb-direct.js
+COPY server/coolify-direct.js ./server/coolify-direct.js
 
 # Create minimal package.json
 RUN echo '{"name":"backend","version":"1.0.0","dependencies":{"express":"^4.21.2","cors":"^2.8.5"}}' > package.json
@@ -16,4 +16,4 @@ RUN npm install --production
 EXPOSE 3001
 
 # Run directly with node
-CMD ["node", "server/koyeb-direct.js"]
+CMD ["node", "server/coolify-direct.js"]

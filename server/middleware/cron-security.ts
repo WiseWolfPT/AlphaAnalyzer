@@ -46,11 +46,11 @@ export function cronSecurityMiddleware(req: Request, res: Response, next: NextFu
     return next();
   }
 
-  // Koyeb specific: Check for Koyeb service token
-  if (process.env.KOYEB_SERVICE_TOKEN) {
-    const koyebToken = req.headers['x-koyeb-token'];
-    if (koyebToken === process.env.KOYEB_SERVICE_TOKEN) {
-      logger.info(`[CRON] Valid Koyeb service token for: ${req.path}`);
+  // Coolify specific: Check for Coolify service token
+  if (process.env.COOLIFY_SERVICE_TOKEN) {
+    const coolifyToken = req.headers['x-coolify-token'];
+    if (coolifyToken === process.env.COOLIFY_SERVICE_TOKEN) {
+      logger.info(`[CRON] Valid Coolify service token for: ${req.path}`);
       return next();
     }
   }

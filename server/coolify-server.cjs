@@ -2,7 +2,7 @@
 
 /**
  * Coolify Server - Optimized for Hetzner/Coolify deployment
- * Based on koyeb-simple-server.js but adapted for Coolify
+ * Optimized for Hetzner/Coolify deployment
  */
 
 const express = require('express');

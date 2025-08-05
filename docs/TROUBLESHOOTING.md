@@ -20,12 +20,12 @@ node scripts/verify-deployment.js
 **Solutions**:
 1. Check if backend is accessible:
    ```bash
-   curl https://alfalyzer-4rjhp-koyeb.app/api/health
+   curl https://alfalyzer-4rjhp-coolify.app/api/health
    ```
 
 2. Verify environment variables in Vercel:
    - Go to Vercel Dashboard → Settings → Environment Variables
-   - Ensure `VITE_API_URL` is set to `https://alfalyzer-4rjhp-koyeb.app`
+   - Ensure `VITE_API_URL` is set to `https://alfalyzer-4rjhp-coolify.app`
 
 3. Check browser console for CORS errors
 
@@ -37,7 +37,7 @@ node scripts/verify-deployment.js
 
 **Solutions**:
 1. Check API health endpoint
-2. Verify API keys are set in Koyeb
+2. Verify API keys are set in Coolify
 3. Check if you've hit API rate limits
 4. Look for errors in browser Network tab
 
@@ -49,8 +49,8 @@ node scripts/verify-deployment.js
 - "Bad Gateway" message
 
 **Solutions**:
-1. Check Koyeb deployment status
-2. View Koyeb logs for crash reports
+1. Check Coolify deployment status
+2. View Coolify logs for crash reports
 3. Verify PORT environment variable is set to 8000
 4. Check if app is using too much memory
 
@@ -158,9 +158,9 @@ node scripts/verify-deployment.js
 
 ### Backend Monitoring
 
-#### Koyeb Logs
+#### Coolify Logs
 ```bash
-# View recent logs in Koyeb dashboard
+# View recent logs in Coolify dashboard
 # Look for:
 - Crash reports
 - Memory errors
@@ -206,8 +206,8 @@ LIMIT 100;
 ## Emergency Procedures
 
 ### Backend Down
-1. Check Koyeb status page
-2. Restart deployment in Koyeb
+1. Check Coolify status page
+2. Restart deployment in Coolify
 3. Check for memory/CPU limits
 4. Roll back to previous version if needed
 
@@ -247,7 +247,7 @@ LIMIT 100;
 
 ### Service Status Pages
 - Vercel: https://www.vercel-status.com/
-- Koyeb: https://status.koyeb.com/
+- Coolify: https://status.coolify.com/
 - Supabase: https://status.supabase.com/
 
 ### Support Channels
@@ -260,16 +260,16 @@ LIMIT 100;
 ### Test API Endpoints
 ```bash
 # Health check
-curl https://alfalyzer-4rjhp-koyeb.app/api/health
+curl https://alfalyzer-4rjhp-coolify.app/api/health
 
 # Get stock data
-curl https://alfalyzer-4rjhp-koyeb.app/api/stocks/AAPL
+curl https://alfalyzer-4rjhp-coolify.app/api/stocks/AAPL
 
 # Search stocks
-curl "https://alfalyzer-4rjhp-koyeb.app/api/search/stocks?q=apple"
+curl "https://alfalyzer-4rjhp-coolify.app/api/search/stocks?q=apple"
 
 # Batch quotes
-curl "https://alfalyzer-4rjhp-koyeb.app/api/stocks/batch?symbols=AAPL,GOOGL,MSFT"
+curl "https://alfalyzer-4rjhp-coolify.app/api/stocks/batch?symbols=AAPL,GOOGL,MSFT"
 ```
 
 ### Check Service Status
@@ -278,10 +278,10 @@ curl "https://alfalyzer-4rjhp-koyeb.app/api/stocks/batch?symbols=AAPL,GOOGL,MSFT
 curl -I https://alfalyzer.vercel.app
 
 # Backend
-curl -I https://alfalyzer-4rjhp-koyeb.app/api/health
+curl -I https://alfalyzer-4rjhp-coolify.app/api/health
 
 # With timing
-curl -w "@curl-format.txt" -o /dev/null -s https://alfalyzer-4rjhp-koyeb.app/api/health
+curl -w "@curl-format.txt" -o /dev/null -s https://alfalyzer-4rjhp-coolify.app/api/health
 ```
 
 ### Debug CORS
@@ -291,7 +291,7 @@ curl -H "Origin: https://alfalyzer.vercel.app" \
      -H "Access-Control-Request-Method: GET" \
      -H "Access-Control-Request-Headers: X-Requested-With" \
      -X OPTIONS \
-     https://alfalyzer-4rjhp-koyeb.app/api/health \
+     https://alfalyzer-4rjhp-coolify.app/api/health \
      -verbose
 ```
 
@@ -305,8 +305,8 @@ curl -H "Origin: https://alfalyzer.vercel.app" \
 3. Find last working deployment
 4. Click "..." → "Promote to Production"
 
-#### Backend (Koyeb)
-1. Go to Koyeb Dashboard
+#### Backend (Coolify)
+1. Go to Coolify Dashboard
 2. Navigate to your service
 3. Click on "Deployments"
 4. Redeploy previous version

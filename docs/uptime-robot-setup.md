@@ -1,11 +1,11 @@
 # UptimeRobot Configuration for Alfalyzer Backend Keep-Alive
 
 ## Overview
-This guide explains how to configure UptimeRobot to keep the Alfalyzer backend on Koyeb awake and prevent cold starts.
+This guide explains how to configure UptimeRobot to keep the Alfalyzer backend on Coolify awake and prevent cold starts.
 
 ## Why UptimeRobot?
 
-Koyeb's free tier has an automatic sleep feature:
+Coolify's free tier has an automatic sleep feature:
 - Services sleep after **1 hour** of inactivity
 - Cold start takes **1-5 seconds** when waking up
 - This causes poor user experience on first request
@@ -28,7 +28,7 @@ UptimeRobot will ping our service every 45 minutes to keep it awake.
 **Basic Settings:**
 - **Monitor Type**: HTTP(s)
 - **Friendly Name**: Alfalyzer Backend Keep-Alive
-- **URL**: `https://crucial-ivonne-alfalyzer-90666a9e.koyeb.app/api/health`
+- **URL**: `https://crucial-ivonne-alfalyzer-90666a9e.coolify.app/api/health`
 - **Monitoring Interval**: 45 minutes
 
 **Advanced Settings:**
@@ -48,7 +48,7 @@ UptimeRobot will ping our service every 45 minutes to keep it awake.
 
 2. This will notify you if:
    - Backend is actually down
-   - Koyeb service has issues
+   - Coolify service has issues
    - API endpoint changes
 
 ### 4. Additional Monitoring (Production)
@@ -56,12 +56,12 @@ UptimeRobot will ping our service every 45 minutes to keep it awake.
 For production, add these additional monitors:
 
 **Critical Endpoints Monitor:**
-- **URL**: `https://crucial-ivonne-alfalyzer-90666a9e.koyeb.app/api/v1/market/status`
+- **URL**: `https://crucial-ivonne-alfalyzer-90666a9e.coolify.app/api/v1/market/status`
 - **Monitoring Interval**: 5 minutes
 - **Purpose**: Monitor API functionality
 
 **Admin Keep-Alive Ping:**
-- **URL**: `https://crucial-ivonne-alfalyzer-90666a9e.koyeb.app/api/admin/keep-alive/ping`
+- **URL**: `https://crucial-ivonne-alfalyzer-90666a9e.coolify.app/api/admin/keep-alive/ping`
 - **Monitoring Interval**: 45 minutes
 - **HTTP Method**: POST
 - **Purpose**: Dedicated keep-alive endpoint with metrics
@@ -70,7 +70,7 @@ For production, add these additional monitors:
 
 1. After creating the monitor, wait for first check
 2. Monitor should show **"Up"** status
-3. Check Koyeb logs to confirm ping received:
+3. Check Coolify logs to confirm ping received:
    ```
    🫀 Keep-alive ping to prevent cold start...
    📡 Received keep-alive ping from UptimeRobot
@@ -97,7 +97,7 @@ jobs:
     steps:
       - name: Keep Backend Alive
         run: |
-          response=$(curl -s -o /dev/null -w "%{http_code}" https://crucial-ivonne-alfalyzer-90666a9e.koyeb.app/api/health)
+          response=$(curl -s -o /dev/null -w "%{http_code}" https://crucial-ivonne-alfalyzer-90666a9e.coolify.app/api/health)
           if [ $response -eq 200 ]; then
             echo "✅ Backend is alive (HTTP $response)"
           else
@@ -141,21 +141,21 @@ GET /api/admin/cron/status
 ## Troubleshooting
 
 ### Monitor Shows "Down"
-1. Check Koyeb dashboard for service status
+1. Check Coolify dashboard for service status
 2. Verify URL hasn't changed
 3. Check for API rate limiting
-4. Review Koyeb logs for errors
+4. Review Coolify logs for errors
 
 ### Still Getting Cold Starts
 1. Verify monitor interval is 45 minutes (not 50 or 60)
-2. Check if Koyeb has changed sleep timeout
+2. Check if Coolify has changed sleep timeout
 3. Ensure health endpoint responds quickly
 4. Consider adding second monitor at 30-minute offset
 
 ### High Response Times
 1. First ping after setup may be slow (cold start)
 2. Subsequent pings should be fast (<500ms)
-3. If consistently slow, check Koyeb resource usage
+3. If consistently slow, check Coolify resource usage
 
 ## Best Practices
 
@@ -183,7 +183,7 @@ GET /api/admin/cron/status
 
 ### Free Tier Limits:
 - **UptimeRobot**: 50 monitors, 5-minute minimum interval
-- **Koyeb**: Unlimited requests, but sleeps after 1 hour idle
+- **Coolify**: Unlimited requests, but sleeps after 1 hour idle
 - **Solution**: 45-minute ping uses only 32 checks/day
 
 ### Estimated Usage:
@@ -202,10 +202,10 @@ The backend automatically:
 ### View Metrics:
 ```bash
 # Get keep-alive metrics
-curl https://crucial-ivonne-alfalyzer-90666a9e.koyeb.app/api/admin/monitoring/health
+curl https://crucial-ivonne-alfalyzer-90666a9e.coolify.app/api/admin/monitoring/health
 
 # Get cron job status
-curl https://crucial-ivonne-alfalyzer-90666a9e.koyeb.app/api/admin/cron/status
+curl https://crucial-ivonne-alfalyzer-90666a9e.coolify.app/api/admin/cron/status
 ```
 
 ## Conclusion
@@ -217,4 +217,4 @@ With UptimeRobot configured:
 - ✅ Zero additional cost
 - ✅ Automatic monitoring and alerts
 
-The 45-minute interval is optimal for Koyeb's 1-hour sleep timeout, ensuring the service stays warm while minimizing unnecessary requests.
+The 45-minute interval is optimal for Coolify's 1-hour sleep timeout, ensuring the service stays warm while minimizing unnecessary requests.

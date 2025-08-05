@@ -1,7 +1,7 @@
 # 🚨 FIX URGENTE: Erro 401 no Vercel
 
 ## Problema
-O frontend está fazendo chamadas diretas para o Koyeb (https://alfalyzer-production.koyeb.app) porque a variável `VITE_API_URL` está definida no Vercel. Isso causa:
+O frontend está fazendo chamadas diretas para o Coolify (https://alfalyzer-production.coolify.app) porque a variável `VITE_API_URL` está definida no Vercel. Isso causa:
 - Erro CORS 
 - Erro 401 (Unauthorized)
 - Frontend não consegue acessar o backend
@@ -87,14 +87,14 @@ console.log(import.meta.env.VITE_API_URL || 'NÃO DEFINIDA - BOM!');
 ## Por que isso funciona?
 
 1. **SEM `VITE_API_URL`**: O frontend usa URLs relativas (`/api/*`)
-2. **Vercel Proxy**: Redireciona `/api/*` → Koyeb automaticamente
+2. **Vercel Proxy**: Redireciona `/api/*` → Coolify automaticamente
 3. **Sem CORS**: Mesma origem = sem problemas de CORS
 4. **Sem 401**: Requisições passam pelo proxy do Vercel
 
 ## Variáveis que DEVEM existir no Vercel:
 
 ✅ Variáveis PERMITIDAS (não começam com VITE_):
-- `KOYEB_API_URL` (usada pelo Vercel, não exposta ao cliente)
+- `COOLIFY_API_URL` (usada pelo Vercel, não exposta ao cliente)
 - `NODE_ENV`
 - Outras variáveis do servidor
 
@@ -110,7 +110,7 @@ console.log(import.meta.env.VITE_API_URL || 'NÃO DEFINIDA - BOM!');
 1. Verifique se a variável foi realmente removida: `vercel env ls`
 2. Aguarde 2-3 minutos para propagação
 3. Limpe o cache do browser (Ctrl+Shift+R)
-4. Verifique no Network tab se as requisições vão para `/api/*` e não para Koyeb
+4. Verifique no Network tab se as requisições vão para `/api/*` e não para Coolify
 
 ### Script não funciona?
 Execute manualmente:

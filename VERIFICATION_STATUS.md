@@ -5,13 +5,13 @@
 
 ## 🚀 Production URLs
 - **Frontend**: https://alfalyzerpro4.vercel.app
-- **Backend**: https://crucial-ivonne-alfalyzer-90666a9e.koyeb.app
+- **Backend**: https://crucial-ivonne-alfalyzer-90666a9e.coolify.app
 - **Database**: Supabase (avjnfessefxtfurayybp.supabase.co)
 
 ## ✅ What's Working
 
 ### 1. Frontend-Backend Integration
-- ✅ Vercel proxy correctly redirecting `/api/*` to Koyeb backend
+- ✅ Vercel proxy correctly redirecting `/api/*` to Coolify backend
 - ✅ CORS headers properly configured
 - ✅ Authentication optional for market data (public access)
 - ✅ Fixed TypeError issues in market-data-client.ts

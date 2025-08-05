@@ -5,7 +5,7 @@
 ### 1. Health Check
 ```bash
 # Direct to backend
-curl https://crucial-ivonne-alfalyzer-90666a9e.koyeb.app/api/market-data/health | jq
+curl https://crucial-ivonne-alfalyzer-90666a9e.coolify.app/api/market-data/health | jq
 
 # Through Vercel proxy (production)
 curl https://alfalyzerpro4.vercel.app/api/market-data/health | jq

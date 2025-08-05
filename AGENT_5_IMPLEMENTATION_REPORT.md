@@ -6,7 +6,7 @@ Agent 5 has successfully implemented all required cron jobs, optimization featur
 ## Completed Tasks
 
 ### 1. ✅ Cron Job Manager (`server/services/cron/cron-manager.ts`)
-- **Keep-alive job**: Runs every 45 minutes to prevent Koyeb sleep
+- **Keep-alive job**: Runs every 45 minutes to prevent Coolify sleep
 - **Cache warming**: Updates popular stocks every 15 minutes during market hours
 - **Cache cleanup**: Daily cleanup of expired entries at 2 AM
 - **Quota monitoring**: Hourly checks on API usage with alerts
@@ -53,7 +53,7 @@ New endpoints added:
 ### 6. ✅ UptimeRobot Documentation (`docs/uptime-robot-setup.md`)
 Comprehensive guide including:
 - Step-by-step UptimeRobot configuration
-- 45-minute ping interval to prevent Koyeb sleep
+- 45-minute ping interval to prevent Coolify sleep
 - Multiple monitor setup recommendations
 - GitHub Actions alternative workflow
 - Troubleshooting guide
@@ -89,7 +89,7 @@ ENABLE_KEEP_ALIVE=true
 ENABLE_PERFORMANCE_MONITOR=true
 
 # Optional self-ping URL for keep-alive
-SELF_PING_URL=https://crucial-ivonne-alfalyzer-90666a9e.koyeb.app
+SELF_PING_URL=https://crucial-ivonne-alfalyzer-90666a9e.coolify.app
 
 # Cron secret for manual triggers
 CRON_SECRET=your-secure-cron-secret
@@ -98,7 +98,7 @@ CRON_SECRET=your-secure-cron-secret
 ## Key Benefits Achieved
 
 ### 1. **No More Cold Starts**
-- Keep-alive prevents Koyeb 1-hour sleep
+- Keep-alive prevents Coolify 1-hour sleep
 - Users get instant responses
 - WebSocket connections stay active
 
@@ -142,23 +142,23 @@ CRON_SECRET=your-secure-cron-secret
 1. **Cold Start Prevention**:
    ```bash
    # Wait 1 hour without keep-alive
-   # Then access: https://crucial-ivonne-alfalyzer-90666a9e.koyeb.app/api/health
+   # Then access: https://crucial-ivonne-alfalyzer-90666a9e.coolify.app/api/health
    # Should respond instantly (no 1-5s delay)
    ```
 
 2. **Cron Job Monitoring**:
    ```bash
    # Check cron status
-   curl https://crucial-ivonne-alfalyzer-90666a9e.koyeb.app/api/admin/cron/status
+   curl https://crucial-ivonne-alfalyzer-90666a9e.coolify.app/api/admin/cron/status
    
    # Manually trigger cache warming
-   curl -X POST https://crucial-ivonne-alfalyzer-90666a9e.koyeb.app/api/admin/cron/trigger/cache-warmer
+   curl -X POST https://crucial-ivonne-alfalyzer-90666a9e.coolify.app/api/admin/cron/trigger/cache-warmer
    ```
 
 3. **Performance Metrics**:
    ```bash
    # View performance stats
-   curl https://crucial-ivonne-alfalyzer-90666a9e.koyeb.app/api/admin/monitoring/performance
+   curl https://crucial-ivonne-alfalyzer-90666a9e.coolify.app/api/admin/monitoring/performance
    ```
 
 4. **Supabase Realtime**:

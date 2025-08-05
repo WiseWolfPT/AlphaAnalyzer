@@ -5,7 +5,7 @@ services:
     region: oregon # or frankfurt for EU
     plan: free
     buildCommand: npm install
-    startCommand: node koyeb-simple-server.js
+    startCommand: node coolify-simple-server.js
     healthCheckPath: /health
     envVars:
       - key: NODE_ENV

@@ -142,14 +142,14 @@ export const originValidationMiddleware = (
     'https://alfalyzer.com'
   ];
   
-  // Add Koyeb domains from environment
-  if (process.env.KOYEB_APP_URL) {
-    allowedOrigins.push(process.env.KOYEB_APP_URL);
+  // Add Coolify domains from environment
+  if (process.env.COOLIFY_APP_URL) {
+    allowedOrigins.push(process.env.COOLIFY_APP_URL);
     // Add both http and https versions
-    if (process.env.KOYEB_APP_URL.startsWith('http://')) {
-      allowedOrigins.push(process.env.KOYEB_APP_URL.replace('http://', 'https://'));
-    } else if (process.env.KOYEB_APP_URL.startsWith('https://')) {
-      allowedOrigins.push(process.env.KOYEB_APP_URL.replace('https://', 'http://'));
+    if (process.env.COOLIFY_APP_URL.startsWith('http://')) {
+      allowedOrigins.push(process.env.COOLIFY_APP_URL.replace('http://', 'https://'));
+    } else if (process.env.COOLIFY_APP_URL.startsWith('https://')) {
+      allowedOrigins.push(process.env.COOLIFY_APP_URL.replace('https://', 'http://'));
     }
   }
   
@@ -169,7 +169,7 @@ export const originValidationMiddleware = (
     return next();
   }
   
-  // KOYEB FIX: Check for dynamic Koyeb subdomains
+  // COOLIFY FIX: Check for dynamic Coolify subdomains
   if (process.env.NODE_ENV === 'production' && origin) {
     const coolifyPattern = /^http:\/\/[a-z0-9]+\.128\.140\.45\.28\.sslip\.io$/;
     if (coolifyPattern.test(origin)) {
@@ -194,7 +194,7 @@ export const originValidationMiddleware = (
     });
   }
   
-  // KOYEB FIX: Check referer for dynamic Koyeb subdomains
+  // COOLIFY FIX: Check referer for dynamic Coolify subdomains
   if (['POST', 'PUT', 'DELETE'].includes(req.method)) {
     if (process.env.NODE_ENV === 'production' && referer) {
       const coolifyPattern = /^http:\/\/[a-z0-9]+\.128\.140\.45\.28\.sslip\.io/;

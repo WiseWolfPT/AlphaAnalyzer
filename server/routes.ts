@@ -551,7 +551,7 @@ export async function registerRoutes(app: Express, server: Server): Promise<void
       },
       corsInfo: {
         allowedOrigins: process.env.NODE_ENV === 'production' 
-          ? ['*.vercel.app', '*.koyeb.app', 'alfalyzer.com', 'alphaanalyzer.com']
+          ? ['*.vercel.app', '*.coolify.app', 'alfalyzer.com', 'alphaanalyzer.com']
           : ['localhost:*', '127.0.0.1:*'],
         credentialsAllowed: true,
         methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH']
@@ -559,7 +559,7 @@ export async function registerRoutes(app: Express, server: Server): Promise<void
       environment: {
         nodeEnv: process.env.NODE_ENV,
         frontendOrigin: process.env.FRONTEND_ORIGIN || 'NOT-SET',
-        appUrl: process.env.APP_URL || process.env.KOYEB_APP_URL || 'NOT-SET',
+        appUrl: process.env.APP_URL || process.env.COOLIFY_APP_URL || 'NOT-SET',
         strictCors: process.env.STRICT_CORS || 'false'
       }
     });

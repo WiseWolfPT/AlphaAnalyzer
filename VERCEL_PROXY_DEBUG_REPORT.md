@@ -1,14 +1,14 @@
 # Vercel Proxy Debug Report - Agent 1
 
 ## Issue Summary
-API calls are failing in production at alfalyzerpro4.vercel.app with "Error in API call to quotes/batch" errors. The root cause is that the client is trying to connect directly to the Koyeb backend instead of using the Vercel proxy.
+API calls are failing in production at alfalyzerpro4.vercel.app with "Error in API call to quotes/batch" errors. The root cause is that the client is trying to connect directly to the Coolify backend instead of using the Vercel proxy.
 
 ## Root Causes Identified
 
 ### 1. **VITE_API_URL Environment Variable**
-- **Problem**: `.env.production` contains `VITE_API_URL=https://crucial-ivonne-alfalyzer-90666a9e.koyeb.app`
-- **Impact**: This causes the client to bypass the Vercel proxy and connect directly to Koyeb
-- **Result**: CORS errors because Koyeb doesn't allow direct browser connections
+- **Problem**: `.env.production` contains `VITE_API_URL=https://crucial-ivonne-alfalyzer-90666a9e.coolify.app`
+- **Impact**: This causes the client to bypass the Vercel proxy and connect directly to Coolify
+- **Result**: CORS errors because Coolify doesn't allow direct browser connections
 
 ### 2. **Incorrect Vercel Detection**
 - **Problem**: `isVercelDeployment` uses `process.env.VERCEL` which doesn't work in the browser
@@ -46,7 +46,7 @@ export const isVercelDeployment = typeof window !== 'undefined'
 "rewrites": [
   {
     "source": "/api/:path*",
-    "destination": "https://crucial-ivonne-alfalyzer-90666a9e.koyeb.app/api/:path*"
+    "destination": "https://crucial-ivonne-alfalyzer-90666a9e.coolify.app/api/:path*"
   },
   {
     "source": "/(.*)",
@@ -93,32 +93,32 @@ vercel --prod
 
 1. **Client makes request**: `/api/market-data/quotes/batch`
 2. **Vercel intercepts**: Matches `/api/:path*` pattern
-3. **Vercel forwards**: To `https://crucial-ivonne-alfalyzer-90666a9e.koyeb.app/api/market-data/quotes/batch`
-4. **Koyeb responds**: Sends data back to Vercel
+3. **Vercel forwards**: To `https://crucial-ivonne-alfalyzer-90666a9e.coolify.app/api/market-data/quotes/batch`
+4. **Coolify responds**: Sends data back to Vercel
 5. **Vercel returns**: Forwards response to client with CORS headers
 
 ## Testing Checklist
 
 - [ ] No VITE_API_URL in Vercel environment variables
-- [ ] Browser DevTools shows requests going to `/api/*` not Koyeb URLs
+- [ ] Browser DevTools shows requests going to `/api/*` not Coolify URLs
 - [ ] No CORS errors in console
 - [ ] API calls return data successfully
 - [ ] Check both logged-in and logged-out states
 
 ## Common Issues
 
-### If still seeing Koyeb URLs:
+### If still seeing Coolify URLs:
 1. Clear browser cache completely
 2. Check for hardcoded URLs in the code
 3. Verify VITE_API_URL is not set in Vercel
 
 ### If seeing 404 errors:
-1. Verify Koyeb backend is running
+1. Verify Coolify backend is running
 2. Check the proxy destination URL is correct
 3. Ensure API paths match between client and server
 
 ### If seeing CORS errors:
-1. Check Koyeb backend CORS configuration
+1. Check Coolify backend CORS configuration
 2. Verify Vercel headers are being applied
 3. Check for preflight OPTIONS requests
 

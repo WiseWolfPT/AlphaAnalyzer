@@ -30,7 +30,7 @@ print_color "$BLUE" "
 TEST_TYPE=${1:-all}
 BACKEND_URL=${BACKEND_URL:-http://localhost:3001}
 FRONTEND_URL=${FRONTEND_URL:-http://localhost:3000}
-KOYEB_URL=${KOYEB_URL:-}
+COOLIFY_URL=${COOLIFY_URL:-}
 
 # Função para verificar se os serviços estão rodando
 check_services() {
@@ -111,19 +111,19 @@ open_monitoring() {
     fi
 }
 
-# Função para executar teste específico do Koyeb
-test_koyeb() {
-    if [ -z "$KOYEB_URL" ]; then
-        print_color "$RED" "❌ KOYEB_URL não está definida"
-        print_color "$YELLOW" "💡 Use: export KOYEB_URL=https://seu-app.koyeb.app"
+# Função para executar teste específico do Coolify
+test_coolify() {
+    if [ -z "$COOLIFY_URL" ]; then
+        print_color "$RED" "❌ COOLIFY_URL não está definida"
+        print_color "$YELLOW" "💡 Use: export COOLIFY_URL=https://seu-app.coolify.app"
         exit 1
     fi
     
-    print_color "$BLUE" "\n🌐 Testando deployment no Koyeb: $KOYEB_URL"
+    print_color "$BLUE" "\n🌐 Testando deployment no Coolify: $COOLIFY_URL"
     
     # Teste de health
     print_color "$YELLOW" "📍 Testando endpoint de health..."
-    if curl -s "$KOYEB_URL/api/health" | jq .; then
+    if curl -s "$COOLIFY_URL/api/health" | jq .; then
         print_color "$GREEN" "✅ Health endpoint OK"
     else
         print_color "$RED" "❌ Health endpoint falhou"
@@ -132,14 +132,14 @@ test_koyeb() {
     # Teste de cold start
     print_color "$YELLOW" "\n❄️  Medindo cold start..."
     START_TIME=$(date +%s%N)
-    curl -s "$KOYEB_URL/api/health" > /dev/null
+    curl -s "$COOLIFY_URL/api/health" > /dev/null
     END_TIME=$(date +%s%N)
     DURATION=$((($END_TIME - $START_TIME) / 1000000))
     print_color "$BLUE" "⏱️  Cold start: ${DURATION}ms"
     
     # Teste de API
     print_color "$YELLOW" "\n📈 Testando API de market data..."
-    if curl -s "$KOYEB_URL/api/market-data/quote/AAPL" | jq .; then
+    if curl -s "$COOLIFY_URL/api/market-data/quote/AAPL" | jq .; then
         print_color "$GREEN" "✅ Market data API OK"
     else
         print_color "$RED" "❌ Market data API falhou"
@@ -210,8 +210,8 @@ case "$TEST_TYPE" in
         check_services
         open_monitoring
         ;;
-    "koyeb")
-        test_koyeb
+    "coolify")
+        test_coolify
         ;;
     "all")
         check_services
@@ -226,7 +226,7 @@ case "$TEST_TYPE" in
         echo "  performance      - Testes de carga e performance"
         echo "  integration      - Testes de integração e resiliência"
         echo "  monitoring       - Abrir dashboard de monitoramento"
-        echo "  koyeb           - Testar deployment no Koyeb"
+        echo "  coolify           - Testar deployment no Coolify"
         echo "  all             - Executar todos os testes"
         echo ""
         echo "Opções para E2E:"
@@ -238,7 +238,7 @@ case "$TEST_TYPE" in
         echo "Variáveis de ambiente:"
         echo "  BACKEND_URL     - URL do backend (padrão: http://localhost:3001)"
         echo "  FRONTEND_URL    - URL do frontend (padrão: http://localhost:3000)"
-        echo "  KOYEB_URL       - URL do Koyeb para testes de produção"
+        echo "  COOLIFY_URL       - URL do Coolify para testes de produção"
         ;;
     *)
         print_color "$RED" "❌ Tipo de teste inválido: $TEST_TYPE"

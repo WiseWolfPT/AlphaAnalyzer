@@ -63,7 +63,7 @@ export function TestAPIConnection() {
       });
     }
 
-    // Test 2.5: Simple POST Test to debug Koyeb issue
+    // Test 2.5: Simple POST Test to debug Coolify issue
     try {
       const postRes = await fetch(`${baseURL}/api/market-data/test-post`, {
         method: 'POST',

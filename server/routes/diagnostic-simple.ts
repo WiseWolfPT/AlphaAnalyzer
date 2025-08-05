@@ -114,13 +114,13 @@ router.get('/', async (req, res) => {
     platform: process.platform,
     nodeVersion: process.version,
     
-    // Koyeb specific checks
-    koyebInfo: {
-      IS_KOYEB: !!process.env.KOYEB_SERVICE_NAME,
-      KOYEB_SERVICE_NAME: process.env.KOYEB_SERVICE_NAME || 'NOT_ON_KOYEB',
-      KOYEB_SERVICE_ID: process.env.KOYEB_SERVICE_ID || 'NOT_ON_KOYEB',
-      KOYEB_APP_NAME: process.env.KOYEB_APP_NAME || 'NOT_ON_KOYEB',
-      KOYEB_REGION: process.env.KOYEB_REGION || 'NOT_ON_KOYEB'
+    // Coolify specific checks
+    coolifyInfo: {
+      IS_COOLIFY: !!process.env.COOLIFY_SERVICE_NAME,
+      COOLIFY_SERVICE_NAME: process.env.COOLIFY_SERVICE_NAME || 'NOT_ON_COOLIFY',
+      COOLIFY_SERVICE_ID: process.env.COOLIFY_SERVICE_ID || 'NOT_ON_COOLIFY',
+      COOLIFY_APP_NAME: process.env.COOLIFY_APP_NAME || 'NOT_ON_COOLIFY',
+      COOLIFY_REGION: process.env.COOLIFY_REGION || 'NOT_ON_COOLIFY'
     },
     
     // Environment variables check
@@ -216,7 +216,7 @@ router.get('/', async (req, res) => {
   const recommendations = [];
   
   if (diagnostics.summary.configuredApis.length === 0) {
-    recommendations.push('No API keys are configured. Please set environment variables on Koyeb.');
+    recommendations.push('No API keys are configured. Please set environment variables on Coolify.');
   }
   
   if (diagnostics.summary.failedApis.length > 0) {
@@ -228,7 +228,7 @@ router.get('/', async (req, res) => {
   }
   
   if (process.env.NODE_ENV !== 'production' && req.hostname !== 'localhost') {
-    recommendations.push('NODE_ENV should be set to "production" on Koyeb.');
+    recommendations.push('NODE_ENV should be set to "production" on Coolify.');
   }
 
   diagnostics.summary.recommendations = recommendations;
@@ -243,7 +243,7 @@ router.get('/health', (req, res) => {
     status: 'ok',
     timestamp: new Date().toISOString(),
     environment: process.env.NODE_ENV || 'development',
-    koyeb: !!process.env.KOYEB_SERVICE_NAME
+    coolify: !!process.env.COOLIFY_SERVICE_NAME
   });
 });
 
@@ -299,7 +299,7 @@ router.get('/test-connectivity', async (req, res) => {
   
   res.json({
     timestamp: new Date().toISOString(),
-    koyeb: !!process.env.KOYEB_SERVICE_NAME,
+    coolify: !!process.env.COOLIFY_SERVICE_NAME,
     tests,
     summary: allSuccess ? 'All connectivity tests passed' : 'Some connectivity tests failed',
     recommendation: allSuccess ? 

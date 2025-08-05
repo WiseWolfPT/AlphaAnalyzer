@@ -115,7 +115,7 @@ else
     echo -e "Se ainda tiver erro 401:"
     echo -e "1. Faça um novo deploy: ${GREEN}vercel --prod${NC}"
     echo -e "2. Limpe o cache do browser"
-    echo -e "3. Verifique se o backend está rodando no Koyeb"
+    echo -e "3. Verifique se o backend está rodando no Coolify"
 fi
 
 echo ""

@@ -1,14 +1,14 @@
 #!/usr/bin/env node
 
 /**
- * Fix TypeScript path aliases for Koyeb deployment
+ * Fix TypeScript path aliases for Coolify deployment
  * This script runs after npm install to ensure path aliases work at runtime
  */
 
 const fs = require('fs');
 const path = require('path');
 
-console.log('🔧 Fixing TypeScript path aliases for Koyeb...');
+console.log('🔧 Fixing TypeScript path aliases for Coolify...');
 
 // Create module-alias configuration
 const moduleAliasConfig = {

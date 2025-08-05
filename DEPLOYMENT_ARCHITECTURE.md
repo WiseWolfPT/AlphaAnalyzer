@@ -5,13 +5,13 @@
 Alfalyzer uses a **separated architecture** where frontend and backend are deployed independently:
 
 - **Frontend (Vercel)**: Serves the React SPA (static files)
-- **Backend (Koyeb)**: Provides API endpoints only (no static file serving)
+- **Backend (Coolify)**: Provides API endpoints only (no static file serving)
 
 ## Architecture Diagram
 
 ```
 ┌─────────────────┐         ┌─────────────────┐
-│     Vercel      │         │     Koyeb       │
+│     Vercel      │         │     Coolify       │
 │                 │         │                 │
 │  React SPA      │ ──API──▶│  Express API    │
 │  (Static Files) │  calls  │  (JSON only)    │
@@ -31,16 +31,16 @@ Alfalyzer uses a **separated architecture** where frontend and backend are deplo
 
 ## Deployment Steps
 
-### 1. Backend Deployment (Koyeb)
+### 1. Backend Deployment (Coolify)
 
 **Use the API-only server script:**
 
 ```bash
-# In your Koyeb configuration, use:
-node koyeb-api-server.js
+# In your Coolify configuration, use:
+node coolify-api-server.js
 ```
 
-**Required Environment Variables on Koyeb:**
+**Required Environment Variables on Coolify:**
 ```env
 # Server Configuration
 PORT=3001
@@ -78,7 +78,7 @@ client/dist
 **Required Environment Variables on Vercel:**
 ```env
 # API Configuration
-VITE_API_URL=https://crucial-ivonne-alfalyzer-90666a9e.koyeb.app
+VITE_API_URL=https://crucial-ivonne-alfalyzer-90666a9e.coolify.app
 
 # Supabase (public keys only)
 VITE_SUPABASE_URL=your_url
@@ -102,7 +102,7 @@ const allowedOrigins = [
 
 1. **Frontend makes API call:**
    ```typescript
-   fetch('https://crucial-ivonne-alfalyzer-90666a9e.koyeb.app/api/stocks')
+   fetch('https://crucial-ivonne-alfalyzer-90666a9e.coolify.app/api/stocks')
    ```
 
 2. **Backend processes request:**
@@ -116,7 +116,7 @@ const allowedOrigins = [
 
 ## Cold Start Handling
 
-Koyeb free tier has cold starts. The frontend handles this:
+Coolify free tier has cold starts. The frontend handles this:
 
 ```typescript
 // Retry logic with exponential backoff
@@ -131,7 +131,7 @@ const response = await fetchWithRetry(url, {
 
 **Backend Health Endpoint:**
 ```
-GET https://crucial-ivonne-alfalyzer-90666a9e.koyeb.app/health
+GET https://crucial-ivonne-alfalyzer-90666a9e.coolify.app/health
 ```
 
 **Frontend Health Check:**
@@ -157,7 +157,7 @@ const checkBackendHealth = async () => {
 
 ### Issue: API calls fail
 **Solution:** 
-1. Check if backend is running: `curl https://your-koyeb-url/health`
+1. Check if backend is running: `curl https://your-coolify-url/health`
 2. Verify `VITE_API_URL` in frontend matches backend URL
 3. Check browser console for detailed errors
 
@@ -165,7 +165,7 @@ const checkBackendHealth = async () => {
 **Solution:**
 1. Implement retry logic in frontend
 2. Show loading states during cold starts
-3. Consider upgrading Koyeb plan for always-on instances
+3. Consider upgrading Coolify plan for always-on instances
 
 ## Security Best Practices
 
@@ -185,8 +185,8 @@ const checkBackendHealth = async () => {
 
 ## Monitoring
 
-1. **Backend Logs (Koyeb):**
-   - View in Koyeb dashboard
+1. **Backend Logs (Coolify):**
+   - View in Coolify dashboard
    - Monitor for errors and performance
 
 2. **Frontend Analytics (Vercel):**
@@ -206,7 +206,7 @@ const checkBackendHealth = async () => {
    - Unlimited deployments
    - SSL included
 
-2. **Backend (Koyeb Free Tier):**
+2. **Backend (Coolify Free Tier):**
    - 1 service
    - 512MB RAM
    - Sleeps after inactivity
@@ -220,7 +220,7 @@ const checkBackendHealth = async () => {
 
 When ready to scale:
 
-1. **Upgrade Koyeb:** More RAM, always-on instances
+1. **Upgrade Coolify:** More RAM, always-on instances
 2. **Add CDN:** CloudFlare for API caching
 3. **Database Replication:** Read replicas for performance
 4. **Load Balancing:** Multiple backend instances

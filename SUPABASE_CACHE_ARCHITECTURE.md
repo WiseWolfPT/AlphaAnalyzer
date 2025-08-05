@@ -21,7 +21,7 @@ O Alfalyzer usa **Supabase PostgreSQL** como base de dados central para:
 
 ```
 ┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
-│   APIs Externas │────▶│  Backend/Koyeb  │────▶│    Supabase     │
+│   APIs Externas │────▶│  Backend/Coolify  │────▶│    Supabase     │
 │  (Alpha Vantage)│     │                 │     │   PostgreSQL    │
 │   (Fiscal.ai)  │     │  Cache Logic    │     │                 │
 │   (Finnhub)    │     │  Rate Limiting  │     │ - stock_quotes  │
@@ -55,7 +55,7 @@ Vai ao SQL Editor do Supabase e executa:
 -- Ficheiro: migrations/supabase/20250121_create_cache_tables.sql
 ```
 
-### 2. Variáveis de ambiente no Koyeb
+### 2. Variáveis de ambiente no Coolify
 
 ```env
 # Supabase (obrigatório)
@@ -69,7 +69,7 @@ FISCAL_AI_API_KEY=xxx
 
 ### 3. Frontend já está configurado
 
-O frontend já usa o `apiConfig` que aponta para o Koyeb.
+O frontend já usa o `apiConfig` que aponta para o Coolify.
 
 ## Custos
 

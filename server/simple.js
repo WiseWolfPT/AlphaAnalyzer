@@ -1,4 +1,4 @@
-// Ultra-simple server for Koyeb - Pure JavaScript, no TypeScript
+// Ultra-simple server for Coolify - Pure JavaScript, no TypeScript
 const express = require('express');
 const cors = require('cors');
 require('dotenv').config();

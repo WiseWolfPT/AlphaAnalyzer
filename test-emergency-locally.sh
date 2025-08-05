@@ -35,5 +35,5 @@ kill $SERVER_PID 2>/dev/null
 echo ""
 echo "✅ Test complete! If you see 200 status codes above, the server works!"
 echo ""
-echo "To deploy to Koyeb, use this run command:"
+echo "To deploy to Coolify, use this run command:"
 echo "  node emergency-server.js"

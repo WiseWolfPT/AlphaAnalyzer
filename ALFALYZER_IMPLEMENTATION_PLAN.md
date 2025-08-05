@@ -8,7 +8,7 @@
 
 ### 📊 PROGRESSO GERAL
 - [✓] CORS configurado e funcionando
-- [✓] Backend deployado no Koyeb (URL ativa)
+- [✓] Backend deployado no Coolify (URL ativa)
 - [✓] Variáveis de ambiente configuradas
 - [✓] Rotas básicas de market data implementadas
 - [✓] CacheService com Supabase (implementado e testado)
@@ -27,7 +27,7 @@
   - [✓] Stock Detail com header realtime wrapper
   - [✓] Compare com cards realtime e recálculo IV
   - [✓] Intrinsic Value com preços realtime e recálculo automático
-- [✓] Deploy Koyeb funcionando em https://crucial-ivonne-alfalyzer-90666a9e.koyeb.app
+- [✓] Deploy Coolify funcionando em https://crucial-ivonne-alfalyzer-90666a9e.coolify.app
 - [✓] Testar publicação de eventos realtime (database inserts funcionam)
 - [✓] Documentação do sistema realtime (REALTIME_SYSTEM_GUIDE.md)
 - [✓] UptimeRobot configurado (ping a cada 5 minutos, uptime ~58.7%)
@@ -51,7 +51,7 @@
 3. **Uptime inicial**: UptimeRobot registrando ~58.7% uptime nas primeiras 24h (melhorando)
 
 ### 🚀 Próximos Passos:
-1. **Integrar Frontend com Backend Cache**: Usar rotas do Koyeb para reduzir API calls
+1. **Integrar Frontend com Backend Cache**: Usar rotas do Coolify para reduzir API calls
 2. **Implementar Cron Jobs**: Atualizar cache periodicamente
 3. **Testar fluxo completo**: Frontend → Backend → Cache → Realtime
 4. **Monitorar Uptime**: Acompanhar melhora do uptime com UptimeRobot
@@ -61,18 +61,18 @@
 ## 📋 SUMÁRIO EXECUTIVO
 
 ### Problemas Identificados
-1. **CORS Errors**: Frontend (Vercel) bloqueado ao acessar Backend (Koyeb)
+1. **CORS Errors**: Frontend (Vercel) bloqueado ao acessar Backend (Coolify)
 2. **Arquitetura Inadequada**: Cliente fazendo chamadas diretas às APIs externas
 3. **APIs Parcialmente Funcionais**: Apenas health check funciona, batch quotes e market status falham
 4. **Risco de Custos**: Sem cache, risco de exceder quotas gratuitas das APIs
-5. **Cold Start do Koyeb**: Backend adormece após 1 hora, causando delays de 1-5 segundos
+5. **Cold Start do Coolify**: Backend adormece após 1 hora, causando delays de 1-5 segundos
 
 ### Solução Proposta
 Implementar arquitetura **Backend for Frontend (BFF)** com cache em Supabase e **Supabase Realtime** para dados em tempo real, eliminando CORS e reduzindo chamadas às APIs externas em 95%.
 
 ### Stack Confirmada
 - **Frontend**: Vercel (free tier) 
-- **Backend**: Koyeb (free tier)
+- **Backend**: Coolify (free tier)
 - **Database/Cache**: Supabase (free tier)
 - **Real-time**: Supabase Realtime (incluído no free tier)
 - **APIs**: Alpha Vantage, Finnhub, FMP, Twelve Data, Polygon
@@ -83,7 +83,7 @@ Implementar arquitetura **Backend for Frontend (BFF)** com cache em Supabase e *
 
 ```
 ┌─────────────┐     ┌──────────────┐     ┌──────────────┐     ┌──────────────┐
-│   Browser   │────▶│    Vercel    │────▶│    Koyeb     │────▶│  Supabase    │
+│   Browser   │────▶│    Vercel    │────▶│    Coolify     │────▶│  Supabase    │
 │   (User)    │     │  (Frontend)  │     │  (Backend)   │     │  (Cache DB)  │
 └─────────────┘     └──────┬───────┘     └──────┬───────┘     └──────┬───────┘
                            │                     │                     │
@@ -98,23 +98,23 @@ Implementar arquitetura **Backend for Frontend (BFF)** com cache em Supabase e *
 ```
 
 ### Fluxo de Dados Híbrido
-1. **Carregamento Inicial**: Frontend busca dados via REST (Koyeb pode estar dormindo)
+1. **Carregamento Inicial**: Frontend busca dados via REST (Coolify pode estar dormindo)
 2. **Ações do Usuário**: Frontend → Backend REST → Processa → Atualiza Supabase
-3. **Updates Real-time**: Supabase Realtime → Frontend (sem passar pelo Koyeb)
+3. **Updates Real-time**: Supabase Realtime → Frontend (sem passar pelo Coolify)
 4. **Resultado**: Updates instantâneos mesmo com backend dormindo!
 
 ---
 
-## ⚠️ SOLUÇÃO PARA COLD START DO KOYEB
+## ⚠️ SOLUÇÃO PARA COLD START DO COOLIFY
 
 ### Problema Confirmado:
-- Koyeb free tier adormece após **1 hora** sem tráfego
+- Coolify free tier adormece após **1 hora** sem tráfego
 - Cold start de **1-5 segundos** ao acordar
 - WebSockets desconectam quando adormece
 - Scale-to-zero **não pode ser desativado** no free tier
 
 ### Solução Implementada: Arquitetura Híbrida
-1. **REST API (Koyeb)**: Para ações e queries complexas (pode dormir)
+1. **REST API (Coolify)**: Para ações e queries complexas (pode dormir)
 2. **Supabase Realtime**: Para updates em tempo real (sempre ativo)
 3. **UptimeRobot**: Pinga /api/health a cada 45 min (mantém acordado)
 4. **UI Resiliente**: Optimistic updates + skeleton loaders
@@ -150,7 +150,7 @@ Implementar arquitetura **Backend for Frontend (BFF)** com cache em Supabase e *
 ## 🤖 AGENTE 1: Backend CORS & Infrastructure
 
 ### Tarefas:
-1. **[✓] Configurar CORS no Backend (Koyeb)**
+1. **[✓] Configurar CORS no Backend (Coolify)**
 2. **[✓] Configurar variáveis de ambiente**
 3. **[✓] Implementar middleware de segurança**
 4. **[✓] Criar estrutura base do projeto**
@@ -1210,7 +1210,7 @@ export default router;
 #### 4.1. Configuração de API (client/src/config/api.ts)
 ```typescript
 export const API_CONFIG = {
-  baseURL: import.meta.env.VITE_API_URL || 'https://crucial-ivonne-alfalyzer-90666a9e.koyeb.app',
+  baseURL: import.meta.env.VITE_API_URL || 'https://crucial-ivonne-alfalyzer-90666a9e.coolify.app',
   timeout: 30000,
   headers: {
     'Content-Type': 'application/json',
@@ -1815,7 +1815,7 @@ export function EnhancedStockCard({ symbol, onNavigate }: StockCardProps) {
 3. **[ ] Implementar otimizações de performance**
 4. **[✓] Configurar alertas e logs** (logs básicos existem)
 5. **[ ] Implementar Supabase Realtime para dados em tempo real**
-6. **[ ] Configurar keep-alive strategy para Koyeb**
+6. **[ ] Configurar keep-alive strategy para Coolify**
 
 ### Implementação:
 
@@ -1856,7 +1856,7 @@ export class CronService {
   startAll(): void {
     console.log('🕐 Starting cron jobs...');
     
-    // Keep server awake - CRITICAL FOR KOYEB
+    // Keep server awake - CRITICAL FOR COOLIFY
     this.scheduleJob('keep-alive', '*/45 * * * *', () => {
       this.keepAlive();
     });
@@ -1919,12 +1919,12 @@ export class CronService {
   }
 
   /**
-   * Keep server alive to prevent Koyeb sleep
+   * Keep server alive to prevent Coolify sleep
    */
   private async keepAlive(): Promise<void> {
     console.log('🫀 Keep-alive ping to prevent sleep...');
     // Simple self-ping to keep the server warm
-    // This prevents Koyeb's 1-hour idle timeout
+    // This prevents Coolify's 1-hour idle timeout
   }
 
   /**
@@ -2199,10 +2199,10 @@ export class PerformanceMonitor {
 
 #### 5.4. UptimeRobot Configuration (docs/uptime-robot-setup.md)
 ```markdown
-# UptimeRobot Configuration for Koyeb Keep-Alive
+# UptimeRobot Configuration for Coolify Keep-Alive
 
 ## Why UptimeRobot?
-Koyeb free tier puts services to sleep after 1 hour of inactivity. UptimeRobot will ping our service every 45 minutes to keep it awake.
+Coolify free tier puts services to sleep after 1 hour of inactivity. UptimeRobot will ping our service every 45 minutes to keep it awake.
 
 ## Setup Instructions:
 
@@ -2214,7 +2214,7 @@ Koyeb free tier puts services to sleep after 1 hour of inactivity. UptimeRobot w
    - Click "Add New Monitor"
    - Monitor Type: HTTP(s)
    - Friendly Name: "Alfalyzer Backend Keep-Alive"
-   - URL: https://crucial-ivonne-alfalyzer-90666a9e.koyeb.app/api/health
+   - URL: https://crucial-ivonne-alfalyzer-90666a9e.coolify.app/api/health
    - Monitoring Interval: 45 minutes
    - HTTP Method: GET
 
@@ -2249,13 +2249,13 @@ jobs:
     steps:
       - name: Ping Backend
         run: |
-          curl -f https://crucial-ivonne-alfalyzer-90666a9e.koyeb.app/api/health || exit 1
+          curl -f https://crucial-ivonne-alfalyzer-90666a9e.coolify.app/api/health || exit 1
 ```
 ```
 
-#### 5.5. Configuração do Koyeb (koyeb.yaml)
+#### 5.5. Configuração do Coolify (coolify.yaml)
 ```yaml
-# Configuração para deployment no Koyeb
+# Configuração para deployment no Coolify
 name: alfalyzer-backend
 services:
   - name: api
@@ -2305,14 +2305,14 @@ services:
     cron_jobs:
       - name: refresh-popular-stocks
         schedule: "*/15 * * * *"
-        url: https://crucial-ivonne-alfalyzer-90666a9e.koyeb.app/api/internal/cron/refresh-stocks
+        url: https://crucial-ivonne-alfalyzer-90666a9e.coolify.app/api/internal/cron/refresh-stocks
         http_method: POST
         headers:
           X-Cron-Secret: "${CRON_SECRET}"
       
       - name: cleanup-cache
         schedule: "0 2 * * *"
-        url: https://crucial-ivonne-alfalyzer-90666a9e.koyeb.app/api/internal/cron/cleanup-cache
+        url: https://crucial-ivonne-alfalyzer-90666a9e.coolify.app/api/internal/cron/cleanup-cache
         http_method: POST
         headers:
           X-Cron-Secret: "${CRON_SECRET}"
@@ -2381,7 +2381,7 @@ Após implementação completa:
 1. Frontend funcional sem erros de CORS
 2. APIs respondendo rapidamente via cache
 3. Updates em tempo real via Supabase Realtime
-4. Servidor Koyeb mantido acordado
+4. Servidor Coolify mantido acordado
 5. Custos mantidos em zero (free tier)
 6. Sistema escalável para quando houver revenue
 7. Monitoramento completo de performance e quotas
@@ -2426,7 +2426,7 @@ Após implementação completa:
 
 ### 🟢 NICE TO HAVE - Otimizações:
 6. **Cron Jobs** (AGENTE 5)
-   - [ ] Keep-alive para Koyeb
+   - [ ] Keep-alive para Coolify
    - [ ] Refresh de stocks populares
    - [ ] Limpeza de cache expirado
 

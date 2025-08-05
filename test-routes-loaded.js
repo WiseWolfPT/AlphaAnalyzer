@@ -1,7 +1,7 @@
 // Check which routes are loaded on the backend
 import fetch from 'node-fetch';
 
-const API_BASE_URL = process.env.KOYEB_API_URL || 'https://grateful-sana-alfalyzer-5d8d2f74.koyeb.app';
+const API_BASE_URL = process.env.COOLIFY_API_URL || 'https://grateful-sana-alfalyzer-5d8d2f74.coolify.app';
 
 async function checkRoutesLoaded() {
   console.log('🔍 Checking loaded routes on backend');

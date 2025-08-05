@@ -1,6 +1,6 @@
 # 🚨 GUIA RÁPIDO - RESOLVER ERRO 401 AGORA
 
-## PROBLEMA: Frontend não funciona porque VITE_API_URL está fazendo chamadas diretas para Koyeb
+## PROBLEMA: Frontend não funciona porque VITE_API_URL está fazendo chamadas diretas para Coolify
 
 ## SOLUÇÃO IMEDIATA (5 minutos):
 

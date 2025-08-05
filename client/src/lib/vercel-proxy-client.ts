@@ -90,7 +90,7 @@ export class VercelProxyAPIClient {
   
   constructor(baseUrl: string = '') {
     // CRITICAL: Always use relative paths to go through Vercel proxy
-    // The proxy is configured in vercel.json to redirect /api/* to the Koyeb backend
+    // The proxy is configured in vercel.json to redirect /api/* to the Coolify backend
     this.baseUrl = baseUrl;
     this.fetch = createProxyFetch(baseUrl);
   }

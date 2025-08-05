@@ -61,10 +61,10 @@ async function testRealtimePublishing() {
   // 4. Fazer chamada ao backend para gerar evento
   console.log('\n3️⃣ Fazendo chamada ao backend para gerar evento realtime...');
   
-  // Try local server first, then Koyeb
+  // Try local server first, then Coolify
   const endpoints = [
     'http://localhost:5000/api/market-data/quote/AAPL',
-    'https://alfalyzer-backend-nice-shape-2605.koyeb.app/api/market-data/quote/AAPL'
+    'https://alfalyzer-backend-nice-shape-2605.coolify.app/api/market-data/quote/AAPL'
   ];
   
   let response;

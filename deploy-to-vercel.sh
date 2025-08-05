@@ -19,7 +19,7 @@ if [ ! -f "vercel.json" ]; then
 fi
 
 echo "📋 Pre-deployment checklist:"
-echo "✅ vercel.json configured to point to Koyeb backend"
+echo "✅ vercel.json configured to point to Coolify backend"
 echo "✅ Build command set to: npm run build:client"
 echo "✅ Output directory set to: dist"
 

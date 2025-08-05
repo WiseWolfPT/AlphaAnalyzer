@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Start AlphaAnalyzer Backend Locally
-# Use this if Koyeb deployment fails
+# Use this if Coolify deployment fails
 
 echo "🚀 Starting AlphaAnalyzer Backend Locally"
 echo "========================================"

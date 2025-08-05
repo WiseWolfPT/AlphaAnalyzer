@@ -18,7 +18,7 @@ VITE_SUPABASE_ANON_KEY=[Your Supabase Anon Key]
 
 # API Configuration (Optional - uses defaults if not set)
 # Remove this to use the Vercel proxy instead of direct connection
-# VITE_API_URL=https://crucial-ivonne-alfalyzer-90666a9e.koyeb.app
+# VITE_API_URL=https://crucial-ivonne-alfalyzer-90666a9e.coolify.app
 ```
 
 ### 3. Important Notes:
@@ -45,7 +45,7 @@ VITE_API_URL=http://localhost:3001
 
 ## How the Fix Works
 
-1. **API Proxy**: The frontend now uses relative paths (`/api/*`) which Vercel proxies to Koyeb
+1. **API Proxy**: The frontend now uses relative paths (`/api/*`) which Vercel proxies to Coolify
 2. **No CORS**: Since requests go through Vercel's proxy, there are no CORS issues
 3. **Supabase Auth**: With proper env vars, authentication will initialize correctly
 4. **i18n**: Fixed the missing import for proper internationalization
@@ -54,6 +54,6 @@ VITE_API_URL=http://localhost:3001
 
 1. Deploy to Vercel with the environment variables
 2. Open browser developer tools
-3. Check Network tab - API calls should go to `/api/*` not direct Koyeb URL
+3. Check Network tab - API calls should go to `/api/*` not direct Coolify URL
 4. Check Console - No authentication or i18n errors
 5. The app should load without the "Algo correu mal" error

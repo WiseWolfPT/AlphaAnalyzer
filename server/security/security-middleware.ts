@@ -143,7 +143,7 @@ export const rateLimiters = {
 
 // SECURITY FIX: Consolidated and enhanced security headers configuration
 export const securityHeaders = helmet({
-  // TEMPORARILY DISABLE CSP TO DEBUG KOYEB DEPLOYMENT
+  // TEMPORARILY DISABLE CSP TO DEBUG COOLIFY DEPLOYMENT
   contentSecurityPolicy: false,
   
   // ORIGINAL CSP CONFIGURATION (DISABLED FOR NOW):
@@ -181,7 +181,7 @@ export const securityHeaders = helmet({
   //       "'self'",
   //       "wss:", // WebSocket connections
   //       "ws:",  // WebSocket connections  
-  //       "https://*.koyeb.app",            // Koyeb API endpoints
+  //       "https://*.coolify.app",            // Coolify API endpoints
   //       "https://unpkg.com",              // CDN connections
   //       "https://cdn.jsdelivr.net",       // CDN connections
   //       "https://cdnjs.cloudflare.com",   // CDN connections
@@ -419,24 +419,24 @@ export const corsConfig = {
     
     // SECURITY FIX: Environment-specific allowed origins from FRONTEND_ORIGIN
     const frontendOrigin = process.env.FRONTEND_ORIGIN;
-    const koyebDomain = process.env.KOYEB_APP_URL || process.env.APP_URL;
+    const coolifyDomain = process.env.COOLIFY_APP_URL || process.env.APP_URL;
     
     // Build production origins list
     const productionOrigins = [];
     if (frontendOrigin) productionOrigins.push(frontendOrigin);
-    if (koyebDomain) {
-      // Add both http and https versions of Koyeb domain
-      productionOrigins.push(koyebDomain);
-      if (koyebDomain.startsWith('http://')) {
-        productionOrigins.push(koyebDomain.replace('http://', 'https://'));
-      } else if (koyebDomain.startsWith('https://')) {
-        productionOrigins.push(koyebDomain.replace('https://', 'http://'));
+    if (coolifyDomain) {
+      // Add both http and https versions of Coolify domain
+      productionOrigins.push(coolifyDomain);
+      if (coolifyDomain.startsWith('http://')) {
+        productionOrigins.push(coolifyDomain.replace('http://', 'https://'));
+      } else if (coolifyDomain.startsWith('https://')) {
+        productionOrigins.push(coolifyDomain.replace('https://', 'http://'));
       }
     }
     
     // PRODUCTION DYNAMIC PATTERNS
     if (process.env.NODE_ENV === 'production' && origin) {
-      // KOYEB FIX: Dynamically handle Koyeb subdomains
+      // COOLIFY FIX: Dynamically handle Coolify subdomains
       const coolifyPattern = /^http:\/\/[a-z0-9]+\.128\.140\.45\.28\.sslip\.io$/;
       if (coolifyPattern.test(origin)) {
         console.log(`✅ CORS: Allowing Coolify subdomain: ${origin}`);

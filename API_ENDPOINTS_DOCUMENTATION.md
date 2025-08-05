@@ -2,7 +2,7 @@
 
 **Agent 5 - Integration Testing Report**  
 **Date**: July 23, 2025  
-**API Base URL**: https://crucial-ivonne-alfalyzer-90666a9e.koyeb.app
+**API Base URL**: https://crucial-ivonne-alfalyzer-90666a9e.coolify.app
 
 ## Executive Summary
 

@@ -7,7 +7,7 @@ This document defines the working API contract between the Alfalyzer frontend an
 ### Endpoints
 
 - **Frontend**: https://alfalyzerpro4.vercel.app
-- **Backend**: https://crucial-ivonne-alfalyzer-90666a9e.koyeb.app
+- **Backend**: https://crucial-ivonne-alfalyzer-90666a9e.coolify.app
 - **Proxy**: Vercel automatically proxies `/api/*` requests to the backend
 
 ### Authentication

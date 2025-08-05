@@ -10,7 +10,7 @@ const http = require('http');
 
 // Configuration
 const FRONTEND_URL = 'https://alfalyzer.vercel.app';
-const BACKEND_URL = 'https://alfalyzer-4rjhp-koyeb.app';
+const BACKEND_URL = 'https://alfalyzer-4rjhp-coolify.app';
 
 // Color codes for terminal output
 const colors = {
@@ -225,7 +225,7 @@ async function runTests() {
   console.log('Green ✓ marks indicate successful tests.');
   
   console.log(`\n${colors.cyan}Next Steps:${colors.reset}`);
-  console.log('1. If backend tests fail, check Koyeb deployment status');
+  console.log('1. If backend tests fail, check Coolify deployment status');
   console.log('2. If frontend tests fail, check Vercel deployment');
   console.log('3. If CORS issues, verify backend CORS configuration');
   console.log('4. Check browser console for any client-side errors');

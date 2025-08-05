@@ -19,7 +19,7 @@ async function testEndpoint(path: string, description: string) {
         console.log(`   Server status: ${data.status}`);
       } else if (path === '/api/diagnostic' || path === '/api/diagnostic/minimal') {
         console.log(`   Environment: ${data.environment}`);
-        console.log(`   Koyeb: ${data.koyebInfo?.IS_KOYEB ? 'YES' : 'NO'}`);
+        console.log(`   Coolify: ${data.coolifyInfo?.IS_COOLIFY ? 'YES' : 'NO'}`);
         console.log(`   Configured APIs: ${data.summary?.configuredApis?.join(', ') || 'None'}`);
       } else if (path === '/api/diagnostic/test-connectivity') {
         console.log(`   Summary: ${data.summary}`);
@@ -48,9 +48,9 @@ async function runTests() {
   
   console.log('✨ All tests completed!\n');
   
-  // Show how to test on Koyeb
-  console.log('To test on Koyeb, run:');
-  console.log('API_URL=https://your-app.koyeb.app npm run test:diagnostic');
+  // Show how to test on Coolify
+  console.log('To test on Coolify, run:');
+  console.log('API_URL=https://your-app.coolify.app npm run test:diagnostic');
 }
 
 runTests().catch(console.error);

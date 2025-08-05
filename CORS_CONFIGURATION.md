@@ -12,8 +12,8 @@ The backend is configured to accept CORS requests from multiple sources in produ
    - `https://alfalyzer-*.vercel.app` (preview deployments)
    - `https://*.vercel.app` (any Vercel app)
 
-2. **Koyeb Deployments**:
-   - `https://crucial-ivonne-alfalyzer-*.koyeb.app`
+2. **Coolify Deployments**:
+   - `https://crucial-ivonne-alfalyzer-*.coolify.app`
 
 3. **Custom Domains**:
    - `https://alfalyzer.com`
@@ -23,7 +23,7 @@ The backend is configured to accept CORS requests from multiple sources in produ
 
 ### Environment Variables
 
-Configure these in your Koyeb deployment:
+Configure these in your Coolify deployment:
 
 ```bash
 # Frontend origin (optional)
@@ -49,21 +49,21 @@ ALLOWED_DOMAINS=alfalyzer.com,alphaanalyzer.com
 ```bash
 # Test GET request
 curl -H "Origin: https://alphaanalyzer.vercel.app" \
-     https://your-backend.koyeb.app/api/cors-test
+     https://your-backend.coolify.app/api/cors-test
 
 # Test POST request (preflight)
 curl -X POST \
      -H "Origin: https://alphaanalyzer.vercel.app" \
      -H "Content-Type: application/json" \
      -d '{"test": "data"}' \
-     https://your-backend.koyeb.app/api/cors-test
+     https://your-backend.coolify.app/api/cors-test
 ```
 
 ### 2. From Browser Console
 
 ```javascript
 // Test from Vercel frontend
-fetch('https://your-backend.koyeb.app/api/cors-test', {
+fetch('https://your-backend.coolify.app/api/cors-test', {
   method: 'GET',
   credentials: 'include',
   headers: {
@@ -95,7 +95,7 @@ The backend logs detailed CORS information:
 #### Issue: "CORS policy: No 'Access-Control-Allow-Origin' header"
 **Solution**: 
 - Ensure the origin is in the allowed list
-- Check if `NODE_ENV=production` is set in Koyeb
+- Check if `NODE_ENV=production` is set in Coolify
 - Verify the origin URL exactly matches (including https://)
 
 #### Issue: "CORS policy: The request client is not a secure context"
@@ -137,7 +137,7 @@ X-CORS-Debug-Time: 2024-01-23T10:30:00.000Z
 
 ## Quick Deploy Checklist
 
-1. [ ] Set `NODE_ENV=production` in Koyeb
+1. [ ] Set `NODE_ENV=production` in Coolify
 2. [ ] Configure `FRONTEND_ORIGIN` if using a specific domain
 3. [ ] Set `STRICT_CORS=true` for production
 4. [ ] Test using `/api/cors-test` endpoint
@@ -148,7 +148,7 @@ X-CORS-Debug-Time: 2024-01-23T10:30:00.000Z
 ## Support
 
 If CORS issues persist:
-1. Check the Koyeb logs for detailed error messages
+1. Check the Coolify logs for detailed error messages
 2. Test with `CORS_DEBUG=true` enabled
 3. Use the `/api/cors-test` endpoint to verify configuration
 4. Ensure your Vercel deployment URL matches the patterns

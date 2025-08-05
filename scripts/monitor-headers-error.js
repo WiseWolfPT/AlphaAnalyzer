@@ -12,7 +12,7 @@ import notifier from 'node-notifier';
 
 const MONITORING_INTERVAL = 5000; // Check every 5 seconds
 const API_URL = process.env.API_URL || 'http://localhost:3001';
-const KOYEB_APP_NAME = process.env.KOYEB_APP_NAME || 'alfalyzer';
+const COOLIFY_APP_NAME = process.env.COOLIFY_APP_NAME || 'alfalyzer';
 
 // Statistics
 const stats = {
@@ -87,27 +87,27 @@ async function makeTestRequest() {
   }
 }
 
-// Monitor Koyeb logs (if Koyeb CLI is available)
-async function monitorKoyebLogs() {
+// Monitor Coolify logs (if Coolify CLI is available)
+async function monitorCoolifyLogs() {
   try {
-    const koyeb = spawn('koyeb', ['logs', KOYEB_APP_NAME, '--follow'], {
+    const coolify = spawn('coolify', ['logs', COOLIFY_APP_NAME, '--follow'], {
       stdio: ['ignore', 'pipe', 'pipe']
     });
     
-    koyeb.stdout.on('data', (data) => {
+    coolify.stdout.on('data', (data) => {
       const log = data.toString();
       if (log.includes('HEADERS_SENT') || log.includes('headers after they are sent')) {
         stats.headersErrors++;
-        log.error(`Headers error found in Koyeb logs! Total: ${stats.headersErrors}`);
+        log.error(`Headers error found in Coolify logs! Total: ${stats.headersErrors}`);
       }
     });
     
-    koyeb.stderr.on('data', (data) => {
-      log.warning(`Koyeb CLI stderr: ${data}`);
+    coolify.stderr.on('data', (data) => {
+      log.warning(`Coolify CLI stderr: ${data}`);
     });
     
   } catch (error) {
-    log.info('Koyeb CLI not available - monitoring via HTTP only');
+    log.info('Coolify CLI not available - monitoring via HTTP only');
   }
 }
 
@@ -172,8 +172,8 @@ async function monitor() {
   log.info(`Starting headers error monitoring for ${API_URL}`);
   await makeTestRequest();
   
-  // Start Koyeb log monitoring
-  monitorKoyebLogs();
+  // Start Coolify log monitoring
+  monitorCoolifyLogs();
   
   // Run stress test every minute
   setInterval(stressTest, 60000);

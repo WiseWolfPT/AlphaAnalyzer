@@ -18,7 +18,7 @@
   - Bearer token com CRON_SECRET
   - Header x-cron-secret
   - Query parameter ?secret=
-  - Token específico do Koyeb
+  - Token específico do Coolify
 - ✅ Rate limiting para prevenir abuso
 - ✅ Logging detalhado de execução
 
@@ -37,16 +37,16 @@
 - ✅ Rotas protegidas com middleware de segurança
 - ✅ Configurável via variáveis de ambiente
 
-## 🚀 CONFIGURAÇÃO NO KOYEB
+## 🚀 CONFIGURAÇÃO NO COOLIFY
 
 ### Passo 1: Variáveis de Ambiente
-Adicione no painel do Koyeb:
+Adicione no painel do Coolify:
 ```bash
 CRON_SECRET=seu-secret-seguro-aqui
 ENABLE_CRON_JOBS=true
 ENABLE_KEEP_ALIVE=true
-SELF_PING_URL=https://crucial-ivonne-alfalyzer-90666a9e.koyeb.app
-KOYEB_SERVICE_TOKEN=opcional-para-seguranca-extra
+SELF_PING_URL=https://crucial-ivonne-alfalyzer-90666a9e.coolify.app
+COOLIFY_SERVICE_TOKEN=opcional-para-seguranca-extra
 ```
 
 ### Passo 2: Configurar Cron Jobs Externos
@@ -55,7 +55,7 @@ KOYEB_SERVICE_TOKEN=opcional-para-seguranca-extra
 
 1. **Cron-job.org** (Gratuito)
    ```
-   URL: https://crucial-ivonne-alfalyzer-90666a9e.koyeb.app/api/cron-manager/keep-alive
+   URL: https://crucial-ivonne-alfalyzer-90666a9e.coolify.app/api/cron-manager/keep-alive
    Schedule: */45 * * * *
    Headers: Authorization: Bearer seu-secret-seguro-aqui
    ```
@@ -63,13 +63,13 @@ KOYEB_SERVICE_TOKEN=opcional-para-seguranca-extra
 2. **UptimeRobot** (Gratuito)
    ```
    Monitor Type: HTTP(s)
-   URL: https://crucial-ivonne-alfalyzer-90666a9e.koyeb.app/api/cron-manager/keep-alive?secret=seu-secret
+   URL: https://crucial-ivonne-alfalyzer-90666a9e.coolify.app/api/cron-manager/keep-alive?secret=seu-secret
    Interval: 45 minutes
    ```
 
 3. **EasyCron** (Gratuito com limites)
    ```
-   URL: https://crucial-ivonne-alfalyzer-90666a9e.koyeb.app/api/cron-manager/trigger/cache-warmer
+   URL: https://crucial-ivonne-alfalyzer-90666a9e.coolify.app/api/cron-manager/trigger/cache-warmer
    Cron Expression: */15 9-16 * * 1-5
    HTTP Headers: x-cron-secret: seu-secret-seguro-aqui
    ```
@@ -96,7 +96,7 @@ jobs:
         run: |
           curl -X POST \
             -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
-            https://crucial-ivonne-alfalyzer-90666a9e.koyeb.app/api/cron-manager/keep-alive
+            https://crucial-ivonne-alfalyzer-90666a9e.coolify.app/api/cron-manager/keep-alive
 
   cache-warmer:
     runs-on: ubuntu-latest
@@ -106,7 +106,7 @@ jobs:
         run: |
           curl -X POST \
             -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
-            https://crucial-ivonne-alfalyzer-90666a9e.koyeb.app/api/cron-manager/warm-cache
+            https://crucial-ivonne-alfalyzer-90666a9e.coolify.app/api/cron-manager/warm-cache
 ```
 
 ### Passo 3: Testar Implementação
@@ -123,7 +123,7 @@ jobs:
 
 2. **Testar em produção:**
    ```bash
-   curl -X POST https://crucial-ivonne-alfalyzer-90666a9e.koyeb.app/api/cron-manager/status \
+   curl -X POST https://crucial-ivonne-alfalyzer-90666a9e.coolify.app/api/cron-manager/status \
      -H "Authorization: Bearer seu-secret-seguro-aqui"
    ```
 
@@ -192,7 +192,7 @@ enabled: process.env.ENABLE_CACHE_WARMER !== 'false'
 
 ## ⚠️ CONSIDERAÇÕES
 
-1. **Koyeb não suporta cron nativo**: Use serviços externos
+1. **Coolify não suporta cron nativo**: Use serviços externos
 2. **Rate limits**: Configure com cuidado para não exceder quotas
 3. **Segurança**: SEMPRE use CRON_SECRET em produção
 4. **Backup**: Configure múltiplos serviços de cron para redundância

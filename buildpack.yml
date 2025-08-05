@@ -1,5 +1,5 @@
-# Koyeb Buildpack Configuration
-# This helps Koyeb understand how to build your app without a Dockerfile
+# Coolify Buildpack Configuration
+# This helps Coolify understand how to build your app without a Dockerfile
 
 # Node.js version
 node:
@@ -39,7 +39,7 @@ run: |
     node emergency-server.js
   else
     echo "No entry point found! Starting debug server..."
-    node debug-koyeb-files.js
+    node debug-coolify-files.js
   fi
 
 # Environment variables

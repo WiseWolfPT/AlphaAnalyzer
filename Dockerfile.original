@@ -100,8 +100,8 @@ ENV NODE_ENV=production
 ENTRYPOINT ["/entrypoint.sh"]
 CMD ["start"]
 
-# Koyeb Production Stage
-FROM node:18-alpine AS koyeb
+# Coolify Production Stage
+FROM node:18-alpine AS coolify
 
 WORKDIR /app
 
@@ -140,16 +140,16 @@ RUN echo "===== BUILD PHASE START =====" && \
 # Don't remove dependencies - tsx is needed for production
 # RUN npm prune --production
 
-# Expose port - Koyeb will set PORT dynamically
+# Expose port - Coolify will set PORT dynamically
 EXPOSE 8000
 
 ENV NODE_ENV=production
-# Don't hardcode PORT - let Koyeb set it
+# Don't hardcode PORT - let Coolify set it
 # ENV PORT=3001
 
-# Create a specific start script for Koyeb
+# Create a specific start script for Coolify
 RUN echo '#!/bin/sh\n\
-echo "🚀 Starting Alfalyzer on Koyeb..."\n\
+echo "🚀 Starting Alfalyzer on Coolify..."\n\
 echo "📍 Environment: $NODE_ENV"\n\
 echo "📍 Port: $PORT"\n\
 echo "📍 PWD: $(pwd)"\n\

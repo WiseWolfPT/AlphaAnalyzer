@@ -3,7 +3,7 @@ import axios from 'axios';
 import { createClient } from '@supabase/supabase-js';
 
 const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:3001';
-const KOYEB_URL = process.env.KOYEB_URL || 'https://your-app.koyeb.app';
+const COOLIFY_URL = process.env.COOLIFY_URL || 'https://your-app.coolify.app';
 const SUPABASE_URL = process.env.VITE_SUPABASE_URL!;
 const SUPABASE_ANON_KEY = process.env.VITE_SUPABASE_ANON_KEY!;
 
@@ -64,18 +64,18 @@ describe('Testes de Resiliência', () => {
     });
   });
 
-  describe('Cold Start do Koyeb', () => {
+  describe('Cold Start do Coolify', () => {
     it('deve lidar com cold start sem timeout', async () => {
-      // Só executa se tivermos URL do Koyeb
-      if (!KOYEB_URL || KOYEB_URL === 'https://your-app.koyeb.app') {
-        console.log('Pulando teste de Koyeb - URL não configurada');
+      // Só executa se tivermos URL do Coolify
+      if (!COOLIFY_URL || COOLIFY_URL === 'https://your-app.coolify.app') {
+        console.log('Pulando teste de Coolify - URL não configurada');
         return;
       }
       
       const startTime = Date.now();
       
       try {
-        const response = await axios.get(`${KOYEB_URL}/api/health`, {
+        const response = await axios.get(`${COOLIFY_URL}/api/health`, {
           timeout: 30000 // 30 segundos para cold start
         });
         
@@ -91,14 +91,14 @@ describe('Testes de Resiliência', () => {
           
           // Segunda requisição deve ser rápida
           const secondStart = Date.now();
-          const secondResponse = await axios.get(`${KOYEB_URL}/api/health`);
+          const secondResponse = await axios.get(`${COOLIFY_URL}/api/health`);
           const secondTime = Date.now() - secondStart;
           
           expect(secondTime).toBeLessThan(1000);
           console.log(`Warm response time: ${secondTime}ms`);
         }
       } catch (error) {
-        console.error('Erro ao testar Koyeb:', error);
+        console.error('Erro ao testar Coolify:', error);
         throw error;
       }
     });

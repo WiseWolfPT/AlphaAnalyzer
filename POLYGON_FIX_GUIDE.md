@@ -6,9 +6,9 @@
 
 ## Soluções Imediatas
 
-### 1. Adicionar ALLOWED_ORIGINS no Koyeb
+### 1. Adicionar ALLOWED_ORIGINS no Coolify
 
-No painel do Koyeb, adicione esta variável de ambiente:
+No painel do Coolify, adicione esta variável de ambiente:
 
 ```
 ALLOWED_ORIGINS=https://alfalyzerpro4-20n9vt0bo-antonios-projects-f9cd3cd0.vercel.app,https://alfalyzer.vercel.app
@@ -81,8 +81,8 @@ const API_PRIORITY = [
 
 Após fazer as mudanças:
 
-1. Reinicie o serviço no Koyeb
-2. Teste a API: `https://crucial-ivonne-alfalyzer-90666a9e.koyeb.app/health`
+1. Reinicie o serviço no Coolify
+2. Teste a API: `https://crucial-ivonne-alfalyzer-90666a9e.coolify.app/health`
 3. Verifique se as outras APIs estão sendo usadas como fallback
 
 ## Alternativas

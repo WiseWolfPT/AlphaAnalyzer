@@ -565,7 +565,7 @@ router.post('/quotes/batch',
     console.log('   Body:', req.body);
     console.log('   Origin:', req.headers.origin);
     
-    // Explicitly set CORS headers to fix Koyeb issue
+    // Explicitly set CORS headers to fix Coolify issue
     const origin = req.headers.origin;
     if (origin) {
       res.header('Access-Control-Allow-Origin', origin);
@@ -791,10 +791,10 @@ router.get('/config',
  * GET /api/market-data/health
  * Health check endpoint for frontend to check if real data is available
  */
-// Import GET endpoints from Koyeb production config
-import { setupMarketDataGETEndpoints } from '../koyeb-production';
+// Import GET endpoints from Coolify production config
+import { setupMarketDataGETEndpoints } from '../coolify-production';
 
-// Setup additional GET endpoints for Koyeb
+// Setup additional GET endpoints for Coolify
 setupMarketDataGETEndpoints(router);
 
 router.get('/health', 
@@ -974,7 +974,7 @@ router.get('/diagnostics',
       const envInfo = {
         NODE_ENV: process.env.NODE_ENV,
         FRONTEND_ORIGIN: process.env.FRONTEND_ORIGIN || 'not set',
-        KOYEB_APP_URL: process.env.KOYEB_APP_URL || 'not set',
+        COOLIFY_APP_URL: process.env.COOLIFY_APP_URL || 'not set',
         APP_URL: process.env.APP_URL || 'not set',
         PORT: process.env.PORT || '3001',
         // Check if API keys exist (not their values)
@@ -1046,7 +1046,7 @@ router.post('/warm-cache',
 
 /**
  * POST /api/market-data/test-post
- * Simple POST endpoint to test if POST requests work on Koyeb
+ * Simple POST endpoint to test if POST requests work on Coolify
  */
 router.post('/test-post', 
   async (req: Request, res: Response) => {

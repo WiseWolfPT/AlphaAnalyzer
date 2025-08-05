@@ -253,11 +253,11 @@ export function setupViewportPreloading() {
 
 /**
  * CDN fallback for React in production - DISABLED
- * React is now bundled by Vite to avoid CSP issues on Koyeb
+ * React is now bundled by Vite to avoid CSP issues on Coolify
  */
 export function setupCDNFallback() {
   // DISABLED: React is now bundled locally
-  // Previously loaded React from CDN but caused CSP violations on Koyeb
+  // Previously loaded React from CDN but caused CSP violations on Coolify
   return;
 }
 

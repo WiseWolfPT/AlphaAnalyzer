@@ -3,7 +3,7 @@
 /**
  * CORS Test Script
  * Usage: node scripts/test-cors.js [backend-url] [frontend-origin]
- * Example: node scripts/test-cors.js https://your-backend.koyeb.app https://alphaanalyzer.vercel.app
+ * Example: node scripts/test-cors.js https://your-backend.coolify.app https://alphaanalyzer.vercel.app
  */
 
 const https = require('https');
@@ -128,8 +128,8 @@ function testPost() {
       console.log('   If all tests show proper CORS headers, your configuration is working.');
       console.log('   If you see "NOT SET" for CORS headers, check your backend configuration.');
       console.log('\n💡 Debug tips:');
-      console.log('   1. Check Koyeb logs for CORS debug messages');
-      console.log('   2. Ensure NODE_ENV=production is set in Koyeb');
+      console.log('   1. Check Coolify logs for CORS debug messages');
+      console.log('   2. Ensure NODE_ENV=production is set in Coolify');
       console.log('   3. Verify your frontend URL matches the origin patterns');
     });
   });

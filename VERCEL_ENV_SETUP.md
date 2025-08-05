@@ -9,8 +9,8 @@
 VITE_SUPABASE_URL=your_supabase_project_url
 VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
 
-# API Backend URL (Koyeb)
-VITE_API_URL=https://alphaanalyzer-wisewolfpt.koyeb.app
+# API Backend URL (Coolify)
+VITE_API_URL=https://alphaanalyzer-wisewolfpt.coolify.app
 ```
 
 ### 2. How to Configure in Vercel
@@ -24,7 +24,7 @@ VITE_API_URL=https://alphaanalyzer-wisewolfpt.koyeb.app
 
 - The `VITE_API_URL` is already set in vercel.json but can be overridden in the Vercel dashboard
 - The Supabase variables must be obtained from your Supabase project dashboard
-- All backend API keys should remain on Koyeb (not exposed to frontend)
+- All backend API keys should remain on Coolify (not exposed to frontend)
 
 ### 4. Verifying Configuration
 

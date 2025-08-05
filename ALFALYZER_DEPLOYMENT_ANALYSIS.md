@@ -2,14 +2,14 @@
 
 ## Executive Summary
 
-This document provides a comprehensive analysis of the Alfalyzer project's current state and outlines the migration plan from Koyeb to Hetzner CX22 with Coolify.
+This document provides a comprehensive analysis of the Alfalyzer project's current state and outlines the migration plan from Coolify to Hetzner CX22 with Coolify.
 
 ## 1. Current Implementation Status
 
 ### ✅ What's Working
 
 #### Backend Infrastructure
-- **Koyeb Deployment**: Currently running on `koyeb-server.ts`
+- **Coolify Deployment**: Currently running on `coolify-server.ts`
 - **API Endpoints**: 
   - `/api/health` - Health check
   - `/api/market-data/quotes/batch` - Batch stock quotes
@@ -58,7 +58,7 @@ Caching: In-memory + Supabase
 Real-time: WebSockets + Supabase Realtime
 Deployment: 
   - Frontend: Vercel (free)
-  - Backend: Koyeb (free, limited)
+  - Backend: Coolify (free, limited)
 ```
 
 ### API Providers Configured
@@ -69,7 +69,7 @@ Deployment:
 - Polygon.io
 - Yahoo Finance (fallback)
 
-## 3. Migration Plan: Koyeb → Hetzner/Coolify
+## 3. Migration Plan: Coolify → Hetzner/Coolify
 
 ### Why Migrate?
 - **Performance**: Dedicated resources vs shared free tier
@@ -118,12 +118,12 @@ curl -fsSL https://cdn.coollabs.io/coolify/install.sh | bash
    const PORT = process.env.PORT || 3001;
    
    // Update package.json start script
-   "start": "NODE_ENV=production node server/koyeb-server.js"
+   "start": "NODE_ENV=production node server/coolify-server.js"
    ```
 
 2. **Configure in Coolify**:
    - Build Command: `npm install && npm run build:server`
-   - Start Command: `NODE_ENV=production node server/koyeb-server.js`
+   - Start Command: `NODE_ENV=production node server/coolify-server.js`
    - Port: 3001
    - Health Check Path: `/api/health`
 
@@ -131,13 +131,13 @@ curl -fsSL https://cdn.coollabs.io/coolify/install.sh | bash
    ```
    NODE_ENV=production
    PORT=3001
-   SUPABASE_URL=<from-koyeb>
-   SUPABASE_SERVICE_KEY=<from-koyeb>
-   ALPHA_VANTAGE_API_KEY=<from-koyeb>
-   FINNHUB_API_KEY=<from-koyeb>
-   FMP_API_KEY=<from-koyeb>
-   TWELVE_DATA_API_KEY=<from-koyeb>
-   POLYGON_API_KEY=<from-koyeb>
+   SUPABASE_URL=<from-coolify>
+   SUPABASE_SERVICE_KEY=<from-coolify>
+   ALPHA_VANTAGE_API_KEY=<from-coolify>
+   FINNHUB_API_KEY=<from-coolify>
+   FMP_API_KEY=<from-coolify>
+   TWELVE_DATA_API_KEY=<from-coolify>
+   POLYGON_API_KEY=<from-coolify>
    ```
 
 #### Day 3: Testing & Cutover
@@ -162,7 +162,7 @@ curl -fsSL https://cdn.coollabs.io/coolify/install.sh | bash
 
 ## 4. Cost Analysis
 
-### Current Costs (Koyeb)
+### Current Costs (Coolify)
 - Backend: €0 (free tier with limitations)
 - Frontend: €0 (Vercel free)
 - Database: €0 (Supabase free)
@@ -228,7 +228,7 @@ For €3.79/month, you get:
 ## 6. Risk Mitigation
 
 ### During Migration
-- Keep Koyeb instance running
+- Keep Coolify instance running
 - Test thoroughly before switching
 - Have rollback plan ready
 - Document all configurations
@@ -242,8 +242,8 @@ For €3.79/month, you get:
 ## 7. Recommended Actions
 
 ### Immediate Actions
-1. ✅ Review and backup all Koyeb environment variables
-2. ✅ Test koyeb-server.ts locally with production config
+1. ✅ Review and backup all Coolify environment variables
+2. ✅ Test coolify-server.ts locally with production config
 3. ✅ Document all API endpoints and their current usage
 4. ✅ Prepare migration checklist
 
@@ -262,7 +262,7 @@ For €3.79/month, you get:
 
 ## Conclusion
 
-The migration from Koyeb to Hetzner/Coolify represents a significant upgrade in infrastructure for minimal cost (€3.79/month). This will provide better performance, reliability, and control over the deployment, setting a solid foundation for the Alfalyzer platform's growth.
+The migration from Coolify to Hetzner/Coolify represents a significant upgrade in infrastructure for minimal cost (€3.79/month). This will provide better performance, reliability, and control over the deployment, setting a solid foundation for the Alfalyzer platform's growth.
 
 The current implementation has made good progress with real-time data integration and caching, but critical features like navigation, admin panel, and full API integration still need attention. The migration provides an opportunity to address these issues on a more stable platform.
 

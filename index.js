@@ -1,4 +1,4 @@
-// Ultra-simple Koyeb entry point
+// Ultra-simple Coolify entry point
 // This file is at the root and will be found by most deployment systems
 
 const PORT = process.env.PORT || 3001;
@@ -30,7 +30,7 @@ try {
           <html>
           <head><title>Alfalyzer</title></head>
           <body>
-            <h1>Alfalyzer Running on Koyeb</h1>
+            <h1>Alfalyzer Running on Coolify</h1>
             <p>Server: Fallback Mode</p>
             <p>Port: ${PORT}</p>
             <p>Time: ${new Date()}</p>

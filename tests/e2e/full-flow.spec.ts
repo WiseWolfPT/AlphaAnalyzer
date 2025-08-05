@@ -221,16 +221,16 @@ test.describe('Fluxo Completo: Frontend → Backend → Cache → Realtime', () 
     }
   });
 
-  test('deve verificar cold start do Koyeb', async ({ request }) => {
-    // Este teste só faz sentido se estivermos testando contra Koyeb
-    const isKoyeb = BACKEND_URL.includes('koyeb');
+  test('deve verificar cold start do Coolify', async ({ request }) => {
+    // Este teste só faz sentido se estivermos testando contra Coolify
+    const isCoolify = BACKEND_URL.includes('coolify');
     
-    if (!isKoyeb) {
-      console.log('⏭️ Pulando teste de cold start (não é Koyeb)');
+    if (!isCoolify) {
+      console.log('⏭️ Pulando teste de cold start (não é Coolify)');
       return;
     }
     
-    console.log('🥶 Testando cold start do Koyeb...');
+    console.log('🥶 Testando cold start do Coolify...');
     
     // Primeira requisição após período de inatividade
     const startTime = Date.now();
