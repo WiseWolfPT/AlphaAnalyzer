@@ -5,12 +5,15 @@
 
 import { Express } from 'express';
 import * as Sentry from '@sentry/node';
-import { ProfilingIntegration } from '@sentry/profiling-node';
+import { nodeProfilingIntegration } from '@sentry/profiling-node';
 
 // Configuration
 const SENTRY_DSN = process.env.SENTRY_DSN;
 const ENVIRONMENT = process.env.NODE_ENV || 'development';
 const RELEASE = process.env.APP_VERSION || '1.0.0';
+
+// Flag to track if Sentry is initialized
+let sentryInitialized = false;
 
 export function initializeSentry() {
   // Only initialize Sentry when DSN is provided
@@ -29,7 +32,7 @@ export function initializeSentry() {
       // Enable HTTP tracking
       new Sentry.Integrations.Http({ tracing: true }),
       // Enable profiling
-      new ProfilingIntegration(),
+      nodeProfilingIntegration(),
     ],
     
     // Performance sampling
@@ -90,10 +93,15 @@ export function initializeSentry() {
   });
 
   console.log(`Sentry initialized for backend in ${ENVIRONMENT} environment`);
+  sentryInitialized = true;
 }
 
 // Express middleware integration
 export function setupSentryMiddleware(app: Express) {
+  if (!sentryInitialized) {
+    return;
+  }
+  
   // The request handler must be the first middleware on the app
   app.use(Sentry.Handlers.requestHandler());
   
@@ -102,6 +110,10 @@ export function setupSentryMiddleware(app: Express) {
 }
 
 export function setupSentryErrorHandler(app: Express) {
+  if (!sentryInitialized) {
+    return;
+  }
+  
   // The error handler must be before any other error middleware and after all controllers
   app.use(Sentry.Handlers.errorHandler({
     shouldHandleError(error) {
@@ -113,6 +125,11 @@ export function setupSentryErrorHandler(app: Express) {
 
 // Custom error reporting
 export function reportError(error: Error, context?: Record<string, any>, user?: { id: string; email?: string }) {
+  if (!sentryInitialized) {
+    console.error('Sentry error:', error);
+    return;
+  }
+  
   Sentry.withScope((scope) => {
     if (user) {
       scope.setUser({ id: user.id });
@@ -136,6 +153,11 @@ export function trackApiError(
   statusCode?: number,
   responseTime?: number
 ) {
+  if (!sentryInitialized) {
+    console.error(`API error [${provider}]:`, error);
+    return;
+  }
+  
   Sentry.withScope((scope) => {
     scope.setTag('error_category', 'api');
     scope.setTag('api_provider', provider);
@@ -164,6 +186,11 @@ export function trackDatabaseError(
   error: Error,
   query?: string
 ) {
+  if (!sentryInitialized) {
+    console.error(`Database error [${operation}]:`, error);
+    return;
+  }
+  
   Sentry.withScope((scope) => {
     scope.setTag('error_category', 'database');
     scope.setTag('db_operation', operation);
@@ -182,6 +209,13 @@ export function trackDatabaseError(
 
 // Performance tracking
 export function trackPerformance(name: string, duration: number, tags?: Record<string, string>) {
+  if (!sentryInitialized) {
+    if (duration > 5000) {
+      console.warn(`Slow operation: ${name} took ${duration}ms`);
+    }
+    return;
+  }
+  
   Sentry.addBreadcrumb({
     category: 'performance',
     message: `${name} took ${duration}ms`,
@@ -194,24 +228,30 @@ export function trackPerformance(name: string, duration: number, tags?: Record<s
   
   // If performance is poor, create an event
   if (duration > 5000) { // 5 seconds
-    Sentry.withScope((scope) => {
-      scope.setTag('performance_issue', 'slow_operation');
-      if (tags) {
-        Object.keys(tags).forEach(key => {
-          scope.setTag(key, tags[key]);
-        });
-      }
-      
-      Sentry.captureMessage(
-        `Slow operation detected: ${name} took ${duration}ms`,
-        'warning'
-      );
-    });
+    if (sentryInitialized) {
+      Sentry.withScope((scope) => {
+        scope.setTag('performance_issue', 'slow_operation');
+        if (tags) {
+          Object.keys(tags).forEach(key => {
+            scope.setTag(key, tags[key]);
+          });
+        }
+        
+        Sentry.captureMessage(
+          `Slow operation detected: ${name} took ${duration}ms`,
+          'warning'
+        );
+      });
+    }
   }
 }
 
 // Transaction tracking
 export function startTransaction(name: string, operation: string = 'custom') {
+  if (!sentryInitialized) {
+    return null;
+  }
+  
   return Sentry.startTransaction({
     name,
     op: operation,
@@ -226,6 +266,11 @@ export function trackAdminAction(
   resourceId?: string,
   success: boolean = true
 ) {
+  if (!sentryInitialized) {
+    console.log(`Admin action: ${action} on ${resource} by ${adminId}`);
+    return;
+  }
+  
   Sentry.withScope((scope) => {
     scope.setTag('event_category', 'admin');
     scope.setTag('admin_action', action);
@@ -257,6 +302,11 @@ export function trackSecurityEvent(
   ip?: string,
   details?: Record<string, any>
 ) {
+  if (!sentryInitialized) {
+    console.warn(`Security event: ${eventType}`, { userId, ip, details });
+    return;
+  }
+  
   Sentry.withScope((scope) => {
     scope.setTag('event_category', 'security');
     scope.setTag('security_event', eventType);
@@ -291,6 +341,11 @@ export function trackFinancialEvent(
   symbol?: string,
   details?: Record<string, any>
 ) {
+  if (!sentryInitialized) {
+    console.log(`Financial event: ${eventType}`, { provider, symbol, details });
+    return;
+  }
+  
   Sentry.withScope((scope) => {
     scope.setTag('event_category', 'financial');
     scope.setTag('financial_event', eventType);
@@ -321,6 +376,10 @@ export function trackFinancialEvent(
 
 // Custom breadcrumb
 export function addBreadcrumb(message: string, category: string, data?: Record<string, any>) {
+  if (!sentryInitialized) {
+    return;
+  }
+  
   Sentry.addBreadcrumb({
     message,
     category,
