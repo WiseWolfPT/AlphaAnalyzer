@@ -1,5 +1,5 @@
 import { PROVIDER_QUOTAS, ProviderName, QuotaLimit } from './quota-limits';
-import { getCache } from '../cache';
+import { getCache, CacheType } from '../cache';
 
 export interface ProviderUsage {
   provider: string;
@@ -29,19 +29,19 @@ export class QuotaTracker {
     
     // Record daily usage
     const dailyKey = this.getDailyKey(provider);
-    const currentDaily = await this.cache.get<number>(dailyKey) || 0;
-    await this.cache.set(dailyKey, currentDaily + 1, this.getSecondsUntilReset());
+    const currentDaily = await this.cache.get<number>(dailyKey, CacheType.FUNDAMENTALS) || 0;
+    await this.cache.set(dailyKey, currentDaily + 1, CacheType.FUNDAMENTALS, 'quota');
 
     // Record minute usage
     const minuteKey = this.getMinuteKey(provider);
-    const minuteData = await this.cache.get<number[]>(minuteKey) || [];
+    const minuteData = await this.cache.get<number[]>(minuteKey, CacheType.FUNDAMENTALS) || [];
     const oneMinuteAgo = now - 60000;
     
     // Filter out calls older than 1 minute
     const recentCalls = minuteData.filter(timestamp => timestamp > oneMinuteAgo);
     recentCalls.push(now);
     
-    await this.cache.set(minuteKey, recentCalls, 70); // Keep for 70 seconds
+    await this.cache.set(minuteKey, recentCalls, CacheType.FUNDAMENTALS, 'quota'); // Keep for 70 seconds
 
     // Log the API call for monitoring
     console.log(`[QuotaTracker] ${provider} - ${endpoint} - Daily: ${currentDaily + 1}, Minute: ${recentCalls.length}`);
@@ -75,11 +75,11 @@ export class QuotaTracker {
     
     // Get daily usage
     const dailyKey = this.getDailyKey(provider);
-    const dailyUsage = await this.cache.get<number>(dailyKey) || 0;
+    const dailyUsage = await this.cache.get<number>(dailyKey, CacheType.FUNDAMENTALS) || 0;
 
     // Get minute usage
     const minuteKey = this.getMinuteKey(provider);
-    const minuteData = await this.cache.get<number[]>(minuteKey) || [];
+    const minuteData = await this.cache.get<number[]>(minuteKey, CacheType.FUNDAMENTALS) || [];
     const oneMinuteAgo = now - 60000;
     const minuteUsage = minuteData.filter(timestamp => timestamp > oneMinuteAgo).length;
 

@@ -52,7 +52,7 @@ const envSchema = z.object({
   POLYGON_API_KEY: z.string().optional(),
   
   // Configurações de Log e CORS
-  LOG_LEVEL: z.enum(['error', 'warn', 'info', 'debug']).default('info'),
+  LOG_LEVEL: z.enum(['error', 'warn', 'info', 'debug', 'trace']).optional(),
   CORS_ORIGIN: z.string().default('http://localhost:5173'),
   
   // Rate Limiting

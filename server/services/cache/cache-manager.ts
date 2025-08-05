@@ -7,6 +7,7 @@
 import { env } from '../../config/env';
 import { RedisCacheProvider } from './providers/redis-cache';
 import { MemoryCacheProvider } from './providers/memory-cache';
+import { logger } from '../../config/logger-config';
 
 export enum CacheType {
   // API Data Layers
@@ -94,7 +95,7 @@ export class CacheManager {
       maxEntries: 10000,
       cleanupIntervalMs: 5 * 60 * 1000
     });
-    console.log('✅ Cache providers initialized (Redis + Memory)');
+    logger.info('✅ Cache providers initialized (Redis + Memory)');
   }
 
   private initializeStats() {
@@ -134,7 +135,7 @@ export class CacheManager {
           this.stats.hits++;
           this.stats.byType[type].hits++;
           this.stats.apiCallsSaved++;
-          console.log(`📦 Redis cache HIT: ${key} (${type})`);
+          logger.debug(`📦 Redis cache HIT: ${key} (${type})`);
           return result;
         }
       }
@@ -145,7 +146,7 @@ export class CacheManager {
         this.stats.hits++;
         this.stats.byType[type].hits++;
         this.stats.apiCallsSaved++;
-        console.log(`💾 Memory cache HIT: ${key} (${type})`);
+        logger.debug(`💾 Memory cache HIT: ${key} (${type})`);
         return result;
       }
 
@@ -154,7 +155,7 @@ export class CacheManager {
       return null;
 
     } catch (error) {
-      console.error(`❌ Cache get error for ${key}:`, error);
+      logger.error(`❌ Cache get error for ${key}:`, error);
       this.stats.errors++;
       this.stats.misses++;
       this.stats.byType[type].misses++;
@@ -180,10 +181,10 @@ export class CacheManager {
       // Always store in memory cache as fallback
       await this.memoryProvider.set(key, data, config.ttl, type, provider, metadata);
 
-      console.log(`💾 Cache SET: ${key} (${type}, TTL: ${this.formatTTL(config.ttl)}, Provider: ${provider || 'unknown'})`);
+      logger.debug(`💾 Cache SET: ${key} (${type}, TTL: ${this.formatTTL(config.ttl)}, Provider: ${provider || 'unknown'})`);
 
     } catch (error) {
-      console.error(`❌ Cache set error for ${key}:`, error);
+      logger.error(`❌ Cache set error for ${key}:`, error);
       this.stats.errors++;
     }
   }
@@ -210,7 +211,7 @@ export class CacheManager {
       await this.set(key, data, type, provider, metadata);
       return data;
     } catch (error) {
-      console.error(`❌ Fetcher error for ${key}:`, error);
+      logger.error(`❌ Fetcher error for ${key}:`, error);
       throw error;
     }
   }
@@ -239,11 +240,11 @@ export class CacheManager {
       }
 
       if (invalidated > 0) {
-        console.log(`🗑️ Cache invalidated ${invalidated} entries (pattern: ${pattern}, type: ${type})`);
+        logger.info(`🗑️ Cache invalidated ${invalidated} entries (pattern: ${pattern}, type: ${type})`);
       }
 
     } catch (error) {
-      console.error('❌ Cache invalidation error:', error);
+      logger.error('❌ Cache invalidation error:', error);
       this.stats.errors++;
     }
 
@@ -276,10 +277,10 @@ export class CacheManager {
         cleared = 1; // Indicate successful clear
       }
 
-      console.log(`🗑️ Cache cleared: ${cleared} entries ${type ? `(type: ${type})` : '(all)'}`);
+      logger.info(`🗑️ Cache cleared: ${cleared} entries ${type ? `(type: ${type})` : '(all)'}`);
 
     } catch (error) {
-      console.error('❌ Cache clear error:', error);
+      logger.error('❌ Cache clear error:', error);
       this.stats.errors++;
     }
 
@@ -290,7 +291,7 @@ export class CacheManager {
    * Warm cache with popular/essential data
    */
   async warmCache(symbols: string[] = ['AAPL', 'GOOGL', 'MSFT', 'TSLA', 'AMZN']): Promise<void> {
-    console.log(`🔥 Warming cache for ${symbols.length} symbols...`);
+    logger.info(`🔥 Warming cache for ${symbols.length} symbols...`);
 
     const warmingTasks = symbols.map(async (symbol) => {
       try {
@@ -310,12 +311,12 @@ export class CacheManager {
         }
         
       } catch (error) {
-        console.error(`❌ Cache warming error for ${symbol}:`, error);
+        logger.error(`❌ Cache warming error for ${symbol}:`, error);
       }
     });
 
     await Promise.allSettled(warmingTasks);
-    console.log('✅ Cache warming completed');
+    logger.info('✅ Cache warming completed');
   }
 
   /**
@@ -349,7 +350,7 @@ export class CacheManager {
     // This interval is kept for global cache statistics updates
     this.cleanupInterval = setInterval(() => {
       // Update global stats periodically
-      console.log(`💾 Cache manager uptime: ${Math.floor(process.uptime())}s`);
+      logger.trace(`💾 Cache manager uptime: ${Math.floor(process.uptime())}s`);
     }, 5 * 60 * 1000);
   }
 
@@ -373,12 +374,9 @@ export class CacheManager {
       this.memoryProvider.shutdown()
     ]);
 
-    console.log('💾 Cache manager shutdown complete');
+    logger.info('💾 Cache manager shutdown complete');
   }
 }
-
-// Global cache instance
-export const cacheManager = new CacheManager();
 
 // Cache key generators for consistency
 export const CacheKeys = {
@@ -406,11 +404,4 @@ export const CacheKeys = {
   earningsCalendar: (date: string) => CacheManager.generateKey(CacheType.EARNINGS_CALENDAR, date),
 };
 
-// Auto-start cache warming on module load
-setTimeout(async () => {
-  try {
-    await cacheManager.warmCache();
-  } catch (error) {
-    console.error('❌ Initial cache warming failed:', error);
-  }
-}, 2000); // Wait 2 seconds for server startup
+// Auto-start cache warming will be handled by the lazy-loaded instance

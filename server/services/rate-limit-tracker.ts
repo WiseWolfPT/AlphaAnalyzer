@@ -55,17 +55,76 @@ export interface ApiCallOptions {
 export class RateLimitTracker {
   private readonly alertThreshold = 80; // Alert when usage hits 80%
   private readonly warningThreshold = 90; // Warning when usage hits 90%
+  private sqlFunctionsAvailable: boolean | null = null; // Track if SQL functions exist
+  private checkInProgress = false; // Prevent concurrent checks
+  
+  constructor() {
+    // Check SQL functions availability on initialization
+    this.initializeSqlCheck();
+  }
+  
+  private async initializeSqlCheck() {
+    await this.checkSqlFunctionsAvailable();
+  }
   
   private isSupabaseAvailable(): boolean {
     return supabase !== null;
+  }
+  
+  /**
+   * Check if SQL functions are available in the database
+   */
+  private async checkSqlFunctionsAvailable(): Promise<boolean> {
+    // Return cached result if already checked
+    if (this.sqlFunctionsAvailable !== null) {
+      return this.sqlFunctionsAvailable;
+    }
+    
+    // Prevent concurrent checks
+    if (this.checkInProgress) {
+      // Wait a bit and return false for now
+      return false;
+    }
+    
+    this.checkInProgress = true;
+    
+    if (!this.isSupabaseAvailable()) {
+      this.sqlFunctionsAvailable = false;
+      this.checkInProgress = false;
+      return false;
+    }
+    
+    try {
+      // Try a simple call to check if function exists
+      const { error } = await supabase.rpc('check_api_limit', {
+        p_provider: 'test',
+        p_endpoint: 'test'
+      });
+      
+      // If error contains "not found" then functions don't exist
+      if (error && error.message.includes('not found')) {
+        this.sqlFunctionsAvailable = false;
+        // Only log once
+        if (process.env.LOG_LEVEL !== 'error') {
+          console.info('[RateLimitTracker] SQL functions not found. Rate limiting disabled.');
+        }
+      } else {
+        this.sqlFunctionsAvailable = true;
+      }
+    } catch (error) {
+      this.sqlFunctionsAvailable = false;
+    }
+    
+    this.checkInProgress = false;
+    return this.sqlFunctionsAvailable;
   }
 
   /**
    * Check if an API call is allowed for the given provider/endpoint
    */
   async checkLimit(provider: string, endpoint: string): Promise<RateLimitResult> {
-    // If Supabase is not configured, allow all requests
-    if (!supabase) {
+    // If Supabase is not configured or SQL functions don't exist, allow all requests
+    if (!supabase || !(await this.checkSqlFunctionsAvailable())) {
       return {
         allowed: true,
         used: 0,
@@ -83,8 +142,11 @@ export class RateLimitTracker {
       });
 
       if (error) {
-        console.error(`❌ [RateLimitTracker] Failed to check limit:`, error);
-        // Fail open - allow the request but log the error
+        // Only log error if it's not a "function not found" error
+        if (!error.message.includes('not found')) {
+          console.error(`❌ [RateLimitTracker] Failed to check limit:`, error);
+        }
+        // Fail open - allow the request
         return {
           allowed: true,
           used: 0,
@@ -129,6 +191,18 @@ export class RateLimitTracker {
     endpoint: string, 
     options: ApiCallOptions = {}
   ): Promise<RateLimitResult> {
+    // If Supabase is not configured or SQL functions don't exist, return default
+    if (!supabase || !(await this.checkSqlFunctionsAvailable())) {
+      return {
+        allowed: true,
+        used: 0,
+        dailyLimit: 1000,
+        remaining: 1000,
+        usagePercent: 0,
+        resetAt: new Date(Date.now() + 24 * 60 * 60 * 1000)
+      };
+    }
+    
     try {
       const { data, error } = await supabase.rpc('increment_api_usage', {
         p_provider: provider,
@@ -140,7 +214,10 @@ export class RateLimitTracker {
       });
 
       if (error) {
-        console.error(`❌ [RateLimitTracker] Failed to record call:`, error);
+        // Only log error if it's not a "function not found" error
+        if (!error.message.includes('not found')) {
+          console.error(`❌ [RateLimitTracker] Failed to record call:`, error);
+        }
         throw new Error(`Failed to record API call: ${error.message}`);
       }
 
@@ -166,8 +243,11 @@ export class RateLimitTracker {
         usagePercent,
         resetAt: new Date(Date.now() + 24 * 60 * 60 * 1000) // Approximate
       };
-    } catch (error) {
-      console.error(`❌ [RateLimitTracker] Error recording call:`, error);
+    } catch (error: any) {
+      // Only log error if it's not a "function not found" error
+      if (!error.message?.includes('not found')) {
+        console.error(`❌ [RateLimitTracker] Error recording call:`, error);
+      }
       throw error;
     }
   }
@@ -176,11 +256,19 @@ export class RateLimitTracker {
    * Get current usage statistics for all providers
    */
   async getAllUsage(): Promise<RateLimitUsage[]> {
+    // If Supabase is not configured or SQL functions don't exist, return empty
+    if (!supabase || !(await this.checkSqlFunctionsAvailable())) {
+      return [];
+    }
+    
     try {
       const { data, error } = await supabase.rpc('get_quota_stats');
 
       if (error) {
-        console.error(`❌ [RateLimitTracker] Failed to get usage stats:`, error);
+        // Only log error if it's not a "function not found" error
+        if (!error.message.includes('not found')) {
+          console.error(`❌ [RateLimitTracker] Failed to get usage stats:`, error);
+        }
         return [];
       }
 
