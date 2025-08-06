@@ -212,6 +212,11 @@ const csrfProtection = (req: Request, res: Response, next: NextFunction) => {
     return next();
   }
 
+  // Skip CSRF for cache routes (Reddit Strategy - read-only from cache)
+  if (req.path.startsWith('/api/cache/')) {
+    return next();
+  }
+
   // Skip in development mode for API testing
   if (process.env.NODE_ENV !== 'production') {
     return next();
