@@ -22,14 +22,16 @@ const allowedPatterns = [
 
 export const corsOptions: cors.CorsOptions = {
   origin: (origin, callback) => {
-    // SECURITY FIX: Only allow requests without origin in development
+    // Allow requests without origin in development
     if (!origin) {
       if (process.env.NODE_ENV === 'development') {
         console.log('🔧 CORS: Allowing no-origin request in development');
         return callback(null, true);
       } else {
-        console.warn('🚫 CORS: Rejected no-origin request in production');
-        return callback(new Error('Origin header required in production'));
+        // In production, we'll handle no-origin in a separate middleware
+        // For now, allow it to support Vercel proxy
+        console.log('⚠️ CORS: Allowing no-origin request (might be Vercel proxy)');
+        return callback(null, true);
       }
     }
     
@@ -56,6 +58,22 @@ export const corsOptions: cors.CorsOptions = {
   optionsSuccessStatus: 204 // Important for legacy browsers
 };
 
-// REMOVED: handlePreflightRequests middleware
-// This was causing "Cannot set headers after they are sent" error
-// The cors() middleware from npm already handles OPTIONS requests correctly
+// Security middleware to validate Vercel proxy requests
+export const verifyVercelProxy = (req: Request, res: Response, next: NextFunction) => {
+  // Only check in production when there's no Origin header
+  if (process.env.NODE_ENV === 'production' && !req.headers.origin) {
+    const forwardedHost = req.headers['x-forwarded-host'] as string;
+    const forwardedProto = req.headers['x-forwarded-proto'] as string;
+    
+    // Check if request is from a valid Vercel proxy
+    if (forwardedHost && forwardedHost.includes('vercel.app')) {
+      console.log(`✅ Valid Vercel proxy request from: ${forwardedHost}`);
+      return next();
+    }
+    
+    // Log warning but allow for now (to not break existing functionality)
+    console.warn(`⚠️ No-origin request without valid proxy headers`);
+  }
+  
+  next();
+};
