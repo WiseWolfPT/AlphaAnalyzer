@@ -279,6 +279,25 @@ app.use('/api/stocks', upstashRateLimiters.api);       // 20 req/min for financi
 app.use('/api/health', upstashRateLimiters.public);    // 60 req/min for health checks
 app.use('/api', upstashRateLimiters.general);          // 30 req/min general (as specified in roadmap)
 
+// Health check endpoint
+app.get('/api/health', async (req, res) => {
+  try {
+    const { healthCheckService } = await import('./services/health-check');
+    const health = await healthCheckService.getDetailedHealth();
+    
+    const statusCode = health.status === 'healthy' ? 200 : 
+                       health.status === 'degraded' ? 206 : 503;
+    
+    res.status(statusCode).json(health);
+  } catch (error) {
+    res.status(503).json({ 
+      status: 'unhealthy', 
+      error: 'Health check failed',
+      timestamp: Date.now() 
+    });
+  }
+});
+
 // SECURITY FIX: Add endpoint to get CSRF token for frontend
 app.get('/api/csrf-token', (req, res) => {
   try {
