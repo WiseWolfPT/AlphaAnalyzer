@@ -769,6 +769,15 @@ async function initializeMarketDataServices() {
         });
       }
       
+      // CRITICAL: Initialize Cleanup Manager for Supabase Free Tier (500MB limit)
+      import('./cron/cleanup-manager').then(({ cleanupManager }) => {
+        cleanupManager.startCleanupJobs();
+        console.log('🧹 Cleanup manager started - Database size monitoring active');
+      }).catch(error => {
+        console.error('❌ CRITICAL: Cleanup manager failed to start:', error);
+        console.error('⚠️ WARNING: Database may exceed 500MB limit without cleanup!');
+      });
+      
       // AGENT 5: Initialize Keep-Alive Service to prevent cold starts
       if (process.env.ENABLE_KEEP_ALIVE !== 'false') {
         import('./services/keep-alive').then(({ keepAliveService }) => {
