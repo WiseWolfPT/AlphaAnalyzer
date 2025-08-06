@@ -143,63 +143,58 @@ export const rateLimiters = {
 
 // SECURITY FIX: Consolidated and enhanced security headers configuration
 export const securityHeaders = helmet({
-  // TEMPORARILY DISABLE CSP TO DEBUG COOLIFY DEPLOYMENT
-  contentSecurityPolicy: false,
-  
-  // ORIGINAL CSP CONFIGURATION (DISABLED FOR NOW):
-  // contentSecurityPolicy: {
-  //   directives: {
-  //     defaultSrc: ["'self'"],
-  //     scriptSrc: [
-  //       "'self'",
-  //       "'unsafe-inline'",
-  //       "'unsafe-eval'",
-  //       "blob:",            // For worker scripts
-  //       "data:",            // For data URIs
-  //       "https://unpkg.com",              // React CDN
-  //       "https://cdn.jsdelivr.net",       // Backup CDN
-  //       "https://cdnjs.cloudflare.com",   // Alternative CDN
-  //       "https://replit.com",             // Replit dev banner
-  //     ],
-  //     styleSrc: [
-  //       "'self'", 
-  //       "'unsafe-inline'", // Required for CSS-in-JS libraries like styled-components
-  //       "https://fonts.googleapis.com"
-  //     ],
-  //     fontSrc: [
-  //       "'self'", 
-  //       "https://fonts.gstatic.com",
-  //       "data:" // For base64 encoded fonts
-  //     ],
-  //     imgSrc: [
-  //       "'self'", 
-  //       "data:", 
-  //       "https:", // Allow HTTPS images from any domain
-  //       "blob:" // For dynamically generated images
-  //     ],
-  //     connectSrc: [
-  //       "'self'",
-  //       "wss:", // WebSocket connections
-  //       "ws:",  // WebSocket connections  
-  //       "https://*.coolify.app",            // Coolify API endpoints
-  //       "https://unpkg.com",              // CDN connections
-  //       "https://cdn.jsdelivr.net",       // CDN connections
-  //       "https://cdnjs.cloudflare.com",   // CDN connections
-  //       // SECURITY: Financial API endpoints (backend proxy only)
-  //       ...(process.env.NODE_ENV === 'development' ? [
-  //         "wss://localhost:*", // WebSocket connections in development
-  //         "ws://localhost:*",  // WebSocket connections in development
-  //       ] : [])
-  //     ],
-  //     objectSrc: ["'none'"], // Disable plugins completely
-  //     mediaSrc: ["'self'"],
-  //     frameSrc: ["'none'"], // Prevent clickjacking completely
-  //     baseUri: ["'self'"], // Prevent base tag injection
-  //     formAction: ["'self'"], // Restrict form submissions
-  //     workerSrc: ["'self'", "blob:"], // Allow service workers and web workers
-  //     manifestSrc: ["'self'"], // Allow PWA manifest
-  //   },
-  // },
+  // SECURITY FIX: Re-enable Content Security Policy with strict configuration
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: [
+        "'self'",
+        "'unsafe-inline'", // Required for React
+        "'unsafe-eval'",   // Required for dev tools
+        "blob:",           // For worker scripts
+        "data:",          // For data URIs
+        "https://unpkg.com",              // React CDN
+        "https://cdn.jsdelivr.net",       // Backup CDN
+        "https://cdnjs.cloudflare.com",   // Alternative CDN
+        "https://vercel.live",            // Vercel preview
+      ],
+      styleSrc: [
+        "'self'", 
+        "'unsafe-inline'", // Required for CSS-in-JS libraries
+        "https://fonts.googleapis.com"
+      ],
+      fontSrc: [
+        "'self'", 
+        "https://fonts.gstatic.com",
+        "data:" // For base64 encoded fonts
+      ],
+      imgSrc: [
+        "'self'", 
+        "data:", 
+        "https:", // Allow HTTPS images from any domain
+        "blob:" // For dynamically generated images
+      ],
+      connectSrc: [
+        "'self'",
+        "wss:", // WebSocket connections
+        "ws:",  // WebSocket connections  
+        "https://*.vercel.app",         // Vercel deployments
+        "https://*.sslip.io",           // Coolify subdomains
+        ...(process.env.NODE_ENV === 'development' ? [
+          "wss://localhost:*", 
+          "ws://localhost:*",  
+          "http://localhost:*"
+        ] : [])
+      ],
+      objectSrc: ["'none'"], // Disable plugins completely
+      mediaSrc: ["'self'"],
+      frameSrc: ["'none'"], // Prevent clickjacking
+      baseUri: ["'self'"], // Prevent base tag injection
+      formAction: ["'self'"], // Restrict form submissions
+      workerSrc: ["'self'", "blob:"], // Allow service workers
+      manifestSrc: ["'self'"], // Allow PWA manifest
+    },
+  },
   
   // SECURITY FIX: Enhanced HTTP Strict Transport Security
   hsts: {

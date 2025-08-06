@@ -48,3 +48,4 @@ zen-mcp-server/
 
 # Backup files
 backups/
+backup-alfalyzer-*.tar.gz

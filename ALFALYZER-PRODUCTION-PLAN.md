@@ -132,7 +132,7 @@ ORDEM DE EXECUÇÃO (CRÍTICA!):
 ### CONCEITOS CHAVE (MEMORIZAR!)
 1. **FINDSTOCKS É O DASHBOARD** - Não existe outra página "dashboard"
 2. **ESTRATÉGIA REDDIT** - Users NUNCA triggeram API calls, apenas cron jobs
-3. **LIMITE FMP** - 500 calls/day, usar máximo 330 (66%)
+3. **LIMITE FMP** - 300 calls/min (Plano Starter $19/mês), máximo 18,000/hora
 4. **SUPABASE FREE** - 500MB limite, cleanup obrigatório hourly
 5. **CACHE 3-TIER** - Memory → Redis → Supabase
 
@@ -369,8 +369,9 @@ async function startServer() {
 // server/services/providers/fmp-provider.ts
 export class FMPProvider {
   private readonly apiKey: string;
-  private quotaPerDay = 500; // ATUALIZAR DE 250!
-  private callsToday = 0;
+  private quotaPerMinute = 300; // Plano Starter: 300 calls/min
+  private callsThisMinute = 0;
+  private minuteResetTime = Date.now();
   
   constructor(apiKey: string) {
     this.apiKey = apiKey;
@@ -380,8 +381,14 @@ export class FMPProvider {
   }
   
   async getBatchQuotes(symbols: string[]): Promise<Quote[]> {
-    if (this.callsToday >= this.quotaPerDay - 50) { // Reserve 50 calls
-      throw new Error('Approaching FMP daily limit!');
+    // Reset counter every minute
+    if (Date.now() - this.minuteResetTime > 60000) {
+      this.callsThisMinute = 0;
+      this.minuteResetTime = Date.now();
+    }
+    
+    if (this.callsThisMinute >= this.quotaPerMinute - 10) { // Reserve 10 calls
+      throw new Error('Approaching FMP minute limit! Wait for reset.');
     }
     
     // FMP supports up to 500 symbols in one call!
@@ -389,7 +396,7 @@ export class FMPProvider {
     const url = `https://financialmodelingprep.com/api/v3/quote/${symbolsStr}?apikey=${this.apiKey}`;
     
     const response = await fetch(url);
-    this.callsToday++;
+    this.callsThisMinute++;
     
     if (!response.ok) {
       throw new Error(`FMP API error: ${response.status}`);
@@ -821,9 +828,9 @@ export class SystemMonitor {
         await sendAlert(`⚠️ Redis memory high: ${memoryUsed / 1_000_000}MB`);
       }
       
-      // 3. Check API quota
-      if (this.metrics.apiCallsToday > 450) {
-        await sendUrgentAlert(`📊 FMP quota critical: ${this.metrics.apiCallsToday}/500`);
+      // 3. Check API quota (300/min = ~18,000/hour)
+      if (this.metrics.apiCallsThisMinute > 290) {
+        await sendUrgentAlert(`📊 FMP quota critical: ${this.metrics.apiCallsThisMinute}/300 per minute`);
         await this.throttleNonCritical();
       }
       
@@ -1070,7 +1077,7 @@ watch -n 30 'curl -s http://localhost:3001/health | jq .'
 pm2 logs alfalyzer --lines 100
 
 # Verify frontend
-curl -I https://alfalyzer.vercel.app
+curl -I https://alfalyzerpro4.vercel.app
 
 # Check metrics
 curl http://localhost:3001/api/metrics

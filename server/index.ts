@@ -26,12 +26,21 @@ import { createServer, type Server } from "http";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { db } from "./db";
+import csrf from 'csrf';
+import session from 'express-session';
 
 // Extend Express Request interface
 declare module 'express-serve-static-core' {
   interface Request {
     csrfToken?: () => string;
     requestId?: string;
+  }
+}
+
+// Extend Express Session interface for CSRF
+declare module 'express-session' {
+  interface SessionData {
+    csrfSecret?: string;
   }
 }
 
@@ -150,17 +159,56 @@ app.use('/api/stripe/webhook', express.raw({
 // URL encoded for form submissions
 app.use(express.urlencoded({ extended: false, limit: '1mb' }));
 
-// BROKEN: CSRF protection disabled (csurf package removed)
-// SECURITY FIX: Enable CSRF protection for state-changing operations (production only)
-// Configure CSRF with cookie-based tokens
-const csrfProtection = null; // BROKEN: csurf package removed
-// const csrfProtection = process.env.NODE_ENV === 'production' ? csrf({ 
-//   cookie: {
-//     httpOnly: true,
-//     secure: process.env.NODE_ENV === 'production',
-//     sameSite: 'strict'
-//   }
-// }) : null;
+// SECURITY FIX: CSRF protection using modern csrf package
+
+// Configure sessions first (required for CSRF)
+app.use(session({
+  name: 'sessionId',
+  secret: process.env.SESSION_SECRET || 'your-secure-session-secret-change-in-production',
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    secure: process.env.NODE_ENV === 'production',
+    httpOnly: true,
+    maxAge: 24 * 60 * 60 * 1000, // 24 hours
+    sameSite: 'strict'
+  }
+}));
+
+// Initialize CSRF protection
+const csrfTokens = csrf();
+
+// CSRF middleware for state-changing operations
+const csrfProtection = (req: Request, res: Response, next: NextFunction) => {
+  // Skip CSRF for GET, HEAD, OPTIONS requests
+  if (['GET', 'HEAD', 'OPTIONS'].includes(req.method)) {
+    return next();
+  }
+
+  // Skip in development mode for API testing
+  if (process.env.NODE_ENV !== 'production') {
+    return next();
+  }
+
+  const token = req.headers['x-csrf-token'] as string || req.body._csrf;
+  const secret = req.session.csrfSecret;
+
+  if (!secret) {
+    return res.status(403).json({ 
+      error: 'CSRF_TOKEN_MISSING',
+      message: 'CSRF secret not found. Please refresh and try again.'
+    });
+  }
+
+  if (!token || !csrfTokens.verify(secret, token)) {
+    return res.status(403).json({ 
+      error: 'CSRF_TOKEN_INVALID',
+      message: 'Invalid or missing CSRF token'
+    });
+  }
+
+  next();
+};
 
 // Add security middleware layers
 app.use(originValidationMiddleware);
@@ -231,34 +279,31 @@ app.use('/api/stocks', upstashRateLimiters.api);       // 20 req/min for financi
 app.use('/api/health', upstashRateLimiters.public);    // 60 req/min for health checks
 app.use('/api', upstashRateLimiters.general);          // 30 req/min general (as specified in roadmap)
 
-// SECURITY FIX: Add endpoint to get CSRF token for frontend (production only)
-if (process.env.NODE_ENV === 'production' && csrfProtection) {
-  app.get('/api/csrf-token', csrfProtection, (req, res) => {
-    try {
-      // Ensure CSRF middleware has run and csrfToken function is available
-      if (typeof req.csrfToken === 'function') {
-        const token = req.csrfToken();
-        res.json({ 
-          csrfToken: token,
-          timestamp: new Date().toISOString(),
-          requestId: (req as any).requestId 
-        });
-      } else {
-        // Fallback if CSRF middleware hasn't properly initialized
-        res.status(500).json({ 
-          error: 'CSRF protection not properly initialized',
-          requestId: (req as any).requestId 
-        });
-      }
-    } catch (error) {
-      console.error('CSRF token generation error:', error);
-      res.status(500).json({ 
-        error: 'Failed to generate CSRF token',
-        requestId: (req as any).requestId 
-      });
+// SECURITY FIX: Add endpoint to get CSRF token for frontend
+app.get('/api/csrf-token', (req, res) => {
+  try {
+    // Create or get CSRF secret for this session
+    if (!req.session.csrfSecret) {
+      req.session.csrfSecret = csrfTokens.secretSync();
     }
-  });
-}
+    
+    // Generate token using the secret
+    const token = csrfTokens.create(req.session.csrfSecret);
+    
+    res.json({ 
+      csrfToken: token,
+      timestamp: new Date().toISOString(),
+      requestId: (req as any).requestId 
+    });
+  } catch (error: any) {
+    console.error('CSRF token endpoint error:', error);
+    res.status(500).json({ 
+      error: 'Failed to generate CSRF token',
+      message: error.message,
+      requestId: (req as any).requestId 
+    });
+  }
+});
 
 // SECURITY FIX: Robust CSRF protection with proper token validation (production only)
 if (process.env.NODE_ENV === 'production' && csrfProtection) {
@@ -407,6 +452,12 @@ async function initializeMarketDataServices() {
     app.use('/api/admin/**', requireAdmin);       // Admin routes require admin role
     app.use('/api/portfolio/**', requireAuth);    // Portfolio routes require authentication
     app.use('/api/watchlist/**', requireAuth);    // Watchlist routes require authentication
+    
+    // SECURITY FIX: Apply CSRF protection to state-changing routes
+    app.use('/api/admin/**', csrfProtection);     // Admin routes need CSRF protection
+    app.use('/api/portfolio/**', csrfProtection); // Portfolio modifications need CSRF protection
+    app.use('/api/watchlist/**', csrfProtection); // Watchlist modifications need CSRF protection
+    app.use('/api/auth/**', csrfProtection);      // Authentication routes need CSRF protection
     
     // Apply optional auth to public routes that benefit from user context
     app.use('/api/stocks', optionalAuth);

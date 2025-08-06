@@ -22,8 +22,16 @@ const allowedPatterns = [
 
 export const corsOptions: cors.CorsOptions = {
   origin: (origin, callback) => {
-    // Permitir requisições sem origin (ex: Postman, mobile apps)
-    if (!origin) return callback(null, true);
+    // SECURITY FIX: Only allow requests without origin in development
+    if (!origin) {
+      if (process.env.NODE_ENV === 'development') {
+        console.log('🔧 CORS: Allowing no-origin request in development');
+        return callback(null, true);
+      } else {
+        console.warn('🚫 CORS: Rejected no-origin request in production');
+        return callback(new Error('Origin header required in production'));
+      }
+    }
     
     // Check exact matches
     if (allowedOrigins.includes(origin)) {
