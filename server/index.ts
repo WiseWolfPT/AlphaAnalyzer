@@ -9,6 +9,33 @@ initializeSentry();
 // Validate environment variables
 import { env, isProduction, isDevelopment } from './config/env';
 
+// Log Redis configuration at startup
+console.log('🚀 Starting Alfalyzer Backend...');
+console.log('📍 Environment:', env.NODE_ENV);
+console.log('🔗 Redis Configuration:');
+console.log('   - Host:', env.REDIS_HOST || 'NOT SET');
+console.log('   - Port:', env.REDIS_PORT || 'NOT SET');
+console.log('   - Password:', env.REDIS_PASSWORD ? '✅ SET' : '❌ NOT SET');
+
+// Test Redis connection immediately
+if (env.REDIS_HOST && env.REDIS_PASSWORD) {
+  import('./cache/redis-cache-service.js').then(({ redisCacheService }) => {
+    console.log('📡 Attempting to connect to Redis...');
+    redisCacheService.healthCheck().then(result => {
+      if (result.status === 'healthy') {
+        console.log('✅ Redis connection successful!');
+        console.log('   - Memory usage:', result.memoryUsage ? `${(result.memoryUsage / 1024 / 1024).toFixed(2)}MB` : 'N/A');
+      } else {
+        console.log('❌ Redis connection failed:', result.message);
+      }
+    }).catch(error => {
+      console.log('❌ Redis connection error:', error.message);
+    });
+  });
+} else {
+  console.log('⚠️ Redis not configured - missing HOST or PASSWORD');
+}
+
 import express, { type Request, Response, NextFunction } from "express";
 import cors from "cors";
 import { corsOptions } from './middleware/cors';
