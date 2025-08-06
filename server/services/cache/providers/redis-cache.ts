@@ -55,7 +55,7 @@ export class RedisCacheProvider {
       // Check if we have proper Redis configuration
       if (env.REDIS_HOST && env.REDIS_PORT && env.REDIS_PASSWORD) {
         // Use the new Redis implementation from redis-cache-service.ts
-        const { redisCacheService } = await import('../../cache/redis-cache-service');
+        const { redisCacheService } = await import('../../../cache/redis-cache-service.js');
         console.log('🔗 Using real Redis cache service');
         this.isConnected = true;
         return;
