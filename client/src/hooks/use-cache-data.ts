@@ -3,8 +3,14 @@ import { env } from '@/lib/env';
 
 // Helper to get API URL
 const getApiUrl = () => {
-  // Always use the backend URL for cache endpoints
-  return env.VITE_BACKEND_URL || 'http://jsg00k40sgo0k4swsoc4gcsg.128.140.45.28.sslip.io';
+  // In production, use relative URLs to leverage Vercel proxy
+  // This avoids mixed content blocking (HTTPS -> HTTP)
+  if (typeof window !== 'undefined' && window.location.hostname === 'alfalyzerpro4.vercel.app') {
+    return ''; // Empty string for relative URLs
+  }
+  
+  // In development or other environments, use the configured backend URL
+  return (env as any).VITE_BACKEND_URL || 'http://jsg00k40sgo0k4swsoc4gcsg.128.140.45.28.sslip.io';
 };
 
 // Hook for batch quotes from cache
@@ -28,7 +34,7 @@ export function useCachedBatchQuotes(symbols: string[], options = {}) {
       return response.json();
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
-    cacheTime: 10 * 60 * 1000, // Keep in cache 10 min
+    gcTime: 10 * 60 * 1000, // Keep in cache 10 min
     refetchOnWindowFocus: false, // Don't refetch on focus
     retry: 3,
     retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
@@ -51,7 +57,7 @@ export function useCachedQuote(symbol: string, options = {}) {
       return response.json();
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
-    cacheTime: 10 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
     refetchOnWindowFocus: false,
     ...options,
   });
@@ -72,7 +78,7 @@ export function useCachedHistorical(symbol: string, period: string = '1M', optio
       return response.json();
     },
     staleTime: 60 * 60 * 1000, // 1 hour
-    cacheTime: 2 * 60 * 60 * 1000, // 2 hours
+    gcTime: 2 * 60 * 60 * 1000, // 2 hours
     placeholderData: (previousData: any) => previousData, // Keep old data while loading
     ...options,
   });
@@ -93,7 +99,7 @@ export function useCachedFundamentals(symbol: string, options = {}) {
       return response.json();
     },
     staleTime: 2 * 60 * 60 * 1000, // 2 hours
-    cacheTime: 4 * 60 * 60 * 1000, // 4 hours
+    gcTime: 4 * 60 * 60 * 1000, // 4 hours
     ...options,
   });
 }
@@ -113,7 +119,7 @@ export function useCachedFinancials(symbol: string, options = {}) {
       return response.json();
     },
     staleTime: 24 * 60 * 60 * 1000, // 24 hours
-    cacheTime: 48 * 60 * 60 * 1000, // 48 hours
+    gcTime: 48 * 60 * 60 * 1000, // 48 hours
     ...options,
   });
 }
@@ -137,7 +143,7 @@ export function useCachedNews(symbol?: string, options = {}) {
       return response.json();
     },
     staleTime: 30 * 60 * 1000, // 30 minutes
-    cacheTime: 60 * 60 * 1000, // 1 hour
+    gcTime: 60 * 60 * 1000, // 1 hour
     ...options,
   });
 }
@@ -157,7 +163,7 @@ export function useCachedEarnings(symbol: string, options = {}) {
       return response.json();
     },
     staleTime: 24 * 60 * 60 * 1000, // 24 hours
-    cacheTime: 48 * 60 * 60 * 1000, // 48 hours
+    gcTime: 48 * 60 * 60 * 1000, // 48 hours
     ...options,
   });
 }
