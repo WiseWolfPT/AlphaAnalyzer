@@ -13,6 +13,7 @@ import { useStock } from "@/hooks/use-enhanced-stocks";
 import { cn } from "@/lib/utils";
 import { RealtimePortfolioHolding } from "@/components/portfolio/realtime-portfolio-holding";
 import type { MockStock } from "@/lib/mock-api";
+import { useCachedBatchQuotes } from "@/hooks/use-cache-data";
 
 // Enhanced portfolio holding component with real data
 function PortfolioHolding({ holding }: { holding: any }) {
@@ -69,13 +70,13 @@ function PortfolioHolding({ holding }: { holding: any }) {
 export default function Portfolios() {
   const [useRealtime, setUseRealtime] = useState(true);
   
-  // Get all stocks for sector analysis
-  const { data: allStocks, isLoading } = useQuery<MockStock[]>({
-    queryKey: ["/api/stocks"],
-    staleTime: 5 * 60 * 1000,
+  // Get portfolio stock quotes from cache
+  const portfolioSymbols = portfolioData.holdings.map(h => h.symbol);
+  const { data: quotesData, isLoading } = useCachedBatchQuotes(portfolioSymbols, {
+    refetchInterval: 30000, // Refresh every 30 seconds for portfolio
   });
 
-  // Mock portfolio data - in real app, this would come from user's actual portfolio
+  // Portfolio data with real-time prices from cache
   const portfolioData = {
     totalValue: 12450.30,
     dayChange: 292.45,
@@ -92,6 +93,30 @@ export default function Portfolios() {
       { symbol: "AMZN", shares: 4, avgPrice: 140.00, currentPrice: 151.94, value: 607.76 },
       { symbol: "NFLX", shares: 1, avgPrice: 600.00, currentPrice: 641.05, value: 641.05 }
     ]
+  };
+
+  // Update holdings with real-time prices from cache
+  const updatedHoldings = portfolioData.holdings.map(holding => {
+    const quote = quotesData?.quotes?.find(q => q.symbol === holding.symbol);
+    if (quote) {
+      return {
+        ...holding,
+        currentPrice: quote.price || holding.currentPrice,
+        value: (quote.price || holding.currentPrice) * holding.shares
+      };
+    }
+    return holding;
+  });
+
+  // Calculate updated portfolio metrics with real prices
+  const recalculatedPortfolio = {
+    ...portfolioData,
+    holdings: updatedHoldings,
+    totalValue: updatedHoldings.reduce((sum, h) => sum + h.value, 0),
+    dayChange: updatedHoldings.reduce((sum, h) => {
+      const quote = quotesData?.quotes?.find(q => q.symbol === h.symbol);
+      return sum + ((quote?.change || 0) * h.shares);
+    }, 0)
   };
 
   // Generate portfolio performance data for the last 30 days

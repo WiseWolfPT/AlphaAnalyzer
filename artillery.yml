@@ -1,0 +1,120 @@
+# Artillery Load Test Configuration for Alfalyzer
+# Target: 500 concurrent users
+# Duration: 6 minutes total (1 min warmup + 5 min sustained)
+
+config:
+  target: "http://jsg00k40sgo0k4swsoc4gcsg.128.140.45.28.sslip.io"
+  phases:
+    # Phase 1: Warm up (1 minute)
+    - duration: 60
+      arrivalRate: 10
+      name: "Warm up"
+    
+    # Phase 2: Ramp up (2 minutes)
+    - duration: 120
+      arrivalRate: 50
+      rampTo: 100
+      name: "Ramp up"
+    
+    # Phase 3: Sustained load (3 minutes)
+    - duration: 180
+      arrivalRate: 100
+      name: "Sustained load - 500 users"
+  
+  # processor: "./load-test-processor.js" # Temporariamente desabilitado
+  
+  # Performance thresholds
+  ensure:
+    - p95: 1000  # 95% of requests under 1 second
+    - p99: 2000  # 99% of requests under 2 seconds
+  
+  # Headers for authentication if needed
+  defaults:
+    headers:
+      Content-Type: "application/json"
+
+scenarios:
+  # Scenario 1: User browsing stocks (70% of traffic)
+  - name: "User browsing stocks"
+    weight: 70
+    flow:
+      # Get batch quotes for popular stocks
+      - get:
+          url: "/api/cache/quotes/batch"
+          qs:
+            symbols: "AAPL,GOOGL,MSFT,AMZN,TSLA"
+          expect:
+            - statusCode: 200
+            - contentType: json
+          capture:
+            - json: "$[0].symbol"
+              as: "firstSymbol"
+      
+      # Think time - user reading data
+      - think: 5
+      
+      # Get fundamentals for specific stock
+      - get:
+          url: "/api/cache/fundamentals/AAPL"
+          expect:
+            - statusCode: 200
+      
+      # Think time - user analyzing
+      - think: 10
+      
+      # Get news for a stock
+      - get:
+          url: "/api/cache/news/AAPL"
+          expect:
+            - statusCode: 200
+      
+      # Think time
+      - think: 8
+  
+  # Scenario 2: User checking portfolio (20% of traffic)
+  - name: "User checking portfolio"
+    weight: 20
+    flow:
+      # Get health check first
+      - get:
+          url: "/api/health"
+          expect:
+            - statusCode: 200
+      
+      # Get portfolio stocks
+      - loop:
+        - get:
+            url: "/api/cache/quotes/{{ $randomSymbol }}"
+            expect:
+              - statusCode: 200
+        - think: 3
+        count: 5
+  
+  # Scenario 3: User searching stocks (10% of traffic)
+  - name: "User searching stocks"
+    weight: 10
+    flow:
+      # Search for stocks
+      - get:
+          url: "/api/cache/search"
+          qs:
+            query: "{{ $randomCompany }}"
+          expect:
+            - statusCode: 200
+      
+      - think: 5
+      
+      # Get quote for searched stock
+      - get:
+          url: "/api/cache/quotes/{{ $randomSymbol }}"
+          expect:
+            - statusCode: 200
+
+# Report configuration
+reporting:
+  - type: "json"
+    options:
+      file: "./load-test-results.json"
+  - type: "html"
+    options:
+      file: "./load-test-report.html"

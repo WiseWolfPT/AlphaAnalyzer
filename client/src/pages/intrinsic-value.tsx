@@ -41,6 +41,7 @@ import {
 import { motion } from "framer-motion";
 import { useRealtimeQuote } from "@/hooks/use-realtime-quotes";
 import type { Stock } from "@shared/schema";
+import { useCachedQuote, useCachedFundamentals, useCachedFinancials } from "@/hooks/use-cache-data";
 
 interface ValuationResult {
   method: string;
@@ -76,6 +77,15 @@ export default function IntrinsicValue() {
     enabled: useRealtime && !!selectedStock?.symbol
   });
 
+  // Use cached fundamentals and financials for valuation
+  const { data: fundamentals } = useCachedFundamentals(selectedStock?.symbol || '', {
+    enabled: !!selectedStock?.symbol
+  });
+  
+  const { data: financials } = useCachedFinancials(selectedStock?.symbol || '', {
+    enabled: !!selectedStock?.symbol
+  });
+  
   const { data: searchResults, error: searchError, isLoading: searchLoading } = useQuery<Stock[]>({
     queryKey: [`/api/stocks/search?q=${encodeURIComponent(searchQuery)}`],
     enabled: searchQuery.length > 0,

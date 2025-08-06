@@ -1,0 +1,72 @@
+# Artillery Load Test Configuration for Alfalyzer - LOCAL TEST
+# Target: Local backend for testing
+# Duration: 2 minutes quick test
+
+config:
+  target: "http://localhost:3001"
+  phases:
+    # Quick test - 2 minutes total
+    - duration: 30
+      arrivalRate: 5
+      name: "Warm up"
+    
+    - duration: 60
+      arrivalRate: 20
+      name: "Load test"
+    
+    - duration: 30
+      arrivalRate: 10
+      name: "Cool down"
+  
+  processor: "./load-test-processor.js"
+  
+  # Performance thresholds
+  ensure:
+    - p95: 500   # 95% of requests under 500ms
+    - p99: 1000  # 99% of requests under 1 second
+
+scenarios:
+  # Scenario 1: User browsing stocks (70% of traffic)
+  - name: "User browsing stocks"
+    weight: 70
+    flow:
+      # Get batch quotes for popular stocks
+      - get:
+          url: "/api/cache/quotes/batch"
+          qs:
+            symbols: "AAPL,GOOGL,MSFT,AMZN,TSLA"
+          expect:
+            - statusCode: 200
+      
+      # Think time - user reading data
+      - think: 3
+      
+      # Get fundamentals for specific stock
+      - get:
+          url: "/api/cache/fundamentals/AAPL"
+          expect:
+            - statusCode: 200
+      
+      # Think time - user analyzing
+      - think: 5
+  
+  # Scenario 2: Health check (30% of traffic)
+  - name: "Health check"
+    weight: 30
+    flow:
+      # Get health check
+      - get:
+          url: "/api/health"
+          expect:
+            - statusCode: 200
+      
+      - think: 2
+
+# Report configuration
+reporting:
+  - type: "json"
+    options:
+      file: "./load-test-local-results.json"
+  - type: "html"
+    options:
+      file: "./load-test-local-report.html"

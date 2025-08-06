@@ -14,7 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Search, TrendingUp, TrendingDown, Activity, Target, RefreshCw, Zap, AlertCircle, Filter, Grid3X3, List, Wifi, ArrowUpIcon, ArrowDownIcon, Clock, BarChart3 } from "lucide-react";
 import { useAuth } from "@/contexts/simple-auth-offline";
 import { cn } from "@/lib/utils";
-import { useBatchQuotes } from "@/hooks/use-market-data";
+import { useCachedBatchQuotes } from "@/hooks/use-cache-data";
 import { ApiDiagnostic } from "@/components/debug/api-diagnostic";
 import { env } from "@/lib/env";
 import { TestAPIConnection } from "@/components/test-api-connection";
@@ -254,8 +254,12 @@ export default function FindStocks() {
   const [activeFilter, setActiveFilter] = useState<string>('all');
   const [sortBy, setSortBy] = useState<string>('alphabetical');
   
-  // Use real market data
-  const { data: quotesData, isLoading, error, refetch, status, fetchStatus } = useBatchQuotes(displayedSymbols);
+  // Use cached market data from /api/cache/quotes/batch
+  const { data: quotesData, isLoading, error, refetch, status, fetchStatus } = useCachedBatchQuotes(displayedSymbols, {
+    onError: (error) => {
+      console.error('Failed to fetch cached quotes:', error);
+    }
+  });
 
   // Run API connection test on mount
   useEffect(() => {

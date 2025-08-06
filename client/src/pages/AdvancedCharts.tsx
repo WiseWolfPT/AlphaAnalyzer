@@ -11,6 +11,7 @@ import { dataAggregatorService, type AggregatedStockData } from "@/services/data
 import { financialDataClient } from "@/services/financial-data-client";
 import { marketDataClient } from "@/services/market-data-client";
 import { invisibleFallbackService } from "@/services/invisible-fallback-service";
+import { useCachedQuote, useCachedHistorical, useCachedFundamentals } from "@/hooks/use-cache-data";
 import { useChartLayout } from "@/hooks/use-chart-layout";
 import { DraggableChart } from "@/components/charts/draggable-chart";
 import { StockHeaderV2 } from "@/components/stock/stock-header-v2";
@@ -78,76 +79,53 @@ export default function AdvancedCharts() {
     preloadCriticalCharts();
   }, []);
 
-  // Generate quarterly data (16 quarters rolling)
-  const generateQuarterlyData = () => {
-    const currentQuarter = Math.floor((new Date().getMonth()) / 3) + 1;
-    const currentYear = new Date().getFullYear();
-    const quarters = [];
-    
-    // Generate 16 quarters back from current
-    for (let i = 15; i >= 0; i--) {
-      let year = currentYear;
-      let quarter = currentQuarter - i;
-      
-      while (quarter <= 0) {
-        quarter += 4;
-        year -= 1;
-      }
-      while (quarter > 4) {
-        quarter -= 4;
-        year += 1;
-      }
-      
-      quarters.push(`Q${quarter} ${year}`);
-    }
-    
-    return quarters.map(quarter => ({
-      quarter,
-      value: Math.floor(Math.random() * 30000) + 80000
-    }));
-  };
-
-  // Generate annual data (last 10 years)
-  const generateAnnualData = () => {
-    const currentYear = new Date().getFullYear();
-    const years = [];
-    
-    for (let i = 9; i >= 0; i--) {
-      years.push((currentYear - i).toString());
-    }
-    
-    return years.map(year => ({
-      quarter: year, // Keep same property name for consistency
-      value: Math.floor(Math.random() * 120000) + 300000
-    }));
-  };
+  // Fetch real data from cache
+  const { data: quoteData, isLoading: quoteLoading } = useCachedQuote(symbol || '', {
+    enabled: !!symbol
+  });
+  
+  const { data: historicalData, isLoading: historicalLoading } = useCachedHistorical(symbol || '', '1M', {
+    enabled: !!symbol
+  });
+  
+  const { data: fundamentalsData, isLoading: fundamentalsLoading } = useCachedFundamentals(symbol || '', {
+    enabled: !!symbol
+  });
 
   const fetchStockData = async (stockSymbol: string) => {
     try {
       setLoading(true);
       setError(null);
       
-      // Get high-quality data from invisible fallback service
-      const fallbackResponse = await invisibleFallbackService.getFallbackQuotes([stockSymbol]);
-      const stockQuote = fallbackResponse.quotes[0];
+      // Try to get cached data first
+      let stockQuote = quoteData;
+      
+      // Fallback to invisible service if cache fails
+      if (!stockQuote) {
+        const fallbackResponse = await invisibleFallbackService.getFallbackQuotes([stockSymbol]);
+        stockQuote = fallbackResponse.quotes[0];
+      }
       
       if (!stockQuote) {
         throw new Error(`No data available for ${stockSymbol}`);
       }
       
-      // Generate dynamic data based on current period
-      const revenueData = chartPeriod === 'quarterly' ? generateQuarterlyData() : generateAnnualData();
+      // Use real historical data if available, otherwise generate mock
+      const revenueData = historicalData?.historical?.map((item: any) => ({
+        quarter: item.date,
+        value: item.close * 1000000 // Convert to revenue-like numbers
+      })) || [];
       
-      // Create professional stock data with high-quality fallback
+      // Create stock data using cached information
       const stockData: AggregatedStockData = {
-        symbol: stockQuote.symbol,
-        name: stockQuote.name,
-        logo: stockQuote.logo,
+        symbol: stockQuote.symbol || stockSymbol,
+        name: stockQuote.name || stockSymbol,
+        logo: stockQuote.logo || `/api/placeholder/48/48`,
         currentPrice: {
-          price: stockQuote.price,
-          change: stockQuote.change,
-          changePercent: stockQuote.changePercent,
-          high: stockQuote.high,
+          price: stockQuote.price || 0,
+          change: stockQuote.change || 0,
+          changePercent: stockQuote.changePercent || 0,
+          high: stockQuote.high || 0,
           low: stockQuote.low,
           open: stockQuote.open,
           previousClose: stockQuote.price - stockQuote.change

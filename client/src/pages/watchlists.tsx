@@ -15,36 +15,18 @@ import { useStock } from "@/hooks/use-enhanced-stocks";
 import { cn } from "@/lib/utils";
 import { RealtimeWatchlistStockItem } from "@/components/watchlist/realtime-watchlist-stock-item";
 import type { Watchlist, WatchlistStock, Stock } from "@shared/schema";
+import { useCachedBatchQuotes } from "@/hooks/use-cache-data";
 
-// Component for individual stock item with real data
-function WatchlistStockItem({ ws }: { ws: WatchlistStock }) {
+// Component for individual stock item with cached data
+function WatchlistStockItem({ ws, quote }: { ws: WatchlistStock; quote?: any }) {
   const [, setLocation] = useLocation();
-  const { data: stock, isLoading } = useStock(ws.stockSymbol);
 
   const handleClick = () => {
     setLocation(`/stock/${ws.stockSymbol}/charts`);
   };
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-between p-3 border rounded-lg animate-pulse">
-        <div className="flex items-center space-x-3">
-          <div className="w-10 h-10 bg-gray-300 rounded-lg"></div>
-          <div>
-            <div className="h-4 bg-gray-300 rounded w-16 mb-1"></div>
-            <div className="h-3 bg-gray-300 rounded w-24"></div>
-          </div>
-        </div>
-        <div className="text-right">
-          <div className="h-4 bg-gray-300 rounded w-20 mb-1"></div>
-          <div className="h-3 bg-gray-300 rounded w-16"></div>
-        </div>
-      </div>
-    );
-  }
-
-  const price = stock?.currentPrice || 0;
-  const change = stock?.changePercent || 0;
+  const price = quote?.price || 0;
+  const change = quote?.changePercent || 0;
   const isPositive = change >= 0;
 
   return (
@@ -61,7 +43,7 @@ function WatchlistStockItem({ ws }: { ws: WatchlistStock }) {
             {ws.stockSymbol}
           </div>
           <div className="text-sm text-muted-foreground">
-            {stock?.companyName || "Loading..."}
+            {quote?.name || ws.stockSymbol}
           </div>
         </div>
       </div>
@@ -100,6 +82,13 @@ export default function Watchlists() {
   const { data: watchlistStocks } = useQuery<WatchlistStock[]>({
     queryKey: [`/api/watchlists/${selectedWatchlistId}/stocks`],
     enabled: !!selectedWatchlistId,
+  });
+
+  // Get quotes for all stocks in selected watchlist from cache
+  const watchlistSymbols = watchlistStocks?.map(ws => ws.stockSymbol) || [];
+  const { data: quotesData, isLoading: quotesLoading } = useCachedBatchQuotes(watchlistSymbols, {
+    enabled: watchlistSymbols.length > 0,
+    refetchInterval: 30000, // Refresh every 30 seconds
   });
 
 
@@ -367,13 +356,33 @@ export default function Watchlists() {
                     <CardContent>
                       {watchlistStocks?.length ? (
                         <div className="space-y-3">
-                          {watchlistStocks.map((ws) => (
-                            useRealtime ? (
-                              <RealtimeWatchlistStockItem key={ws.id} ws={ws} />
-                            ) : (
-                              <WatchlistStockItem key={ws.id} ws={ws} />
-                            )
-                          ))}
+                          {quotesLoading ? (
+                            // Loading state
+                            Array.from({ length: watchlistStocks.length }).map((_, i) => (
+                              <div key={i} className="flex items-center justify-between p-3 border rounded-lg animate-pulse">
+                                <div className="flex items-center space-x-3">
+                                  <div className="w-10 h-10 bg-gray-300 rounded-lg"></div>
+                                  <div>
+                                    <div className="h-4 bg-gray-300 rounded w-16 mb-1"></div>
+                                    <div className="h-3 bg-gray-300 rounded w-24"></div>
+                                  </div>
+                                </div>
+                                <div className="text-right">
+                                  <div className="h-4 bg-gray-300 rounded w-20 mb-1"></div>
+                                  <div className="h-3 bg-gray-300 rounded w-16"></div>
+                                </div>
+                              </div>
+                            ))
+                          ) : (
+                            watchlistStocks.map((ws) => {
+                              const quote = quotesData?.quotes?.find(q => q.symbol === ws.stockSymbol);
+                              return useRealtime ? (
+                                <RealtimeWatchlistStockItem key={ws.id} ws={ws} />
+                              ) : (
+                                <WatchlistStockItem key={ws.id} ws={ws} quote={quote} />
+                              );
+                            })
+                          )}
                         </div>
                       ) : (
                         <div className="text-center py-8">
