@@ -101,15 +101,29 @@ export function setupSentryMiddleware(app: Express) {
     return;
   }
   
+  // Check if new Sentry v10 methods exist, otherwise skip
+  if (typeof Sentry.requestHandler !== 'function') {
+    console.warn('Sentry middleware functions not available - skipping setup');
+    return;
+  }
+  
   // The request handler must be the first middleware on the app
   app.use(Sentry.requestHandler());
   
-  // TracingHandler creates a trace for every incoming request
-  app.use(Sentry.tracingHandler());
+  // TracingHandler creates a trace for every incoming request (if available)
+  if (typeof Sentry.tracingHandler === 'function') {
+    app.use(Sentry.tracingHandler());
+  }
 }
 
 export function setupSentryErrorHandler(app: Express) {
   if (!sentryInitialized) {
+    return;
+  }
+  
+  // Check if new Sentry v10 method exists
+  if (typeof Sentry.setupExpressErrorHandler !== 'function') {
+    console.warn('Sentry error handler not available - skipping setup');
     return;
   }
   
