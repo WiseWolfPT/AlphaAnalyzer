@@ -30,17 +30,19 @@
 
 ---
 
-## ⚠️ DIA 3: REDIS SETUP (CORREÇÃO NECESSÁRIA)
+## ✅ DIA 3: REDIS SETUP (COMPLETO)
 
 ### Redis Infrastructure
-- [x] Redis 8.2.0 instalado ~~localmente~~ **ERRO: Deve estar no Hetzner!**
+- [x] Redis instalado no Hetzner (128.140.45.28)
 - [x] Configurado com 256MB limite e LRU policy
+- [x] Binding corrigido para 0.0.0.0:6379 (aceita conexões externas)
+- [x] Password segura configurada
 - [x] ioredis v5.7.0 instalado
 - [x] 3-tier cache implementado (Memory → Redis → Supabase)
-- [x] Redis cache service criado
-- [x] Testes passando 100% (8/8)
-- [x] Performance: 40,000 ops/sec
-- [ ] **MIGRAR REDIS PARA HETZNER** (script pronto: `scripts/install-redis-hetzner.sh`)
+- [x] Redis cache service criado e funcionando
+- [x] Backend conectando com sucesso ao Redis
+- [x] Health check confirmado: Redis memory usage 1.08MB
+- [x] Variáveis de ambiente configuradas no Coolify
 
 ---
 
@@ -76,24 +78,25 @@
 - 17:38 - Verificação inicial concluída
 - 17:45 - Security audit iniciado
 - 17:52 - Todas vulnerabilidades corrigidas
-- 17:58 - Redis instalado ~~e configurado~~ **LOCALMENTE (erro - deve ser Hetzner)**
+- 17:58 - Redis instalado localmente (identificado erro)
 - 18:05 - 3-tier cache implementado
-- **AGORA** - Identificado: Redis deve migrar para Hetzner + FMP é 300 calls/min
+- 18:30 - Redis migrado para Hetzner (128.140.45.28)
+- 18:40 - Configuração bind corrigida para 0.0.0.0
+- 18:45 - Variáveis Redis adicionadas ao Coolify
+- 18:50 - Backend conectando com sucesso ao Redis
+- **18:51** - Redis 100% funcional em produção!
 
 ---
 
 ## ✅ RISCOS RESOLVIDOS
 
 1. ~~VITE_SUPABASE_SERVICE_ROLE_KEY exposta~~ ✅ RESOLVIDO
-2. ~~API Keys expostas no frontend~~ ✅ RESOLVIDO
+2. ~~API Keys expostas no frontend~~ ✅ RESOLVIDO  
 3. ~~CORS ainda não configurado~~ ✅ RESOLVIDO
-4. ~~Redis não instalado~~ ⚠️ INSTALADO MAS NO SÍTIO ERRADO
-
-## ⚠️ NOVOS RISCOS IDENTIFICADOS
-
-1. **Redis está LOCAL em vez de no Hetzner** - Performance e reliability comprometidos
-2. **FMP rate limit mal configurado** - Plano é 300/min, não 500/day
-3. **Backend e Redis em máquinas diferentes** - Latência desnecessária
+4. ~~Redis não instalado~~ ✅ RESOLVIDO (instalado no Hetzner)
+5. ~~Redis local em vez de no Hetzner~~ ✅ RESOLVIDO
+6. ~~Backend não conectando ao Redis~~ ✅ RESOLVIDO
+7. ~~FMP rate limit mal configurado~~ ✅ DOCUMENTADO (300/min correto)
 
 ---
 
@@ -106,4 +109,4 @@
 
 ---
 
-**Última Atualização:** 2025-08-06 17:38
+**Última Atualização:** 2025-08-06 18:52

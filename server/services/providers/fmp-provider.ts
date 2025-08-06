@@ -1,37 +1,60 @@
 /**
  * Financial Modeling Prep (FMP) Provider for Market Data
- * Free tier: 250 requests/day
- * Priority: 5 (lowest - use as last resort)
+ * Starter Plan: $19/month with 300 requests/minute
+ * Priority: 3 (medium - reliable with good rate limits)
+ * 
+ * IMPORTANT: Rate limiting is critical to avoid exceeding quota!
  */
 
 import axios from 'axios';
 import { BaseProvider, StockQuote, MarketStatus, ChartData } from './provider-manager';
 
 export class FMPProvider extends BaseProvider {
-  private quotaPerDay = 250;
-  private dailyCalls = 0;
-  private lastResetDate: string;
+  // Starter Plan: 300 calls per minute
+  private quotaPerMinute = 300;
+  private callsThisMinute = 0;
+  private minuteResetTime = Date.now();
+  
+  // Track daily usage for monitoring
+  private totalCallsToday = 0;
+  private dailyResetTime = Date.now();
 
   constructor(apiKey: string) {
     super(apiKey, 'https://financialmodelingprep.com/api/v3', 'fmp');
-    this.lastResetDate = new Date().toDateString();
+    console.log('[FMP] Initialized with Starter plan (300 calls/min)');
   }
 
   private async checkRateLimit(): Promise<void> {
-    const today = new Date().toDateString();
+    const now = Date.now();
     
-    // Reset daily counter if new day
-    if (today !== this.lastResetDate) {
-      this.dailyCalls = 0;
-      this.lastResetDate = today;
+    // Reset minute counter
+    if (now - this.minuteResetTime > 60000) {
+      console.log(`[FMP] Minute reset: ${this.callsThisMinute} calls used`);
+      this.callsThisMinute = 0;
+      this.minuteResetTime = now;
     }
     
-    // Check daily limit
-    if (this.dailyCalls >= this.quotaPerDay) {
-      throw new Error('FMP daily quota exceeded');
+    // Reset daily counter
+    if (now - this.dailyResetTime > 24 * 60 * 60 * 1000) {
+      console.log(`[FMP] Daily reset: ${this.totalCallsToday} total calls`);
+      this.totalCallsToday = 0;
+      this.dailyResetTime = now;
     }
     
-    this.dailyCalls++;
+    // Check minute limit with buffer
+    const safeLimit = this.quotaPerMinute - 10; // Leave 10 calls buffer
+    if (this.callsThisMinute >= safeLimit) {
+      const waitTime = 60000 - (now - this.minuteResetTime);
+      console.warn(`[FMP] Rate limit approaching, waiting ${waitTime}ms`);
+      await new Promise(resolve => setTimeout(resolve, waitTime));
+      
+      // Reset after wait
+      this.callsThisMinute = 0;
+      this.minuteResetTime = Date.now();
+    }
+    
+    this.callsThisMinute++;
+    this.totalCallsToday++;
   }
 
   async getQuote(symbol: string): Promise<StockQuote> {
@@ -134,6 +157,21 @@ export class FMPProvider extends BaseProvider {
       
       return quotes;
     }
+  }
+
+  /**
+   * Get API usage statistics
+   */
+  getUsageStats() {
+    return {
+      provider: 'FMP',
+      callsThisMinute: this.callsThisMinute,
+      quotaPerMinute: this.quotaPerMinute,
+      totalCallsToday: this.totalCallsToday,
+      percentOfMinuteQuota: Math.round((this.callsThisMinute / this.quotaPerMinute) * 100),
+      isApproachingLimit: this.callsThisMinute >= (this.quotaPerMinute * 0.8),
+      nextReset: new Date(this.minuteResetTime + 60000).toISOString()
+    };
   }
 
   async getMarketStatus(): Promise<MarketStatus> {
