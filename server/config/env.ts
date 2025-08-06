@@ -43,8 +43,13 @@ const envSchema = z.object({
   JWT_ACCESS_SECRET: z.string().optional(),
   JWT_REFRESH_SECRET: z.string().optional(),
   
-  // Configurações Opcionais
+  // Redis Configuration
   REDIS_URL: z.string().optional(),
+  REDIS_HOST: z.string().optional(),
+  REDIS_PORT: z.string().optional(),
+  REDIS_PASSWORD: z.string().optional(),
+  
+  // Configurações Opcionais
   EMAIL_API_KEY: z.string().optional(),
   EMAIL_FROM: z.string().email().optional(),
   SENTRY_DSN: z.string().url().optional(),

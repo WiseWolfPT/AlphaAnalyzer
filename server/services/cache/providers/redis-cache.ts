@@ -48,14 +48,23 @@ export class RedisCacheProvider {
       const redisUrl = env.REDIS_URL || env.UPSTASH_REDIS_URL || 'redis://localhost:6379';
       
       if (!redisUrl || (redisUrl === 'redis://localhost:6379' && env.NODE_ENV === 'production')) {
-        console.log('🔧 Redis not configured for production, skipping...');
+        console.log('🔧 Redis not configured for production, using mock...');
         return;
       }
 
-      console.log('✅ Redis cache provider initialized (mock)');
-      this.isConnected = false; // Keep as false for now since Redis isn't required
+      // Check if we have proper Redis configuration
+      if (env.REDIS_HOST && env.REDIS_PORT && env.REDIS_PASSWORD) {
+        // Use the new Redis implementation from redis-cache-service.ts
+        const { redisCacheService } = await import('../../cache/redis-cache-service');
+        console.log('🔗 Using real Redis cache service');
+        this.isConnected = true;
+        return;
+      }
+
+      console.log('✅ Redis cache provider initialized (mock - no credentials)');
+      this.isConnected = false;
     } catch (error) {
-      console.warn('⚠️ Redis initialization skipped:', error);
+      console.warn('⚠️ Redis initialization failed:', error);
     }
   }
 
