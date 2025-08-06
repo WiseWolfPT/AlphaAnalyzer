@@ -20,7 +20,7 @@ export const PROVIDER_QUOTAS: Record<string, ProviderQuotaConfig> = {
       daily: 86400 // Theoretical based on per-minute limit
     },
     resetTime: '00:00',
-    priority: 1 // Highest priority for real-time data
+    priority: 2 // Secondary provider after FMP
   },
   
   twelveData: {
@@ -30,17 +30,17 @@ export const PROVIDER_QUOTAS: Record<string, ProviderQuotaConfig> = {
       perMinute: 8 // Spread throughout the day
     },
     resetTime: '00:00',
-    priority: 2
+    priority: 3 // Third provider
   },
   
   fmp: {
     name: 'Financial Modeling Prep',
     limits: {
-      daily: 250,
-      perMinute: 5
+      daily: 432000, // 300/min * 60min * 24h (theoretical max)
+      perMinute: 300  // FMP Starter Plan: 300 calls/min ($19/month)
     },
     resetTime: '00:00',
-    priority: 3
+    priority: 1 // HIGH PRIORITY - Main provider with 300/min quota
   },
   
   alphaVantage: {
@@ -65,12 +65,13 @@ export const PROVIDER_QUOTAS: Record<string, ProviderQuotaConfig> = {
 };
 
 // Data type to provider mapping (ordered by priority)
+// FMP is now primary with 300 calls/min quota
 export const DATA_TYPE_PROVIDERS = {
-  price: ['finnhub', 'twelveData', 'fmp', 'polygon'],
+  price: ['fmp', 'finnhub', 'twelveData', 'polygon'],
   fundamentals: ['fmp', 'finnhub', 'alphaVantage'],
-  historical: ['twelveData', 'alphaVantage', 'fmp', 'polygon'],
-  news: ['finnhub', 'fmp'],
-  companyInfo: ['finnhub', 'fmp']
+  historical: ['fmp', 'twelveData', 'alphaVantage', 'polygon'],
+  news: ['fmp', 'finnhub'],
+  companyInfo: ['fmp', 'finnhub']
 } as const;
 
 export type DataType = keyof typeof DATA_TYPE_PROVIDERS;

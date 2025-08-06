@@ -24,6 +24,7 @@ import logsRouter from "./routes/logs";
 // REMOVED: Cache imports due to startup issues
 // import cacheAdminRouter from "./routes/cache-admin";
 import { alertsRouter } from "./routes/alerts";
+import cacheRoutes from "./routes/cache-routes";
 // BROKEN IMPORTS - Modules don't exist yet
 // import pushNotificationsRouter from "./routes/push-notifications"; // TODO: Create this file
 // import circuitBreakerRouter from "./routes/circuit-breaker"; // TODO: Create this file
@@ -176,6 +177,9 @@ export async function registerRoutes(app: Express, server: Server): Promise<void
   
   // Cached data routes (eliminates CORS/Auth issues)
   app.use("/api/cached", cachedDataRouter);
+  
+  // Reddit Strategy cache routes (users NEVER trigger API calls)
+  app.use("/api/cache", cacheRoutes);
   
   // Alert system routes
   app.use("/api/alerts", alertsRouter);

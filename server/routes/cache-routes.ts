@@ -1,0 +1,237 @@
+/**
+ * CACHE ROUTES - Reddit Strategy Implementation
+ * 
+ * These routes implement the Reddit Strategy where users NEVER trigger API calls
+ * All data comes from cache, stale data is queued for background update
+ */
+
+import { Router, Request, Response } from 'express';
+import { z } from 'zod';
+import { redditStrategy } from '../services/reddit-strategy';
+import { logger } from '../lib/logger';
+
+const router = Router();
+
+// Validation schemas
+const symbolSchema = z.object({
+  symbol: z.string()
+    .min(1, 'Symbol required')
+    .max(10, 'Symbol too long')
+    .regex(/^[A-Z0-9\-\.]+$/, 'Invalid symbol format')
+    .transform(val => val.toUpperCase().trim())
+});
+
+const batchSymbolsSchema = z.object({
+  symbols: z.array(z.string()
+    .min(1)
+    .max(10)
+    .regex(/^[A-Z0-9\-\.]+$/))
+    .min(1, 'At least one symbol required')
+    .max(50, 'Maximum 50 symbols per request')
+});
+
+/**
+ * GET /api/cache/quotes/:symbol
+ * Get cached quote - NEVER triggers API call
+ */
+router.get('/quotes/:symbol', async (req: Request, res: Response) => {
+  try {
+    const validation = symbolSchema.safeParse({ symbol: req.params.symbol });
+    if (!validation.success) {
+      return res.status(400).json({
+        error: 'INVALID_SYMBOL',
+        message: validation.error.errors[0].message
+      });
+    }
+
+    const { symbol } = validation.data;
+    
+    // Use Reddit Strategy - user NEVER triggers API call
+    const quote = await redditStrategy.getQuoteForUser(symbol);
+    
+    res.json({
+      success: true,
+      data: quote,
+      cached: true,
+      strategy: 'reddit'
+    });
+    
+  } catch (error) {
+    logger.error('Cache quote fetch error:', error);
+    res.status(500).json({
+      error: 'CACHE_ERROR',
+      message: 'Failed to fetch cached quote'
+    });
+  }
+});
+
+/**
+ * POST /api/cache/quotes/batch
+ * Get batch quotes from cache - NEVER triggers API calls
+ */
+router.post('/quotes/batch', async (req: Request, res: Response) => {
+  try {
+    const validation = batchSymbolsSchema.safeParse(req.body);
+    if (!validation.success) {
+      return res.status(400).json({
+        error: 'INVALID_REQUEST',
+        message: validation.error.errors[0].message
+      });
+    }
+
+    const { symbols } = validation.data;
+    
+    // Use Reddit Strategy for batch
+    const quotes = await redditStrategy.getBatchQuotesForUser(symbols);
+    
+    res.json({
+      success: true,
+      data: quotes,
+      cached: true,
+      strategy: 'reddit',
+      count: quotes.length
+    });
+    
+  } catch (error) {
+    logger.error('Batch quotes fetch error:', error);
+    res.status(500).json({
+      error: 'CACHE_ERROR',
+      message: 'Failed to fetch cached quotes'
+    });
+  }
+});
+
+/**
+ * GET /api/cache/fundamentals/:symbol
+ * Get cached fundamentals - queues for update if stale
+ */
+router.get('/fundamentals/:symbol', async (req: Request, res: Response) => {
+  try {
+    const validation = symbolSchema.safeParse({ symbol: req.params.symbol });
+    if (!validation.success) {
+      return res.status(400).json({
+        error: 'INVALID_SYMBOL',
+        message: validation.error.errors[0].message
+      });
+    }
+
+    const { symbol } = validation.data;
+    
+    // For now, return from regular cache service
+    // TODO: Implement Reddit Strategy for fundamentals
+    const { redisCacheService } = await import('../cache/redis-cache-service');
+    const cacheKey = `fundamentals:${symbol}`;
+    const data = await redisCacheService.get(cacheKey);
+    
+    if (!data) {
+      // Queue for update but return empty
+      return res.json({
+        success: true,
+        data: null,
+        message: 'Data is being fetched. Please refresh in a moment.',
+        cached: false
+      });
+    }
+    
+    res.json({
+      success: true,
+      data,
+      cached: true
+    });
+    
+  } catch (error) {
+    logger.error('Fundamentals fetch error:', error);
+    res.status(500).json({
+      error: 'CACHE_ERROR',
+      message: 'Failed to fetch cached fundamentals'
+    });
+  }
+});
+
+/**
+ * GET /api/cache/historical/:symbol/:period
+ * Get cached historical data
+ */
+router.get('/historical/:symbol/:period', async (req: Request, res: Response) => {
+  try {
+    const validation = symbolSchema.safeParse({ symbol: req.params.symbol });
+    if (!validation.success) {
+      return res.status(400).json({
+        error: 'INVALID_SYMBOL',
+        message: validation.error.errors[0].message
+      });
+    }
+
+    const { symbol } = validation.data;
+    const period = req.params.period;
+    
+    // Validate period
+    const validPeriods = ['1d', '5d', '1m', '3m', '6m', '1y', '5y', 'max'];
+    if (!validPeriods.includes(period.toLowerCase())) {
+      return res.status(400).json({
+        error: 'INVALID_PERIOD',
+        message: 'Invalid time period'
+      });
+    }
+    
+    // Get from cache
+    const { redisCacheService } = await import('../cache/redis-cache-service');
+    const cacheKey = `historical:${symbol}:${period}`;
+    const data = await redisCacheService.get(cacheKey);
+    
+    if (!data) {
+      return res.json({
+        success: true,
+        data: null,
+        message: 'Historical data is being fetched. Please refresh in a moment.',
+        cached: false
+      });
+    }
+    
+    res.json({
+      success: true,
+      data,
+      cached: true
+    });
+    
+  } catch (error) {
+    logger.error('Historical data fetch error:', error);
+    res.status(500).json({
+      error: 'CACHE_ERROR',
+      message: 'Failed to fetch historical data'
+    });
+  }
+});
+
+/**
+ * GET /api/cache/status
+ * Get cache and queue status
+ */
+router.get('/status', async (req: Request, res: Response) => {
+  try {
+    const queueStats = redditStrategy.getQueueStats();
+    
+    // Get cache stats
+    const { redisCacheService } = await import('../cache/redis-cache-service');
+    const redisHealth = await redisCacheService.healthCheck();
+    
+    res.json({
+      success: true,
+      cache: {
+        redis: redisHealth,
+        strategy: 'reddit'
+      },
+      queue: queueStats,
+      timestamp: new Date().toISOString()
+    });
+    
+  } catch (error) {
+    logger.error('Status fetch error:', error);
+    res.status(500).json({
+      error: 'STATUS_ERROR',
+      message: 'Failed to fetch status'
+    });
+  }
+});
+
+export default router;

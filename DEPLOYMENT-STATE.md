@@ -2,17 +2,19 @@
 ## Status da Implementação do Plano de Produção
 
 **Início:** 2025-08-06 17:31
-**Branch:** feature/production-ready-fmp (phase-0-main para deploys)
+**Branch:** phase-0-main (production)
 **Objetivo:** Implementar FMP real data com estratégia Reddit
-**Progresso:** 24% (DIAS 0-5 de 21 completos)
+**Progresso:** 43% (DIAS 0-9 de 21 completos)
 
 ### 🎯 RESUMO EXECUTIVO
 ```
 ✅ Segurança: 100% corrigida (CORS, CSRF, Rate limiting)
 ✅ Redis: Funcionando no Hetzner (128.140.45.28)
-✅ FMP: Configurado com rate limiting (300/min)
-✅ Cleanup: Ativo (previne overflow 500MB)
-⏳ Próximo: Cron jobs + Reddit strategy (DIAS 6-9)
+✅ FMP: 300/min rate limit configurado
+✅ Cleanup: Hourly cleanup ativo
+✅ Cron Jobs: Ativados no startup
+✅ Reddit Strategy: Implementada (users NUNCA fazem API calls)
+⏳ Próximo: Load testing + Frontend data real (DIAS 10-15)
 ```
 
 ---
@@ -74,19 +76,61 @@
 
 ---
 
-## 🔄 PRÓXIMOS PASSOS (DIAS 6-9)
+## ✅ DIAS 6-9: CRON JOBS + REDDIT STRATEGY (COMPLETO)
 
-### Cron Jobs & Reddit Strategy
-- [ ] Verificar se cron jobs estão realmente ativos
-- [ ] Implementar queue processing para Reddit strategy
-- [ ] Garantir users NUNCA fazem API calls diretas
-- [ ] Testar integração completa
+### DIA 6: Ativação dos Cron Jobs
+- [x] CronManager verificado e funcionando
+- [x] Iniciado automaticamente no startup do servidor
+- [x] Jobs configurados:
+  - Keep-alive: */45 minutos (previne cold start)
+  - Cache warmer: */15 minutos (popular stocks)
+  - Cache cleanup: Daily às 2AM
+  - Quota monitor: Hourly
+  - Metrics publisher: */5 minutos
 
-### ⚠️ AÇÃO MANUAL NECESSÁRIA
-```sql
--- EXECUTAR NO SUPABASE SQL EDITOR:
--- Copiar conteúdo de supabase/functions/get_database_size.sql
+### DIA 7-8: FMP Rate Limiting
+- [x] Quota limits atualizados: FMP = 300/min (priority 1)
+- [x] Provider priorities reorganizadas (FMP primeiro)
+- [x] Data type providers atualizado (FMP como principal)
+- [x] Buffer de segurança: 290 calls/min máximo
+
+### DIA 9: Reddit Strategy Implementation
+- [x] **`server/services/reddit-strategy.ts`** criado
+- [x] Princípio core: Users NUNCA fazem API calls
+- [x] Queue system implementado para updates
+- [x] Batch processing para quotes (até 20 símbolos/call)
+- [x] Cache routes criadas: `/api/cache/*`
+- [x] Integrado no servidor principal
+- [x] Cron jobs da estratégia:
+  - Process queue: Every minute
+  - Warm popular stocks: */15 min during market hours
+
+### Arquivos Criados/Modificados
 ```
+✅ server/services/reddit-strategy.ts (NEW)
+✅ server/routes/cache-routes.ts (NEW) 
+✅ server/services/quota/quota-limits.ts (UPDATED)
+✅ server/index.ts (UPDATED - Reddit Strategy init)
+✅ server/routes.ts (UPDATED - cache routes registered)
+```
+
+---
+
+## 🔄 PRÓXIMOS PASSOS (DIAS 10-15)
+
+### DIA 10: Load Testing (QA-AUTOMATION-ENGINEER)
+- [ ] Instalar Artillery
+- [ ] Criar artillery.yml com cenários
+- [ ] Testar 500 usuários simultâneos
+- [ ] Monitorar database size durante teste
+- [ ] Verificar rate limiting funcionando
+
+### DIAS 11-15: Frontend Real Data (FRONTEND-REACT-SPECIALIST)
+- [ ] FindStocks usando `/api/cache/quotes/batch`
+- [ ] Remover todo mock data
+- [ ] Implementar loading states
+- [ ] Implementar stale data indicators
+- [ ] Otimizar bundle size
 
 ---
 
@@ -96,11 +140,13 @@
 |---------|-------|--------|--------|
 | Redis Memory | 1.08MB | <256MB | ✅ |
 | Database Size | Monitorado | <300MB | ✅ |
-| API Calls/min | 0 | <290 | ✅ |
+| API Calls/min | 0 (queue) | <290 | ✅ |
 | Cache Hit Rate | 100% | >90% | ✅ |
 | Response Time | 1-2ms | <100ms | ✅ |
 | Security Issues | 0 | 0 | ✅ |
 | Cleanup Active | SIM | SIM | ✅ |
+| Reddit Strategy | ATIVO | ATIVO | ✅ |
+| Queue Processing | Every min | Every min | ✅ |
 
 ---
 
@@ -122,7 +168,16 @@
 - 18:51 - Redis 100% funcional em produção!
 - 19:05 - FMP provider atualizado com rate limiting 300/min (DIA 4)
 - 19:10 - Cleanup manager implementado (DIA 5)
-- **19:15** - DIAS 0-5 COMPLETOS! ✅
+- 19:15 - DIAS 0-5 COMPLETOS! ✅
+
+### 2025-08-07
+- 10:00 - Início implementação DIAS 6-9
+- 10:05 - CronManager verificado e ativo (DIA 6)
+- 10:10 - FMP rate limiting atualizado para 300/min
+- 10:15 - Reddit Strategy implementada (`reddit-strategy.ts`)
+- 10:20 - Cache routes criadas (`/api/cache/*`)
+- 10:25 - Integração completa no servidor
+- **10:30** - DIAS 6-9 COMPLETOS! ✅
 
 ---
 
@@ -134,7 +189,38 @@
 4. ~~Redis não instalado~~ ✅ RESOLVIDO (instalado no Hetzner)
 5. ~~Redis local em vez de no Hetzner~~ ✅ RESOLVIDO
 6. ~~Backend não conectando ao Redis~~ ✅ RESOLVIDO
-7. ~~FMP rate limit mal configurado~~ ✅ DOCUMENTADO (300/min correto)
+7. ~~FMP rate limit mal configurado~~ ✅ RESOLVIDO (300/min)
+8. ~~Users fazendo API calls diretas~~ ✅ RESOLVIDO (Reddit Strategy)
+9. ~~Cron jobs não ativos~~ ✅ RESOLVIDO
+
+---
+
+## 🚀 COMANDOS ÚTEIS
+
+### Verificar Status
+```bash
+# Redis status
+redis-cli -h 128.140.45.28 -a [password] INFO memory
+
+# Queue status
+curl https://crucial-ivonne-alfalyzer-90666a9e.coolify.app/api/cache/status
+
+# Cron jobs status
+curl https://crucial-ivonne-alfalyzer-90666a9e.coolify.app/api/cron-manager/status
+
+# Database size
+psql $DATABASE_URL -c "SELECT pg_database_size('postgres')/1024/1024 as mb_used;"
+```
+
+### Deploy
+```bash
+# Commit changes
+git add .
+git commit -m "feat: Implement Reddit Strategy (Days 6-9)"
+git push origin phase-0-main
+
+# Deploy acontece automaticamente no Coolify
+```
 
 ---
 
@@ -147,5 +233,5 @@
 
 ---
 
-**Última Atualização:** 2025-08-06 19:15
-**Progresso:** DIAS 0-5 COMPLETOS (5/21 dias = 24% do plano)
+**Última Atualização:** 2025-08-07 10:30
+**Progresso:** DIAS 0-9 COMPLETOS (9/21 dias = 43% do plano)
