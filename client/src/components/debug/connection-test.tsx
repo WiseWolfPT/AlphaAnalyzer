@@ -17,7 +17,10 @@ export function ConnectionTest() {
     setIsLoading(true);
     setResult(null);
 
-    const apiUrl = env.VITE_API_URL || 'http://jsg00k40sgo0k4swsoc4gcsg.128.140.45.28.sslip.io';
+    // Use relative URLs on Vercel to avoid mixed content blocking
+    const isVercel = typeof window !== 'undefined' && 
+      (window.location.hostname.includes('.vercel.app') || window.location.hostname === 'alfalyzer.com');
+    const apiUrl = isVercel ? '' : (env.VITE_API_URL || 'http://jsg00k40sgo0k4swsoc4gcsg.128.140.45.28.sslip.io');
     const testUrl = `${apiUrl}/api/market-data/test`;
 
     console.log('🧪 Testing connection to:', testUrl);
@@ -69,7 +72,11 @@ export function ConnectionTest() {
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="text-sm text-muted-foreground">
-          <p>API URL: <code className="text-xs bg-muted px-1 py-0.5 rounded">{env.VITE_API_URL || 'http://jsg00k40sgo0k4swsoc4gcsg.128.140.45.28.sslip.io'}</code></p>
+          <p>API URL: <code className="text-xs bg-muted px-1 py-0.5 rounded">
+            {(typeof window !== 'undefined' && (window.location.hostname.includes('.vercel.app') || window.location.hostname === 'alfalyzer.com')) 
+              ? 'Using Vercel Proxy (relative URLs)' 
+              : (env.VITE_API_URL || 'http://jsg00k40sgo0k4swsoc4gcsg.128.140.45.28.sslip.io')}
+          </code></p>
         </div>
 
         <Button

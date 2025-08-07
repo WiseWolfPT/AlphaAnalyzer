@@ -2,8 +2,11 @@
 import { env } from './lib/env';
 
 export async function testAPIConnection() {
-  const apiUrl = env.VITE_API_URL || 'http://jsg00k40sgo0k4swsoc4gcsg.128.140.45.28.sslip.io';
-  console.log('🔍 Testing API connection to:', apiUrl);
+  // Use relative URLs on Vercel to avoid mixed content blocking
+  const isVercel = typeof window !== 'undefined' && 
+    (window.location.hostname.includes('.vercel.app') || window.location.hostname === 'alfalyzer.com');
+  const apiUrl = isVercel ? '' : (env.VITE_API_URL || 'http://jsg00k40sgo0k4swsoc4gcsg.128.140.45.28.sslip.io');
+  console.log('🔍 Testing API connection to:', apiUrl || 'relative URLs (Vercel proxy)');
   
   try {
     // Test the health endpoint first
