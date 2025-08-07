@@ -12,7 +12,7 @@ import { logger } from '../lib/logger';
 import { supabase } from '../lib/supabase';
 import { redisCacheService } from '../cache/redis-cache-service';
 import { MarketDataService } from './market-data-service';
-import { FMPProvider } from './unified-api/providers/fmp.provider';
+import { FMPProvider } from './providers/fmp-provider';
 import cron from 'node-cron';
 
 interface QueuedUpdate {

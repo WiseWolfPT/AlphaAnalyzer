@@ -784,12 +784,15 @@ async function initializeMarketDataServices() {
       });
       
       // CRITICAL: Initialize Reddit Strategy (Users NEVER trigger API calls)
+      console.log('🔄 Attempting to initialize Reddit Strategy...');
       import('./services/reddit-strategy').then(({ redditStrategy }) => {
+        console.log('✅ Reddit Strategy module loaded successfully');
         redditStrategy.initializeCronJobs();
         console.log('🎯 Reddit Strategy initialized - Users will NEVER trigger API calls');
         console.log('📊 Queue processing will run every minute');
       }).catch(error => {
         console.error('❌ Reddit Strategy failed to start:', error);
+        console.error('Error details:', error.stack);
         console.warn('⚠️ Falling back to direct API calls (not recommended)');
       });
       
