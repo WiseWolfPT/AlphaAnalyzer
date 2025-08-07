@@ -138,8 +138,8 @@ export class ProviderManager {
     const errors: Error[] = [];
     const triedProviders: string[] = [];
 
-    // Try providers in order: Polygon → Alpha Vantage → Finnhub → Twelve Data
-    const providerOrder = ['polygon', 'alpha_vantage', 'finnhub', 'twelve_data', 'fmp'];
+    // Try providers in order: FMP first (300 calls/min), then fallbacks
+    const providerOrder = ['fmp', 'polygon', 'alpha_vantage', 'finnhub', 'twelve_data'];
     
     for (const providerName of providerOrder) {
       const provider = this.providers.find(p => p.getName() === providerName);

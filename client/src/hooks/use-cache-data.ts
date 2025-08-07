@@ -17,25 +17,35 @@ const getApiUrl = () => {
   return (env as any).VITE_BACKEND_URL || 'http://jsg00k40sgo0k4swsoc4gcsg.128.140.45.28.sslip.io';
 };
 
-// Hook for batch quotes from cache
+// Hook for batch quotes - temporarily using market-data for real data
 export function useCachedBatchQuotes(symbols: string[], options = {}) {
   return useQuery({
     queryKey: ['cache', 'quotes', 'batch', symbols],
     queryFn: async () => {
       const apiUrl = getApiUrl();
-      const response = await fetch(`${apiUrl}/api/cache/quotes/batch`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ symbols }),
-      });
+      // Temporarily using GET market-data endpoint for real data
+      // Will switch back to POST cache endpoint after background jobs are enabled
+      const symbolsParam = symbols.join(',');
+      const response = await fetch(`${apiUrl}/api/market-data/quotes/batch?symbols=${symbolsParam}`);
       
       if (!response.ok) {
-        throw new Error(`Failed to fetch cached quotes: ${response.statusText}`);
+        throw new Error(`Failed to fetch quotes: ${response.status} ${response.statusText}`);
       }
       
-      return response.json();
+      const payload = await response.json();
+      
+      // Normalize different response formats to { quotes: [...] }
+      const quotes = Array.isArray(payload?.quotes)
+        ? payload.quotes
+        : Array.isArray(payload?.data)
+        ? payload.data
+        : Array.isArray(payload?.results)
+        ? payload.results
+        : Array.isArray(payload)
+        ? payload
+        : [];
+      
+      return { quotes, _cached: payload._cached || false };
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 10 * 60 * 1000, // Keep in cache 10 min
