@@ -37,8 +37,18 @@ export class RedditStrategy {
   
   private constructor() {
     this.marketDataService = new MarketDataService();
-    this.fmpProvider = new FMPProvider();
+    
+    // Get FMP API key from environment
+    const fmpApiKey = process.env.FMP_API_KEY || process.env.FINANCIAL_MODELING_PREP_API_KEY || '';
+    if (!fmpApiKey) {
+      logger.warn('⚠️ FMP API key not found in environment variables');
+    }
+    
+    this.fmpProvider = new FMPProvider(fmpApiKey);
     logger.info('🎯 Reddit Strategy initialized - Users will NEVER trigger API calls');
+    
+    // Initialize cron jobs immediately when singleton is created
+    this.initializeCronJobs();
   }
 
   static getInstance(): RedditStrategy {
@@ -395,8 +405,12 @@ export class RedditStrategy {
    * Initialize cron jobs for Reddit Strategy
    */
   initializeCronJobs() {
-    // Process queue immediately on startup
+    // Warm popular stocks immediately on startup
     setTimeout(async () => {
+      logger.info('🔥 Initial cache warming...');
+      await this.warmPopularStocks();
+      
+      // Then process the queue
       logger.info('🚀 Initial queue processing...');
       await this.processUpdateQueue();
     }, 5000); // Wait 5 seconds for system to stabilize

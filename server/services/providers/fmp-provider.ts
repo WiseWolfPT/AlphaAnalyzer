@@ -332,4 +332,175 @@ export class FMPProvider extends BaseProvider {
     // We track it internally
     this.quotaRemaining = this.quotaPerDay - this.dailyCalls;
   }
+
+  /**
+   * Get fundamental data for a symbol
+   */
+  async getFundamentals(symbol: string): Promise<any> {
+    await this.checkRateLimit();
+    
+    try {
+      const response = await axios.get(
+        `${this.baseUrl}/profile/${symbol}`,
+        {
+          params: {
+            apikey: this.apiKey
+          },
+          timeout: 10000
+        }
+      );
+
+      const data = response.data;
+      
+      if (!Array.isArray(data) || data.length === 0) {
+        throw new Error(`No fundamental data found for ${symbol}`);
+      }
+
+      const fundamentals = data[0];
+      
+      return {
+        symbol: fundamentals.symbol,
+        companyName: fundamentals.companyName,
+        exchange: fundamentals.exchangeShortName,
+        industry: fundamentals.industry,
+        sector: fundamentals.sector,
+        marketCap: fundamentals.mktCap,
+        price: fundamentals.price,
+        beta: fundamentals.beta,
+        volAvg: fundamentals.volAvg,
+        lastDiv: fundamentals.lastDiv,
+        changes: fundamentals.changes,
+        ceo: fundamentals.ceo,
+        description: fundamentals.description,
+        website: fundamentals.website,
+        country: fundamentals.country,
+        employees: fundamentals.fullTimeEmployees,
+        timestamp: new Date().toISOString(),
+        provider: this.name
+      };
+    } catch (error) {
+      this.handleApiError(error, `getFundamentals(${symbol})`);
+    }
+  }
+
+  /**
+   * Get historical price data
+   */
+  async getHistorical(symbol: string, period: string = '1m'): Promise<any> {
+    await this.checkRateLimit();
+    
+    try {
+      const response = await axios.get(
+        `${this.baseUrl}/historical-price-full/${symbol}`,
+        {
+          params: {
+            apikey: this.apiKey,
+            from: this.getHistoricalDateRange(period).from,
+            to: this.getHistoricalDateRange(period).to
+          },
+          timeout: 15000
+        }
+      );
+
+      const data = response.data;
+      
+      if (!data || !data.historical) {
+        throw new Error(`No historical data found for ${symbol}`);
+      }
+
+      return {
+        symbol: data.symbol,
+        historical: data.historical.map((bar: any) => ({
+          date: bar.date,
+          open: bar.open,
+          high: bar.high,
+          low: bar.low,
+          close: bar.close,
+          volume: bar.volume,
+          change: bar.change,
+          changePercent: bar.changePercent
+        })),
+        period,
+        timestamp: new Date().toISOString(),
+        provider: this.name
+      };
+    } catch (error) {
+      this.handleApiError(error, `getHistorical(${symbol}, ${period})`);
+    }
+  }
+
+  /**
+   * Get news for a symbol
+   */
+  async getNews(symbol: string, limit: number = 10): Promise<any> {
+    await this.checkRateLimit();
+    
+    try {
+      const response = await axios.get(
+        `${this.baseUrl}/stock_news`,
+        {
+          params: {
+            apikey: this.apiKey,
+            tickers: symbol,
+            limit
+          },
+          timeout: 10000
+        }
+      );
+
+      const data = response.data;
+      
+      if (!Array.isArray(data)) {
+        throw new Error(`Invalid news response for ${symbol}`);
+      }
+
+      return {
+        symbol,
+        articles: data.map((article: any) => ({
+          title: article.title,
+          text: article.text,
+          site: article.site,
+          publishedDate: article.publishedDate,
+          url: article.url,
+          image: article.image
+        })),
+        count: data.length,
+        timestamp: new Date().toISOString(),
+        provider: this.name
+      };
+    } catch (error) {
+      this.handleApiError(error, `getNews(${symbol}, ${limit})`);
+    }
+  }
+
+  private getHistoricalDateRange(period: string): { from: string; to: string } {
+    const now = new Date();
+    const to = now.toISOString().split('T')[0];
+    let from: string;
+
+    switch (period.toLowerCase()) {
+      case '1d':
+        from = to;
+        break;
+      case '1w':
+        from = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+        break;
+      case '1m':
+        from = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+        break;
+      case '3m':
+        from = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+        break;
+      case '6m':
+        from = new Date(now.getTime() - 180 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+        break;
+      case '1y':
+        from = new Date(now.getTime() - 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+        break;
+      default:
+        from = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+    }
+
+    return { from, to };
+  }
 }
