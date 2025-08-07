@@ -4,7 +4,7 @@
 **Início:** 2025-08-06 17:31
 **Branch:** phase-0-main (production)
 **Objetivo:** Implementar FMP real data com estratégia Reddit
-**Progresso:** 81% (DIAS 0-17 de 21 completos)
+**Progresso:** 76% (DIAS 0-16 de 21 completos) - DIA 17 EM TESTE
 
 ### 🎯 RESUMO EXECUTIVO
 ```
@@ -120,11 +120,11 @@
 
 ## 🔄 PRÓXIMOS PASSOS (DIAS 18-21)
 
-### ✅ DIAS 16-17: Production Fixes (COMPLETO)
-- [x] Mixed content blocking resolvido
-- [x] Reddit Strategy cron jobs funcionando
-- [x] FMP provider methods implementados
-- [x] Cache warming no startup
+### ⏳ DIA 17: Production Fixes (EM TESTE)
+- [x] Mixed content blocking resolvido (DIA 16 ✅)
+- [ ] Reddit Strategy cron jobs funcionando (aguardando verificação nos logs)
+- [ ] FMP provider methods implementados (aguardando teste)
+- [ ] Cache warming no startup (aguardando confirmação)
 
 ### DIAS 18-19: Production Deploy (DEVOPS-INFRASTRUCTURE-ENGINEER)
 - [ ] Deploy frontend no Vercel
@@ -233,11 +233,11 @@
 - 00:55 - Frontend conectado ao backend via proxy funcionando
 - **00:56** - DIA 16 COMPLETO! ✅
 - 01:45 - DIA 17 iniciado - Reddit Strategy Fixes
-- 01:46 - Cron jobs movidos para constructor (inicialização garantida)
+- 01:46 - Cron jobs movidos para constructor
 - 01:47 - FMP provider methods adicionados (getFundamentals, getHistorical, getNews)
 - 01:48 - API key passada ao FMP provider
 - 01:49 - Cache warming no startup implementado
-- **01:50** - DIA 17 COMPLETO! ✅
+- **01:50** - Aguardando deploy e verificação nos logs...
 
 ---
 
@@ -293,5 +293,5 @@ git push origin phase-0-main
 
 ---
 
-**Última Atualização:** 2025-08-08 01:50
-**Progresso:** DIAS 0-17 COMPLETOS (17/21 dias = 81% do plano)
+**Última Atualização:** 2025-08-08 01:55
+**Progresso:** DIAS 0-16 COMPLETOS + DIA 17 EM TESTE (16/21 dias = 76% do plano)
