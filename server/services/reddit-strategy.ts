@@ -387,6 +387,12 @@ export class RedditStrategy {
    * Initialize cron jobs for Reddit Strategy
    */
   initializeCronJobs() {
+    // Process queue immediately on startup
+    setTimeout(async () => {
+      logger.info('🚀 Initial queue processing...');
+      await this.processUpdateQueue();
+    }, 5000); // Wait 5 seconds for system to stabilize
+    
     // Process queue every minute
     cron.schedule('* * * * *', async () => {
       logger.debug('🔄 Processing update queue...');
