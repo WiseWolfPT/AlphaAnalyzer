@@ -4,7 +4,7 @@
 **Início:** 2025-08-06 17:31
 **Branch:** phase-0-main (production)
 **Objetivo:** Implementar FMP real data com estratégia Reddit
-**Progresso:** 71% (DIAS 0-15 de 21 completos)
+**Progresso:** 76% (DIAS 0-16 de 21 completos)
 
 ### 🎯 RESUMO EXECUTIVO
 ```
@@ -223,6 +223,15 @@
 - 23:15 - watchlists.tsx atualizado com cached data
 - 23:16 - AdvancedCharts.tsx e intrinsic-value.tsx atualizados
 - **23:17** - DIAS 11-15 COMPLETOS! ✅
+
+### 2025-08-08
+- 00:50 - DIA 16 iniciado - Production Fixes
+- 00:51 - Fixed mixed content blocking (use-cache-data.ts usando URLs relativas)
+- 00:52 - CORS atualizado para aceitar Vercel proxy requests
+- 00:53 - CSRF protection removido de cache routes
+- 00:54 - Reddit Strategy queue configurada para processar no startup
+- 00:55 - Frontend conectado ao backend via proxy funcionando
+- **00:56** - DIA 16 COMPLETO! ✅
 
 ---
 
