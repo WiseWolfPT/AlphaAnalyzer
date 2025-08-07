@@ -364,6 +364,11 @@ if (process.env.NODE_ENV === 'production' && csrfProtection) {
       return next();
     }
     
+    // Skip CSRF for cache endpoints (Reddit Strategy - read-only)
+    if (req.path.startsWith('/api/cache/')) {
+      return next();
+    }
+    
     // SECURITY FIX: Use centralized JWT validation for CSRF bypass
     if (req.headers.authorization?.startsWith('Bearer ')) {
       const token = req.headers.authorization.replace('Bearer ', '');
