@@ -222,15 +222,19 @@ export class RedditStrategy {
     const symbols = items.map(([_, item]) => item.symbol);
     
     try {
-      logger.debug(`Fetching batch quotes for: ${symbols.join(', ')}`);
+      logger.info(`📊 Processing batch quotes for ${symbols.length} symbols: ${symbols.join(', ')}`);
       
       // Use FMP batch endpoint (counts as 1 API call!)
       const quotes = await this.fmpProvider.getBatchPrices(symbols);
       this.callsThisMinute++;
       
+      logger.info(`✅ Received ${quotes.length} quotes from FMP`);
+      
       // Save to cache
       for (const quote of quotes) {
         const cacheKey = `quote:${quote.symbol}`;
+        
+        logger.debug(`💾 Saving ${quote.symbol} to cache: price=${quote.price}`);
         
         // Save to Redis (fast access)
         await redisCacheService.set(cacheKey, quote, 5 * 60); // 5 min TTL
@@ -252,7 +256,11 @@ export class RedditStrategy {
       logger.info(`✅ Updated ${quotes.length} quotes with 1 API call`);
       
     } catch (error) {
-      logger.error('Failed to process batch quotes:', error);
+      logger.error('❌ Failed to process batch quotes:', error);
+      logger.error('Error details:', {
+        message: error instanceof Error ? error.message : 'Unknown error',
+        stack: error instanceof Error ? error.stack : undefined
+      });
       
       // Increment attempts for retry
       for (const [key, item] of items) {
