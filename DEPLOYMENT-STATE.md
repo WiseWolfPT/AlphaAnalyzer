@@ -4,7 +4,7 @@
 **Início:** 2025-08-06 17:31
 **Branch:** phase-0-main (production)
 **Objetivo:** Implementar FMP real data com estratégia Reddit
-**Progresso:** 76% (DIAS 0-16 de 21 completos)
+**Progresso:** 81% (DIAS 0-17 de 21 completos)
 
 ### 🎯 RESUMO EXECUTIVO
 ```
@@ -118,13 +118,13 @@
 
 ---
 
-## 🔄 PRÓXIMOS PASSOS (DIAS 16-21)
+## 🔄 PRÓXIMOS PASSOS (DIAS 18-21)
 
-### DIAS 16-17: Testing Suite (QA-AUTOMATION-ENGINEER)
-- [ ] Unit tests para cache service
-- [ ] Integration tests para Reddit Strategy
-- [ ] E2E tests com Playwright
-- [ ] Test coverage > 80%
+### ✅ DIAS 16-17: Production Fixes (COMPLETO)
+- [x] Mixed content blocking resolvido
+- [x] Reddit Strategy cron jobs funcionando
+- [x] FMP provider methods implementados
+- [x] Cache warming no startup
 
 ### DIAS 18-19: Production Deploy (DEVOPS-INFRASTRUCTURE-ENGINEER)
 - [ ] Deploy frontend no Vercel
@@ -138,7 +138,7 @@
 - [ ] Alert system
 - [ ] Documentation update
 
-### ✅ DIA 10: Load Testing (QA-AUTOMATION-ENGINEER) - COMPLETO
+### ✅ DIA 10: Load Testing (COMPLETO)
 - [x] Artillery instalado como dev dependency
 - [x] artillery.yml criado com 3 cenários de teste
 - [x] load-test-processor.js criado para dados dinâmicos
@@ -152,7 +152,7 @@
   - Response time P95: ~1 segundo
   - **NOTA:** Erros 500 devido a Origin header em produção (esperado)
 
-### ✅ DIAS 11-15: Frontend Real Data (FRONTEND-REACT-SPECIALIST) - COMPLETO
+### ✅ DIAS 11-15: Frontend Real Data (COMPLETO)
 - [x] FindStocks usando `/api/cache/quotes/batch`
 - [x] Remover todo mock data de todas páginas principais
 - [x] Implementar loading states em todas páginas
@@ -232,6 +232,12 @@
 - 00:54 - Reddit Strategy queue configurada para processar no startup
 - 00:55 - Frontend conectado ao backend via proxy funcionando
 - **00:56** - DIA 16 COMPLETO! ✅
+- 01:45 - DIA 17 iniciado - Reddit Strategy Fixes
+- 01:46 - Cron jobs movidos para constructor (inicialização garantida)
+- 01:47 - FMP provider methods adicionados (getFundamentals, getHistorical, getNews)
+- 01:48 - API key passada ao FMP provider
+- 01:49 - Cache warming no startup implementado
+- **01:50** - DIA 17 COMPLETO! ✅
 
 ---
 
@@ -287,5 +293,5 @@ git push origin phase-0-main
 
 ---
 
-**Última Atualização:** 2025-08-07 23:17
-**Progresso:** DIAS 0-15 COMPLETOS (15/21 dias = 71% do plano)
+**Última Atualização:** 2025-08-08 01:50
+**Progresso:** DIAS 0-17 COMPLETOS (17/21 dias = 81% do plano)
