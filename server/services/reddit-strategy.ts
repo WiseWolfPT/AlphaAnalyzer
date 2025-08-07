@@ -225,7 +225,7 @@ export class RedditStrategy {
       logger.info(`📊 Processing batch quotes for ${symbols.length} symbols: ${symbols.join(', ')}`);
       
       // Use FMP batch endpoint (counts as 1 API call!)
-      const quotes = await this.fmpProvider.getBatchPrices(symbols);
+      const quotes = await this.fmpProvider.getBatchQuotes(symbols);
       this.callsThisMinute++;
       
       logger.info(`✅ Received ${quotes.length} quotes from FMP`);
