@@ -3,10 +3,14 @@ import { env } from '@/lib/env';
 
 // Helper to get API URL
 const getApiUrl = () => {
-  // In production, use relative URLs to leverage Vercel proxy
+  // In production (Vercel), use relative URLs to leverage Vercel proxy
   // This avoids mixed content blocking (HTTPS -> HTTP)
-  if (typeof window !== 'undefined' && window.location.hostname === 'alfalyzerpro4.vercel.app') {
-    return ''; // Empty string for relative URLs
+  if (typeof window !== 'undefined') {
+    const hostname = window.location.hostname;
+    // Check if we're on any Vercel deployment (production or preview)
+    if (hostname.includes('.vercel.app') || hostname === 'alfalyzer.com') {
+      return ''; // Empty string for relative URLs
+    }
   }
   
   // In development or other environments, use the configured backend URL
