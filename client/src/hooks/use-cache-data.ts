@@ -17,41 +17,51 @@ const getApiUrl = () => {
   return (env as any).VITE_BACKEND_URL || 'http://jsg00k40sgo0k4swsoc4gcsg.128.140.45.28.sslip.io';
 };
 
-// Hook for batch quotes - temporarily using market-data for real data
-export function useCachedBatchQuotes(symbols: string[], options = {}) {
+// Hook for batch quotes - GET with chunking, delay and fallback
+export function useCachedBatchQuotes(symbols: string[], options: any = {}) {
+  const unique = Array.from(new Set(symbols)).filter(Boolean);
+  const chunk = (arr: string[], size: number) =>
+    Array.from({ length: Math.ceil(arr.length / size) }, (_, i) => arr.slice(i * size, i * size + size));
+  const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
   return useQuery({
-    queryKey: ['cache', 'quotes', 'batch', symbols],
+    queryKey: ['market-data', 'quotes', 'batch', unique],
     queryFn: async () => {
-      const apiUrl = getApiUrl();
-      // Temporarily using GET market-data endpoint for real data
-      // Will switch back to POST cache endpoint after background jobs are enabled
-      const symbolsParam = symbols.join(',');
-      const response = await fetch(`${apiUrl}/api/market-data/quotes/batch?symbols=${symbolsParam}`);
-      
-      if (!response.ok) {
-        throw new Error(`Failed to fetch quotes: ${response.status} ${response.statusText}`);
+      const chunks = chunk(unique, 20);
+      const allQuotes: any[] = [];
+
+      for (const c of chunks) {
+        // 1) GET "real" (preenche cache e evita CSRF)
+        const qs = c.map((s) => encodeURIComponent(s)).join(','); // importante: preservar vírgulas
+        const url = `/api/market-data/quotes/batch?symbols=${qs}`;
+        const r = await fetch(url, { method: 'GET', headers: { Accept: 'application/json' } });
+        if (r.ok) {
+          const b = await r.json();
+          const quotes = b?.quotes ?? b?.data ?? (Array.isArray(b) ? b : []);
+          allQuotes.push(...quotes);
+        } else {
+          // 2) Fallback cache (isento de CSRF)
+          const r2 = await fetch('/api/cache/quotes/batch', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+            body: JSON.stringify({ symbols: c }),
+          });
+          const b2 = r2.ok ? await r2.json() : { data: [] };
+          const quotes2 = b2?.quotes ?? b2?.data ?? [];
+          allQuotes.push(...quotes2);
+        }
+
+        await sleep(300); // suaviza rate limit
       }
-      
-      const payload = await response.json();
-      
-      // Normalize different response formats to { quotes: [...] }
-      const quotes = Array.isArray(payload?.quotes)
-        ? payload.quotes
-        : Array.isArray(payload?.data)
-        ? payload.data
-        : Array.isArray(payload?.results)
-        ? payload.results
-        : Array.isArray(payload)
-        ? payload
-        : [];
-      
-      return { quotes, _cached: payload._cached || false };
+
+      return {
+        quotes: allQuotes.filter((q) => q && (q.price ?? q.close ?? q.last) != null),
+        _source: 'normalized',
+      };
     },
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    gcTime: 10 * 60 * 1000, // Keep in cache 10 min
-    refetchOnWindowFocus: false, // Don't refetch on focus
-    retry: 3,
-    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+    staleTime: 30_000,
+    gcTime: 300_000,
+    retry: (count) => count < 2,
     ...options,
   });
 }

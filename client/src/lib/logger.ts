@@ -34,6 +34,8 @@ class Logger {
   private buffer: LogEntry[] = [];
   private sessionId: string;
   private correlationCounter = 0;
+  private lastFlush = 0;
+  private flushInterval = 60000; // 60 seconds minimum between flushes
 
   constructor(config: Partial<LoggerConfig> = {}) {
     this.config = {
@@ -47,9 +49,9 @@ class Logger {
     
     this.sessionId = this.generateSessionId();
     
-    // Periodically flush logs to remote
+    // Throttled flush logs to remote - 60s minimum interval
     if (this.config.enableRemote) {
-      setInterval(() => this.flushToRemote(), 5000);
+      setInterval(() => this.flushToRemote(), this.flushInterval);
     }
   }
 
@@ -83,6 +85,14 @@ class Logger {
 
   private log(level: LogLevel, message: string, context?: Record<string, any>): void {
     if (!this.shouldLog(level)) return;
+
+    // Sample rate 5% for non-error logs in production
+    const sampleRate = 0.05;
+    const shouldSample = level === LogLevel.ERROR || Math.random() < sampleRate;
+    
+    if (!shouldSample && !import.meta.env.DEV) {
+      return;
+    }
 
     const entry: LogEntry = {
       timestamp: new Date().toISOString(),
@@ -124,9 +134,12 @@ class Logger {
       }
     }
 
-    // Immediately send errors to remote
+    // Throttled error sending - respect flush interval
     if (level === LogLevel.ERROR && this.config.enableRemote) {
-      this.flushToRemote();
+      const now = Date.now();
+      if (now - this.lastFlush > this.flushInterval) {
+        this.flushToRemote();
+      }
     }
   }
 
@@ -224,6 +237,13 @@ class Logger {
   private async flushToRemote(): Promise<void> {
     if (!this.config.remoteEndpoint || this.buffer.length === 0) return;
     
+    // Throttle check
+    const now = Date.now();
+    if (now - this.lastFlush < this.flushInterval) {
+      return;
+    }
+    this.lastFlush = now;
+    
     const logs = [...this.buffer];
     this.buffer = [];
     
@@ -277,7 +297,7 @@ class Logger {
 const logger = new Logger({
   level: import.meta.env.DEV ? LogLevel.DEBUG : LogLevel.INFO,
   enableConsole: true,
-  enableRemote: !import.meta.env.DEV,
+  enableRemote: import.meta.env.VITE_ENABLE_REMOTE_LOGS === 'true',
   remoteEndpoint: '/api/logs',
   colorize: true,
   includeStackTrace: import.meta.env.DEV,

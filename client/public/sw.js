@@ -1,9 +1,10 @@
 // Alfalyzer Service Worker - PWA Implementation
-// Version: 1.0.0 - International Markets Focus (USA/EU)
+// Version: 3.0.0 - API Bypass Fix
 
-const CACHE_NAME = 'alfalyzer-v1';
-const STATIC_CACHE_NAME = 'alfalyzer-static-v1';
-const DYNAMIC_CACHE_NAME = 'alfalyzer-dynamic-v1';
+const SW_VERSION = 'v3'; // incrementar versão
+const CACHE_NAME = 'alfalyzer-v3';
+const STATIC_CACHE_NAME = 'alfalyzer-static-v3';
+const DYNAMIC_CACHE_NAME = 'alfalyzer-dynamic-v3';
 
 // Cache configuration for international financial data
 const CACHE_CONFIG = {
@@ -29,7 +30,7 @@ const CACHE_CONFIG = {
 
 // Install event - Cache essential assets
 self.addEventListener('install', (event) => {
-  console.log('[SW] Installing Alfalyzer Service Worker v1.0.0');
+  console.log('[SW] Installing Alfalyzer Service Worker v3.0.0');
   
   event.waitUntil(
     caches.open(STATIC_CACHE_NAME)
@@ -49,7 +50,7 @@ self.addEventListener('install', (event) => {
 
 // Activate event - Clean up old caches
 self.addEventListener('activate', (event) => {
-  console.log('[SW] Activating Alfalyzer Service Worker');
+  console.log('[SW] Activating Alfalyzer Service Worker v3');
   
   event.waitUntil(
     caches.keys()
@@ -72,6 +73,11 @@ self.addEventListener('activate', (event) => {
 
 // Fetch event - Smart caching strategy
 self.addEventListener('fetch', (event) => {
+  const { pathname } = new URL(event.request.url);
+  
+  // CRITICAL FIX: não intercepta APIs
+  if (pathname.startsWith('/api/')) return;
+  
   const requestUrl = new URL(event.request.url);
   
   // CRITICAL FIX: Skip non-http(s) protocols (like chrome-extension://)
@@ -85,10 +91,7 @@ self.addEventListener('fetch', (event) => {
   }
   
   // Handle different types of requests
-  if (requestUrl.pathname.startsWith('/api/')) {
-    // API requests - network first with fallback
-    event.respondWith(handleApiRequest(event.request));
-  } else if (requestUrl.pathname.startsWith('/locales/')) {
+  if (requestUrl.pathname.startsWith('/locales/')) {
     // Translation files - cache first
     event.respondWith(handleStaticAssets(event.request));
   } else if (requestUrl.pathname.match(/\.(js|css|png|jpg|jpeg|svg|ico)$/)) {
