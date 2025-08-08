@@ -1173,8 +1173,19 @@ echo "✅ DEPLOYMENT COMPLETE!"
 
 ---
 
+## HOTFIXES IMPLEMENTADOS
+
+### 2025-08-08: Find Stocks Critical Fix
+- **Problema:** 403 CSRF, 429 rate limit, SW masking errors
+- **Solução:** GET com chunking/delay, fallback cache, SW bypass v3
+- **Status:** ✅ Resolvido
+- **Impacto:** Find Stocks funcionando com dados reais FMP
+- **Commit:** e93697a7
+
+---
+
 **ESTE PLANO FOI VALIDADO E ESTÁ PRONTO PARA EXECUÇÃO COM AGENTES --ULTRATHINK**
 
-Última atualização: $(date)
-Versão: 2.0 FINAL
+Última atualização: 2025-08-08
+Versão: 2.1 FINAL
 Status: APPROVED FOR PRODUCTION
