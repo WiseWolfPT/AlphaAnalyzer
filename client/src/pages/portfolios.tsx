@@ -70,30 +70,44 @@ function PortfolioHolding({ holding }: { holding: any }) {
 export default function Portfolios() {
   const [useRealtime, setUseRealtime] = useState(true);
   
+  // Demo portfolio symbols - in production, fetch from user's portfolio
+  const portfolioSymbols = ["AAPL", "MSFT", "GOOGL", "NVDA", "TSLA", "META", "AMZN", "NFLX"];
+  
   // Get portfolio stock quotes from cache
-  const portfolioSymbols = portfolioData.holdings.map(h => h.symbol);
   const { data: quotesData, isLoading } = useCachedBatchQuotes(portfolioSymbols, {
     refetchInterval: 30000, // Refresh every 30 seconds for portfolio
   });
 
-  // Portfolio data with real-time prices from cache
-  const portfolioData = {
-    totalValue: 12450.30,
-    dayChange: 292.45,
-    dayChangePercent: 2.4,
-    totalGainLoss: 1850.75,
-    totalGainLossPercent: 17.4,
-    holdings: [
-      { symbol: "AAPL", shares: 10, avgPrice: 150.00, currentPrice: 175.43, value: 1754.30 },
-      { symbol: "MSFT", shares: 8, avgPrice: 300.00, currentPrice: 378.85, value: 3030.80 },
-      { symbol: "GOOGL", shares: 15, avgPrice: 120.00, currentPrice: 142.56, value: 2138.40 },
-      { symbol: "NVDA", shares: 3, avgPrice: 700.00, currentPrice: 875.30, value: 2625.90 },
-      { symbol: "TSLA", shares: 5, avgPrice: 200.00, currentPrice: 248.42, value: 1242.10 },
-      { symbol: "META", shares: 2, avgPrice: 400.00, currentPrice: 484.20, value: 968.40 },
-      { symbol: "AMZN", shares: 4, avgPrice: 140.00, currentPrice: 151.94, value: 607.76 },
-      { symbol: "NFLX", shares: 1, avgPrice: 600.00, currentPrice: 641.05, value: 641.05 }
-    ]
-  };
+  // Fetch portfolio data from Supabase/API - replace with real user portfolio
+  const { data: portfolioData, isLoading: portfolioLoading } = useQuery({
+    queryKey: ['portfolio', 'user-portfolio'],
+    queryFn: async () => {
+      // For now, return demo portfolio structure
+      // In production, this would fetch from /api/portfolios/user
+      return {
+        totalValue: 0, // Will be calculated from real prices
+        dayChange: 0,
+        dayChangePercent: 0,
+        totalGainLoss: 0,
+        totalGainLossPercent: 0,
+        holdings: [
+          { symbol: "AAPL", shares: 10, avgPrice: 150.00 },
+          { symbol: "MSFT", shares: 8, avgPrice: 300.00 },
+          { symbol: "GOOGL", shares: 15, avgPrice: 120.00 },
+          { symbol: "NVDA", shares: 3, avgPrice: 700.00 },
+          { symbol: "TSLA", shares: 5, avgPrice: 200.00 },
+          { symbol: "META", shares: 2, avgPrice: 400.00 },
+          { symbol: "AMZN", shares: 4, avgPrice: 140.00 },
+          { symbol: "NFLX", shares: 1, avgPrice: 600.00 }
+        ]
+      };
+    },
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+
+  if (!portfolioData) {
+    return <MainLayout><div>Loading portfolio...</div></MainLayout>;
+  }
 
   // Update holdings with real-time prices from cache
   const updatedHoldings = portfolioData.holdings.map(holding => {

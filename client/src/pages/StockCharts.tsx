@@ -48,171 +48,25 @@ export default function AdvancedCharts() {
     }
   }, [symbol, chartPeriod]);
 
-  // Generate quarterly data (16 quarters rolling)
-  const generateQuarterlyData = () => {
-    const currentQuarter = Math.floor((new Date().getMonth()) / 3) + 1;
-    const currentYear = new Date().getFullYear();
-    const quarters = [];
-    
-    // Generate 16 quarters back from current
-    for (let i = 15; i >= 0; i--) {
-      let year = currentYear;
-      let quarter = currentQuarter - i;
-      
-      while (quarter <= 0) {
-        quarter += 4;
-        year -= 1;
-      }
-      while (quarter > 4) {
-        quarter -= 4;
-        year += 1;
-      }
-      
-      quarters.push(`Q${quarter} ${year}`);
-    }
-    
-    return quarters.map(quarter => ({
-      quarter,
-      value: Math.floor(Math.random() * 30000) + 80000
-    }));
-  };
-
-  // Generate annual data (last 10 years)
-  const generateAnnualData = () => {
-    const currentYear = new Date().getFullYear();
-    const years = [];
-    
-    for (let i = 9; i >= 0; i--) {
-      years.push((currentYear - i).toString());
-    }
-    
-    return years.map(year => ({
-      quarter: year, // Keep same property name for consistency
-      value: Math.floor(Math.random() * 120000) + 300000
-    }));
-  };
 
   const fetchStockData = async (stockSymbol: string) => {
     try {
       setLoading(true);
       setError(null);
       
-      // Generate dynamic data based on current period
-      const revenueData = chartPeriod === 'quarterly' ? generateQuarterlyData() : generateAnnualData();
-      
-      // Mock data for demo - replace with real API calls when keys are configured
-      const mockData: AggregatedStockData = {
-        symbol: stockSymbol.toUpperCase(),
-        name: stockSymbol === 'AAPL' ? 'Apple Inc.' : `${stockSymbol.toUpperCase()} Inc.`,
-        logo: stockSymbol === 'AAPL' ? 'https://logo.clearbit.com/apple.com' : '',
-        currentPrice: {
-          price: 203.92,
-          change: 3.29,
-          changePercent: 1.64,
-          high: 207.12,
-          low: 201.85,
-          open: 202.45,
-          previousClose: 200.63
-        },
-        profile: {
-          sector: 'Technology',
-          industry: 'Consumer Electronics',
-          marketCap: 3200000000000,
-          sharesOutstanding: 15700000000,
-          country: 'US',
-          currency: 'USD',
-          website: 'https://www.apple.com'
-        },
-        charts: {
-          price: Array.from({ length: 30 }, (_, i) => ({
-            date: new Date(Date.now() - (29 - i) * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-            price: 180 + Math.random() * 40
-          })),
-          revenue: revenueData,
-          revenueBySegment: Array.from({ length: 8 }, (_, i) => ({
-            quarter: `Q${(i % 4) + 1} ${2023 + Math.floor(i / 4)}`,
-            segments: {
-              'iPhone': 45000 + Math.random() * 20000,
-              'iPad': 7000 + Math.random() * 3000,
-              'Mac': 10000 + Math.random() * 5000,
-              'Services': 20000 + Math.random() * 10000,
-              'Wearables': 8000 + Math.random() * 4000
-            }
-          })),
-          ebitda: revenueData.map(item => ({
-            quarter: item.quarter,
-            value: Math.floor(item.value * 0.35) + Math.random() * 5000
-          })),
-          freeCashFlow: revenueData.map(item => ({
-            quarter: item.quarter,
-            value: Math.floor(item.value * 0.28) + Math.random() * 8000
-          })),
-          netIncome: revenueData.map(item => ({
-            quarter: item.quarter,
-            value: Math.floor(item.value * 0.25) + Math.random() * 6000
-          })),
-          eps: revenueData.map(item => ({
-            quarter: item.quarter,
-            value: 1.2 + Math.random() * 0.8
-          })),
-          cashAndDebt: Array.from({ length: 8 }, (_, i) => ({
-            quarter: `Q${(i % 4) + 1} ${2023 + Math.floor(i / 4)}`,
-            cash: 160000 + Math.random() * 20000,
-            debt: 110000 + Math.random() * 15000
-          })),
-          dividends: Array.from({ length: 12 }, (_, i) => ({
-            date: new Date(Date.now() - i * 90 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-            amount: 0.22 + Math.random() * 0.08
-          })),
-          returnOfCapital: Array.from({ length: 8 }, (_, i) => ({
-            quarter: `Q${(i % 4) + 1} ${2023 + Math.floor(i / 4)}`,
-            value: 15 + Math.random() * 10
-          })),
-          sharesOutstanding: Array.from({ length: 8 }, (_, i) => ({
-            quarter: `Q${(i % 4) + 1} ${2023 + Math.floor(i / 4)}`,
-            value: 15700 + Math.random() * 200
-          })),
-          ratios: Array.from({ length: 8 }, (_, i) => ({
-            quarter: `Q${(i % 4) + 1} ${2023 + Math.floor(i / 4)}`,
-            pe: 25 + Math.random() * 10,
-            roe: 0.15 + Math.random() * 0.1,
-            roa: 0.08 + Math.random() * 0.05,
-            grossMargin: 0.35 + Math.random() * 0.1
-          })),
-          valuation: Array.from({ length: 30 }, (_, i) => ({
-            date: new Date(Date.now() - (29 - i) * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-            value: 28 + Math.random() * 12
-          })),
-          expenses: Array.from({ length: 8 }, (_, i) => ({
-            quarter: `Q${(i % 4) + 1} ${2023 + Math.floor(i / 4)}`,
-            operating: 45000 + Math.random() * 10000,
-            rd: 25000 + Math.random() * 5000,
-            sga: 15000 + Math.random() * 3000,
-            other: 5000 + Math.random() * 2000
-          }))
-        },
-        keyMetrics: {
-          pe: 28.5,
-          eps: 1.89,
-          dividendYield: 0.0047,
-          marketCap: 3200000000000,
-          freeCashFlow: 93000000000,
-          netIncome: 97000000000,
-          ebitda: 125000000000,
-          totalCash: 165000000000,
-          totalDebt: 110000000000,
-          roe: 0.175,
-          roa: 0.087,
-          grossMargin: 0.381,
-          operatingMargin: 0.297,
-          netMargin: 0.253
-        }
-      };
-      
-      setStockData(mockData);
+      // Fetch aggregated data from cache service with real API integration
+      const stockData = await dataAggregatorService.getStockData(stockSymbol, chartPeriod);
+      setStockData(stockData);
     } catch (err) {
-      setError('Failed to load stock data. Please try again.');
+      setError('Dados sendo atualizados... Recarregue em 1 minuto');
       console.error('Error fetching stock data:', err);
+      
+      // Show cache miss message - data is being updated via Reddit Strategy
+      setTimeout(() => {
+        if (symbol) {
+          fetchStockData(symbol);
+        }
+      }, 60000); // Retry after 1 minute
     } finally {
       setLoading(false);
     }
@@ -222,9 +76,17 @@ export default function AdvancedCharts() {
     return (
       <MainLayout>
         <div className="flex items-center justify-center min-h-screen">
-          <div className="text-center">
+          <div className="text-center max-w-md">
             <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary mx-auto mb-4"></div>
-            <p className="text-muted-foreground">Loading stock data...</p>
+            <p className="text-lg font-medium mb-2">Loading {symbol} data...</p>
+            <p className="text-muted-foreground text-sm">
+              Data is served from cache for instant results. 
+              {error && " If data is stale, it's being refreshed in the background."}
+            </p>
+            <div className="mt-4 flex items-center justify-center gap-2 text-xs text-muted-foreground">
+              <Wifi className="w-4 h-4" />
+              <span>Connected to Reddit Strategy cache system</span>
+            </div>
           </div>
         </div>
       </MainLayout>
@@ -235,11 +97,38 @@ export default function AdvancedCharts() {
     return (
       <MainLayout>
         <div className="flex items-center justify-center min-h-screen">
-          <div className="text-center">
-            <div className="text-red-500 mb-4">⚠️ Error</div>
-            <h3 className="text-xl font-semibold mb-2">Failed to load stock data</h3>
-            <p className="text-muted-foreground mb-4">{error}</p>
-            <Button onClick={() => setLocation('/dashboard')} className="bg-gradient-to-r from-teya-green via-teya-green-dark to-teya-green hover:from-teya-green-dark hover:via-teya-green hover:to-teya-green-dark text-rich-black font-semibold shadow-lg shadow-teya-green/30 hover:shadow-teya-green/50 hover:scale-105 transition-all duration-300 border-0">Go Back</Button>
+          <div className="text-center max-w-lg">
+            <div className="mb-6">
+              <Clock className="w-16 h-16 text-amber-500 mx-auto mb-4" />
+            </div>
+            <h3 className="text-xl font-semibold mb-3">Data Updating</h3>
+            <p className="text-muted-foreground mb-4 leading-relaxed">
+              {error || "Stock data is currently being refreshed via our cache system. This ensures you get the most accurate information."}
+            </p>
+            <div className="mb-6 p-4 bg-secondary/50 rounded-lg">
+              <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground mb-2">
+                <Activity className="w-4 h-4" />
+                <span>Reddit Strategy Active</span>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Data updates happen in the background every few minutes
+              </p>
+            </div>
+            <div className="space-x-3">
+              <Button 
+                onClick={() => window.location.reload()} 
+                className="bg-gradient-to-r from-teya-green via-teya-green-dark to-teya-green hover:from-teya-green-dark hover:via-teya-green hover:to-teya-green-dark text-rich-black font-semibold shadow-lg shadow-teya-green/30 hover:shadow-teya-green/50 hover:scale-105 transition-all duration-300 border-0"
+              >
+                Refresh Page
+              </Button>
+              <Button 
+                variant="outline" 
+                onClick={() => setLocation('/dashboard')}
+                className="hover:scale-105 transition-all duration-300"
+              >
+                Go to Dashboard
+              </Button>
+            </div>
           </div>
         </div>
       </MainLayout>
