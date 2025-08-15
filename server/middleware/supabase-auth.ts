@@ -46,9 +46,19 @@ declare global {
  */
 export const requireAuth = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    // Skip auth if Supabase not configured (development fallback)
+    // In production, Supabase MUST be configured
     if (!supabase) {
-      console.log('🔓 Auth bypassed - Supabase not configured');
+      if (process.env.NODE_ENV === 'production') {
+        console.error('🚨 CRITICAL: Supabase not configured in production');
+        return res.status(500).json({
+          error: 'AUTHENTICATION_SERVICE_ERROR',
+          message: 'Authentication service not configured',
+          code: 'AUTH_NOT_CONFIGURED',
+          timestamp: new Date().toISOString()
+        });
+      }
+      // Only allow bypass in development
+      console.log('🔓 Auth bypassed - Development mode without Supabase');
       req.user = {
         id: 'dev-user',
         email: 'dev@alfalyzer.com',

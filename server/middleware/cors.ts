@@ -1,53 +1,48 @@
 import cors from 'cors';
 import { Request, Response, NextFunction } from 'express';
 
-// Allow any Vercel deployment in production
 const isDevelopment = process.env.NODE_ENV !== 'production';
 
-const allowedOrigins = [
-  process.env.FRONTEND_URL || 'https://alfalyzer.vercel.app',
-  'https://alfalyzer.vercel.app',
-  'https://alfalyzerpro4.vercel.app', // Adicionar o domínio específico
+// STRICT production origins - NO wildcards or patterns
+const productionOrigins = [
   'https://alfalyzer.com',
-  'https://www.alfalyzer.com',
-  'http://localhost:5173', // desenvolvimento local
-  'http://localhost:3000'
+  'https://www.alfalyzer.com'
 ];
 
-// Additional patterns for dynamic Vercel deployments
-const allowedPatterns = [
-  /^https:\/\/alfalyzer.*\.vercel\.app$/,
-  /^https:\/\/.*-antonios-projects-.*\.vercel\.app$/
+// Development origins
+const developmentOrigins = [
+  'http://localhost:5173',
+  'http://localhost:3000',
+  'http://localhost:5174',
+  'http://127.0.0.1:5173'
 ];
 
 export const corsOptions: cors.CorsOptions = {
   origin: (origin, callback) => {
-    // Allow requests without origin in development
-    if (!origin) {
-      if (process.env.NODE_ENV === 'development') {
-        console.log('🔧 CORS: Allowing no-origin request in development');
-        return callback(null, true);
-      } else {
-        // In production, we'll handle no-origin in a separate middleware
-        // For now, allow it to support Vercel proxy
-        console.log('⚠️ CORS: Allowing no-origin request (might be Vercel proxy)');
+    // In production, STRICT origin checking
+    if (process.env.NODE_ENV === 'production') {
+      // No origin = same-origin request (allowed after Hetzner consolidation)
+      if (!origin) {
+        // Same-origin requests are OK in consolidated architecture
         return callback(null, true);
       }
+      
+      // Check against strict whitelist
+      if (productionOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+      
+      // Block everything else in production
+      console.warn(`🚨 CORS: Blocked unauthorized origin in production: ${origin}`);
+      return callback(new Error('Not allowed by CORS'));
     }
     
-    // Check exact matches
-    if (allowedOrigins.includes(origin)) {
+    // Development mode - more permissive
+    if (!origin || developmentOrigins.includes(origin)) {
       return callback(null, true);
     }
     
-    // Check pattern matches for Vercel deployments
-    const isAllowedPattern = allowedPatterns.some(pattern => pattern.test(origin));
-    if (isAllowedPattern) {
-      console.log(`✅ CORS: Allowing Vercel deployment: ${origin}`);
-      return callback(null, true);
-    }
-    
-    console.warn(`❌ CORS: Blocked origin: ${origin}`);
+    console.warn(`❌ CORS: Blocked origin in development: ${origin}`);
     callback(new Error('Not allowed by CORS'));
   },
   credentials: true,
@@ -58,22 +53,9 @@ export const corsOptions: cors.CorsOptions = {
   optionsSuccessStatus: 204 // Important for legacy browsers
 };
 
-// Security middleware to validate Vercel proxy requests
-export const verifyVercelProxy = (req: Request, res: Response, next: NextFunction) => {
-  // Only check in production when there's no Origin header
-  if (process.env.NODE_ENV === 'production' && !req.headers.origin) {
-    const forwardedHost = req.headers['x-forwarded-host'] as string;
-    const forwardedProto = req.headers['x-forwarded-proto'] as string;
-    
-    // Check if request is from a valid Vercel proxy
-    if (forwardedHost && forwardedHost.includes('vercel.app')) {
-      console.log(`✅ Valid Vercel proxy request from: ${forwardedHost}`);
-      return next();
-    }
-    
-    // Log warning but allow for now (to not break existing functionality)
-    console.warn(`⚠️ No-origin request without valid proxy headers`);
-  }
-  
+// Security middleware - removed Vercel proxy support (no longer needed after consolidation)
+export const verifyOrigin = (req: Request, res: Response, next: NextFunction) => {
+  // In consolidated architecture, we don't need Vercel proxy checks
+  // All requests come directly to our Hetzner server
   next();
 };

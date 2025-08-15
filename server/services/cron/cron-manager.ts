@@ -1,6 +1,7 @@
 import cron from 'node-cron';
 import { getSupabaseClient } from '../../lib/supabase-client';
 import { logger } from '../../lib/logger';
+import fetch from 'node-fetch';
 
 export interface CronJob {
   name: string;
@@ -23,6 +24,7 @@ export class CronManager {
   private jobs: Map<string, cron.ScheduledTask> = new Map();
   private metrics: Map<string, CronMetrics> = new Map();
   private isProduction = process.env.NODE_ENV === 'production';
+  private healthcheckUrl = process.env.HEALTHCHECK_UUID ? `https://hc-ping.com/${process.env.HEALTHCHECK_UUID}` : null;
   
   // Popular stocks to keep warm in cache
   private readonly POPULAR_STOCKS = [
@@ -97,6 +99,16 @@ export class CronManager {
       task: this.cleanupCoalescingQueue.bind(this),
       enabled: true
     });
+    
+    // Healthchecks.io system monitoring - Every minute (only if configured)
+    if (this.healthcheckUrl) {
+      this.scheduleJob({
+        name: 'system-health-monitor',
+        schedule: '* * * * *',
+        task: this.pingSystemHealth.bind(this),
+        enabled: true
+      });
+    }
   }
 
   /**
@@ -139,6 +151,9 @@ export class CronManager {
         metric.averageDuration = (metric.averageDuration * (metric.successCount - 1) + duration) / metric.successCount;
         
         logger.info(`[CRON] ✅ Completed job: ${config.name} in ${duration}ms`);
+        
+        // Ping healthchecks.io on successful completion
+        await this.pingHealthchecks(config.name, duration);
       } catch (error) {
         const duration = Date.now() - startTime;
         metric.errorCount++;
@@ -408,6 +423,74 @@ export class CronManager {
   /**
    * Get or create metric for a job
    */
+  /**
+   * Ping healthchecks.io to indicate successful cron job execution
+   */
+  private async pingHealthchecks(jobName: string, duration: number): Promise<void> {
+    if (!this.healthcheckUrl) {
+      return; // Healthchecks not configured
+    }
+
+    try {
+      const response = await fetch(`${this.healthcheckUrl}/${jobName}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'User-Agent': 'Alfalyzer-CronManager/1.0'
+        },
+        body: JSON.stringify({
+          duration_ms: duration,
+          timestamp: new Date().toISOString(),
+          status: 'success'
+        }),
+        timeout: 5000 // 5 second timeout
+      });
+
+      if (response.ok) {
+        logger.debug(`[HEALTHCHECK] ✅ Pinged for job: ${jobName}`);
+      } else {
+        logger.warn(`[HEALTHCHECK] ⚠️ Failed to ping for job: ${jobName} - HTTP ${response.status}`);
+      }
+    } catch (error) {
+      logger.error(`[HEALTHCHECK] ❌ Error pinging for job: ${jobName}`, error);
+    }
+  }
+
+  /**
+   * Ping healthchecks.io with system health status
+   */
+  private async pingSystemHealth(): Promise<void> {
+    if (!this.healthcheckUrl) {
+      return;
+    }
+
+    try {
+      const systemHealth = {
+        uptime: process.uptime(),
+        memory: process.memoryUsage(),
+        nodeVersion: process.version,
+        pid: process.pid,
+        timestamp: new Date().toISOString()
+      };
+
+      const response = await fetch(this.healthcheckUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'User-Agent': 'Alfalyzer-SystemHealth/1.0'
+        },
+        body: JSON.stringify(systemHealth),
+        timeout: 5000
+      });
+
+      if (response.ok) {
+        logger.debug('[HEALTHCHECK] ✅ System health ping successful');
+      }
+    } catch (error) {
+      logger.error('[HEALTHCHECK] ❌ System health ping failed', error);
+    }
+  }
+
   private getOrCreateMetric(jobName: string): CronMetrics {
     if (!this.metrics.has(jobName)) {
       this.metrics.set(jobName, {

@@ -516,13 +516,8 @@ export const corsConfig = {
           return callback(null, true);
         }
         
-        // TEMPORARY: Log but allow in production for debugging
-        if (process.env.NODE_ENV === 'production' && process.env.STRICT_CORS !== 'true') {
-          console.warn(`⚠️ CORS: Temporarily allowing origin for debugging: ${origin}`);
-          console.warn(`⚠️ Set STRICT_CORS=true to enforce strict CORS`);
-          return callback(null, true);
-        }
-        
+        // SECURITY FIX: Remove production bypass - always enforce CORS in production
+        console.error(`🚨 CORS: Blocked unauthorized origin: ${origin}`);
         return callback(new Error(`Origin ${origin} not allowed by CORS policy`), false);
       }
     } catch (error) {

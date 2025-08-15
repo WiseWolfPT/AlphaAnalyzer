@@ -1,0 +1,30 @@
+config:
+  target: "http://localhost:3001"
+  phases:
+    - duration: 60
+      arrivalRate: 10
+      name: "Warm up"
+    - duration: 180  
+      arrivalRate: 50
+      name: "500 concurrent users sustained"
+    - duration: 30
+      arrivalRate: 5
+      name: "Cool down"
+
+scenarios:
+  - name: "Basic API flow"
+    weight: 100
+    flow:
+      - get:
+          url: "/api/health"
+      - think: 1
+      
+      - get:
+          url: "/api/cache/stats"
+      - think: 2
+      
+      - post:
+          url: "/api/market-data/quotes/batch"
+          json:
+            symbols: ["AAPL", "GOOGL"]
+      - think: 3

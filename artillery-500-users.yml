@@ -1,0 +1,64 @@
+config:
+  target: "http://localhost:3001"
+  phases:
+    - duration: 60
+      arrivalRate: 10
+      name: "Warm up phase"
+    - duration: 300
+      arrivalRate: 50
+      name: "Sustained load - 500 concurrent users"
+    - duration: 120
+      arrivalRate: 100
+      name: "Peak load test"
+    - duration: 60
+      arrivalRate: 5
+      name: "Cool down"
+  processor: "./load-test-processor.js"
+
+scenarios:
+  - name: "User browsing flow"
+    weight: 100
+    flow:
+      - get:
+          url: "/api/health"
+      - think: 2
+      
+      - post:
+          url: "/api/market-data/quotes/batch"
+          json:
+            symbols: ["AAPL", "GOOGL", "MSFT", "TSLA", "AMZN"]
+          afterResponse: "validateQuoteResponse"
+      - think: 5
+      
+      - get:
+          url: "/api/cache/stats"
+          afterResponse: "validateCacheStats"
+      - think: 3
+      
+      - get:
+          url: "/api/health/monitoring"
+          afterResponse: "validateMonitoring"
+      - think: 2
+      
+      - get:
+          url: "/api/cron/status"
+      - think: 4
+      
+      - loop:
+        - get:
+            url: "/api/market-data/quote/{{ $randomSymbol() }}"
+        count: 3
+      - think: 5
+
+functions:
+  randomSymbol:
+    - "AAPL"
+    - "GOOGL"
+    - "MSFT" 
+    - "TSLA"
+    - "AMZN"
+    - "NVDA"
+    - "META"
+    - "JPM"
+    - "V"
+    - "JNJ"

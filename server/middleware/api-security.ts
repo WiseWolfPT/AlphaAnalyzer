@@ -37,9 +37,10 @@ export const apiSecurityMiddleware = async (
       });
     }
     
-    // 3. Remover headers sensíveis que possam vazar informações
+    // 3. Remover headers sensíveis EXCEPT authorization (needed for downstream auth)
+    // SECURITY FIX: Don't delete authorization header as it breaks authentication chain
     delete req.headers['x-api-key'];
-    delete req.headers['authorization'];
+    // delete req.headers['authorization']; // REMOVED - breaking authentication
     delete req.headers['x-finnhub-token'];
     delete req.headers['x-alpha-vantage-key'];
     delete req.headers['x-fmp-key'];

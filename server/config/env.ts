@@ -38,10 +38,19 @@ const envSchema = z.object({
   SUPABASE_SERVICE_ROLE_KEY: z.string().optional(),
   SUPABASE_ANON_KEY: z.string().optional(),
   
-  // Autenticação
-  JWT_SECRET: z.string().optional(),
-  JWT_ACCESS_SECRET: z.string().optional(),
-  JWT_REFRESH_SECRET: z.string().optional(),
+  // Autenticação - REQUIRED in production
+  JWT_SECRET: z.string().optional().refine(
+    (val) => process.env.NODE_ENV !== 'production' || (val && val.length >= 32),
+    'JWT_SECRET is required in production and must be at least 32 characters'
+  ),
+  JWT_ACCESS_SECRET: z.string().optional().refine(
+    (val) => process.env.NODE_ENV !== 'production' || (val && val.length >= 32),
+    'JWT_ACCESS_SECRET is required in production and must be at least 32 characters'
+  ),
+  JWT_REFRESH_SECRET: z.string().optional().refine(
+    (val) => process.env.NODE_ENV !== 'production' || (val && val.length >= 32),
+    'JWT_REFRESH_SECRET is required in production and must be at least 32 characters'
+  ),
   
   // Redis Configuration
   REDIS_URL: z.string().optional(),
