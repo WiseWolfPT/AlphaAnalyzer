@@ -23,6 +23,8 @@ import {
   FiscalAIProvider
 } from '../services/providers';
 import { CacheService } from '../services/cache/cache-service';
+import { redditStrategy } from '../services/reddit-strategy';
+import { threeTierCache } from '../cache/three-tier-cache';
 
 const router = Router();
 
@@ -37,25 +39,19 @@ const marketDataService = new ServerMarketDataService();
 // Initialize the new provider manager
 const providerManager = new ProviderManager();
 
-// Initialize providers in priority order
-if (process.env.FISCAL_AI_API_KEY && process.env.FISCAL_AI_API_KEY !== 'demo') {
-  providerManager.addProvider(new FiscalAIProvider(process.env.FISCAL_AI_API_KEY));
-}
-if (process.env.POLYGON_API_KEY && process.env.POLYGON_API_KEY !== 'demo') {
-  providerManager.addProvider(new PolygonProvider(process.env.POLYGON_API_KEY));
+// SIMPLIFIED PROVIDERS - Phase 2 Backend Integration
+// Only FMP (primary) + Alpha Vantage (backup) for cost/reliability optimization
+if (process.env.FMP_API_KEY && process.env.FMP_API_KEY !== 'demo') {
+  providerManager.addProvider(new FMPProvider(process.env.FMP_API_KEY));
+  console.log('✅ FMP Provider configured (PRIMARY: $14.99/month, 300 calls/min)');
 }
 if (process.env.ALPHA_VANTAGE_API_KEY && process.env.ALPHA_VANTAGE_API_KEY !== 'demo') {
   providerManager.addProvider(new AlphaVantageProvider(process.env.ALPHA_VANTAGE_API_KEY));
+  console.log('✅ Alpha Vantage Provider configured (BACKUP: Free tier, 5 calls/min)');
 }
-if (process.env.FINNHUB_API_KEY && process.env.FINNHUB_API_KEY !== 'demo') {
-  providerManager.addProvider(new FinnhubProvider(process.env.FINNHUB_API_KEY));
-}
-if (process.env.TWELVE_DATA_API_KEY && process.env.TWELVE_DATA_API_KEY !== 'demo') {
-  providerManager.addProvider(new TwelveDataProvider(process.env.TWELVE_DATA_API_KEY));
-}
-if (process.env.FMP_API_KEY && process.env.FMP_API_KEY !== 'demo') {
-  providerManager.addProvider(new FMPProvider(process.env.FMP_API_KEY));
-}
+
+// REMOVED: Polygon, Finnhub, TwelveData, FiscalAI for cost optimization
+console.log('📊 Provider optimization: Using only FMP + Alpha Vantage for cost/reliability');
 
 // Initialize cache service
 const cacheService = new CacheService();
@@ -109,15 +105,20 @@ router.get('/quote/:symbol',
       const { symbol } = validation.data;
       console.log(`🔍 API request for quote: ${symbol}`);
 
-      // Use cache service with provider fallback
-      const cachedData = await cacheService.getStockQuote(
-        symbol,
-        async () => {
-          return await providerManager.getQuoteWithFallback(symbol);
-        }
-      );
+      // ✅ REDDIT STRATEGY - Users NEVER trigger API calls!
+      const quote = await redditStrategy.getQuoteForUser(symbol);
+      
+      // If no data or stale, queue for background update
+      if (!quote || quote.isStale) {
+        return res.json({
+          symbol,
+          message: "Dados sendo atualizados... Recarregue em 1 minuto",
+          isStale: true,
+          timestamp: new Date().toISOString(),
+        });
+      }
 
-      const quoteData = cachedData.data;
+      const quoteData = quote;
       
       if (!quoteData) {
         return res.status(404).json({
@@ -132,11 +133,11 @@ router.get('/quote/:symbol',
       const quoteResponse = {
         ...quoteData,
         _timestamp: Date.now(),
-        _cached: cachedData.cached,
-        _expires_at: cachedData.expires_at,
+        _cached: true,
+        _source: 'reddit_strategy',
       };
 
-      console.log(`✅ Successfully fetched ${symbol} via ${quoteData.provider} (cached: ${cachedData.cached})`);
+      console.log(`✅ Reddit Strategy: ${symbol} served from cache (provider: ${quoteData.provider || 'cached'})`);
 
       res.json(quoteResponse);
     } catch (error) {
@@ -204,34 +205,28 @@ router.get('/chart/:symbol/:period',
 
       console.log(`📊 Chart data request for ${symbol} (${period})`);
 
-      // Use cache service with provider fallback
-      const cachedData = await cacheService.getChartData(
-        symbol,
-        period,
-        async () => {
-          return await providerManager.getChartDataWithFallback(symbol, period);
-        }
-      );
-      
-      const chartData = cachedData.data;
+      // ✅ REDDIT STRATEGY - Try ThreeTierCache for chart data
+      const chartData = await threeTierCache.get(`historical:${symbol}:${period}`, 'historical');
       
       if (!chartData || !chartData.data || chartData.data.length === 0) {
-        return res.status(404).json({
-          error: 'CHART_DATA_NOT_FOUND',
-          message: `Unable to fetch chart data for ${symbol}`,
+        // Queue for update if not available
+        console.log(`📊 Chart data not cached for ${symbol} (${period}) - will be updated by cron`);
+        return res.status(202).json({
+          message: `Chart data for ${symbol} is being fetched. Please try again in a few minutes.`,
           symbol,
           period,
           timestamp: new Date().toISOString(),
+          status: 'pending'
         });
       }
 
-      console.log(`✅ Successfully fetched chart data for ${symbol} via ${chartData.provider} (cached: ${cachedData.cached})`);
+      console.log(`✅ Reddit Strategy: Chart data for ${symbol} served from cache (${period})`);
 
       res.json({
         ...chartData,
         _timestamp: Date.now(),
-        _cached: cachedData.cached,
-        _expires_at: cachedData.expires_at,
+        _cached: true,
+        _source: 'reddit_strategy',
       });
     } catch (error) {
       console.error('Chart data error:', error);
@@ -255,23 +250,42 @@ router.get('/market-status',
       const market = (req.query.market as string) || 'US';
       console.log(`🏛️ Market status request for ${market}`);
 
-      // Use cache service with provider fallback
-      const cachedData = await cacheService.getMarketStatus(
-        market,
-        async () => {
-          return await providerManager.getMarketStatusWithFallback(market);
-        }
-      );
+      // ✅ REDDIT STRATEGY - Use ThreeTierCache for market status
+      const status = await threeTierCache.get(`market_status:${market}`, 'market_status');
       
-      const status = cachedData.data;
+      if (!status) {
+        // Fallback to calculated status
+        const now = new Date();
+        const hour = now.getUTCHours();
+        const day = now.getUTCDay();
+        
+        const isWeekday = day >= 1 && day <= 5;
+        const isMarketHours = hour >= 14 && hour < 21;
+        
+        const calculatedStatus = {
+          market,
+          isOpen: isWeekday && isMarketHours,
+          timezone: 'America/New_York',
+          provider: 'calculated',
+        };
+
+        console.log(`📊 Market status calculated: ${calculatedStatus.isOpen ? 'OPEN' : 'CLOSED'}`);
+        
+        return res.json({
+          ...calculatedStatus,
+          _timestamp: Date.now(),
+          _cached: false,
+          _source: 'calculated'
+        });
+      }
       
-      console.log(`✅ Market status: ${status.isOpen ? 'OPEN' : 'CLOSED'} via ${status.provider} (cached: ${cachedData.cached})`);
+      console.log(`✅ Market status: ${status.isOpen ? 'OPEN' : 'CLOSED'} via cache`);
 
       res.json({
         ...status,
         _timestamp: Date.now(),
-        _cached: cachedData.cached,
-        _expires_at: cachedData.expires_at,
+        _cached: true,
+        _source: 'reddit_strategy',
       });
     } catch (error) {
       console.error('Market status error:', error);
@@ -524,7 +538,9 @@ router.post('/cache/invalidate',
       
       for (const symbol of symbols) {
         try {
-          await cacheService.invalidateQuote(symbol);
+          await threeTierCache.invalidate(`quote:${symbol}`);
+          await threeTierCache.invalidate(`fundamentals:${symbol}`);
+          await threeTierCache.invalidate(`historical:${symbol}`);
           results[symbol] = true;
         } catch (error) {
           results[symbol] = false;
@@ -557,7 +573,8 @@ router.get('/cache/stats',
   authService,
   async (req: Request, res: Response) => {
     try {
-      const stats = await cacheService.getCacheStats();
+      const stats = await threeTierCache.getStats();
+      const health = await threeTierCache.healthCheck();
       
       res.json({
         stats,
@@ -661,23 +678,26 @@ router.get('/quotes/batch',
       const results: any[] = [];
       const errors: Record<string, string> = {};
 
-      // Use cache service with provider manager for batch quotes
-      const cachedBatch = await cacheService.getBatchQuotes(
-        symbols,
-        async () => {
-          return await providerManager.getBatchQuotesWithFallback(symbols);
-        }
-      );
-
-      const quotes = cachedBatch.data;
+      // ✅ REDDIT STRATEGY - Batch quotes from cache only!
+      const quotes = await redditStrategy.getBatchQuotesForUser(symbols);
       
       // Transform to API response format
       for (const quote of quotes) {
-        if (quote) {
+        if (quote && !quote.isStale) {
           results.push({
             ...quote,
             _timestamp: Date.now(),
-            _cached: cachedBatch.cached,
+            _cached: true,
+            _source: 'reddit_strategy',
+          });
+        } else if (quote && quote.isStale) {
+          // Return stale data with indication
+          results.push({
+            ...quote,
+            _timestamp: Date.now(),
+            _cached: true,
+            _source: 'reddit_strategy',
+            _stale: true,
           });
         }
       }

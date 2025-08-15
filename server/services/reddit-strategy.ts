@@ -134,7 +134,7 @@ export class RedditStrategy {
   /**
    * Queue symbol for update (called when data is stale or missing)
    */
-  private queueForUpdate(symbol: string, dataType: 'quote' | 'fundamentals' | 'historical' | 'news', priority: number) {
+  queueForUpdate(symbol: string, dataType: 'quote' | 'fundamentals' | 'historical' | 'news' = 'quote', priority: number = 1) {
     const key = `${dataType}:${symbol}`;
     
     if (this.updateQueue.has(key)) {
