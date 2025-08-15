@@ -1,0 +1,27 @@
+{
+  "name": "alfalyzer-fullstack",
+  "type": "nodejs",
+  "buildpack": "nodejs",
+  "build": {
+    "command": "npm run build:client && npm install --omit=dev"
+  },
+  "start": {
+    "command": "npm run start:production"
+  },
+  "env": {
+    "NODE_ENV": "production",
+    "PORT": "3001"
+  },
+  "healthCheck": {
+    "enabled": true,
+    "path": "/api/health",
+    "interval": 30000,
+    "timeout": 10000
+  },
+  "ports": {
+    "3001": {
+      "protocol": "http",
+      "public": true
+    }
+  }
+}

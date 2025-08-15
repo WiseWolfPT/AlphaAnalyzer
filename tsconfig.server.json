@@ -5,7 +5,7 @@
     "module": "ES2020",
     "target": "ES2021",
     "outDir": "./dist",
-    "rootDir": "./server",
+    "rootDir": ".",
     "resolveJsonModule": true,
     "allowImportingTsExtensions": false,
     "moduleResolution": "node",
@@ -13,5 +13,13 @@
     "allowSyntheticDefaultImports": true
   },
   "include": ["server/**/*", "shared/**/*"],
-  "exclude": ["node_modules", "client"]
+  "exclude": [
+    "node_modules", 
+    "client", 
+    "**/*.test.ts", 
+    "**/__tests__/**", 
+    "server/test-*.ts",
+    "server/simple-server.ts",
+    "server/setup-cost-protection.ts"
+  ]
 }

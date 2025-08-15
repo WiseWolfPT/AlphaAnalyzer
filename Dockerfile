@@ -42,5 +42,8 @@ COPY . .
 # Expose port
 EXPOSE 3001
 
-# Start the application
-CMD ["npm", "run", "backend:prod"]
+# Build client and server
+RUN npm run build:client
+
+# Start the full-stack application
+CMD ["npm", "run", "start:production"]
