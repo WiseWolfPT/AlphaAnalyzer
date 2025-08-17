@@ -55,19 +55,19 @@ export class ServerMarketDataService {
   }
 
   private initializeQuotaTracking(): void {
-    this.quotaTracker.set('twelvedata', {
-      provider: 'twelvedata',
-      used: 0,
-      limit: 800,
-      remaining: 800,
-      resetAt: this.getNextMidnight()
-    });
-
     this.quotaTracker.set('fmp', {
       provider: 'fmp',
       used: 0,
-      limit: 250,
+      limit: 250, // Free tier: 250/day, paid tier: 300/min
       remaining: 250,
+      resetAt: this.getNextMidnight()
+    });
+
+    this.quotaTracker.set('alphavantage', {
+      provider: 'alphavantage',
+      used: 0,
+      limit: 25, // Free tier: 25/day
+      remaining: 25,
       resetAt: this.getNextMidnight()
     });
 
@@ -79,11 +79,11 @@ export class ServerMarketDataService {
       resetAt: this.getNextMidnight()
     });
 
-    this.quotaTracker.set('alphavantage', {
-      provider: 'alphavantage',
+    this.quotaTracker.set('twelvedata', {
+      provider: 'twelvedata',
       used: 0,
-      limit: 25,
-      remaining: 25,
+      limit: 800, // Free tier: 800/day
+      remaining: 800,
       resetAt: this.getNextMidnight()
     });
   }
@@ -109,10 +109,10 @@ export class ServerMarketDataService {
     console.log(`🔑 API Key Status: FH:${isRealApiKey(API_KEYS.FINNHUB)}, AV:${isRealApiKey(API_KEYS.ALPHA_VANTAGE)}, FMP:${isRealApiKey(API_KEYS.FMP)}, TD:${isRealApiKey(API_KEYS.TWELVE_DATA)}`);
 
     const providers = [
-      { name: 'twelvedata', fn: () => this.fetchTwelveDataQuote(symbol), hasRealKey: isRealApiKey(API_KEYS.TWELVE_DATA) },
       { name: 'fmp', fn: () => this.fetchFMPQuote(symbol), hasRealKey: isRealApiKey(API_KEYS.FMP) },
+      { name: 'alphavantage', fn: () => this.fetchAlphaVantageQuote(symbol), hasRealKey: isRealApiKey(API_KEYS.ALPHA_VANTAGE) },
       { name: 'finnhub', fn: () => this.fetchFinnhubQuote(symbol), hasRealKey: isRealApiKey(API_KEYS.FINNHUB) },
-      { name: 'alphavantage', fn: () => this.fetchAlphaVantageQuote(symbol), hasRealKey: isRealApiKey(API_KEYS.ALPHA_VANTAGE) }
+      { name: 'twelvedata', fn: () => this.fetchTwelveDataQuote(symbol), hasRealKey: isRealApiKey(API_KEYS.TWELVE_DATA) }
     ];
 
     // Sort providers: real API keys first, then demo keys

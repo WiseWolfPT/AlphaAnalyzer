@@ -1,11 +1,17 @@
 #!/bin/bash
 
-# Alfalyzer Production Deployment Script for Hetzner+Coolify
-# Version 3.0 - Consolidated Architecture
+# Alfalyzer Deployment Script for Hetzner VPS
+# Last updated: 2025-08-17
 
-echo "🚀 ALFALYZER PRODUCTION DEPLOYMENT - HETZNER+COOLIFY"
-echo "====================================================="
-echo ""
+set -e  # Exit on error
+
+echo "🚀 Alfalyzer Deployment Script"
+echo "================================"
+
+# Server configuration
+SERVER_IP="128.140.45.28"
+SERVER_USER="root"
+PROJECT_PATH="/home/teste 1"
 
 # Colors for output
 RED='\033[0;31m'
@@ -13,136 +19,90 @@ GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
-# Configuration
-HETZNER_IP="YOUR_HETZNER_IP_HERE"  # Replace with actual IP
-DOMAIN="alfalyzer.com"
-COOLIFY_URL="https://coolify.alfalyzer.com"  # If you have Coolify on subdomain
-
-echo -e "${YELLOW}📋 Pre-deployment Checklist:${NC}"
-echo "--------------------------------"
-echo "✅ All 5 security vulnerabilities fixed"
-echo "✅ Bundle size optimized to 362KB"
-echo "✅ Reddit Strategy connected to routes"
-echo "✅ PM2 configuration ready"
-echo "✅ Monitoring configured"
+echo -e "${YELLOW}⚠️  This script will deploy Alfalyzer to production server${NC}"
+echo "Server: $SERVER_IP"
+echo "Path: $PROJECT_PATH"
 echo ""
-
-# 1. Build the application
-echo -e "${YELLOW}📦 Building application...${NC}"
-npm run build:full
-if [ $? -ne 0 ]; then
-    echo -e "${RED}❌ Build failed!${NC}"
+read -p "Continue? (y/n) " -n 1 -r
+echo ""
+if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+    echo "Deployment cancelled"
     exit 1
 fi
-echo -e "${GREEN}✅ Build successful${NC}"
 
-# 2. Run tests
-echo -e "${YELLOW}🧪 Running tests...${NC}"
-npm test -- --run
-if [ $? -ne 0 ]; then
-    echo -e "${RED}❌ Tests failed!${NC}"
-    exit 1
-fi
-echo -e "${GREEN}✅ Tests passed${NC}"
+# Step 1: Build locally
+echo -e "\n${GREEN}📦 Building frontend locally...${NC}"
+npm run build
 
-# 3. Create production .env file
-echo -e "${YELLOW}🔐 Creating production environment file...${NC}"
-cat > .env.production << 'EOF'
-# Production Environment Variables
-NODE_ENV=production
-PORT=3001
-
-# Database
-SUPABASE_URL=https://avjnfessefxtfurayybp.supabase.co
-SUPABASE_SERVICE_ROLE_KEY=YOUR_SERVICE_KEY_HERE
-SUPABASE_ANON_KEY=YOUR_ANON_KEY_HERE
-
-# API Keys (server-side only, no VITE_ prefix!)
-FMP_API_KEY=YOUR_FMP_KEY_HERE
-ALPHA_VANTAGE_API_KEY=YOUR_ALPHA_KEY_HERE
-
-# JWT Secrets (minimum 32 characters)
-JWT_SECRET=YOUR_32_CHAR_SECRET_HERE_REPLACE_ME_NOW
-JWT_ACCESS_SECRET=YOUR_32_CHAR_ACCESS_SECRET_REPLACE_ME
-JWT_REFRESH_SECRET=YOUR_32_CHAR_REFRESH_SECRET_REPLACE
-
-# Redis
-REDIS_HOST=localhost
-REDIS_PORT=6379
-
-# Monitoring
-HEALTHCHECK_UUID=YOUR_HEALTHCHECKS_IO_UUID_HERE
-
-# Server Configuration
-SERVE_STATIC=true
-FRONTEND_URL=https://alfalyzer.com
-EOF
-
-echo -e "${YELLOW}⚠️  IMPORTANT: Edit .env.production with your actual keys!${NC}"
-echo ""
-
-# 4. Create deployment package
-echo -e "${YELLOW}📦 Creating deployment package...${NC}"
+# Step 2: Create deployment archive
+echo -e "\n${GREEN}📦 Creating deployment archive...${NC}"
 tar -czf alfalyzer-deploy.tar.gz \
     dist/ \
     server/ \
-    client/ \
+    shared/ \
     package.json \
     package-lock.json \
     ecosystem.config.cjs \
     .env.production \
-    artillery-500-users.yml
+    --exclude="node_modules" \
+    --exclude="*.log" \
+    --exclude=".git"
 
-echo -e "${GREEN}✅ Deployment package created${NC}"
+# Step 3: Upload to server
+echo -e "\n${GREEN}📤 Uploading to server...${NC}"
+scp alfalyzer-deploy.tar.gz $SERVER_USER@$SERVER_IP:/tmp/
 
-# 5. Deployment instructions
+# Step 4: Deploy on server
+echo -e "\n${GREEN}🚀 Deploying on server...${NC}"
+ssh $SERVER_USER@$SERVER_IP << 'ENDSSH'
+set -e
+
+cd "/home/teste 1"
+
+# Backup current deployment
+echo "📦 Creating backup..."
+timestamp=$(date +%Y%m%d-%H%M%S)
+tar -czf "backup-$timestamp.tar.gz" dist/ server/ shared/ .env.production 2>/dev/null || true
+
+# Extract new deployment
+echo "📦 Extracting new deployment..."
+tar -xzf /tmp/alfalyzer-deploy.tar.gz
+
+# Install dependencies
+echo "📦 Installing dependencies..."
+npm ci --production
+
+# Stop current deployment
+echo "🛑 Stopping current deployment..."
+pm2 stop all || true
+
+# Start new deployment
+echo "✅ Starting new deployment..."
+pm2 start ecosystem.config.cjs --env production
+
+# Save PM2 configuration
+pm2 save
+
+# Clean up
+rm -f /tmp/alfalyzer-deploy.tar.gz
+
+# Check status
+echo "📊 Deployment status:"
+pm2 status
+
+echo "✅ Deployment complete!"
+ENDSSH
+
+# Clean up local archive
+rm -f alfalyzer-deploy.tar.gz
+
+echo -e "\n${GREEN}✅ Deployment successful!${NC}"
 echo ""
-echo -e "${GREEN}🎯 DEPLOYMENT INSTRUCTIONS:${NC}"
-echo "================================"
+echo "🔗 Access your application at:"
+echo "   http://$SERVER_IP"
+echo "   http://128-140-45-28.nip.io"
 echo ""
-echo "1. CONFIGURE ENVIRONMENT:"
-echo "   - Edit .env.production with your actual API keys"
-echo "   - Ensure JWT secrets are at least 32 characters"
-echo "   - Add your Healthchecks.io UUID"
-echo ""
-echo "2. DEPLOY TO HETZNER:"
-echo "   Option A - Via Coolify UI:"
-echo "   - Login to Coolify: $COOLIFY_URL"
-echo "   - Create new application"
-echo "   - Select Node.js buildpack"
-echo "   - Connect to GitHub repo"
-echo "   - Set environment variables"
-echo "   - Deploy"
-echo ""
-echo "   Option B - Manual SSH:"
-echo "   scp alfalyzer-deploy.tar.gz root@$HETZNER_IP:/opt/alfalyzer/"
-echo "   ssh root@$HETZNER_IP"
-echo "   cd /opt/alfalyzer"
-echo "   tar -xzf alfalyzer-deploy.tar.gz"
-echo "   npm install --production"
-echo "   pm2 start ecosystem.config.cjs"
-echo "   pm2 save"
-echo ""
-echo "3. CONFIGURE DNS:"
-echo "   Point $DOMAIN to IP: $HETZNER_IP"
-echo "   A Record: @ -> $HETZNER_IP"
-echo "   A Record: www -> $HETZNER_IP"
-echo ""
-echo "4. VERIFY DEPLOYMENT:"
-echo "   curl https://$DOMAIN/api/health"
-echo "   curl https://$DOMAIN/api/health/monitoring"
-echo ""
-echo "5. RUN LOAD TEST:"
-echo "   npx artillery run artillery-500-users.yml --target https://$DOMAIN"
-echo ""
-echo -e "${YELLOW}📝 POST-DEPLOYMENT CHECKLIST:${NC}"
-echo "[ ] Environment variables configured"
-echo "[ ] Application accessible at https://$DOMAIN"
-echo "[ ] API health check passing"
-echo "[ ] PM2 process running"
-echo "[ ] Healthchecks.io receiving pings"
-echo "[ ] Load test completed successfully"
-echo "[ ] Cache hit rate > 90%"
-echo "[ ] No errors in PM2 logs"
-echo ""
-echo -e "${GREEN}🚀 Ready for production deployment!${NC}"
+echo "📝 Next steps:"
+echo "1. Add real API keys to .env.production on server"
+echo "2. Restart backend: ssh $SERVER_USER@$SERVER_IP 'pm2 restart all'"
+echo "3. Check logs: ssh $SERVER_USER@$SERVER_IP 'pm2 logs --lines 50'"
