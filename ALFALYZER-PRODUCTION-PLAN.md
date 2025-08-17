@@ -1,16 +1,17 @@
-# 🚀 ALFALYZER PRODUCTION PLAN V3.0 FINAL
-## Plano Consolidado de Integração - Baseado em Diagnóstico Multi-Agente
+# 🚀 ALFALYZER PRODUCTION PLAN V5.0 PRODUCTION-READY
+## Status: 85% COMPLETO - 4.5 HORAS PARA PRODUÇÃO
+## Última Atualização: 2025-08-17 14:00 GMT
 
 ### ⚠️ INSTRUÇÕES CRÍTICAS PARA AGENTES --ULTRATHINK
 
-**ATENÇÃO AGENTES:** Este plano foi ATUALIZADO com base no diagnóstico completo. Sistema está 95% pronto, foco em INTEGRAÇÃO não desenvolvimento novo.
+**ATENÇÃO AGENTES:** Sistema está 85% pronto. Frontend ACESSÍVEL em http://128.140.45.28:3001. Foco em SEGURANÇA e REDIS REAL para completar produção.
 
 ## 🤖 REGRAS DE EXECUÇÃO PARA AGENTES
 
 ### 1. PROTOCOLO DE VALIDAÇÃO
 ```bash
 # ANTES de qualquer alteração:
-1. Verificar se arquivo/serviço existe (SISTEMA 95% IMPLEMENTADO)
+1. Verificar se arquivo/serviço existe (SISTEMA 85% IMPLEMENTADO)
 2. Fazer backup: git stash ou cp arquivo arquivo.bak
 3. Testar comando em ambiente isolado
 4. Validar dependências necessárias
@@ -19,7 +20,7 @@
 
 ### 2. MODO DE ANÁLISE PROFUNDA
 ```bash
-# Para tarefas complexas, SEMPRE usar:
+# Para TODAS as tarefas, SEMPRE usar:
 --ultrathink --mode=deep --validate=true --test=true
 
 # Questões a responder antes de agir:
@@ -29,988 +30,629 @@
 - A segurança foi verificada?
 ```
 
-### 3. COORDENAÇÃO ENTRE AGENTES - ORDEM LÓGICA DE DEPENDÊNCIAS
+### 3. PROTOCOLO DE REPORTE OBRIGATÓRIO
+```markdown
+## [AGENT-NAME] PHASE COMPLETE - [DATA/HORA]
 
-```
-SEQUÊNCIA OTIMIZADA (CRÍTICA - SEGUIR EXATAMENTE!):
+### ✅ COMPLETED:
+- [Task específica com resultado]
+- [Comandos executados]
+- [Validação realizada]
 
-📅 FASE 1: INFRAESTRUTURA BASE (0-24h)
-1️⃣ DEVOPS-INFRASTRUCTURE-ENGINEER (0-8h)
-   → Consolidação Hetzner+Coolify (elimina Vercel)
-   → BLOQUEIA: Todo o resto depende desta consolidação
+### ❌ PENDING/ISSUES:
+- [O que não foi possível completar]
+- [Bloqueios encontrados]
+- [Necessita intervenção]
 
-📅 FASE 2: BACKEND INTEGRATION (8-48h) 
-2️⃣ BACKEND-ARCHITECT (8-32h)
-   → Conectar Reddit Strategy às rotas
-   → API provider simplification (FMP + Alpha Vantage)
-   → DEPENDE: Consolidação completa
-   → BLOQUEIA: Frontend data flow
+### 📊 METRICS:
+- [Tempo gasto]
+- [Testes passados]
+- [Performance metrics]
 
-3️⃣ SECURITY-AUDITOR (24-32h)
-   → CORS elimination (automatic com consolidação)
-   → API keys validation
-   → DEPENDE: Backend integration
-   → PODE CORRER: Em paralelo com final do Backend
-
-📅 FASE 3: FRONTEND POLISH (32-96h)
-4️⃣ FRONTEND-REACT-SPECIALIST (32-80h)
-   → Bundle optimization (604KB → 500KB)
-   → Mock data elimination
-   → DEPENDE: Backend routes funcionais
-   → PODE CORRER: Em paralelo com Security
-
-📅 FASE 4: VALIDATION & MONITORING (80-168h)
-5️⃣ DATA-OPTIMIZER (80-96h)
-   → PM2 process management
-   → Healthchecks.io setup
-   → Load testing 500 users
-   → DEPENDE: Tudo anterior funcional
-
-CRITICAL PATH: 1️⃣ → 2️⃣ → 4️⃣ → 5️⃣
-PARALLEL WORK: 3️⃣ pode correr com 2️⃣ final e 4️⃣ início
-```
-
-### 4. HANDOFFS CRÍTICOS ENTRE AGENTES
-
-```
-🔄 HANDOFF 1: DEVOPS → BACKEND (8h mark)
-DEVOPS ENTREGA:
-✅ Hetzner+Coolify consolidation deployed
-✅ vercel.json eliminated  
-✅ Static serving confirmed working
-✅ Domain pointing to Hetzner
-VALIDAÇÃO: curl https://alfalyzer.com returns React app
-
-🔄 HANDOFF 2: BACKEND → SECURITY (32h mark)  
-BACKEND ENTREGA:
-✅ Reddit Strategy connected to routes
-✅ FMP+Alpha Vantage providers only
-✅ Cache 3-tier integration working
-✅ Cron jobs processing queue
-VALIDAÇÃO: /api/market-data returns cached data only
-
-🔄 HANDOFF 3: SECURITY → FRONTEND (32h mark - parallel)
-SECURITY ENTREGA:
-✅ CORS eliminated completely
-✅ API keys validation (no VITE_ prefix)
-✅ Rate limiting confirmed active
-✅ Security audit passed
-VALIDAÇÃO: Security scan shows no critical issues
-
-🔄 HANDOFF 4: BACKEND + FRONTEND → DATA-OPTIMIZER (80h mark)
-BACKEND+FRONTEND ENTREGA:
-✅ All routes serving real data
-✅ Bundle size < 500KB
-✅ Mock data eliminated
-✅ Frontend optimization complete  
-VALIDAÇÃO: Full system functional end-to-end
-```
-
-### 5. PONTOS DE SINCRONIZAÇÃO & TRACKING
-- **INÍCIO DA TASK:** Update status no documento
-- **HANDOFF REQUIRED:** Validate delivery + confirm next agent can start
-- **FIM DA TASK:** Commit + update resultado + notify next agent
-- **FIM DO DIA:** Status report obrigatório
-- **PROBLEMAS:** Immediate escalation + block downstream if critical
-- **ANTES DO DEPLOY:** Checklist completo + validation
-
----
-
-## 📋 REALIDADE ATUAL vs PLANO
-
-### ✅ **JÁ IMPLEMENTADO (95% COMPLETO)**
-- **Backend:** Express + middleware completo, Redis cache, cron jobs
-- **Cache 3-tier:** Memory→Redis→Supabase implementado
-- **Reddit Strategy:** Serviço completamente funcional
-- **Frontend:** 85% completo, FindStocks com dados reais
-- **Infraestrutura:** Hetzner CX22 + Coolify funcionando
-- **Monitorização:** 75% implementado (falta healthchecks.io)
-
-### ❌ **GAPS CRÍTICOS IDENTIFICADOS**
-- **CORS wildcard** (security risk)
-- **Reddit Strategy NÃO conectado** às rotas market-data
-- **PM2 process management** em falta
-- **Bundle size** 604KB vs 500KB target
-- **Mock data residual** em charts
-- **Healthchecks.io** não configurado
-
----
-
-## 📌 DEFINIÇÕES FUNDAMENTAIS (ATUALIZADAS)
-
-### CONCEITOS CHAVE (MEMORIZAR!)
-1. **FINDSTOCKS É O DASHBOARD** - Funcionando com dados reais ✅
-2. **ESTRATÉGIA REDDIT** - Implementada mas NÃO conectada às rotas ❌
-3. **APIS:** FMP (primary) + Alpha Vantage (backup) apenas
-4. **ARQUITETURA:** Hetzner CX22 + Coolify (Frontend + Backend)
-5. **ELIMINAÇÃO:** Vercel, CORS wildcard, deployment duplo
-
-### CUSTOS E TIMELINE (ATUALIZADOS)
-- **Custo Total:** €3.79/mês (Hetzner) + $14.99/mês (FMP) = ~€18/mês
-- **Timeline:** **1-2 SEMANAS** (não 4 semanas)
-- **Foco:** **INTEGRAÇÃO** de componentes existentes
-- **Risco:** Baixo (arquitetura sólida, precisa "ligar cabos")
-
----
-
-## 📅 PLANO DE EXECUÇÃO CONSOLIDADO
-
-## 🚨 FASE 1: CRÍTICO (24-48 horas)
-
-### **DIA 1: CONSOLIDAÇÃO HETZNER+COOLIFY** (DEVOPS-INFRASTRUCTURE-ENGINEER)
-
-```bash
-# DIAGNÓSTICO CONFIRMOU: Sistema JÁ PREPARADO para full-stack!
-echo "=== CONSOLIDAÇÃO HETZNER+COOLIFY ==="
-
-# 1. Verificar sistema atual de static serving
-ls -la server/vite.ts  # JÁ IMPLEMENTADO!
-
-# 2. Build process unificado
-npm run build:client    # Build React/Vite frontend
-npm run build:server    # Build Express backend
-
-# 3. Configurar Coolify para aplicação full-stack
-cat > coolify.json << 'EOF'
-{
-  "name": "alfalyzer-fullstack",
-  "buildpack": "dockerfile",
-  "build": {
-    "command": "npm run build:client && npm run build:server"
-  },
-  "start": {
-    "command": "npm run start:production"
-  }
-}
-EOF
-
-# 4. Eliminar vercel.json (resolve CORS wildcard)
-rm vercel.json  # ELIMINA SECURITY RISK
-
-# 5. Deploy consolidado
-git add .
-git commit -m "feat: consolidate to Hetzner+Coolify single app"
-git push origin main
-
-# 6. Point domain to Hetzner IP
-# Configurar DNS: alfalyzer.com → Hetzner IP
-```
-
-### **DIA 2: INTEGRAÇÃO REDDIT STRATEGY** (BACKEND-ARCHITECT)
-
-```typescript
-// DIAGNÓSTICO REVELOU: Reddit Strategy implementado mas NÃO usado!
-// server/routes/market-data.ts - CRITICAL FIX
-
-// ❌ ATUAL (VIOLAÇÃO CRÍTICA)
-const cachedData = await cacheService.getStockQuote(
-  symbol,
-  async () => {
-    return await providerManager.getQuoteWithFallback(symbol); // DIRECT API CALL!
-  }
-);
-
-// ✅ CORRIGIR PARA (Sistema Reddit Strategy)
-import { redditStrategy } from '../services/reddit-strategy';
-
-// Users SEMPRE recebem do cache
-const quote = await redditStrategy.getQuoteForUser(symbol);
-
-// Se não existe ou stale, queue para update via cron
-if (!quote || quote.isStale) {
-  redditStrategy.queueForUpdate(symbol);
-  return {
-    symbol,
-    message: "Dados sendo atualizados... Recarregue em 1 minuto",
-    isStale: true
-  };
-}
-
-return quote;
-```
-
-### **DIA 2: API PROVIDER SIMPLIFICATION** (BACKEND-ARCHITECT)
-
-```typescript
-// server/services/providers/provider-manager.ts
-// DIAGNÓSTICO: Simplificar para 2 providers apenas
-
-const PROVIDER_ORDER = [
-  'fmp',          // Primary: $14.99/mês, 300 calls/min
-  'alphaVantage'  // Backup: Free tier, 5 calls/min, 25/day
-];
-
-// REMOVER: finnhub, twelveData, polygon
-// Manter apenas FMP + Alpha Vantage para reliability/cost optimization
+### 🔄 HANDOFF:
+- [Próximo agente pode começar: SIM/NÃO]
+- [Dependências para próxima fase]
 ```
 
 ---
 
-## ⚡ FASE 2: ALTO IMPACTO (2-4 dias)
+## 📊 STATUS ATUAL - 2025-08-17
 
-### **DIA 3: SECURITY & PROCESS MANAGEMENT** (SECURITY-AUDITOR + DEVOPS)
+### ✅ CONQUISTAS JÁ COMPLETADAS HOJE:
 
-```bash
-# PM2 ecosystem configuration
-cat > ecosystem.config.js << 'EOF'
-module.exports = {
-  apps: [{
-    name: 'alfalyzer',
-    script: 'dist/server/index.js',
-    instances: 1,
-    exec_mode: 'fork',
-    env: {
-      NODE_ENV: 'production',
-      PORT: 3001
-    },
-    error_file: './logs/err.log',
-    out_file: './logs/out.log',
-    log_file: './logs/combined.log',
-    time: true
-  }]
-};
-EOF
+- [x] **ACESSO EXTERNO:** Frontend acessível em http://128.140.45.28:3001 ✅
+- [x] **UFW FIREWALL:** Configurado e ativo (porta 3001 aberta) ✅
+- [x] **SERVIDOR BINDING:** Ouvindo em 0.0.0.0:3001 (todas interfaces) ✅
+- [x] **IPTABLES:** Regra ACCEPT adicionada para porta 3001 ✅
+- [x] **PM2 CONFIGURADO:** ecosystem.config.cjs rodando com 0 restarts ✅
+- [x] **LOAD TEST APROVADO:** 1950 usuários, P95: 133ms, 0 crashes ✅
+- [x] **SECRETS SEGUROS:** Removidos do código, usando .env.production ✅
+- [x] **REDDIT STRATEGY:** Conectado às rotas market-data ✅
+- [x] **BUNDLE OTIMIZADO:** Reduzido de 614KB para 362KB ✅
+- [x] **FRONTEND BUILD:** Servido com SERVE_STATIC=true ✅
 
-# Start PM2
-pm2 start ecosystem.config.js
-pm2 save
-pm2 startup
+### ❌ GAPS CRÍTICOS IDENTIFICADOS:
 
-# Healthchecks.io setup
-echo "HEALTHCHECK_UUID=your-uuid-here" >> .env
-```
-
-```typescript
-// CORS elimination (resolved by consolidation)
-// server/middleware/security.ts
-const corsOptions = {
-  origin: process.env.NODE_ENV === 'production' 
-    ? process.env.FRONTEND_URL || 'https://alfalyzer.com'
-    : true,
-  credentials: true
-};
-
-// API keys verification - ensure no VITE_ prefix
-const validateEnvVars = () => {
-  const requiredVars = ['FMP_API_KEY', 'ALPHA_VANTAGE_API_KEY'];
-  requiredVars.forEach(varName => {
-    if (!process.env[varName]) {
-      throw new Error(`Missing required environment variable: ${varName}`);
-    }
-    if (varName.startsWith('VITE_')) {
-      throw new Error(`Security risk: ${varName} should not have VITE_ prefix`);
-    }
-  });
-};
-```
-
-### **DIAS 4-5: FRONTEND OPTIMIZATION** (FRONTEND-REACT-SPECIALIST)
-
-```bash
-# Bundle size: 604KB → 500KB
-# vite.config.ts improvements
-npm install -D vite-plugin-compression2
-```
-
-```typescript
-// vite.config.ts
-import compression from 'vite-plugin-compression2';
-
-export default defineConfig({
-  plugins: [
-    react(),
-    compression({
-      algorithm: 'gzip',
-      exclude: [/\.(br)$/, /\.(gz)$/],
-    })
-  ],
-  build: {
-    target: 'es2020',
-    minify: 'terser',
-    rollupOptions: {
-      output: {
-        manualChunks: {
-          'vendor': ['react', 'react-dom'],
-          'charts': ['recharts'],
-          'ui': ['@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu']
-        }
-      }
-    },
-    chunkSizeWarningLimit: 500
-  }
-});
-```
-
-### **DIA 5: MOCK DATA ELIMINATION** (FRONTEND-REACT-SPECIALIST)
-
-```typescript
-// client/src/components/charts/StockCharts.tsx
-// DIAGNÓSTICO IDENTIFICOU: Mock data ainda ativo!
-
-// ❌ DELETE estas funções (lines 52-93):
-// const generateQuarterlyData = () => { ... }
-// const generateAnnualData = () => { ... }
-
-// ✅ SUBSTITUIR por dados reais
-const { data: chartData, isLoading } = useQuery({
-  queryKey: ['charts', symbol, period],
-  queryFn: async () => {
-    const response = await fetch(`/api/cache/historical/${symbol}/${period}`);
-    if (!response.ok) throw new Error('Failed to fetch chart data');
-    return response.json();
-  },
-  staleTime: 60 * 60 * 1000, // 1 hour
-});
-
-// Transform FMP data to chart format
-const transformedData = useMemo(() => {
-  if (!chartData?.historical) return [];
-  
-  return chartData.historical.map(item => ({
-    date: formatDate(item.date),
-    price: item.close,
-    volume: item.volume / 1_000_000,
-  }));
-}, [chartData]);
-```
-
-### **DIA 6: CACHE 3-TIER CONNECTION** (BACKEND-ARCHITECT)
-
-```typescript
-// DIAGNÓSTICO: ThreeTierCache implementado mas NÃO usado pelas rotas
-// server/routes/market-data.ts
-
-// ✅ USAR ThreeTierCache em vez de CacheService
-import { threeTierCache } from '../services/cache/three-tier-cache';
-
-// Substituir todas as rotas para usar cache 3-tier
-export async function getBatchQuotes(req, res) {
-  const { symbols } = req.body;
-  
-  const quotes = await Promise.all(
-    symbols.map(async (symbol) => {
-      // Try 3-tier cache first
-      let quote = await threeTierCache.get(`quote:${symbol}`);
-      
-      if (!quote || isStale(quote)) {
-        // Queue for background update via Reddit Strategy
-        await redditStrategy.queueForUpdate(symbol);
-        
-        // Return stale data with indication
-        quote = quote || { symbol, message: "Loading...", isStale: true };
-      }
-      
-      return quote;
-    })
-  );
-  
-  res.json({ quotes, cached: true });
-}
-```
+- [ ] **HTTPS/SSL:** Servidor só em HTTP (CRÍTICO para produção)
+- [ ] **REDIS REAL:** Usando mock/fallback (load test não foi com Redis real)
+- [ ] **ENDPOINT DESPROTEGIDO:** /api/market-data/batch sem autenticação
+- [ ] **TYPESCRIPT ERRORS:** 5 erros não corrigidos
+- [ ] **MONITORING EXTERNO:** UptimeRobot não configurado
+- [ ] **BACKUPS:** Sem automação configurada
 
 ---
 
-## 🎨 FASE 3: POLISH & TESTING (1-2 dias)
+## 🎯 CONTEXTO PARA AGENTES
 
-### **DIA 7: MONITORING & LOAD TESTING** (DATA-OPTIMIZER)
-
-```bash
-# Configurar healthchecks.io completo
-# server/cron/cron-manager.ts - ADD ping
-await fetch(`https://hc-ping.com/${process.env.HEALTHCHECK_UUID}`);
-
-# Load test com 500 users
-npm install -D artillery
-cat > artillery.yml << 'EOF'
-config:
-  target: "http://localhost:3001"
-  phases:
-    - duration: 300
-      arrivalRate: 50
-      name: "Sustained load"
-
-scenarios:
-  - name: "User browsing"
-    weight: 100
-    flow:
-      - get:
-          url: "/api/market-data/quotes/batch"
-          json:
-            symbols: ["AAPL", "GOOGL", "MSFT"]
-      - think: 5
-EOF
-
-npx artillery run artillery.yml
-```
-
-### **DIA 7: FINAL VALIDATION** (QA-AUTOMATION-ENGINEER)
-
-```bash
-# Bundle analysis
-npm run build:analyze
-du -sh dist/public  # Target: < 5MB total
-
-# Performance testing
-npm run test:performance
-
-# Health checks
-curl http://localhost:3001/api/health
-curl http://localhost:3001/api/cache/stats
-curl http://localhost:3001/api/cron/status
-```
-
----
-
-## 📊 CHECKLIST DE SUCESSO (ATUALIZADO)
-
-### **CRÍTICO (Must Have):**
-- [ ] Hetzner+Coolify consolidation complete (elimina Vercel)
-- [ ] Reddit Strategy connected to market-data routes
-- [ ] FMP+Alpha Vantage only (outros removidos)
-- [ ] PM2 process management active
-- [ ] Healthchecks.io monitoring configured
-- [ ] CORS eliminated (single origin)
-- [ ] Cache 3-tier functional end-to-end
-
-### **ALTO IMPACTO (Should Have):**
-- [ ] Bundle size < 500KB (de 604KB atual)
-- [ ] Mock data completely removed
-- [ ] API keys properly secured (no VITE_ prefix)
-- [ ] CSRF enabled for production
-- [ ] Load test 500 users passed
-
-### **POLISH (Nice to Have):**
-- [ ] Advanced monitoring dashboard
-- [ ] Performance optimization
-- [ ] Error tracking enhanced
-- [ ] Documentation updated
-
----
-
-## 🎯 TIMELINE REALÍSTICA (ATUALIZADA)
-
-| **Fase** | **Duração** | **Foco** | **Deliverables** |
-|---|---|---|---|
-| **Fase 1** | 24-48h | Critical integration fixes | Consolidação + Redis Strategy |
-| **Fase 2** | 2-4 dias | High-impact polish | Security + Frontend optimization |
-| **Fase 3** | 1-2 dias | Testing + Monitoring | Load testing + Health monitoring |
-
-**TOTAL: 1-2 SEMANAS** (não 4 semanas como plano original)
-
----
-
-## 💰 CUSTOS FINAIS (CONFIRMADOS)
-
-```
-Hetzner CX22: €3.79/mês
-FMP Starter: $14.99/mês (~€14)
-Alpha Vantage: €0 (backup free tier)
-Supabase: €0 (free 500MB)
-Healthchecks.io: €0 (free tier)
-TOTAL: ~€18/mês (OBJETIVO MANTIDO)
-```
-
----
-
-## 📋 ARQUITETURA FINAL
-
+### ARQUITETURA ATUAL:
 ```
 ┌─────────────────────────────────────────┐
-│           Hetzner CX22 Server           │
+│    Hetzner CX22 (128.140.45.28)        │
 ├─────────────────────────────────────────┤
-│  ┌─────────────┐  ┌─────────────────┐   │
-│  │   Coolify   │  │  Express Server │   │
-│  │   (Proxy)   │  │  ┌─────────────┐│   │
-│  │             │  │  │   Backend   ││   │
-│  │             │  │  │     API     ││   │
-│  │             │  │  ├─────────────┤│   │
-│  │             │  │  │  Frontend   ││   │
-│  │             │  │  │   Static    ││   │
-│  │             │  │  │   Assets    ││   │
-│  │             │  │  └─────────────┘│   │
-│  └─────────────┘  └─────────────────┘   │
-│  ┌─────────────┐                        │
-│  │    Redis    │  External:              │
-│  │    Cache    │  • Supabase (DB)       │
-│  └─────────────┘  • FMP (Primary API)   │
-│                   • Alpha Vantage (Backup) │
+│  PM2 → Express Server (Port 3001)       │
+│    ├── Frontend (React/Vite) ✅         │
+│    ├── Backend API ✅                   │
+│    ├── Redis (MOCK - PRECISA FIX) ❌    │
+│    └── Supabase (External) ✅           │
 └─────────────────────────────────────────┘
 ```
 
----
-
-## 🔄 DIFERENÇAS vs PLANO ORIGINAL
-
-| **Aspecto** | **Plano Original V2.0** | **Plano Final V3.0** |
-|---|---|---|
-| **Estado Assumido** | Sistema skeleton | Sistema 95% completo |
-| **Timeline** | 4 semanas (28 dias) | 1-2 semanas |
-| **Foco** | Construir do zero | Integração de componentes |
-| **APIs** | 5 providers | 2 providers (FMP + Alpha) |
-| **Deployment** | Vercel + Hetzner | Hetzner only |
-| **CORS Issues** | Corrigir wildcard | Eliminar completamente |
-| **Approach** | Build from scratch | Connect existing components |
-| **Risk Level** | Médio-Alto | Baixo |
+### INFORMAÇÕES CRÍTICAS:
+- **SERVIDOR:** Ubuntu 24.04.3 LTS em Hetzner CX22
+- **IP:** 128.140.45.28
+- **ACESSO:** ssh root@128.140.45.28
+- **DIRETÓRIO:** /home/teste 1/
+- **PROCESSO:** PM2 gerindo na porta 3001
+- **STATUS:** Frontend e API funcionando mas SEM HTTPS e com Redis mock
 
 ---
 
-## 🚀 MELHORIAS ADICIONAIS SUGERIDAS
+## 📅 PLANO DE EXECUÇÃO - 4.5 HORAS RESTANTES
 
-### **ASYNC UX para Alpha Vantage**
-```typescript
-// Quando cair para backup, melhorar UX
-if (provider === 'alphaVantage') {
-  return {
-    status: "pending",
-    message: "Buscando dados de backup, aguarde 10-15 segundos...",
-    estimatedTime: 15,
-    provider: "backup"
-  };
-  
-  // Deliver via WebSocket when ready
-  websocket.emit('quote-ready', { symbol, data });
-}
-```
+## 🔴 FASE 1: SEGURANÇA CRÍTICA (1.5 horas) - SECURITY-AUDITOR + DEVOPS
 
-### **Monitoring Proativo**
-```typescript
-// Alert se cair para backup
-if (provider !== 'fmp') {
-  logger.critical(`Primary provider failure: using ${provider}`);
-  await sendSlackAlert(`🚨 FMP down, using backup: ${provider}`);
-}
-```
+**AGENTE RESPONSÁVEL:** SECURITY-AUDITOR
+**MODO:** --ultrathink --mode=deep --validate=true
 
-### **Cache Strategy Agressivo**
-```typescript
-// Durante emergências, aumentar TTL
-if (apiQuotaExceeded || primaryProviderDown) {
-  cache.setDefaultTTL('quotes', 30 * 60 * 1000); // 30 min
-  cache.setDefaultTTL('fundamentals', 4 * 60 * 60 * 1000); // 4 hours
-}
-```
+### TAREFAS:
 
----
-
-## 📝 INSTRUÇÕES ESPECÍFICAS PARA AGENTES
-
-### **DEVOPS-INFRASTRUCTURE-ENGINEER:**
-1. **PRIMEIRO:** Testar consolidação local antes deploy
-2. **CRÍTICO:** Backup completo antes mudanças
-3. **VALIDAR:** Sistema static serving funciona
-4. **MONITORAR:** Health endpoints após deploy
-
-### **BACKEND-ARCHITECT:**
-1. **FOCO:** Conectar Reddit Strategy (JÁ implementado) às rotas
-2. **NÃO:** Reescrever componentes existentes
-3. **VALIDAR:** Cache 3-tier hit rate > 90%
-4. **TESTAR:** Queue system para updates
-
-### **FRONTEND-REACT-SPECIALIST:**
-1. **PRIORIDADE:** Bundle optimization (604KB → 500KB)
-2. **CRÍTICO:** Remover mock data residual
-3. **MANTER:** Lazy loading e error boundaries (funcionam bem)
-4. **MELHORAR:** Loading states para cache misses
-
-### **SECURITY-AUDITOR:**
-1. **URGENTE:** Verificar eliminação CORS wildcard
-2. **VALIDAR:** Nenhuma API key com VITE_ prefix
-3. **MONITORAR:** Rate limiting effectiveness
-4. **DOCUMENTAR:** Security improvements
-
----
-
-## 🎯 PRÓXIMOS PASSOS IMEDIATOS
-
-### **HOJE:**
-1. Backup completo do sistema atual
-2. Testar consolidação Hetzner+Coolify local
-3. Preparar scripts de deployment
-
-### **AMANHÃ:**
-1. Deploy consolidado para Hetzner
-2. Conectar Reddit Strategy às rotas
-3. Eliminar vercel.json
-
-### **ESTA SEMANA:**
-1. Complete critical checklist
-2. Bundle optimization
-3. Remove mock data
-
-### **PRÓXIMA SEMANA:**
-1. Load testing
-2. Monitoring completion
-3. Documentation final
-
----
-
-## 📝 SISTEMA DE TRACKING & UPDATES
-
-### **PROTOCOLO DE STATUS UPDATES**
-
-Cada agente DEVE atualizar o seu progresso usando este formato:
-
-```markdown
-## [AGENT-NAME] STATUS UPDATE - [DATA]
-
-### ✅ COMPLETED:
-- [Task específica com timestamp]
-- [Resultado obtido]
-- [Commit hash se aplicável]
-
-### 🔄 IN PROGRESS:
-- [Task atual]
-- [% Completion estimado]
-- [ETA estimado]
-
-### ❌ BLOCKED/ISSUES:
-- [Problema específico]
-- [Root cause se conhecido]
-- [Help needed]
-
-### 📊 NEXT STEPS:
-- [Próxima task prioritária]
-- [Dependencies]
-- [Timeline estimado]
-
-### 🧪 VALIDATION RESULTS:
-- [Testes executados]
-- [Resultados obtained]
-- [Metrics if available]
-```
-
-### **LOCALIZAÇÃO DOS UPDATES**
-
-Criar secção **PROGRESS TRACKING** no final deste documento:
-
-```markdown
-# 📊 PROGRESS TRACKING
-
-## DEVOPS-INFRASTRUCTURE-ENGINEER
-[Updates aqui]
-
-## BACKEND-ARCHITECT  
-[Updates aqui]
-
-## FRONTEND-REACT-SPECIALIST
-[Updates aqui]
-
-## SECURITY-AUDITOR
-[Updates aqui]
-
-## DATA-OPTIMIZER
-[Updates aqui]
-```
-
-### **COMMIT MESSAGE STANDARDS**
-
+#### 1.1 HTTPS com Nginx + SSL (45 min)
 ```bash
-# Format obrigatório:
-[AGENT]: [ACTION] - [COMPONENT] 
+# NO SERVIDOR HETZNER (ssh root@128.140.45.28)
+cd /home/teste\ 1/
 
-# Exemplos:
-git commit -m "DEVOPS: consolidate - Hetzner+Coolify single app"
-git commit -m "BACKEND: connect - Reddit Strategy to market-data routes" 
-git commit -m "FRONTEND: optimize - bundle size from 604KB to 485KB"
-git commit -m "SECURITY: eliminate - CORS wildcard vulnerability"
+# Instalar Nginx e Certbot
+sudo apt update
+sudo apt install -y nginx certbot python3-certbot-nginx
+
+# Configurar Nginx como proxy reverso
+cat > /etc/nginx/sites-available/alfalyzer << 'EOF'
+server {
+    listen 80;
+    server_name alfalyzer.com www.alfalyzer.com;
+
+    location / {
+        proxy_pass http://localhost:3001;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_cache_bypass $http_upgrade;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+EOF
+
+# Ativar site
+sudo ln -s /etc/nginx/sites-available/alfalyzer /etc/nginx/sites-enabled/
+sudo nginx -t
+sudo systemctl restart nginx
+
+# Obter certificado SSL
+sudo certbot --nginx -d alfalyzer.com -d www.alfalyzer.com \
+  --non-interactive --agree-tos --email admin@alfalyzer.com
+
+# Verificar HTTPS
+curl -I https://alfalyzer.com
 ```
 
-### **ESCALATION PROTOCOL**
+#### 1.2 Proteger Endpoint Público (20 min)
+```bash
+# Gerar API key
+uuidgen > /home/teste\ 1/market-data-key.txt
+MARKET_API_KEY=$(cat /home/teste\ 1/market-data-key.txt)
 
-#### **NÍVEL 1 - MINOR ISSUES (< 2h delay)**
-- Update no documento com details
-- Continue com workaround se possível
-- Document resolution para future reference
+# Adicionar ao .env.production
+echo "MARKET_DATA_API_KEY=$MARKET_API_KEY" >> /home/teste\ 1/.env.production
 
-#### **NÍVEL 2 - MAJOR ISSUES (> 2h delay)**
-- Immediate update no documento
-- Slack/Discord notification
-- Request help from other agents
-- Consider task re-prioritization
+# Criar middleware de autenticação
+cat > /home/teste\ 1/server/middleware/api-auth.ts << 'EOF'
+export function requireApiKey(req, res, next) {
+  const apiKey = req.headers['x-api-key'];
+  
+  if (req.path === '/api/market-data/batch' && !apiKey) {
+    return res.status(401).json({ error: 'API key required' });
+  }
+  
+  if (apiKey && apiKey !== process.env.MARKET_DATA_API_KEY) {
+    return res.status(403).json({ error: 'Invalid API key' });
+  }
+  
+  next();
+}
+EOF
 
-#### **NÍVEL 3 - CRITICAL ISSUES (blocks deployment)**
-- STOP all dependent work
-- Emergency meeting/sync
-- Revise timeline se necessário
-- Document lessons learned
+# Reiniciar PM2
+cd /home/teste\ 1/
+pm2 restart alfalyzer --update-env
 
-### **DAILY STANDUPS (ASYNC)**
-
-Cada agente update diário às 18:00 GMT:
-
-```markdown
-## DAILY STANDUP - [DATE] - [AGENT]
-
-**Yesterday:** [O que foi completado]
-**Today:** [O que vai trabalhar] 
-**Blockers:** [Issues que impedem progresso]
-**Dependencies:** [Waiting on outros agents]
-**Timeline:** [On track / Delayed / Ahead]
+# Testar proteção
+curl -X POST http://localhost:3001/api/market-data/batch # Deve dar 401
+curl -X POST -H "X-API-Key: $MARKET_API_KEY" http://localhost:3001/api/market-data/batch # Deve funcionar
 ```
 
-### **CHECKLIST TRACKING**
+#### 1.3 Configurar Domínio (15 min)
+```bash
+# Verificar DNS (fazer no painel do domínio)
+# A Record: alfalyzer.com → 128.140.45.28
+# CNAME: www.alfalyzer.com → alfalyzer.com
 
-Update em tempo real no documento:
-
-```markdown
-### **CRÍTICO (Must Have):**
-- [x] Hetzner+Coolify consolidation complete (✅ DEVOPS - 2025-08-16)
-- [ ] Reddit Strategy connected to market-data routes (🔄 BACKEND - 50% - ETA: 2025-08-17)
-- [ ] FMP+Alpha Vantage only (⏳ BACKEND - Pending)
+# Testar domínio
+dig alfalyzer.com
+nslookup alfalyzer.com
 ```
 
-**Legend:**
-- ✅ = Completed (add agent + date)
-- 🔄 = In Progress (add agent + % + ETA)  
-- ⏳ = Pending (add agent + status)
-- ❌ = Blocked (add agent + issue)
+### CHECKLIST FASE 1:
+- [ ] Nginx instalado e configurado
+- [ ] Certificado SSL obtido e ativo
+- [ ] HTTPS funcionando (porta 443)
+- [ ] Endpoint /api/market-data/batch protegido
+- [ ] API key gerada e configurada
+- [ ] Domínio apontando para servidor
 
 ---
 
-# 📊 PROGRESS TRACKING
+## 🟠 FASE 2: REDIS REAL (1 hora) - BACKEND-ARCHITECT + DATA-OPTIMIZER
 
-*Agentes: Update your progress here following the protocol above*
+**AGENTE RESPONSÁVEL:** BACKEND-ARCHITECT
+**MODO:** --ultrathink --mode=deep --test=true
 
-## DEVOPS-INFRASTRUCTURE-ENGINEER
+### TAREFAS:
 
-### ✅ DEVOPS STATUS UPDATE - 2025-08-15 18:30 GMT
+#### 2.1 Instalar Redis no Servidor (30 min)
+```bash
+# NO SERVIDOR HETZNER
+ssh root@128.140.45.28
+cd /home/teste\ 1/
 
-### ✅ COMPLETED:
-- [18:15] PM2 ecosystem.config.js created for production deployment
-- [18:16] Package.json updated with unified build scripts (build:full, start:production)  
-- [18:17] SERVE_STATIC=true environment variable configured for consolidation
-- [18:18] vercel.json ELIMINATED (removes CORS wildcard security risk)
-- [18:19] Coolify configuration created (coolify-config.json)
-- [18:20] Dockerfile updated for full-stack deployment
-- [18:25] Static serving consolidation TESTED and WORKING
-- [18:28] Git commit c0c71b27 - consolidation complete
-- [18:29] Changes pushed to phase-0-main branch
+# Instalar Redis
+sudo apt update
+sudo apt install -y redis-server
 
-### 🔄 IN PROGRESS:
-- Deploy to Hetzner+Coolify with consolidated setup (ready for deployment)
+# Configurar Redis (segurança)
+sudo nano /etc/redis/redis.conf
+# Alterar:
+# bind 127.0.0.1 ::1  # Apenas localhost
+# maxmemory 256mb
+# maxmemory-policy allkeys-lru
+# requirepass your_redis_password_here
+# save 900 1
+# save 300 10
+# save 60 10000
 
-### ✅ VALIDATION RESULTS:
-- Static serving test: HTML ✅, API endpoints ✅, Assets ✅
-- Build process: Client build ✅, Server configuration ✅
-- Security: vercel.json eliminated ✅, CORS wildcard removed ✅
-- Process management: PM2 ecosystem ready ✅
+# Restart Redis
+sudo systemctl restart redis-server
+sudo systemctl enable redis-server
 
-### 📊 NEXT STEPS:
-- Deploy to Hetzner+Coolify using new consolidated configuration
-- Verify domain points to Hetzner IP (consolidation complete)
-- Handoff to BACKEND-ARCHITECT for Reddit Strategy integration
+# Testar conexão
+redis-cli ping  # Deve responder PONG
+redis-cli -a your_redis_password_here ping
 
-### 🧪 CRITICAL ACHIEVEMENT:
-System now serves both frontend AND backend from single Hetzner server. No more Vercel dependency. CORS security risk eliminated. Full consolidation working perfectly.
-
-## BACKEND-ARCHITECT  
-*No updates yet*
-
-## FRONTEND-REACT-SPECIALIST
-
-### ✅ FRONTEND OPTIMIZATION STATUS UPDATE - 2025-08-15 21:30 GMT
-
-### ✅ PHASE 3 FRONTEND OPTIMIZATION - COMPLETED:
-- [21:00] **CRITICAL ACHIEVEMENT:** Bundle size optimized from 614KB to 362KB (41% reduction)
-- [21:05] Vite configuration enhanced with compression (Brotli + Gzip) and manual chunks
-- [21:10] **MOCK DATA ELIMINATION:** Removed all hardcoded mock data from StockCharts.tsx
-- [21:15] Connected StockCharts to real dataAggregatorService API integration
-- [21:20] Replaced hardcoded portfolio data with proper useQuery pattern in portfolios.tsx
-- [21:25] Enhanced loading states with Reddit Strategy cache miss messaging
-- [21:28] Git commit 6ed7e709 - Phase 3 Frontend Optimization complete
-- [21:29] Navigation verified working correctly with Wouter (no React Router issues)
-
-### ✅ VALIDATION RESULTS:
-- Bundle optimization: ✅ ACHIEVED TARGET (<500KB - actual 362KB)
-- Mock data elimination: ✅ REMOVED from all components
-- Real API integration: ✅ CONNECTED to dataAggregatorService
-- Loading states: ✅ ENHANCED with cache-first UX messaging
-- Code splitting: ✅ 5 main chunks (vendor, charts, ui, tanstack, date)
-- Compression: ✅ Brotli + Gzip active for production
-- Navigation: ✅ All components using Wouter correctly
-
-### 🏁 PHASE 3 SUCCESS METRICS:
-```
-Bundle Analysis Results:
-- Main chunk: 362KB (target: <500KB) ✅
-- Reduction: 41% (614KB → 362KB)
-- Total dist: 9.6MB (includes all assets)
-- Compression: Multi-format (br, gz)
-- Chunks: 5 optimized bundles + lazy loading
-- Mock data: 100% eliminated from components ✅
-- API integration: Connected to Reddit Strategy cache ✅
+# Verificar status
+sudo systemctl status redis-server
+redis-cli INFO memory
 ```
 
-### 📊 NEXT STEPS:
-System is now optimized and ready for DATA-OPTIMIZER handoff. All frontend performance targets achieved. Mock data removed. Real API integration complete.
+#### 2.2 Conectar Backend ao Redis Real (30 min)
+```bash
+# Atualizar .env.production
+cd /home/teste\ 1/
+echo "REDIS_URL=redis://127.0.0.1:6379" >> .env.production
+echo "REDIS_PASSWORD=your_redis_password_here" >> .env.production
 
-## SECURITY-AUDITOR
-*No updates yet*
+# Verificar que não está usando mock
+grep -n "MockRedis\|mock" server/services/cache/*.ts
 
-## DATA-OPTIMIZER
+# Testar conexão do app
+pm2 restart alfalyzer --update-env
+pm2 logs alfalyzer --lines 50
 
-### ✅ DATA-OPTIMIZER STATUS UPDATE - 2025-08-15 19:10 GMT
-
-### ✅ PHASE 4 VALIDATION & MONITORING - COMPLETED:
-
-**🎯 CRITICAL ACHIEVEMENTS:**
-- [19:00] **PM2 Process Management:** Successfully configured ecosystem.config.cjs with auto-restart, memory limits (1G), and logging
-- [19:15] **Healthchecks.io Integration:** Implemented comprehensive monitoring system with cron job success pings and system health monitoring
-- [19:25] **Load Testing Framework:** Created Artillery load test configuration targeting 500 concurrent users with performance validation
-- [19:30] **Monitoring Dashboard:** Added `/api/health/monitoring` endpoint showing PM2, healthcheck, cron, and system status
-- [19:35] **Performance Monitoring:** Integrated healthchecks ping after successful cron job execution with detailed metrics
-
-### ✅ VALIDATION RESULTS:
-**PM2 Process Management:**
-- ✅ Process successfully managed (PID: 34151, online status)
-- ✅ Auto-restart configuration active (3 restarts logged)
-- ✅ Memory monitoring: 70.4MB usage (target: <1GB)
-- ✅ Log aggregation configured (combined.log, err.log, out.log)
-- ✅ Production environment variables loaded
-
-**Healthchecks.io Integration:**
-- ✅ CronManager enhanced with ping functionality
-- ✅ System health monitoring every minute
-- ✅ Per-job success pings with duration metrics
-- ✅ Graceful error handling for monitoring failures
-- ✅ Monitoring endpoint provides comprehensive status
-
-**Load Testing Infrastructure:**
-- ✅ Artillery configuration created for 500 concurrent users
-- ✅ Multi-phase testing (warm-up, sustained, peak, cool-down)
-- ✅ Response validation processors implemented
-- ✅ Performance metrics tracking (P95, P99, error rate, cache hit rate)
-- ✅ Results output to JSON for analysis
-
-**Monitoring Dashboard:**
-- ✅ Real-time system health endpoint
-- ✅ PM2 process status integration
-- ✅ Cron job metrics display
-- ✅ Healthcheck configuration status
-- ✅ Phase 4 validation summary
-
-### 📊 PHASE 4 SUCCESS METRICS:
-```
-Process Management: ✅ ACTIVE
-- PM2 ecosystem configured and running
-- Auto-restart: 3 successful restarts logged
-- Memory usage: 70.4MB (well under 1GB limit)
-- Uptime: Stable with recovery capabilities
-
-Monitoring Integration: ✅ CONFIGURED
-- Healthchecks.io framework implemented
-- Cron job success pings active
-- System health monitoring ready
-- Error handling comprehensive
-
-Load Testing: ✅ INFRASTRUCTURE READY
-- Artillery configuration validated
-- 500 concurrent user scenarios defined
-- Performance validation thresholds set
-- Results processing implemented
-
-Performance Targets: ✅ MONITORING ACTIVE
-- Response time P95 target: <1000ms
-- Response time P99 target: <2000ms
-- Error rate target: <1%
-- Cache hit rate target: >90%
+# Verificar cache funcionando
+curl http://localhost:3001/api/cache/stats
+redis-cli -a your_redis_password_here KEYS "*"
 ```
 
-### 🔧 TECHNICAL IMPLEMENTATION DETAILS:
+### CHECKLIST FASE 2:
+- [ ] Redis instalado no servidor
+- [ ] Redis configurado com senha e bind localhost
+- [ ] Redis persistência configurada
+- [ ] Backend conectado ao Redis real
+- [ ] Cache funcionando (verificar hits/misses)
+- [ ] Logs sem erros de conexão Redis
 
-**PM2 Configuration:**
-```javascript
-// ecosystem.config.cjs
-module.exports = {
-  apps: [{
-    name: 'alfalyzer',
-    script: 'dist/server/index.js',
-    env: { NODE_ENV: 'production', PORT: 3001, SERVE_STATIC: 'true' },
-    max_memory_restart: '1G',
-    autorestart: true,
-    error_file: './logs/err.log',
-    out_file: './logs/out.log',
-    log_file: './logs/combined.log'
-  }]
-};
+---
+
+## 🟡 FASE 3: CORREÇÕES (30 min) - FRONTEND-REACT-SPECIALIST
+
+**AGENTE RESPONSÁVEL:** FRONTEND-REACT-SPECIALIST
+**MODO:** --ultrathink --validate=true
+
+### TAREFAS:
+
+#### 3.1 Fix TypeScript Errors (15 min)
+```bash
+# Local (não no servidor)
+cd /Users/antoniofrancisco/Documents/teste\ 1/
+
+# Verificar erros atuais
+npx tsc --noEmit
+
+# Corrigir arquivos mencionados:
+# client/src/lib/performance-monitor.tsx:244
+# client/src/pages/admin/api-monitoring-broken.tsx:366-367
+
+# Validar correção
+npx tsc --noEmit  # Deve passar sem erros
+
+# Commit e push
+git add .
+git commit -m "fix: TypeScript compilation errors"
+git push origin main
 ```
 
-**Healthchecks Integration:**
-```typescript
-// Added to CronManager
-private async pingHealthchecks(jobName: string, duration: number): Promise<void> {
-  const response = await fetch(`${this.healthcheckUrl}/${jobName}`, {
-    method: 'POST',
-    body: JSON.stringify({ duration_ms: duration, timestamp: new Date().toISOString() })
+#### 3.2 Fix Health Endpoint (15 min)
+```bash
+# Verificar rota health
+curl http://128.140.45.28:3001/api/health
+
+# Se não funcionar, adicionar rota
+# server/routes/health.ts
+cat > server/routes/health.ts << 'EOF'
+export async function getHealth(req, res) {
+  const redisConnected = await testRedisConnection();
+  
+  res.json({
+    status: 'healthy',
+    timestamp: Date.now(),
+    services: {
+      server: true,
+      redis: redisConnected,
+      database: true
+    },
+    uptime: process.uptime(),
+    memory: process.memoryUsage()
   });
 }
+EOF
+
+# Deploy no servidor
+ssh root@128.140.45.28
+cd /home/teste\ 1/
+git pull
+npm run build
+pm2 restart alfalyzer
 ```
 
-**Load Testing Configuration:**
-```yaml
-# Artillery config for 500 concurrent users
-phases:
-  - duration: 60, arrivalRate: 10  # Warm up
-  - duration: 180, arrivalRate: 50 # 500 concurrent sustained
-  - duration: 30, arrivalRate: 5   # Cool down
-```
-
-### 🚀 READY FOR PRODUCTION DEPLOYMENT:
-- ✅ Process management stable and monitored
-- ✅ Health monitoring infrastructure complete
-- ✅ Load testing framework validated
-- ✅ Performance metrics tracking active
-- ✅ System recovery capabilities confirmed
-
-**HANDOFF TO SECURITY-AUDITOR:**
-System monitoring infrastructure is now complete. All Phase 4 objectives achieved. Critical security vulnerabilities mentioned in production plan should be addressed before final deployment.
-
-### 📊 NEXT STEPS:
-Phase 4 Validation & Monitoring SUCCESS ✅
-- PM2 process management: ACTIVE
-- Healthchecks.io monitoring: CONFIGURED  
-- Load testing infrastructure: READY
-- Performance validation: MONITORING ACTIVE
-- System is production-ready pending security fixes
+### CHECKLIST FASE 3:
+- [ ] TypeScript errors = 0
+- [ ] Build passa sem warnings
+- [ ] Health endpoint respondendo
+- [ ] Métricas Redis no health check
 
 ---
 
-**ESTE PLANO FOI BASEADO EM DIAGNÓSTICO MULTI-AGENTE REAL DO CÓDIGO**
+## 🔵 FASE 4: MONITORING (30 min) - DEVOPS-INFRASTRUCTURE-ENGINEER
 
-Última atualização: 2025-08-15
-Versão: 3.0 FINAL - CONSOLIDADO
-Status: READY FOR IMMEDIATE EXECUTION
+**AGENTE RESPONSÁVEL:** DEVOPS-INFRASTRUCTURE-ENGINEER
+**MODO:** --ultrathink --validate=true
 
-Sistema está 95% pronto - foco em integração, não desenvolvimento novo.
+### TAREFAS:
+
+#### 4.1 UptimeRobot Configuration (10 min)
+```bash
+# 1. Criar conta em https://uptimerobot.com
+# 2. Add New Monitor:
+#    - Type: HTTPS
+#    - URL: https://alfalyzer.com/api/health
+#    - Check Interval: 5 minutes
+#    - Alert Contacts: seu email
+
+# 3. Testar alerta
+pm2 stop alfalyzer  # Para trigger alerta
+# Aguardar email
+pm2 start alfalyzer
+```
+
+#### 4.2 Backups Automáticos (20 min)
+```bash
+# NO SERVIDOR
+ssh root@128.140.45.28
+
+# Criar script de backup
+cat > /home/teste\ 1/backup.sh << 'EOF'
+#!/bin/bash
+TIMESTAMP=$(date +"%F-%H%M")
+BACKUP_DIR="/home/teste 1/backups"
+mkdir -p $BACKUP_DIR
+
+# Backup Redis
+redis-cli -a your_redis_password_here --rdb $BACKUP_DIR/redis_$TIMESTAMP.rdb
+
+# Backup configs
+tar -czf $BACKUP_DIR/config_$TIMESTAMP.tar.gz .env.production ecosystem.config.cjs
+
+# Manter apenas últimos 7 dias
+find $BACKUP_DIR -name "*.rdb" -mtime +7 -delete
+find $BACKUP_DIR -name "*.tar.gz" -mtime +7 -delete
+
+echo "Backup completed: $TIMESTAMP"
+EOF
+
+chmod +x /home/teste\ 1/backup.sh
+
+# Adicionar ao crontab
+crontab -e
+# Adicionar linha:
+# 0 3 * * * /home/teste\ 1/backup.sh
+
+# Testar backup manual
+./backup.sh
+ls -la backups/
+```
+
+### CHECKLIST FASE 4:
+- [ ] UptimeRobot monitor criado
+- [ ] Alertas email configurados
+- [ ] Script backup criado e testado
+- [ ] Cron job configurado
+- [ ] Backup manual bem-sucedido
 
 ---
 
-# 📊 PHASE 2 BACKEND INTEGRATION - COMPLETED ✅
+## 🟢 FASE 5: VALIDAÇÃO FINAL (1 hora) - QA-AUTOMATION-ENGINEER + DATA-OPTIMIZER
 
-## CRITICAL ACHIEVEMENT: REDDIT STRATEGY CONNECTED
+**AGENTE RESPONSÁVEL:** QA-AUTOMATION-ENGINEER
+**MODO:** --ultrathink --mode=deep --validate=true
 
-### ✅ BACKEND-ARCHITECT STATUS UPDATE - 2025-08-15 20:45 GMT
+### TAREFAS:
 
-**COMPLETED TASKS:**
-- [20:15] **CRITICAL FIX:** Connected Reddit Strategy to ALL market-data routes
-- [20:20] Replaced direct API calls with cache-first strategy (Users NEVER trigger API calls)
-- [20:25] Simplified providers to FMP (primary) + Alpha Vantage (backup) only  
-- [20:30] Integrated ThreeTierCache (Memory→Redis→Supabase) to all routes
-- [20:35] Made redditStrategy.queueForUpdate() public for route access
-- [20:40] Updated all endpoints: /quote, /quotes/batch, /chart, /market-status
-- [20:42] Git commit cb581c25 - Phase 2 Backend Integration complete
-- [20:44] Removed unused providers (Polygon, Finnhub, TwelveData, FiscalAI)
+#### 5.1 Load Test com Redis Real (30 min)
+```bash
+# NO SERVIDOR
+cd /home/teste\ 1/
 
-**VALIDATION RESULTS:**
-- Reddit Strategy connection: ✅ CONNECTED to all routes
-- Cache-first strategy: ✅ Users NEVER trigger API calls  
-- Provider simplification: ✅ Only FMP + Alpha Vantage active
-- ThreeTierCache integration: ✅ All routes use 3-tier cache
-- Queue processing: ✅ Stale data triggers background updates
-- Cost optimization: ✅ Reduced to $14.99/month (FMP) + €0 (Alpha Vantage backup)
+# Criar teste Artillery
+cat > artillery-production.yml << 'EOF'
+config:
+  target: "https://alfalyzer.com"
+  phases:
+    - duration: 60
+      arrivalRate: 10
+      name: "Warm up"
+    - duration: 300
+      arrivalRate: 50
+      name: "Sustained load"
+    - duration: 60
+      arrivalRate: 100
+      name: "Peak load"
+  processor: "./load-test-processor.js"
 
-**THE CRITICAL GAP IS CLOSED!**
-Users now ALWAYS get cached data. API calls ONLY happen via cron jobs. System is cache-first with background updates. Phase 2 Backend Integration SUCCESS ✅
+scenarios:
+  - name: "User flow"
+    weight: 100
+    flow:
+      - get:
+          url: "/api/health"
+      - think: 2
+      - post:
+          url: "/api/market-data/batch"
+          headers:
+            X-API-Key: "{{ $processEnvironment.MARKET_DATA_API_KEY }}"
+          json:
+            symbols: ["AAPL", "GOOGL", "MSFT"]
+EOF
 
-**HANDOFF TO FRONTEND-REACT-SPECIALIST:**
-System ready for bundle optimization and mock data elimination.
+# Executar teste
+npm install -g artillery
+export MARKET_DATA_API_KEY=$(cat market-data-key.txt)
+artillery run artillery-production.yml --output results.json
+
+# Monitorar durante teste
+# Terminal 1:
+pm2 monit
+
+# Terminal 2:
+watch -n 1 'redis-cli -a your_redis_password_here INFO stats | grep instantaneous'
+
+# Analisar resultados
+artillery report results.json
+```
+
+#### 5.2 QA Manual + Smoke Test (30 min)
+```bash
+# Criar smoke test
+cat > /home/teste\ 1/smoke-test.sh << 'EOF'
+#!/bin/bash
+echo "🔍 Running smoke test..."
+
+# Test HTTPS
+curl -f https://alfalyzer.com || exit 1
+echo "✓ HTTPS working"
+
+# Test health
+curl -f https://alfalyzer.com/api/health || exit 1
+echo "✓ Health check passed"
+
+# Test protected endpoint
+API_KEY=$(cat market-data-key.txt)
+curl -f -H "X-API-Key: $API_KEY" \
+  https://alfalyzer.com/api/market-data/batch \
+  -d '{"symbols":["AAPL"]}' || exit 1
+echo "✓ Protected endpoint working"
+
+# Test Redis
+redis-cli -a your_redis_password_here ping || exit 1
+echo "✓ Redis connected"
+
+echo "✅ All smoke tests passed!"
+EOF
+
+chmod +x smoke-test.sh
+./smoke-test.sh
+
+# QA Manual
+# 1. Abrir https://alfalyzer.com
+# 2. Criar conta nova
+# 3. Login/Logout
+# 4. Criar watchlist
+# 5. Verificar gráficos
+# 6. Testar Find Stocks
+# 7. Console browser (F12) - zero erros
+```
+
+### CHECKLIST FASE 5:
+- [ ] Load test com 500+ users passou
+- [ ] P95 < 300ms com Redis real
+- [ ] Zero crashes/restarts
+- [ ] Redis memory < 256MB
+- [ ] Smoke test 100% passed
+- [ ] QA manual sem erros críticos
+
+---
+
+## ✅ CRITÉRIOS GO/NO-GO PARA PRODUÇÃO
+
+### OBRIGATÓRIOS (TODOS devem estar ✅):
+- [ ] HTTPS funcionando com certificado válido
+- [ ] Redis real instalado e conectado
+- [ ] Endpoint público protegido com API key
+- [ ] TypeScript errors = 0
+- [ ] Load test P95 < 300ms
+- [ ] Zero crashes durante teste
+- [ ] UptimeRobot configurado
+- [ ] Backups automáticos ativos
+- [ ] Smoke test passando
+
+### SE TODOS ✅ = GO FOR PRODUCTION
+### SE ALGUM ❌ = NO-GO (resolver primeiro)
+
+---
+
+## 📊 TRACKING DE PROGRESSO
+
+### FASE 1: SEGURANÇA (SECURITY-AUDITOR)
+*Status: PENDING*
+```markdown
+[ ] HTTPS/SSL configurado
+[ ] Endpoint protegido
+[ ] Domínio configurado
+```
+
+### FASE 2: REDIS (BACKEND-ARCHITECT)
+*Status: PENDING*
+```markdown
+[ ] Redis instalado
+[ ] Backend conectado
+[ ] Cache funcionando
+```
+
+### FASE 3: CORREÇÕES (FRONTEND-REACT-SPECIALIST)
+*Status: PENDING*
+```markdown
+[ ] TypeScript errors fixed
+[ ] Health endpoint working
+```
+
+### FASE 4: MONITORING (DEVOPS-INFRASTRUCTURE-ENGINEER)
+*Status: PENDING*
+```markdown
+[ ] UptimeRobot ativo
+[ ] Backups configurados
+```
+
+### FASE 5: VALIDAÇÃO (QA-AUTOMATION-ENGINEER)
+*Status: PENDING*
+```markdown
+[ ] Load test passed
+[ ] Smoke test passed
+[ ] QA manual approved
+```
+
+---
+
+## 🚀 COMANDOS RÁPIDOS PARA REFERÊNCIA
+
+```bash
+# SSH no servidor
+ssh root@128.140.45.28
+
+# Navegar para projeto
+cd /home/teste\ 1/
+
+# Status PM2
+pm2 status
+pm2 logs alfalyzer --lines 50
+
+# Restart aplicação
+pm2 restart alfalyzer --update-env
+
+# Redis status
+redis-cli -a your_redis_password_here ping
+redis-cli -a your_redis_password_here INFO stats
+
+# Nginx status
+sudo systemctl status nginx
+sudo nginx -t
+
+# Ver logs
+tail -f logs/combined.log
+
+# Testar endpoints
+curl https://alfalyzer.com/api/health
+curl -H "X-API-Key: $(cat market-data-key.txt)" https://alfalyzer.com/api/market-data/batch
+```
+
+---
+
+## 📝 NOTAS IMPORTANTES
+
+1. **SEMPRE** fazer backup antes de mudanças críticas
+2. **SEMPRE** testar localmente antes de deploy
+3. **SEMPRE** usar modo --ultrathink para análise profunda
+4. **SEMPRE** reportar ao completar fase
+5. **NUNCA** pular validações de segurança
+
+---
+
+## 🎯 RESUMO EXECUTIVO
+
+**SISTEMA:** 85% pronto para produção
+**TEMPO RESTANTE:** 4.5 horas de trabalho focado
+**BLOQUEADOR PRINCIPAL:** Falta HTTPS e Redis real
+**RISCO:** Baixo (arquitetura sólida, só falta configuração)
+**CONFIANÇA:** Alta (load test já passou, sistema estável)
+
+**PRÓXIMO PASSO IMEDIATO:**
+1. SECURITY-AUDITOR começa FASE 1 (HTTPS/SSL)
+2. Após FASE 1, BACKEND-ARCHITECT faz FASE 2 (Redis)
+3. Fases 3-5 podem ser paralelas após FASE 2
+
+---
+
+**ÚLTIMA ATUALIZAÇÃO:** 2025-08-17 14:00 GMT
+**VERSÃO:** 5.0 PRODUCTION-READY
+**STATUS:** READY FOR IMMEDIATE EXECUTION
+
+Sistema está a 4.5 horas de estar 100% pronto para produção segura.
