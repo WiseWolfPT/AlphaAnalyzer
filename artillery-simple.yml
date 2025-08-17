@@ -1,0 +1,30 @@
+config:
+  target: "http://localhost:3001"
+  phases:
+    - duration: 10
+      arrivalRate: 5
+      name: "Warm up"
+    - duration: 20
+      arrivalRate: 20
+      name: "Ramp up"
+    - duration: 30
+      arrivalRate: 50
+      name: "Sustained load"
+  http:
+    timeout: 10
+
+scenarios:
+  - name: "User Journey"
+    weight: 100
+    flow:
+      - get:
+          url: "/api/health"
+      - think: 1
+      - get:
+          url: "/api/market-data/quote/AAPL"
+      - think: 2
+      - get:
+          url: "/api/market-data/quote/MSFT"
+      - think: 1
+      - get:
+          url: "/api/market-data/quote/GOOGL"

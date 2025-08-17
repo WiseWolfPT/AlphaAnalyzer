@@ -47,9 +47,9 @@ export class RedisCacheProvider {
     try {
       const redisUrl = env.REDIS_URL || env.UPSTASH_REDIS_URL || 'redis://localhost:6379';
       
-      if (!redisUrl || (redisUrl === 'redis://localhost:6379' && env.NODE_ENV === 'production')) {
-        console.log('🔧 Redis not configured for production, using mock...');
-        return;
+      // In production, always try to connect to Redis (even localhost)
+      if (!redisUrl) {
+        console.log('⚠️ Redis URL not configured, using default localhost:6379');
       }
 
       // Check if we have proper Redis configuration

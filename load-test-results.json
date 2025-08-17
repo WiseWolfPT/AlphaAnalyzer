@@ -1,612 +1,1819 @@
 {
   "aggregate": {
     "counters": {
-      "vusers.created_by_name.Basic API flow": 9750,
-      "vusers.created": 9750,
-      "http.requests": 9750,
-      "plugins.metrics-by-endpoint./api/health.errors.ECONNREFUSED": 9750,
-      "errors.ECONNREFUSED": 9750,
-      "vusers.failed": 9750
+      "vusers.created_by_name.User Journey": 1950,
+      "vusers.created": 1950,
+      "http.requests": 7800,
+      "http.codes.503": 12,
+      "http.responses": 7800,
+      "http.downloaded_bytes": 443997,
+      "plugins.metrics-by-endpoint./api/health.codes.503": 12,
+      "http.codes.200": 5,
+      "plugins.metrics-by-endpoint./api/market-data/quote/AAPL.codes.200": 5,
+      "http.codes.429": 7783,
+      "plugins.metrics-by-endpoint./api/market-data/quote/AAPL.codes.429": 1945,
+      "plugins.metrics-by-endpoint./api/health.codes.429": 1938,
+      "plugins.metrics-by-endpoint./api/market-data/quote/MSFT.codes.429": 1950,
+      "plugins.metrics-by-endpoint./api/market-data/quote/GOOGL.codes.429": 1950,
+      "vusers.failed": 0,
+      "vusers.completed": 1950
     },
     "rates": {
-      "http.request_rate": 20
+      "http.request_rate": 133
     },
-    "firstCounterAt": 1755281174041,
-    "lastCounterAt": 1755281443249,
-    "firstMetricAt": 1755281174041,
-    "lastMetricAt": 1755281443249,
-    "period": 1755281440000,
-    "summaries": {},
-    "histograms": {}
+    "firstCounterAt": 1755429493860,
+    "firstHistogramAt": 1755429494044,
+    "lastCounterAt": 1755429557493,
+    "lastHistogramAt": 1755429557493,
+    "firstMetricAt": 1755429493860,
+    "lastMetricAt": 1755429557493,
+    "period": 1755429550000,
+    "summaries": {
+      "http.response_time": {
+        "min": 0,
+        "max": 254,
+        "count": 7800,
+        "mean": 1,
+        "p50": 1,
+        "median": 1,
+        "p75": 1,
+        "p90": 1,
+        "p95": 1,
+        "p99": 2,
+        "p999": 133
+      },
+      "http.response_time.5xx": {
+        "min": 102,
+        "max": 254,
+        "count": 12,
+        "mean": 152.8,
+        "p50": 135.7,
+        "median": 135.7,
+        "p75": 169,
+        "p90": 179.5,
+        "p95": 198.4,
+        "p99": 198.4,
+        "p999": 198.4
+      },
+      "plugins.metrics-by-endpoint.response_time./api/health": {
+        "min": 0,
+        "max": 254,
+        "count": 1950,
+        "mean": 1.6,
+        "p50": 1,
+        "median": 1,
+        "p75": 1,
+        "p90": 1,
+        "p95": 2,
+        "p99": 2,
+        "p999": 179.5
+      },
+      "http.response_time.2xx": {
+        "min": 122,
+        "max": 146,
+        "count": 5,
+        "mean": 130,
+        "p50": 125.2,
+        "median": 125.2,
+        "p75": 133,
+        "p90": 133,
+        "p95": 133,
+        "p99": 133,
+        "p999": 133
+      },
+      "plugins.metrics-by-endpoint.response_time./api/market-data/quote/AAPL": {
+        "min": 0,
+        "max": 146,
+        "count": 1950,
+        "mean": 1,
+        "p50": 1,
+        "median": 1,
+        "p75": 1,
+        "p90": 1,
+        "p95": 1,
+        "p99": 2,
+        "p999": 125.2
+      },
+      "http.response_time.4xx": {
+        "min": 0,
+        "max": 6,
+        "count": 7783,
+        "mean": 0.7,
+        "p50": 1,
+        "median": 1,
+        "p75": 1,
+        "p90": 1,
+        "p95": 1,
+        "p99": 2,
+        "p999": 4
+      },
+      "plugins.metrics-by-endpoint.response_time./api/market-data/quote/MSFT": {
+        "min": 0,
+        "max": 6,
+        "count": 1950,
+        "mean": 0.7,
+        "p50": 1,
+        "median": 1,
+        "p75": 1,
+        "p90": 1,
+        "p95": 1,
+        "p99": 2,
+        "p999": 4
+      },
+      "plugins.metrics-by-endpoint.response_time./api/market-data/quote/GOOGL": {
+        "min": 0,
+        "max": 6,
+        "count": 1950,
+        "mean": 0.7,
+        "p50": 1,
+        "median": 1,
+        "p75": 1,
+        "p90": 1,
+        "p95": 2,
+        "p99": 3,
+        "p999": 6
+      },
+      "vusers.session_length": {
+        "min": 4001.2,
+        "max": 4412.4,
+        "count": 1950,
+        "mean": 4006.2,
+        "p50": 3984.7,
+        "median": 3984.7,
+        "p75": 3984.7,
+        "p90": 3984.7,
+        "p95": 3984.7,
+        "p99": 3984.7,
+        "p999": 4316.6
+      }
+    },
+    "histograms": {
+      "http.response_time": {
+        "min": 0,
+        "max": 254,
+        "count": 7800,
+        "mean": 1,
+        "p50": 1,
+        "median": 1,
+        "p75": 1,
+        "p90": 1,
+        "p95": 1,
+        "p99": 2,
+        "p999": 133
+      },
+      "http.response_time.5xx": {
+        "min": 102,
+        "max": 254,
+        "count": 12,
+        "mean": 152.8,
+        "p50": 135.7,
+        "median": 135.7,
+        "p75": 169,
+        "p90": 179.5,
+        "p95": 198.4,
+        "p99": 198.4,
+        "p999": 198.4
+      },
+      "plugins.metrics-by-endpoint.response_time./api/health": {
+        "min": 0,
+        "max": 254,
+        "count": 1950,
+        "mean": 1.6,
+        "p50": 1,
+        "median": 1,
+        "p75": 1,
+        "p90": 1,
+        "p95": 2,
+        "p99": 2,
+        "p999": 179.5
+      },
+      "http.response_time.2xx": {
+        "min": 122,
+        "max": 146,
+        "count": 5,
+        "mean": 130,
+        "p50": 125.2,
+        "median": 125.2,
+        "p75": 133,
+        "p90": 133,
+        "p95": 133,
+        "p99": 133,
+        "p999": 133
+      },
+      "plugins.metrics-by-endpoint.response_time./api/market-data/quote/AAPL": {
+        "min": 0,
+        "max": 146,
+        "count": 1950,
+        "mean": 1,
+        "p50": 1,
+        "median": 1,
+        "p75": 1,
+        "p90": 1,
+        "p95": 1,
+        "p99": 2,
+        "p999": 125.2
+      },
+      "http.response_time.4xx": {
+        "min": 0,
+        "max": 6,
+        "count": 7783,
+        "mean": 0.7,
+        "p50": 1,
+        "median": 1,
+        "p75": 1,
+        "p90": 1,
+        "p95": 1,
+        "p99": 2,
+        "p999": 4
+      },
+      "plugins.metrics-by-endpoint.response_time./api/market-data/quote/MSFT": {
+        "min": 0,
+        "max": 6,
+        "count": 1950,
+        "mean": 0.7,
+        "p50": 1,
+        "median": 1,
+        "p75": 1,
+        "p90": 1,
+        "p95": 1,
+        "p99": 2,
+        "p999": 4
+      },
+      "plugins.metrics-by-endpoint.response_time./api/market-data/quote/GOOGL": {
+        "min": 0,
+        "max": 6,
+        "count": 1950,
+        "mean": 0.7,
+        "p50": 1,
+        "median": 1,
+        "p75": 1,
+        "p90": 1,
+        "p95": 2,
+        "p99": 3,
+        "p999": 6
+      },
+      "vusers.session_length": {
+        "min": 4001.2,
+        "max": 4412.4,
+        "count": 1950,
+        "mean": 4006.2,
+        "p50": 3984.7,
+        "median": 3984.7,
+        "p75": 3984.7,
+        "p90": 3984.7,
+        "p95": 3984.7,
+        "p99": 3984.7,
+        "p999": 4316.6
+      }
+    }
   },
   "intermediate": [
     {
       "counters": {
-        "vusers.created_by_name.Basic API flow": 60,
-        "vusers.created": 60,
-        "http.requests": 60,
-        "plugins.metrics-by-endpoint./api/health.errors.ECONNREFUSED": 60,
-        "errors.ECONNREFUSED": 60,
-        "vusers.failed": 60
+        "vusers.created_by_name.User Journey": 33,
+        "vusers.created": 33,
+        "http.requests": 90,
+        "http.codes.503": 12,
+        "http.responses": 90,
+        "http.downloaded_bytes": 19282,
+        "plugins.metrics-by-endpoint./api/health.codes.503": 12,
+        "http.codes.200": 5,
+        "plugins.metrics-by-endpoint./api/market-data/quote/AAPL.codes.200": 5,
+        "http.codes.429": 73,
+        "plugins.metrics-by-endpoint./api/market-data/quote/AAPL.codes.429": 23,
+        "plugins.metrics-by-endpoint./api/health.codes.429": 21,
+        "plugins.metrics-by-endpoint./api/market-data/quote/MSFT.codes.429": 18,
+        "plugins.metrics-by-endpoint./api/market-data/quote/GOOGL.codes.429": 11,
+        "vusers.failed": 0,
+        "vusers.completed": 11
       },
       "rates": {
-        "http.request_rate": 10
+        "http.request_rate": 15
       },
       "http.request_rate": null,
-      "firstCounterAt": 1755281174041,
-      "lastCounterAt": 1755281179504,
-      "firstMetricAt": 1755281174041,
-      "lastMetricAt": 1755281179504,
-      "period": "1755281170000",
-      "summaries": {},
-      "histograms": {}
+      "firstCounterAt": 1755429493860,
+      "firstHistogramAt": 1755429494044,
+      "lastCounterAt": 1755429499969,
+      "lastHistogramAt": 1755429499969,
+      "firstMetricAt": 1755429493860,
+      "lastMetricAt": 1755429499969,
+      "period": "1755429490000",
+      "summaries": {
+        "http.response_time": {
+          "min": 0,
+          "max": 254,
+          "count": 90,
+          "mean": 28.7,
+          "p50": 1,
+          "median": 1,
+          "p75": 2,
+          "p90": 133,
+          "p95": 147,
+          "p99": 198.4,
+          "p999": 198.4
+        },
+        "http.response_time.5xx": {
+          "min": 102,
+          "max": 254,
+          "count": 12,
+          "mean": 152.8,
+          "p50": 135.7,
+          "median": 135.7,
+          "p75": 169,
+          "p90": 179.5,
+          "p95": 198.4,
+          "p99": 198.4,
+          "p999": 198.4
+        },
+        "plugins.metrics-by-endpoint.response_time./api/health": {
+          "min": 0,
+          "max": 254,
+          "count": 33,
+          "mean": 56.3,
+          "p50": 2,
+          "median": 2,
+          "p75": 127.8,
+          "p90": 156,
+          "p95": 179.5,
+          "p99": 198.4,
+          "p999": 198.4
+        },
+        "http.response_time.2xx": {
+          "min": 122,
+          "max": 146,
+          "count": 5,
+          "mean": 130,
+          "p50": 125.2,
+          "median": 125.2,
+          "p75": 133,
+          "p90": 133,
+          "p95": 133,
+          "p99": 133,
+          "p999": 133
+        },
+        "plugins.metrics-by-endpoint.response_time./api/market-data/quote/AAPL": {
+          "min": 0,
+          "max": 146,
+          "count": 28,
+          "mean": 24.1,
+          "p50": 1,
+          "median": 1,
+          "p75": 2,
+          "p90": 122.7,
+          "p95": 125.2,
+          "p99": 133,
+          "p999": 133
+        },
+        "http.response_time.4xx": {
+          "min": 0,
+          "max": 6,
+          "count": 73,
+          "mean": 1.3,
+          "p50": 1,
+          "median": 1,
+          "p75": 2,
+          "p90": 2,
+          "p95": 2,
+          "p99": 3,
+          "p999": 3
+        },
+        "plugins.metrics-by-endpoint.response_time./api/market-data/quote/MSFT": {
+          "min": 1,
+          "max": 2,
+          "count": 18,
+          "mean": 1.3,
+          "p50": 1,
+          "median": 1,
+          "p75": 2,
+          "p90": 2,
+          "p95": 2,
+          "p99": 2,
+          "p999": 2
+        },
+        "plugins.metrics-by-endpoint.response_time./api/market-data/quote/GOOGL": {
+          "min": 0,
+          "max": 6,
+          "count": 11,
+          "mean": 2,
+          "p50": 2,
+          "median": 2,
+          "p75": 2,
+          "p90": 3,
+          "p95": 3,
+          "p99": 3,
+          "p999": 3
+        },
+        "vusers.session_length": {
+          "min": 4007.9,
+          "max": 4412.4,
+          "count": 11,
+          "mean": 4223,
+          "p50": 4147.4,
+          "median": 4147.4,
+          "p75": 4316.6,
+          "p90": 4316.6,
+          "p95": 4316.6,
+          "p99": 4316.6,
+          "p999": 4316.6
+        }
+      },
+      "histograms": {
+        "http.response_time": {
+          "min": 0,
+          "max": 254,
+          "count": 90,
+          "mean": 28.7,
+          "p50": 1,
+          "median": 1,
+          "p75": 2,
+          "p90": 133,
+          "p95": 147,
+          "p99": 198.4,
+          "p999": 198.4
+        },
+        "http.response_time.5xx": {
+          "min": 102,
+          "max": 254,
+          "count": 12,
+          "mean": 152.8,
+          "p50": 135.7,
+          "median": 135.7,
+          "p75": 169,
+          "p90": 179.5,
+          "p95": 198.4,
+          "p99": 198.4,
+          "p999": 198.4
+        },
+        "plugins.metrics-by-endpoint.response_time./api/health": {
+          "min": 0,
+          "max": 254,
+          "count": 33,
+          "mean": 56.3,
+          "p50": 2,
+          "median": 2,
+          "p75": 127.8,
+          "p90": 156,
+          "p95": 179.5,
+          "p99": 198.4,
+          "p999": 198.4
+        },
+        "http.response_time.2xx": {
+          "min": 122,
+          "max": 146,
+          "count": 5,
+          "mean": 130,
+          "p50": 125.2,
+          "median": 125.2,
+          "p75": 133,
+          "p90": 133,
+          "p95": 133,
+          "p99": 133,
+          "p999": 133
+        },
+        "plugins.metrics-by-endpoint.response_time./api/market-data/quote/AAPL": {
+          "min": 0,
+          "max": 146,
+          "count": 28,
+          "mean": 24.1,
+          "p50": 1,
+          "median": 1,
+          "p75": 2,
+          "p90": 122.7,
+          "p95": 125.2,
+          "p99": 133,
+          "p999": 133
+        },
+        "http.response_time.4xx": {
+          "min": 0,
+          "max": 6,
+          "count": 73,
+          "mean": 1.3,
+          "p50": 1,
+          "median": 1,
+          "p75": 2,
+          "p90": 2,
+          "p95": 2,
+          "p99": 3,
+          "p999": 3
+        },
+        "plugins.metrics-by-endpoint.response_time./api/market-data/quote/MSFT": {
+          "min": 1,
+          "max": 2,
+          "count": 18,
+          "mean": 1.3,
+          "p50": 1,
+          "median": 1,
+          "p75": 2,
+          "p90": 2,
+          "p95": 2,
+          "p99": 2,
+          "p999": 2
+        },
+        "plugins.metrics-by-endpoint.response_time./api/market-data/quote/GOOGL": {
+          "min": 0,
+          "max": 6,
+          "count": 11,
+          "mean": 2,
+          "p50": 2,
+          "median": 2,
+          "p75": 2,
+          "p90": 3,
+          "p95": 3,
+          "p99": 3,
+          "p999": 3
+        },
+        "vusers.session_length": {
+          "min": 4007.9,
+          "max": 4412.4,
+          "count": 11,
+          "mean": 4223,
+          "p50": 4147.4,
+          "median": 4147.4,
+          "p75": 4316.6,
+          "p90": 4316.6,
+          "p95": 4316.6,
+          "p99": 4316.6,
+          "p999": 4316.6
+        }
+      }
     },
     {
       "counters": {
-        "vusers.created_by_name.Basic API flow": 100,
-        "vusers.created": 100,
-        "http.requests": 100,
-        "plugins.metrics-by-endpoint./api/health.errors.ECONNREFUSED": 100,
-        "errors.ECONNREFUSED": 100,
-        "vusers.failed": 100
+        "http.requests": 470,
+        "http.codes.429": 470,
+        "http.responses": 470,
+        "http.downloaded_bytes": 26515,
+        "plugins.metrics-by-endpoint./api/market-data/quote/GOOGL.codes.429": 89,
+        "vusers.failed": 0,
+        "vusers.completed": 89,
+        "vusers.created_by_name.User Journey": 147,
+        "vusers.created": 147,
+        "plugins.metrics-by-endpoint./api/market-data/quote/AAPL.codes.429": 132,
+        "plugins.metrics-by-endpoint./api/health.codes.429": 147,
+        "plugins.metrics-by-endpoint./api/market-data/quote/MSFT.codes.429": 102
       },
       "rates": {
-        "http.request_rate": 10
+        "http.request_rate": 61
       },
       "http.request_rate": null,
-      "firstCounterAt": 1755281180040,
-      "lastCounterAt": 1755281189504,
-      "firstMetricAt": 1755281180040,
-      "lastMetricAt": 1755281189504,
-      "period": "1755281180000",
-      "summaries": {},
-      "histograms": {}
+      "firstCounterAt": 1755429500005,
+      "firstHistogramAt": 1755429500007,
+      "lastCounterAt": 1755429509970,
+      "lastHistogramAt": 1755429509970,
+      "firstMetricAt": 1755429500005,
+      "lastMetricAt": 1755429509970,
+      "period": "1755429500000",
+      "summaries": {
+        "http.response_time": {
+          "min": 0,
+          "max": 3,
+          "count": 470,
+          "mean": 0.8,
+          "p50": 1,
+          "median": 1,
+          "p75": 1,
+          "p90": 2,
+          "p95": 2,
+          "p99": 2,
+          "p999": 2
+        },
+        "http.response_time.4xx": {
+          "min": 0,
+          "max": 3,
+          "count": 470,
+          "mean": 0.8,
+          "p50": 1,
+          "median": 1,
+          "p75": 1,
+          "p90": 2,
+          "p95": 2,
+          "p99": 2,
+          "p999": 2
+        },
+        "plugins.metrics-by-endpoint.response_time./api/market-data/quote/GOOGL": {
+          "min": 0,
+          "max": 2,
+          "count": 89,
+          "mean": 0.7,
+          "p50": 1,
+          "median": 1,
+          "p75": 1,
+          "p90": 1,
+          "p95": 2,
+          "p99": 2,
+          "p999": 2
+        },
+        "vusers.session_length": {
+          "min": 4005,
+          "max": 4148.1,
+          "count": 89,
+          "mean": 4011.7,
+          "p50": 3984.7,
+          "median": 3984.7,
+          "p75": 3984.7,
+          "p90": 3984.7,
+          "p95": 3984.7,
+          "p99": 4147.4,
+          "p999": 4147.4
+        },
+        "plugins.metrics-by-endpoint.response_time./api/market-data/quote/AAPL": {
+          "min": 0,
+          "max": 3,
+          "count": 132,
+          "mean": 0.7,
+          "p50": 1,
+          "median": 1,
+          "p75": 1,
+          "p90": 1,
+          "p95": 2,
+          "p99": 2,
+          "p999": 2
+        },
+        "plugins.metrics-by-endpoint.response_time./api/health": {
+          "min": 0,
+          "max": 2,
+          "count": 147,
+          "mean": 1.1,
+          "p50": 1,
+          "median": 1,
+          "p75": 1,
+          "p90": 2,
+          "p95": 2,
+          "p99": 2,
+          "p999": 2
+        },
+        "plugins.metrics-by-endpoint.response_time./api/market-data/quote/MSFT": {
+          "min": 0,
+          "max": 2,
+          "count": 102,
+          "mean": 0.7,
+          "p50": 1,
+          "median": 1,
+          "p75": 1,
+          "p90": 1,
+          "p95": 1,
+          "p99": 2,
+          "p999": 2
+        }
+      },
+      "histograms": {
+        "http.response_time": {
+          "min": 0,
+          "max": 3,
+          "count": 470,
+          "mean": 0.8,
+          "p50": 1,
+          "median": 1,
+          "p75": 1,
+          "p90": 2,
+          "p95": 2,
+          "p99": 2,
+          "p999": 2
+        },
+        "http.response_time.4xx": {
+          "min": 0,
+          "max": 3,
+          "count": 470,
+          "mean": 0.8,
+          "p50": 1,
+          "median": 1,
+          "p75": 1,
+          "p90": 2,
+          "p95": 2,
+          "p99": 2,
+          "p999": 2
+        },
+        "plugins.metrics-by-endpoint.response_time./api/market-data/quote/GOOGL": {
+          "min": 0,
+          "max": 2,
+          "count": 89,
+          "mean": 0.7,
+          "p50": 1,
+          "median": 1,
+          "p75": 1,
+          "p90": 1,
+          "p95": 2,
+          "p99": 2,
+          "p999": 2
+        },
+        "vusers.session_length": {
+          "min": 4005,
+          "max": 4148.1,
+          "count": 89,
+          "mean": 4011.7,
+          "p50": 3984.7,
+          "median": 3984.7,
+          "p75": 3984.7,
+          "p90": 3984.7,
+          "p95": 3984.7,
+          "p99": 4147.4,
+          "p999": 4147.4
+        },
+        "plugins.metrics-by-endpoint.response_time./api/market-data/quote/AAPL": {
+          "min": 0,
+          "max": 3,
+          "count": 132,
+          "mean": 0.7,
+          "p50": 1,
+          "median": 1,
+          "p75": 1,
+          "p90": 1,
+          "p95": 2,
+          "p99": 2,
+          "p999": 2
+        },
+        "plugins.metrics-by-endpoint.response_time./api/health": {
+          "min": 0,
+          "max": 2,
+          "count": 147,
+          "mean": 1.1,
+          "p50": 1,
+          "median": 1,
+          "p75": 1,
+          "p90": 2,
+          "p95": 2,
+          "p99": 2,
+          "p999": 2
+        },
+        "plugins.metrics-by-endpoint.response_time./api/market-data/quote/MSFT": {
+          "min": 0,
+          "max": 2,
+          "count": 102,
+          "mean": 0.7,
+          "p50": 1,
+          "median": 1,
+          "p75": 1,
+          "p90": 1,
+          "p95": 1,
+          "p99": 2,
+          "p999": 2
+        }
+      }
     },
     {
       "counters": {
-        "vusers.created_by_name.Basic API flow": 100,
-        "vusers.created": 100,
-        "http.requests": 100,
-        "plugins.metrics-by-endpoint./api/health.errors.ECONNREFUSED": 100,
-        "errors.ECONNREFUSED": 100,
-        "vusers.failed": 100
+        "vusers.created_by_name.User Journey": 200,
+        "vusers.created": 200,
+        "http.requests": 800,
+        "http.codes.429": 800,
+        "http.responses": 800,
+        "http.downloaded_bytes": 44000,
+        "plugins.metrics-by-endpoint./api/market-data/quote/AAPL.codes.429": 200,
+        "plugins.metrics-by-endpoint./api/health.codes.429": 200,
+        "plugins.metrics-by-endpoint./api/market-data/quote/MSFT.codes.429": 200,
+        "plugins.metrics-by-endpoint./api/market-data/quote/GOOGL.codes.429": 200,
+        "vusers.failed": 0,
+        "vusers.completed": 200
       },
       "rates": {
-        "http.request_rate": 10
+        "http.request_rate": 80
       },
       "http.request_rate": null,
-      "firstCounterAt": 1755281190040,
-      "lastCounterAt": 1755281199504,
-      "firstMetricAt": 1755281190040,
-      "lastMetricAt": 1755281199504,
-      "period": "1755281190000",
-      "summaries": {},
-      "histograms": {}
+      "firstCounterAt": 1755429510015,
+      "firstHistogramAt": 1755429510018,
+      "lastCounterAt": 1755429519971,
+      "lastHistogramAt": 1755429519971,
+      "firstMetricAt": 1755429510015,
+      "lastMetricAt": 1755429519971,
+      "period": "1755429510000",
+      "summaries": {
+        "http.response_time": {
+          "min": 0,
+          "max": 5,
+          "count": 800,
+          "mean": 0.8,
+          "p50": 1,
+          "median": 1,
+          "p75": 1,
+          "p90": 1,
+          "p95": 2,
+          "p99": 3,
+          "p999": 4
+        },
+        "http.response_time.4xx": {
+          "min": 0,
+          "max": 5,
+          "count": 800,
+          "mean": 0.8,
+          "p50": 1,
+          "median": 1,
+          "p75": 1,
+          "p90": 1,
+          "p95": 2,
+          "p99": 3,
+          "p999": 4
+        },
+        "plugins.metrics-by-endpoint.response_time./api/market-data/quote/AAPL": {
+          "min": 0,
+          "max": 3,
+          "count": 200,
+          "mean": 0.8,
+          "p50": 1,
+          "median": 1,
+          "p75": 1,
+          "p90": 1,
+          "p95": 2,
+          "p99": 2,
+          "p999": 3
+        },
+        "plugins.metrics-by-endpoint.response_time./api/health": {
+          "min": 0,
+          "max": 4,
+          "count": 200,
+          "mean": 0.9,
+          "p50": 1,
+          "median": 1,
+          "p75": 1,
+          "p90": 2,
+          "p95": 2,
+          "p99": 2,
+          "p999": 3
+        },
+        "plugins.metrics-by-endpoint.response_time./api/market-data/quote/MSFT": {
+          "min": 0,
+          "max": 3,
+          "count": 200,
+          "mean": 0.8,
+          "p50": 1,
+          "median": 1,
+          "p75": 1,
+          "p90": 1,
+          "p95": 1,
+          "p99": 2,
+          "p999": 2
+        },
+        "plugins.metrics-by-endpoint.response_time./api/market-data/quote/GOOGL": {
+          "min": 0,
+          "max": 5,
+          "count": 200,
+          "mean": 0.8,
+          "p50": 1,
+          "median": 1,
+          "p75": 1,
+          "p90": 1,
+          "p95": 1,
+          "p99": 3,
+          "p999": 3
+        },
+        "vusers.session_length": {
+          "min": 4002.3,
+          "max": 4013.3,
+          "count": 200,
+          "mean": 4005.5,
+          "p50": 3984.7,
+          "median": 3984.7,
+          "p75": 3984.7,
+          "p90": 3984.7,
+          "p95": 3984.7,
+          "p99": 3984.7,
+          "p999": 3984.7
+        }
+      },
+      "histograms": {
+        "http.response_time": {
+          "min": 0,
+          "max": 5,
+          "count": 800,
+          "mean": 0.8,
+          "p50": 1,
+          "median": 1,
+          "p75": 1,
+          "p90": 1,
+          "p95": 2,
+          "p99": 3,
+          "p999": 4
+        },
+        "http.response_time.4xx": {
+          "min": 0,
+          "max": 5,
+          "count": 800,
+          "mean": 0.8,
+          "p50": 1,
+          "median": 1,
+          "p75": 1,
+          "p90": 1,
+          "p95": 2,
+          "p99": 3,
+          "p999": 4
+        },
+        "plugins.metrics-by-endpoint.response_time./api/market-data/quote/AAPL": {
+          "min": 0,
+          "max": 3,
+          "count": 200,
+          "mean": 0.8,
+          "p50": 1,
+          "median": 1,
+          "p75": 1,
+          "p90": 1,
+          "p95": 2,
+          "p99": 2,
+          "p999": 3
+        },
+        "plugins.metrics-by-endpoint.response_time./api/health": {
+          "min": 0,
+          "max": 4,
+          "count": 200,
+          "mean": 0.9,
+          "p50": 1,
+          "median": 1,
+          "p75": 1,
+          "p90": 2,
+          "p95": 2,
+          "p99": 2,
+          "p999": 3
+        },
+        "plugins.metrics-by-endpoint.response_time./api/market-data/quote/MSFT": {
+          "min": 0,
+          "max": 3,
+          "count": 200,
+          "mean": 0.8,
+          "p50": 1,
+          "median": 1,
+          "p75": 1,
+          "p90": 1,
+          "p95": 1,
+          "p99": 2,
+          "p999": 2
+        },
+        "plugins.metrics-by-endpoint.response_time./api/market-data/quote/GOOGL": {
+          "min": 0,
+          "max": 5,
+          "count": 200,
+          "mean": 0.8,
+          "p50": 1,
+          "median": 1,
+          "p75": 1,
+          "p90": 1,
+          "p95": 1,
+          "p99": 3,
+          "p999": 3
+        },
+        "vusers.session_length": {
+          "min": 4002.3,
+          "max": 4013.3,
+          "count": 200,
+          "mean": 4005.5,
+          "p50": 3984.7,
+          "median": 3984.7,
+          "p75": 3984.7,
+          "p90": 3984.7,
+          "p95": 3984.7,
+          "p99": 3984.7,
+          "p999": 3984.7
+        }
+      }
     },
     {
       "counters": {
-        "vusers.created_by_name.Basic API flow": 100,
-        "vusers.created": 100,
-        "http.requests": 100,
-        "plugins.metrics-by-endpoint./api/health.errors.ECONNREFUSED": 100,
-        "errors.ECONNREFUSED": 100,
-        "vusers.failed": 100
+        "vusers.created_by_name.User Journey": 405,
+        "vusers.created": 405,
+        "http.requests": 1380,
+        "http.codes.429": 1380,
+        "http.responses": 1380,
+        "http.downloaded_bytes": 75900,
+        "plugins.metrics-by-endpoint./api/health.codes.429": 405,
+        "plugins.metrics-by-endpoint./api/market-data/quote/MSFT.codes.429": 315,
+        "plugins.metrics-by-endpoint./api/market-data/quote/AAPL.codes.429": 375,
+        "plugins.metrics-by-endpoint./api/market-data/quote/GOOGL.codes.429": 285,
+        "vusers.failed": 0,
+        "vusers.completed": 285
       },
       "rates": {
-        "http.request_rate": 10
+        "http.request_rate": 143
       },
       "http.request_rate": null,
-      "firstCounterAt": 1755281200040,
-      "lastCounterAt": 1755281209504,
-      "firstMetricAt": 1755281200040,
-      "lastMetricAt": 1755281209504,
-      "period": "1755281200000",
-      "summaries": {},
-      "histograms": {}
+      "firstCounterAt": 1755429520015,
+      "firstHistogramAt": 1755429520018,
+      "lastCounterAt": 1755429529976,
+      "lastHistogramAt": 1755429529976,
+      "firstMetricAt": 1755429520015,
+      "lastMetricAt": 1755429529976,
+      "period": "1755429520000",
+      "summaries": {
+        "http.response_time": {
+          "min": 0,
+          "max": 2,
+          "count": 1380,
+          "mean": 0.6,
+          "p50": 1,
+          "median": 1,
+          "p75": 1,
+          "p90": 1,
+          "p95": 1,
+          "p99": 2,
+          "p999": 2
+        },
+        "http.response_time.4xx": {
+          "min": 0,
+          "max": 2,
+          "count": 1380,
+          "mean": 0.6,
+          "p50": 1,
+          "median": 1,
+          "p75": 1,
+          "p90": 1,
+          "p95": 1,
+          "p99": 2,
+          "p999": 2
+        },
+        "plugins.metrics-by-endpoint.response_time./api/health": {
+          "min": 0,
+          "max": 2,
+          "count": 405,
+          "mean": 0.6,
+          "p50": 1,
+          "median": 1,
+          "p75": 1,
+          "p90": 1,
+          "p95": 1,
+          "p99": 2,
+          "p999": 2
+        },
+        "plugins.metrics-by-endpoint.response_time./api/market-data/quote/MSFT": {
+          "min": 0,
+          "max": 2,
+          "count": 315,
+          "mean": 0.7,
+          "p50": 1,
+          "median": 1,
+          "p75": 1,
+          "p90": 1,
+          "p95": 1,
+          "p99": 1,
+          "p999": 2
+        },
+        "plugins.metrics-by-endpoint.response_time./api/market-data/quote/AAPL": {
+          "min": 0,
+          "max": 2,
+          "count": 375,
+          "mean": 0.6,
+          "p50": 1,
+          "median": 1,
+          "p75": 1,
+          "p90": 1,
+          "p95": 1,
+          "p99": 2,
+          "p999": 2
+        },
+        "plugins.metrics-by-endpoint.response_time./api/market-data/quote/GOOGL": {
+          "min": 0,
+          "max": 2,
+          "count": 285,
+          "mean": 0.7,
+          "p50": 1,
+          "median": 1,
+          "p75": 1,
+          "p90": 1,
+          "p95": 1,
+          "p99": 2,
+          "p999": 2
+        },
+        "vusers.session_length": {
+          "min": 4001.8,
+          "max": 4012,
+          "count": 285,
+          "mean": 4004.8,
+          "p50": 3984.7,
+          "median": 3984.7,
+          "p75": 3984.7,
+          "p90": 3984.7,
+          "p95": 3984.7,
+          "p99": 3984.7,
+          "p999": 3984.7
+        }
+      },
+      "histograms": {
+        "http.response_time": {
+          "min": 0,
+          "max": 2,
+          "count": 1380,
+          "mean": 0.6,
+          "p50": 1,
+          "median": 1,
+          "p75": 1,
+          "p90": 1,
+          "p95": 1,
+          "p99": 2,
+          "p999": 2
+        },
+        "http.response_time.4xx": {
+          "min": 0,
+          "max": 2,
+          "count": 1380,
+          "mean": 0.6,
+          "p50": 1,
+          "median": 1,
+          "p75": 1,
+          "p90": 1,
+          "p95": 1,
+          "p99": 2,
+          "p999": 2
+        },
+        "plugins.metrics-by-endpoint.response_time./api/health": {
+          "min": 0,
+          "max": 2,
+          "count": 405,
+          "mean": 0.6,
+          "p50": 1,
+          "median": 1,
+          "p75": 1,
+          "p90": 1,
+          "p95": 1,
+          "p99": 2,
+          "p999": 2
+        },
+        "plugins.metrics-by-endpoint.response_time./api/market-data/quote/MSFT": {
+          "min": 0,
+          "max": 2,
+          "count": 315,
+          "mean": 0.7,
+          "p50": 1,
+          "median": 1,
+          "p75": 1,
+          "p90": 1,
+          "p95": 1,
+          "p99": 1,
+          "p999": 2
+        },
+        "plugins.metrics-by-endpoint.response_time./api/market-data/quote/AAPL": {
+          "min": 0,
+          "max": 2,
+          "count": 375,
+          "mean": 0.6,
+          "p50": 1,
+          "median": 1,
+          "p75": 1,
+          "p90": 1,
+          "p95": 1,
+          "p99": 2,
+          "p999": 2
+        },
+        "plugins.metrics-by-endpoint.response_time./api/market-data/quote/GOOGL": {
+          "min": 0,
+          "max": 2,
+          "count": 285,
+          "mean": 0.7,
+          "p50": 1,
+          "median": 1,
+          "p75": 1,
+          "p90": 1,
+          "p95": 1,
+          "p99": 2,
+          "p999": 2
+        },
+        "vusers.session_length": {
+          "min": 4001.8,
+          "max": 4012,
+          "count": 285,
+          "mean": 4004.8,
+          "p50": 3984.7,
+          "median": 3984.7,
+          "p75": 3984.7,
+          "p90": 3984.7,
+          "p95": 3984.7,
+          "p99": 3984.7,
+          "p999": 3984.7
+        }
+      }
     },
     {
       "counters": {
-        "vusers.created_by_name.Basic API flow": 100,
-        "vusers.created": 100,
-        "http.requests": 100,
-        "plugins.metrics-by-endpoint./api/health.errors.ECONNREFUSED": 100,
-        "errors.ECONNREFUSED": 100,
-        "vusers.failed": 100
-      },
-      "rates": {
-        "http.request_rate": 10
-      },
-      "http.request_rate": null,
-      "firstCounterAt": 1755281210040,
-      "lastCounterAt": 1755281219505,
-      "firstMetricAt": 1755281210040,
-      "lastMetricAt": 1755281219505,
-      "period": "1755281210000",
-      "summaries": {},
-      "histograms": {}
-    },
-    {
-      "counters": {
-        "vusers.created_by_name.Basic API flow": 100,
-        "vusers.created": 100,
-        "http.requests": 100,
-        "plugins.metrics-by-endpoint./api/health.errors.ECONNREFUSED": 100,
-        "errors.ECONNREFUSED": 100,
-        "vusers.failed": 100
-      },
-      "rates": {
-        "http.request_rate": 10
-      },
-      "http.request_rate": null,
-      "firstCounterAt": 1755281220040,
-      "lastCounterAt": 1755281229504,
-      "firstMetricAt": 1755281220040,
-      "lastMetricAt": 1755281229504,
-      "period": "1755281220000",
-      "summaries": {},
-      "histograms": {}
-    },
-    {
-      "counters": {
-        "vusers.created_by_name.Basic API flow": 367,
-        "vusers.created": 367,
-        "http.requests": 367,
-        "plugins.metrics-by-endpoint./api/health.errors.ECONNREFUSED": 367,
-        "errors.ECONNREFUSED": 367,
-        "vusers.failed": 367
-      },
-      "rates": {
-        "http.request_rate": 40
-      },
-      "http.request_rate": null,
-      "firstCounterAt": 1755281230040,
-      "lastCounterAt": 1755281239997,
-      "firstMetricAt": 1755281230040,
-      "lastMetricAt": 1755281239997,
-      "period": "1755281230000",
-      "summaries": {},
-      "histograms": {}
-    },
-    {
-      "counters": {
-        "vusers.created_by_name.Basic API flow": 500,
+        "vusers.created_by_name.User Journey": 500,
         "vusers.created": 500,
-        "http.requests": 500,
-        "plugins.metrics-by-endpoint./api/health.errors.ECONNREFUSED": 500,
-        "errors.ECONNREFUSED": 500,
-        "vusers.failed": 500
+        "http.requests": 2000,
+        "http.codes.429": 2000,
+        "http.responses": 2000,
+        "http.downloaded_bytes": 110000,
+        "plugins.metrics-by-endpoint./api/health.codes.429": 500,
+        "plugins.metrics-by-endpoint./api/market-data/quote/MSFT.codes.429": 500,
+        "plugins.metrics-by-endpoint./api/market-data/quote/AAPL.codes.429": 500,
+        "plugins.metrics-by-endpoint./api/market-data/quote/GOOGL.codes.429": 500,
+        "vusers.failed": 0,
+        "vusers.completed": 500
       },
       "rates": {
-        "http.request_rate": 50
+        "http.request_rate": 200
       },
       "http.request_rate": null,
-      "firstCounterAt": 1755281240003,
-      "lastCounterAt": 1755281249997,
-      "firstMetricAt": 1755281240003,
-      "lastMetricAt": 1755281249997,
-      "period": "1755281240000",
-      "summaries": {},
-      "histograms": {}
+      "firstCounterAt": 1755429530016,
+      "firstHistogramAt": 1755429530017,
+      "lastCounterAt": 1755429539977,
+      "lastHistogramAt": 1755429539977,
+      "firstMetricAt": 1755429530016,
+      "lastMetricAt": 1755429539977,
+      "period": "1755429530000",
+      "summaries": {
+        "http.response_time": {
+          "min": 0,
+          "max": 3,
+          "count": 2000,
+          "mean": 0.6,
+          "p50": 1,
+          "median": 1,
+          "p75": 1,
+          "p90": 1,
+          "p95": 1,
+          "p99": 2,
+          "p999": 3
+        },
+        "http.response_time.4xx": {
+          "min": 0,
+          "max": 3,
+          "count": 2000,
+          "mean": 0.6,
+          "p50": 1,
+          "median": 1,
+          "p75": 1,
+          "p90": 1,
+          "p95": 1,
+          "p99": 2,
+          "p999": 3
+        },
+        "plugins.metrics-by-endpoint.response_time./api/health": {
+          "min": 0,
+          "max": 3,
+          "count": 500,
+          "mean": 0.5,
+          "p50": 0,
+          "median": 0,
+          "p75": 1,
+          "p90": 1,
+          "p95": 1,
+          "p99": 2,
+          "p999": 3
+        },
+        "plugins.metrics-by-endpoint.response_time./api/market-data/quote/MSFT": {
+          "min": 0,
+          "max": 3,
+          "count": 500,
+          "mean": 0.5,
+          "p50": 1,
+          "median": 1,
+          "p75": 1,
+          "p90": 1,
+          "p95": 1,
+          "p99": 2,
+          "p999": 2
+        },
+        "plugins.metrics-by-endpoint.response_time./api/market-data/quote/AAPL": {
+          "min": 0,
+          "max": 2,
+          "count": 500,
+          "mean": 0.6,
+          "p50": 1,
+          "median": 1,
+          "p75": 1,
+          "p90": 1,
+          "p95": 1,
+          "p99": 1,
+          "p999": 2
+        },
+        "plugins.metrics-by-endpoint.response_time./api/market-data/quote/GOOGL": {
+          "min": 0,
+          "max": 2,
+          "count": 500,
+          "mean": 0.6,
+          "p50": 1,
+          "median": 1,
+          "p75": 1,
+          "p90": 1,
+          "p95": 1,
+          "p99": 2,
+          "p999": 2
+        },
+        "vusers.session_length": {
+          "min": 4001.2,
+          "max": 4008.6,
+          "count": 500,
+          "mean": 4003.9,
+          "p50": 3984.7,
+          "median": 3984.7,
+          "p75": 3984.7,
+          "p90": 3984.7,
+          "p95": 3984.7,
+          "p99": 3984.7,
+          "p999": 3984.7
+        }
+      },
+      "histograms": {
+        "http.response_time": {
+          "min": 0,
+          "max": 3,
+          "count": 2000,
+          "mean": 0.6,
+          "p50": 1,
+          "median": 1,
+          "p75": 1,
+          "p90": 1,
+          "p95": 1,
+          "p99": 2,
+          "p999": 3
+        },
+        "http.response_time.4xx": {
+          "min": 0,
+          "max": 3,
+          "count": 2000,
+          "mean": 0.6,
+          "p50": 1,
+          "median": 1,
+          "p75": 1,
+          "p90": 1,
+          "p95": 1,
+          "p99": 2,
+          "p999": 3
+        },
+        "plugins.metrics-by-endpoint.response_time./api/health": {
+          "min": 0,
+          "max": 3,
+          "count": 500,
+          "mean": 0.5,
+          "p50": 0,
+          "median": 0,
+          "p75": 1,
+          "p90": 1,
+          "p95": 1,
+          "p99": 2,
+          "p999": 3
+        },
+        "plugins.metrics-by-endpoint.response_time./api/market-data/quote/MSFT": {
+          "min": 0,
+          "max": 3,
+          "count": 500,
+          "mean": 0.5,
+          "p50": 1,
+          "median": 1,
+          "p75": 1,
+          "p90": 1,
+          "p95": 1,
+          "p99": 2,
+          "p999": 2
+        },
+        "plugins.metrics-by-endpoint.response_time./api/market-data/quote/AAPL": {
+          "min": 0,
+          "max": 2,
+          "count": 500,
+          "mean": 0.6,
+          "p50": 1,
+          "median": 1,
+          "p75": 1,
+          "p90": 1,
+          "p95": 1,
+          "p99": 1,
+          "p999": 2
+        },
+        "plugins.metrics-by-endpoint.response_time./api/market-data/quote/GOOGL": {
+          "min": 0,
+          "max": 2,
+          "count": 500,
+          "mean": 0.6,
+          "p50": 1,
+          "median": 1,
+          "p75": 1,
+          "p90": 1,
+          "p95": 1,
+          "p99": 2,
+          "p999": 2
+        },
+        "vusers.session_length": {
+          "min": 4001.2,
+          "max": 4008.6,
+          "count": 500,
+          "mean": 4003.9,
+          "p50": 3984.7,
+          "median": 3984.7,
+          "p75": 3984.7,
+          "p90": 3984.7,
+          "p95": 3984.7,
+          "p99": 3984.7,
+          "p999": 3984.7
+        }
+      }
     },
     {
       "counters": {
-        "vusers.created_by_name.Basic API flow": 500,
+        "vusers.created_by_name.User Journey": 500,
         "vusers.created": 500,
-        "http.requests": 500,
-        "plugins.metrics-by-endpoint./api/health.errors.ECONNREFUSED": 500,
-        "errors.ECONNREFUSED": 500,
-        "vusers.failed": 500
+        "http.requests": 2000,
+        "http.codes.429": 2000,
+        "http.responses": 2000,
+        "http.downloaded_bytes": 110000,
+        "plugins.metrics-by-endpoint./api/health.codes.429": 500,
+        "plugins.metrics-by-endpoint./api/market-data/quote/AAPL.codes.429": 500,
+        "plugins.metrics-by-endpoint./api/market-data/quote/MSFT.codes.429": 500,
+        "plugins.metrics-by-endpoint./api/market-data/quote/GOOGL.codes.429": 500,
+        "vusers.failed": 0,
+        "vusers.completed": 500
       },
       "rates": {
-        "http.request_rate": 50
+        "http.request_rate": 200
       },
       "http.request_rate": null,
-      "firstCounterAt": 1755281250003,
-      "lastCounterAt": 1755281259997,
-      "firstMetricAt": 1755281250003,
-      "lastMetricAt": 1755281259997,
-      "period": "1755281250000",
-      "summaries": {},
-      "histograms": {}
+      "firstCounterAt": 1755429540016,
+      "firstHistogramAt": 1755429540017,
+      "lastCounterAt": 1755429549978,
+      "lastHistogramAt": 1755429549978,
+      "firstMetricAt": 1755429540016,
+      "lastMetricAt": 1755429549978,
+      "period": "1755429540000",
+      "summaries": {
+        "http.response_time": {
+          "min": 0,
+          "max": 6,
+          "count": 2000,
+          "mean": 0.6,
+          "p50": 1,
+          "median": 1,
+          "p75": 1,
+          "p90": 1,
+          "p95": 1,
+          "p99": 2,
+          "p999": 4
+        },
+        "http.response_time.4xx": {
+          "min": 0,
+          "max": 6,
+          "count": 2000,
+          "mean": 0.6,
+          "p50": 1,
+          "median": 1,
+          "p75": 1,
+          "p90": 1,
+          "p95": 1,
+          "p99": 2,
+          "p999": 4
+        },
+        "plugins.metrics-by-endpoint.response_time./api/health": {
+          "min": 0,
+          "max": 4,
+          "count": 500,
+          "mean": 0.5,
+          "p50": 0,
+          "median": 0,
+          "p75": 1,
+          "p90": 1,
+          "p95": 1,
+          "p99": 2,
+          "p999": 2
+        },
+        "plugins.metrics-by-endpoint.response_time./api/market-data/quote/AAPL": {
+          "min": 0,
+          "max": 2,
+          "count": 500,
+          "mean": 0.6,
+          "p50": 1,
+          "median": 1,
+          "p75": 1,
+          "p90": 1,
+          "p95": 1,
+          "p99": 2,
+          "p999": 2
+        },
+        "plugins.metrics-by-endpoint.response_time./api/market-data/quote/MSFT": {
+          "min": 0,
+          "max": 5,
+          "count": 500,
+          "mean": 0.5,
+          "p50": 1,
+          "median": 1,
+          "p75": 1,
+          "p90": 1,
+          "p95": 1,
+          "p99": 2,
+          "p999": 3
+        },
+        "plugins.metrics-by-endpoint.response_time./api/market-data/quote/GOOGL": {
+          "min": 0,
+          "max": 6,
+          "count": 500,
+          "mean": 0.6,
+          "p50": 1,
+          "median": 1,
+          "p75": 1,
+          "p90": 1,
+          "p95": 1,
+          "p99": 2,
+          "p999": 4
+        },
+        "vusers.session_length": {
+          "min": 4001.2,
+          "max": 4012.9,
+          "count": 500,
+          "mean": 4004,
+          "p50": 3984.7,
+          "median": 3984.7,
+          "p75": 3984.7,
+          "p90": 3984.7,
+          "p95": 3984.7,
+          "p99": 3984.7,
+          "p999": 3984.7
+        }
+      },
+      "histograms": {
+        "http.response_time": {
+          "min": 0,
+          "max": 6,
+          "count": 2000,
+          "mean": 0.6,
+          "p50": 1,
+          "median": 1,
+          "p75": 1,
+          "p90": 1,
+          "p95": 1,
+          "p99": 2,
+          "p999": 4
+        },
+        "http.response_time.4xx": {
+          "min": 0,
+          "max": 6,
+          "count": 2000,
+          "mean": 0.6,
+          "p50": 1,
+          "median": 1,
+          "p75": 1,
+          "p90": 1,
+          "p95": 1,
+          "p99": 2,
+          "p999": 4
+        },
+        "plugins.metrics-by-endpoint.response_time./api/health": {
+          "min": 0,
+          "max": 4,
+          "count": 500,
+          "mean": 0.5,
+          "p50": 0,
+          "median": 0,
+          "p75": 1,
+          "p90": 1,
+          "p95": 1,
+          "p99": 2,
+          "p999": 2
+        },
+        "plugins.metrics-by-endpoint.response_time./api/market-data/quote/AAPL": {
+          "min": 0,
+          "max": 2,
+          "count": 500,
+          "mean": 0.6,
+          "p50": 1,
+          "median": 1,
+          "p75": 1,
+          "p90": 1,
+          "p95": 1,
+          "p99": 2,
+          "p999": 2
+        },
+        "plugins.metrics-by-endpoint.response_time./api/market-data/quote/MSFT": {
+          "min": 0,
+          "max": 5,
+          "count": 500,
+          "mean": 0.5,
+          "p50": 1,
+          "median": 1,
+          "p75": 1,
+          "p90": 1,
+          "p95": 1,
+          "p99": 2,
+          "p999": 3
+        },
+        "plugins.metrics-by-endpoint.response_time./api/market-data/quote/GOOGL": {
+          "min": 0,
+          "max": 6,
+          "count": 500,
+          "mean": 0.6,
+          "p50": 1,
+          "median": 1,
+          "p75": 1,
+          "p90": 1,
+          "p95": 1,
+          "p99": 2,
+          "p999": 4
+        },
+        "vusers.session_length": {
+          "min": 4001.2,
+          "max": 4012.9,
+          "count": 500,
+          "mean": 4004,
+          "p50": 3984.7,
+          "median": 3984.7,
+          "p75": 3984.7,
+          "p90": 3984.7,
+          "p95": 3984.7,
+          "p99": 3984.7,
+          "p999": 3984.7
+        }
+      }
     },
     {
       "counters": {
-        "vusers.created_by_name.Basic API flow": 500,
-        "vusers.created": 500,
-        "http.requests": 500,
-        "plugins.metrics-by-endpoint./api/health.errors.ECONNREFUSED": 500,
-        "errors.ECONNREFUSED": 500,
-        "vusers.failed": 500
+        "vusers.created_by_name.User Journey": 165,
+        "vusers.created": 165,
+        "http.requests": 1060,
+        "http.codes.429": 1060,
+        "http.responses": 1060,
+        "http.downloaded_bytes": 58300,
+        "plugins.metrics-by-endpoint./api/health.codes.429": 165,
+        "plugins.metrics-by-endpoint./api/market-data/quote/MSFT.codes.429": 315,
+        "plugins.metrics-by-endpoint./api/market-data/quote/AAPL.codes.429": 215,
+        "plugins.metrics-by-endpoint./api/market-data/quote/GOOGL.codes.429": 365,
+        "vusers.failed": 0,
+        "vusers.completed": 365
       },
       "rates": {
-        "http.request_rate": 50
+        "http.request_rate": 150
       },
       "http.request_rate": null,
-      "firstCounterAt": 1755281260003,
-      "lastCounterAt": 1755281269997,
-      "firstMetricAt": 1755281260003,
-      "lastMetricAt": 1755281269997,
-      "period": "1755281260000",
-      "summaries": {},
-      "histograms": {}
-    },
-    {
-      "counters": {
-        "vusers.created_by_name.Basic API flow": 500,
-        "vusers.created": 500,
-        "http.requests": 500,
-        "plugins.metrics-by-endpoint./api/health.errors.ECONNREFUSED": 500,
-        "errors.ECONNREFUSED": 500,
-        "vusers.failed": 500
+      "firstCounterAt": 1755429550016,
+      "firstHistogramAt": 1755429550017,
+      "lastCounterAt": 1755429557493,
+      "lastHistogramAt": 1755429557493,
+      "firstMetricAt": 1755429550016,
+      "lastMetricAt": 1755429557493,
+      "period": "1755429550000",
+      "summaries": {
+        "http.response_time": {
+          "min": 0,
+          "max": 6,
+          "count": 1060,
+          "mean": 0.8,
+          "p50": 1,
+          "median": 1,
+          "p75": 1,
+          "p90": 2,
+          "p95": 2,
+          "p99": 3,
+          "p999": 4
+        },
+        "http.response_time.4xx": {
+          "min": 0,
+          "max": 6,
+          "count": 1060,
+          "mean": 0.8,
+          "p50": 1,
+          "median": 1,
+          "p75": 1,
+          "p90": 2,
+          "p95": 2,
+          "p99": 3,
+          "p999": 4
+        },
+        "plugins.metrics-by-endpoint.response_time./api/health": {
+          "min": 0,
+          "max": 2,
+          "count": 165,
+          "mean": 0.6,
+          "p50": 1,
+          "median": 1,
+          "p75": 1,
+          "p90": 1,
+          "p95": 1,
+          "p99": 2,
+          "p999": 2
+        },
+        "plugins.metrics-by-endpoint.response_time./api/market-data/quote/MSFT": {
+          "min": 0,
+          "max": 6,
+          "count": 315,
+          "mean": 0.9,
+          "p50": 1,
+          "median": 1,
+          "p75": 1,
+          "p90": 2,
+          "p95": 2,
+          "p99": 3,
+          "p999": 4
+        },
+        "plugins.metrics-by-endpoint.response_time./api/market-data/quote/AAPL": {
+          "min": 0,
+          "max": 3,
+          "count": 215,
+          "mean": 0.7,
+          "p50": 1,
+          "median": 1,
+          "p75": 1,
+          "p90": 1,
+          "p95": 1,
+          "p99": 2,
+          "p999": 2
+        },
+        "plugins.metrics-by-endpoint.response_time./api/market-data/quote/GOOGL": {
+          "min": 0,
+          "max": 6,
+          "count": 365,
+          "mean": 1,
+          "p50": 1,
+          "median": 1,
+          "p75": 1,
+          "p90": 2,
+          "p95": 2,
+          "p99": 4,
+          "p999": 4
+        },
+        "vusers.session_length": {
+          "min": 4001.4,
+          "max": 4017.8,
+          "count": 365,
+          "mean": 4006,
+          "p50": 3984.7,
+          "median": 3984.7,
+          "p75": 3984.7,
+          "p90": 3984.7,
+          "p95": 3984.7,
+          "p99": 3984.7,
+          "p999": 3984.7
+        }
       },
-      "rates": {
-        "http.request_rate": 50
-      },
-      "http.request_rate": null,
-      "firstCounterAt": 1755281270004,
-      "lastCounterAt": 1755281279997,
-      "firstMetricAt": 1755281270004,
-      "lastMetricAt": 1755281279997,
-      "period": "1755281270000",
-      "summaries": {},
-      "histograms": {}
-    },
-    {
-      "counters": {
-        "vusers.created_by_name.Basic API flow": 500,
-        "vusers.created": 500,
-        "http.requests": 500,
-        "plugins.metrics-by-endpoint./api/health.errors.ECONNREFUSED": 500,
-        "errors.ECONNREFUSED": 500,
-        "vusers.failed": 500
-      },
-      "rates": {
-        "http.request_rate": 50
-      },
-      "http.request_rate": null,
-      "firstCounterAt": 1755281280004,
-      "lastCounterAt": 1755281289997,
-      "firstMetricAt": 1755281280004,
-      "lastMetricAt": 1755281289997,
-      "period": "1755281280000",
-      "summaries": {},
-      "histograms": {}
-    },
-    {
-      "counters": {
-        "vusers.created_by_name.Basic API flow": 500,
-        "vusers.created": 500,
-        "http.requests": 500,
-        "plugins.metrics-by-endpoint./api/health.errors.ECONNREFUSED": 500,
-        "errors.ECONNREFUSED": 500,
-        "vusers.failed": 500
-      },
-      "rates": {
-        "http.request_rate": 50
-      },
-      "http.request_rate": null,
-      "firstCounterAt": 1755281290004,
-      "lastCounterAt": 1755281299997,
-      "firstMetricAt": 1755281290004,
-      "lastMetricAt": 1755281299997,
-      "period": "1755281290000",
-      "summaries": {},
-      "histograms": {}
-    },
-    {
-      "counters": {
-        "vusers.created_by_name.Basic API flow": 500,
-        "vusers.created": 500,
-        "http.requests": 500,
-        "plugins.metrics-by-endpoint./api/health.errors.ECONNREFUSED": 500,
-        "errors.ECONNREFUSED": 500,
-        "vusers.failed": 500
-      },
-      "rates": {
-        "http.request_rate": 50
-      },
-      "http.request_rate": null,
-      "firstCounterAt": 1755281300004,
-      "lastCounterAt": 1755281309998,
-      "firstMetricAt": 1755281300004,
-      "lastMetricAt": 1755281309998,
-      "period": "1755281300000",
-      "summaries": {},
-      "histograms": {}
-    },
-    {
-      "counters": {
-        "vusers.created_by_name.Basic API flow": 500,
-        "vusers.created": 500,
-        "http.requests": 500,
-        "plugins.metrics-by-endpoint./api/health.errors.ECONNREFUSED": 500,
-        "errors.ECONNREFUSED": 500,
-        "vusers.failed": 500
-      },
-      "rates": {
-        "http.request_rate": 50
-      },
-      "http.request_rate": null,
-      "firstCounterAt": 1755281310004,
-      "lastCounterAt": 1755281319998,
-      "firstMetricAt": 1755281310004,
-      "lastMetricAt": 1755281319998,
-      "period": "1755281310000",
-      "summaries": {},
-      "histograms": {}
-    },
-    {
-      "counters": {
-        "vusers.created_by_name.Basic API flow": 500,
-        "vusers.created": 500,
-        "http.requests": 500,
-        "plugins.metrics-by-endpoint./api/health.errors.ECONNREFUSED": 500,
-        "errors.ECONNREFUSED": 500,
-        "vusers.failed": 500
-      },
-      "rates": {
-        "http.request_rate": 50
-      },
-      "http.request_rate": null,
-      "firstCounterAt": 1755281320004,
-      "lastCounterAt": 1755281329997,
-      "firstMetricAt": 1755281320004,
-      "lastMetricAt": 1755281329997,
-      "period": "1755281320000",
-      "summaries": {},
-      "histograms": {}
-    },
-    {
-      "counters": {
-        "vusers.created_by_name.Basic API flow": 500,
-        "vusers.created": 500,
-        "http.requests": 500,
-        "plugins.metrics-by-endpoint./api/health.errors.ECONNREFUSED": 500,
-        "errors.ECONNREFUSED": 500,
-        "vusers.failed": 500
-      },
-      "rates": {
-        "http.request_rate": 50
-      },
-      "http.request_rate": null,
-      "firstCounterAt": 1755281330004,
-      "lastCounterAt": 1755281339998,
-      "firstMetricAt": 1755281330004,
-      "lastMetricAt": 1755281339998,
-      "period": "1755281330000",
-      "summaries": {},
-      "histograms": {}
-    },
-    {
-      "counters": {
-        "vusers.created_by_name.Basic API flow": 500,
-        "vusers.created": 500,
-        "http.requests": 500,
-        "plugins.metrics-by-endpoint./api/health.errors.ECONNREFUSED": 500,
-        "errors.ECONNREFUSED": 500,
-        "vusers.failed": 500
-      },
-      "rates": {
-        "http.request_rate": 50
-      },
-      "http.request_rate": null,
-      "firstCounterAt": 1755281340004,
-      "lastCounterAt": 1755281349998,
-      "firstMetricAt": 1755281340004,
-      "lastMetricAt": 1755281349998,
-      "period": "1755281340000",
-      "summaries": {},
-      "histograms": {}
-    },
-    {
-      "counters": {
-        "vusers.created_by_name.Basic API flow": 500,
-        "vusers.created": 500,
-        "http.requests": 500,
-        "plugins.metrics-by-endpoint./api/health.errors.ECONNREFUSED": 500,
-        "errors.ECONNREFUSED": 500,
-        "vusers.failed": 500
-      },
-      "rates": {
-        "http.request_rate": 50
-      },
-      "http.request_rate": null,
-      "firstCounterAt": 1755281350004,
-      "lastCounterAt": 1755281359998,
-      "firstMetricAt": 1755281350004,
-      "lastMetricAt": 1755281359998,
-      "period": "1755281350000",
-      "summaries": {},
-      "histograms": {}
-    },
-    {
-      "counters": {
-        "vusers.created_by_name.Basic API flow": 500,
-        "vusers.created": 500,
-        "http.requests": 500,
-        "plugins.metrics-by-endpoint./api/health.errors.ECONNREFUSED": 500,
-        "errors.ECONNREFUSED": 500,
-        "vusers.failed": 500
-      },
-      "rates": {
-        "http.request_rate": 50
-      },
-      "http.request_rate": null,
-      "firstCounterAt": 1755281360004,
-      "lastCounterAt": 1755281369998,
-      "firstMetricAt": 1755281360004,
-      "lastMetricAt": 1755281369998,
-      "period": "1755281360000",
-      "summaries": {},
-      "histograms": {}
-    },
-    {
-      "counters": {
-        "vusers.created_by_name.Basic API flow": 500,
-        "vusers.created": 500,
-        "http.requests": 500,
-        "plugins.metrics-by-endpoint./api/health.errors.ECONNREFUSED": 500,
-        "errors.ECONNREFUSED": 500,
-        "vusers.failed": 500
-      },
-      "rates": {
-        "http.request_rate": 50
-      },
-      "http.request_rate": null,
-      "firstCounterAt": 1755281370004,
-      "lastCounterAt": 1755281379998,
-      "firstMetricAt": 1755281370004,
-      "lastMetricAt": 1755281379998,
-      "period": "1755281370000",
-      "summaries": {},
-      "histograms": {}
-    },
-    {
-      "counters": {
-        "vusers.created_by_name.Basic API flow": 500,
-        "vusers.created": 500,
-        "http.requests": 500,
-        "plugins.metrics-by-endpoint./api/health.errors.ECONNREFUSED": 500,
-        "errors.ECONNREFUSED": 500,
-        "vusers.failed": 500
-      },
-      "rates": {
-        "http.request_rate": 50
-      },
-      "http.request_rate": null,
-      "firstCounterAt": 1755281380004,
-      "lastCounterAt": 1755281389998,
-      "firstMetricAt": 1755281380004,
-      "lastMetricAt": 1755281389998,
-      "period": "1755281380000",
-      "summaries": {},
-      "histograms": {}
-    },
-    {
-      "counters": {
-        "vusers.created_by_name.Basic API flow": 500,
-        "vusers.created": 500,
-        "http.requests": 500,
-        "plugins.metrics-by-endpoint./api/health.errors.ECONNREFUSED": 500,
-        "errors.ECONNREFUSED": 500,
-        "vusers.failed": 500
-      },
-      "rates": {
-        "http.request_rate": 50
-      },
-      "http.request_rate": null,
-      "firstCounterAt": 1755281390005,
-      "lastCounterAt": 1755281399998,
-      "firstMetricAt": 1755281390005,
-      "lastMetricAt": 1755281399998,
-      "period": "1755281390000",
-      "summaries": {},
-      "histograms": {}
-    },
-    {
-      "counters": {
-        "vusers.created_by_name.Basic API flow": 500,
-        "vusers.created": 500,
-        "http.requests": 500,
-        "plugins.metrics-by-endpoint./api/health.errors.ECONNREFUSED": 500,
-        "errors.ECONNREFUSED": 500,
-        "vusers.failed": 500
-      },
-      "rates": {
-        "http.request_rate": 50
-      },
-      "http.request_rate": null,
-      "firstCounterAt": 1755281400005,
-      "lastCounterAt": 1755281409998,
-      "firstMetricAt": 1755281400005,
-      "lastMetricAt": 1755281409998,
-      "period": "1755281400000",
-      "summaries": {},
-      "histograms": {}
-    },
-    {
-      "counters": {
-        "vusers.created_by_name.Basic API flow": 203,
-        "vusers.created": 203,
-        "http.requests": 203,
-        "plugins.metrics-by-endpoint./api/health.errors.ECONNREFUSED": 203,
-        "errors.ECONNREFUSED": 203,
-        "vusers.failed": 203
-      },
-      "rates": {
-        "http.request_rate": 40
-      },
-      "http.request_rate": null,
-      "firstCounterAt": 1755281410005,
-      "lastCounterAt": 1755281419249,
-      "firstMetricAt": 1755281410005,
-      "lastMetricAt": 1755281419249,
-      "period": "1755281410000",
-      "summaries": {},
-      "histograms": {}
-    },
-    {
-      "counters": {
-        "vusers.created_by_name.Basic API flow": 50,
-        "vusers.created": 50,
-        "http.requests": 50,
-        "plugins.metrics-by-endpoint./api/health.errors.ECONNREFUSED": 50,
-        "errors.ECONNREFUSED": 50,
-        "vusers.failed": 50
-      },
-      "rates": {
-        "http.request_rate": 5
-      },
-      "http.request_rate": null,
-      "firstCounterAt": 1755281420043,
-      "lastCounterAt": 1755281429249,
-      "firstMetricAt": 1755281420043,
-      "lastMetricAt": 1755281429249,
-      "period": "1755281420000",
-      "summaries": {},
-      "histograms": {}
-    },
-    {
-      "counters": {
-        "vusers.created_by_name.Basic API flow": 50,
-        "vusers.created": 50,
-        "http.requests": 50,
-        "plugins.metrics-by-endpoint./api/health.errors.ECONNREFUSED": 50,
-        "errors.ECONNREFUSED": 50,
-        "vusers.failed": 50
-      },
-      "rates": {
-        "http.request_rate": 5
-      },
-      "http.request_rate": null,
-      "firstCounterAt": 1755281430043,
-      "lastCounterAt": 1755281439250,
-      "firstMetricAt": 1755281430043,
-      "lastMetricAt": 1755281439250,
-      "period": "1755281430000",
-      "summaries": {},
-      "histograms": {}
-    },
-    {
-      "counters": {
-        "vusers.created_by_name.Basic API flow": 20,
-        "vusers.created": 20,
-        "http.requests": 20,
-        "plugins.metrics-by-endpoint./api/health.errors.ECONNREFUSED": 20,
-        "errors.ECONNREFUSED": 20,
-        "vusers.failed": 20
-      },
-      "rates": {
-        "http.request_rate": 5
-      },
-      "http.request_rate": null,
-      "firstCounterAt": 1755281440043,
-      "lastCounterAt": 1755281443249,
-      "firstMetricAt": 1755281440043,
-      "lastMetricAt": 1755281443249,
-      "period": "1755281440000",
-      "summaries": {},
-      "histograms": {}
+      "histograms": {
+        "http.response_time": {
+          "min": 0,
+          "max": 6,
+          "count": 1060,
+          "mean": 0.8,
+          "p50": 1,
+          "median": 1,
+          "p75": 1,
+          "p90": 2,
+          "p95": 2,
+          "p99": 3,
+          "p999": 4
+        },
+        "http.response_time.4xx": {
+          "min": 0,
+          "max": 6,
+          "count": 1060,
+          "mean": 0.8,
+          "p50": 1,
+          "median": 1,
+          "p75": 1,
+          "p90": 2,
+          "p95": 2,
+          "p99": 3,
+          "p999": 4
+        },
+        "plugins.metrics-by-endpoint.response_time./api/health": {
+          "min": 0,
+          "max": 2,
+          "count": 165,
+          "mean": 0.6,
+          "p50": 1,
+          "median": 1,
+          "p75": 1,
+          "p90": 1,
+          "p95": 1,
+          "p99": 2,
+          "p999": 2
+        },
+        "plugins.metrics-by-endpoint.response_time./api/market-data/quote/MSFT": {
+          "min": 0,
+          "max": 6,
+          "count": 315,
+          "mean": 0.9,
+          "p50": 1,
+          "median": 1,
+          "p75": 1,
+          "p90": 2,
+          "p95": 2,
+          "p99": 3,
+          "p999": 4
+        },
+        "plugins.metrics-by-endpoint.response_time./api/market-data/quote/AAPL": {
+          "min": 0,
+          "max": 3,
+          "count": 215,
+          "mean": 0.7,
+          "p50": 1,
+          "median": 1,
+          "p75": 1,
+          "p90": 1,
+          "p95": 1,
+          "p99": 2,
+          "p999": 2
+        },
+        "plugins.metrics-by-endpoint.response_time./api/market-data/quote/GOOGL": {
+          "min": 0,
+          "max": 6,
+          "count": 365,
+          "mean": 1,
+          "p50": 1,
+          "median": 1,
+          "p75": 1,
+          "p90": 2,
+          "p95": 2,
+          "p99": 4,
+          "p999": 4
+        },
+        "vusers.session_length": {
+          "min": 4001.4,
+          "max": 4017.8,
+          "count": 365,
+          "mean": 4006,
+          "p50": 3984.7,
+          "median": 3984.7,
+          "p75": 3984.7,
+          "p90": 3984.7,
+          "p95": 3984.7,
+          "p99": 3984.7,
+          "p999": 3984.7
+        }
+      }
     }
   ]
 }

@@ -2,6 +2,8 @@
  * Performance monitoring utilities for state management
  */
 
+import React from 'react';
+
 interface PerformanceMetrics {
   storeUpdates: {
     storeName: string;

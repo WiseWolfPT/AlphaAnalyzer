@@ -169,13 +169,21 @@ class MarketDataClient {
 
   async getBatchQuotes(symbols: string[]): Promise<BatchQuotesResponse> {
     try {
-      // Direct API call - no cached endpoints for now
-      console.log(`📡 Fetching batch quotes from: ${this.baseUrl}/quotes/batch`);
+      // Use GET method with query params as backend expects
+      const params = new URLSearchParams({ symbols: symbols.join(',') });
+      console.log(`📡 Fetching batch quotes from: ${this.baseUrl}/quotes/batch?${params}`);
       console.log(`📊 Symbols: ${symbols.join(', ')}`);
       
-      const response = await this.fetchWithAuth(`${this.baseUrl}/quotes/batch`, {
-        method: 'POST',
-        body: JSON.stringify({ symbols }),
+      // Add API key header for batch quotes endpoint
+      const headers: Record<string, string> = {};
+      if (import.meta.env.VITE_MARKET_DATA_API_KEY) {
+        headers['X-API-Key'] = import.meta.env.VITE_MARKET_DATA_API_KEY;
+        console.log('🔑 Adding X-API-Key header for batch quotes');
+      }
+      
+      const response = await this.fetchWithAuth(`${this.baseUrl}/quotes/batch?${params}`, {
+        method: 'GET',
+        headers,
       });
       
       console.log(`✅ Successfully fetched batch quotes from backend`);

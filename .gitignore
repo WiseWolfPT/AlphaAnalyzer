@@ -25,6 +25,11 @@ build/
 .DS_Store
 Thumbs.db
 
+# Backup and test files
+backup-*.tar.gz
+load-test-report.html
+*.tar.gz
+
 # Logs
 *.log
 npm-debug.log*

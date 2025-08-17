@@ -171,9 +171,9 @@ export default function ApiMonitoring() {
 
   return (
     <div className="p-6 space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
             <h3 className="text-lg font-semibold">API Monitoring</h3>
             <p className="text-sm text-gray-600">
               Real-time monitoring of all financial data providers
@@ -362,7 +362,6 @@ export default function ApiMonitoring() {
             </Alert>
           )}
         </div>
-      </div>
     </div>
   );
 }

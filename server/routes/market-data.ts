@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { authMiddleware } from '../middleware/auth-middleware';
 import { demoAuthMiddleware, optionalDemoAuth } from '../middleware/demo-auth-middleware';
 import { rateLimitMiddleware } from '../middleware/rate-limit-middleware';
+import { marketDataApiKey } from '../middleware/market-data-api-key';
 import { dbUtils } from '../db';
 import crypto from 'crypto';
 import { 
@@ -644,9 +645,10 @@ router.get('/test', async (req: Request, res: Response) => {
 /**
  * GET /api/market-data/quotes/batch
  * Get multiple quotes at once with caching
+ * Protected by API key for public access
  */
 router.get('/quotes/batch',
-  authService,
+  marketDataApiKey,  // Use API key instead of user auth
   marketDataRateLimit,
   async (req: Request, res: Response) => {
     console.log('📊 GET /api/market-data/quotes/batch endpoint hit');
