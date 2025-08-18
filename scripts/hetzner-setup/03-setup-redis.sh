@@ -1,10 +1,15 @@
 #!/bin/bash
 
-# HETZNER SERVER SETUP - STEP 3: REDIS CONFIGURATION
-# This script installs and configures Redis for production
+# HETZNER SERVER SETUP - STEP 3: REDIS CONFIGURATION (SECURE VERSION)
+# This script installs and configures Redis for production with authentication
 
-echo "💾 Setting up Redis for Alfalyzer Production"
-echo "==========================================="
+echo "💾 Setting up Redis for Alfalyzer Production (SECURE)"
+echo "=================================================="
+
+# Generate strong Redis password
+echo "🔐 Generating secure Redis password..."
+REDIS_PASSWORD=$(openssl rand -base64 32 | tr -d "=+/" | cut -c1-25)
+echo "Generated Redis password: $REDIS_PASSWORD"
 
 # Install Redis
 echo "📦 Installing Redis server..."
@@ -15,15 +20,18 @@ sudo apt install -y redis-server
 echo "📄 Backing up original Redis configuration..."
 sudo cp /etc/redis/redis.conf /etc/redis/redis.conf.backup
 
-# Configure Redis for production
-echo "⚙️ Configuring Redis for production..."
-sudo tee /etc/redis/redis.conf > /dev/null <<'EOF'
-# Redis Configuration for Alfalyzer Production
+# Configure Redis for production with authentication
+echo "⚙️ Configuring Redis for production with security..."
+sudo tee /etc/redis/redis.conf > /dev/null <<EOF
+# Redis Configuration for Alfalyzer Production (SECURE)
 
 # Network - ONLY localhost access
 bind 127.0.0.1 ::1
 protected-mode yes
 port 6379
+
+# SECURITY: Authentication required
+requirepass $REDIS_PASSWORD
 
 # General
 daemonize yes
@@ -64,6 +72,12 @@ maxclients 10000
 # Threading
 io-threads 4
 io-threads-do-reads yes
+
+# Security enhancements
+rename-command FLUSHDB ""
+rename-command FLUSHALL ""
+rename-command DEBUG ""
+rename-command CONFIG "CONFIG_9f2a8b1c3d4e5f6g"
 EOF
 
 # Set proper permissions
@@ -85,13 +99,35 @@ sudo systemctl enable redis-server
 echo "⏳ Waiting for Redis to start..."
 sleep 3
 
-# Test Redis connection
-echo "🧪 Testing Redis connection..."
-redis-cli ping
+# Save Redis credentials securely
+echo "💾 Saving Redis credentials..."
+sudo mkdir -p /home/teste\ 1/.env
+echo "REDIS_HOST=localhost" | sudo tee /home/teste\ 1/.env/redis.conf
+echo "REDIS_PORT=6379" | sudo tee -a /home/teste\ 1/.env/redis.conf
+echo "REDIS_PASSWORD=$REDIS_PASSWORD" | sudo tee -a /home/teste\ 1/.env/redis.conf
+echo "REDIS_URL=redis://:$REDIS_PASSWORD@localhost:6379" | sudo tee -a /home/teste\ 1/.env/redis.conf
+sudo chown teste:teste /home/teste\ 1/.env/redis.conf
+sudo chmod 600 /home/teste\ 1/.env/redis.conf
 
-# Check Redis info
+# Test Redis connection with auth
+echo "🧪 Testing Redis connection with authentication..."
+redis-cli -a $REDIS_PASSWORD ping
+
+# Check Redis info with auth
 echo "📊 Redis memory info:"
-redis-cli INFO memory | grep -E "used_memory_human|maxmemory_human"
+redis-cli -a $REDIS_PASSWORD INFO memory | grep -E "used_memory_human|maxmemory_human"
+
+# Test basic operations
+echo "🔧 Testing Redis operations..."
+redis-cli -a $REDIS_PASSWORD set test_key "alfalyzer_redis_working"
+REDIS_TEST=$(redis-cli -a $REDIS_PASSWORD get test_key)
+if [ "$REDIS_TEST" = "alfalyzer_redis_working" ]; then
+    echo "✅ Redis operations working correctly"
+    redis-cli -a $REDIS_PASSWORD del test_key
+else
+    echo "❌ Redis operations failed"
+    exit 1
+fi
 
 # Create systemd service override for better reliability
 echo "🛡️ Creating systemd override for Redis..."
@@ -112,6 +148,23 @@ sudo systemctl status redis-server --no-pager
 
 echo ""
 echo "✅ Redis configuration complete!"
-echo "Redis is running on localhost:6379 with 256MB memory limit"
+echo "Redis is running on localhost:6379 with 256MB memory limit and authentication"
 echo ""
-echo "Next step: Run 04-setup-backups.sh to configure automatic backups"
+echo "🔐 Redis credentials saved to: /home/teste 1/.env/redis.conf"
+echo ""
+echo "📋 ADD THESE TO YOUR .env.production FILE:"
+echo "REDIS_HOST=localhost"
+echo "REDIS_PORT=6379"
+echo "REDIS_PASSWORD=$REDIS_PASSWORD"
+echo "REDIS_URL=redis://:$REDIS_PASSWORD@localhost:6379"
+echo ""
+echo "🚨 IMPORTANT SECURITY NOTES:"
+echo "- Redis password: $REDIS_PASSWORD (SAVE THIS SECURELY!)"
+echo "- Redis bound to localhost only (127.0.0.1)"
+echo "- Dangerous commands disabled (FLUSHDB, FLUSHALL, DEBUG)"
+echo "- CONFIG command renamed for security"
+echo ""
+echo "🔧 To test Redis after updating .env.production:"
+echo "cd /home/teste\ 1/ && npm run redis:test"
+echo ""
+echo "Next step: Update .env.production with Redis credentials and restart PM2"

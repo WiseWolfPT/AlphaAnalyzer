@@ -5,8 +5,10 @@ import { Request, Response, NextFunction } from 'express';
  * Used for endpoints that don't require user authentication but need protection
  */
 export function marketDataApiKey(req: Request, res: Response, next: NextFunction) {
-  // Skip API key check in development for easier testing
-  if (process.env.NODE_ENV === 'development') {
+  // SECURITY FIX: Enforce API key protection in ALL environments
+  // Only skip if explicitly disabled via environment variable
+  if (process.env.SKIP_API_KEY_CHECK === 'true') {
+    console.warn('⚠️ API key check explicitly disabled via SKIP_API_KEY_CHECK');
     return next();
   }
 

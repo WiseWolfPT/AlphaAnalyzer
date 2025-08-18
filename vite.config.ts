@@ -24,8 +24,6 @@ export default defineConfig({
   plugins: [
     react({
       jsxRuntime: 'automatic',
-      // Optimize for development
-      fastRefresh: true,
       babel: {
         plugins: [
           // Add babel plugins for optimization
@@ -187,7 +185,7 @@ export default defineConfig({
     devSourcemap: true,
     // Optimize CSS processing for development
     preprocessorOptions: {
-      css: {
+      scss: {
         charset: false,
       },
     },
@@ -841,11 +839,10 @@ export default defineConfig({
           }
         }
         */
-      }
+      },
+      // Aggressive tree shaking configuration
+      treeshake: true
     },
-    
-    // Aggressive tree shaking configuration
-    treeshake: true,
     
     // Chunk size warnings (aggressive splitting target)
     chunkSizeWarningLimit: 150,

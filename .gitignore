@@ -54,3 +54,8 @@ zen-mcp-server/
 # Backup files
 backups/
 backup-alfalyzer-*.tar.gz
+
+# Files with secrets (do not commit)
+fix-server-now.sh
+manual-update-commands.txt
+update-api-keys.sh

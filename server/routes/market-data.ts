@@ -711,14 +711,14 @@ router.get('/quotes/batch',
         }
       }
 
-      console.log(`✅ Batch quotes: ${results.length} success, ${Object.keys(errors).length} failed (cached: ${cachedBatch.cached})`);
+      console.log(`✅ Batch quotes: ${results.length} success, ${Object.keys(errors).length} failed (via Reddit Strategy)`);
 
       res.json({
         quotes: results,
         errors: Object.keys(errors).length > 0 ? errors : undefined,
         _timestamp: Date.now(),
-        _cached: cachedBatch.cached,
-        _expires_at: cachedBatch.expires_at,
+        _cached: true,
+        _source: 'reddit_strategy',
       });
     } catch (error) {
       console.error('Batch quotes error:', error);

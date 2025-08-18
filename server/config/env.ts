@@ -72,6 +72,12 @@ const envSchema = z.object({
   // Rate Limiting
   RATE_LIMIT_WINDOW_MS: z.string().default('60000'),
   RATE_LIMIT_MAX_REQUESTS: z.string().default('100'),
+  
+  // SECURITY FIX: Add market data API key validation
+  MARKET_DATA_API_KEY: z.string().optional().refine(
+    (val) => process.env.NODE_ENV !== 'production' || (val && val.length >= 32),
+    'MARKET_DATA_API_KEY is required in production and must be at least 32 characters'
+  ),
 });
 
 /**
