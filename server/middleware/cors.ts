@@ -3,8 +3,12 @@ import { Request, Response, NextFunction } from 'express';
 
 const isDevelopment = process.env.NODE_ENV !== 'production';
 
-// STRICT production origins - NO wildcards or patterns
+// Production origins - INCLUDING our Hetzner server
 const productionOrigins = [
+  'https://128.140.45.28.sslip.io',
+  'http://128.140.45.28.sslip.io',
+  'https://128.140.45.28',
+  'http://128.140.45.28',
   'https://alfalyzer.com',
   'https://www.alfalyzer.com'
 ];
@@ -19,20 +23,25 @@ const developmentOrigins = [
 
 export const corsOptions: cors.CorsOptions = {
   origin: (origin, callback) => {
-    // In production, STRICT origin checking
+    // In production
     if (process.env.NODE_ENV === 'production') {
-      // No origin = same-origin request (allowed after Hetzner consolidation)
+      // No origin = same-origin request (allowed)
       if (!origin) {
-        // Same-origin requests are OK in consolidated architecture
         return callback(null, true);
       }
       
-      // Check against strict whitelist
+      // Check against production whitelist
       if (productionOrigins.includes(origin)) {
         return callback(null, true);
       }
       
-      // Block everything else in production
+      // Check if CORS override is enabled
+      if (process.env.DISABLE_CORS === 'true') {
+        console.warn(`⚠️ CORS: Allowing origin due to DISABLE_CORS=true: ${origin}`);
+        return callback(null, true);
+      }
+      
+      // Block everything else
       console.warn(`🚨 CORS: Blocked unauthorized origin in production: ${origin}`);
       return callback(new Error('Not allowed by CORS'));
     }
@@ -47,15 +56,13 @@ export const corsOptions: cors.CorsOptions = {
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'x-api-key'],
   exposedHeaders: ['X-Total-Count', 'X-Page-Count'],
-  maxAge: 86400, // 24 horas
-  optionsSuccessStatus: 204 // Important for legacy browsers
+  maxAge: 86400, // 24 hours
+  optionsSuccessStatus: 204
 };
 
-// Security middleware - removed Vercel proxy support (no longer needed after consolidation)
+// Security middleware
 export const verifyOrigin = (req: Request, res: Response, next: NextFunction) => {
-  // In consolidated architecture, we don't need Vercel proxy checks
-  // All requests come directly to our Hetzner server
   next();
 };
