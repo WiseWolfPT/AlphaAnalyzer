@@ -96,10 +96,10 @@ export function useStockQuote(
   return useFinancialData<StockQuote>(
     ['stock-quote', symbol],
     async () => {
-      // Use API client with full backend URL
-      const data = await api.post<{ quotes: StockQuote[] }>(
-        API_ENDPOINTS.quotes.batch,
-        { symbols: [symbol] }
+      // Use API client with full backend URL - changed to GET per backend requirements
+      const symbolsParam = encodeURIComponent(symbol);
+      const data = await api.get<{ quotes: StockQuote[] }>(
+        `${API_ENDPOINTS.quotes.batch}?symbols=${symbolsParam}`
       );
       
       const stockData = data.quotes?.[0];
@@ -123,10 +123,10 @@ export function useStockProfile(symbol: string) {
   return useFinancialData<StockProfile>(
     ['stock-profile', symbol],
     async () => {
-      // Use API client with full backend URL
-      const data = await api.post<{ quotes: StockQuote[] }>(
-        API_ENDPOINTS.quotes.batch,
-        { symbols: [symbol] }
+      // Use API client with full backend URL - changed to GET per backend requirements
+      const symbolsParam = encodeURIComponent(symbol);
+      const data = await api.get<{ quotes: StockQuote[] }>(
+        `${API_ENDPOINTS.quotes.batch}?symbols=${symbolsParam}`
       );
       
       const stockData = data.quotes?.[0];

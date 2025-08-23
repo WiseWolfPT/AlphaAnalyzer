@@ -50,10 +50,12 @@ export class EnhancedErrorBoundary extends React.Component<ErrorBoundaryProps, E
       errorCount: prevState.errorCount + 1
     }));
 
-    // Log error to console in development
-    if (process.env.NODE_ENV === 'development') {
-      console.error('ErrorBoundary caught:', error, errorInfo);
-    }
+    // ALWAYS log error to console for debugging
+    console.error('🔴 ErrorBoundary caught:', error, errorInfo);
+    console.error('🔴 Error stack:', error.stack);
+    console.error('🔴 Component stack:', errorInfo.componentStack);
+    console.error('🔴 Error message:', error.message);
+    console.error('🔴 Error name:', error.name);
 
     // Report error to global error handler
     handleError(error, {
@@ -257,7 +259,8 @@ export function DefaultErrorFallback({
             </Alert>
           )}
 
-          {showDetails && error && (
+          {/* TEMPORARILY always show error details for debugging */}
+          {error && (
             <details className="mt-4 p-3 bg-muted rounded-lg">
               <summary className="cursor-pointer text-sm font-medium">
                 Error Details

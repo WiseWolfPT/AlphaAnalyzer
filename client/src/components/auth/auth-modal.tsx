@@ -7,7 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Eye, EyeOff, Mail, Lock, User, AlertCircle } from 'lucide-react';
-import { useAuth } from '@/contexts/simple-auth-offline';
+import { useAuth } from '@/contexts/temp-auth';
 import { cn } from '@/lib/utils';
 
 interface AuthModalProps {

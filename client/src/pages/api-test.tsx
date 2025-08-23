@@ -6,23 +6,36 @@ import { RefreshCw } from "lucide-react";
 import { api } from "@/lib/api-client";
 import { API_ENDPOINTS } from "@/config/api";
 
+interface QuoteData {
+  symbol: string;
+  name: string;
+  price: number;
+  changePercent: number;
+}
+
+interface ApiResponse {
+  quotes?: QuoteData[];
+  [key: string]: any;
+}
+
 export default function ApiTest() {
-  const [data, setData] = useState(null);
+  const [data, setData] = useState<ApiResponse | null>(null);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
 
   const testApi = async () => {
     setLoading(true);
     setError(null);
     
     try {
-      const result = await api.post(
-        API_ENDPOINTS.quotes.batch,
-        { symbols: ['AAPL', 'MSFT', 'GOOGL', 'AMZN', 'TSLA'] }
+      // Changed to GET per backend requirements
+      const symbols = ['AAPL', 'MSFT', 'GOOGL', 'AMZN', 'TSLA'].join(',');
+      const result = await api.get<ApiResponse>(
+        `${API_ENDPOINTS.quotes.batch}?symbols=${symbols}`
       );
       setData(result);
     } catch (err) {
-      setError(err.message);
+      setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
       setLoading(false);
     }

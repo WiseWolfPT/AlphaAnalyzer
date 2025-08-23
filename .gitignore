@@ -59,3 +59,11 @@ backup-alfalyzer-*.tar.gz
 fix-server-now.sh
 manual-update-commands.txt
 update-api-keys.sh
+
+# Environment files with secrets
+.env.production.fixed
+.env.production.local
+fix-production-server.sh
+PROMPT-CONTINUACAO-ALFALYZER*.md
+PROMPT-DEFINITIVO-ALFALYZER*.md
+

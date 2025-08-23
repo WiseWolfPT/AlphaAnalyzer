@@ -37,49 +37,35 @@ function detectEnvironment(): Environment {
   const protocol = window.location.protocol;
   const port = window.location.port;
 
-  // Production environment (deployed)
-  if (hostname.includes('vercel.app') || 
-      hostname.includes('netlify.app') || 
-      hostname.includes('alfalyzer.com') ||
-      hostname.includes('herokuapp.com') ||
-      protocol === 'https:') { // Also detect production by https
-    // CRITICAL: Always use relative paths to go through Vercel proxy
-    // The proxy is configured in vercel.json to redirect /api/* to the Coolify backend
+  // Production environment - Hetzner server
+  if (hostname === '128.140.45.28.sslip.io' || 
+      hostname === '128.140.45.28' ||
+      hostname.includes('sslip.io')) {
+    // Production on Hetzner - frontend and backend on same server
     return {
       name: 'production',
-      apiBase: '/api',
+      apiBase: '/api',  // Same server, use relative paths
       wsBase: '/ws',
       debug: false
     };
   }
 
-  // Staging environment
-  if (hostname.includes('staging') || hostname.includes('dev')) {
-    return {
-      name: 'staging',
-      apiBase: `${protocol}//${hostname}/api`,
-      wsBase: `${protocol === 'https:' ? 'wss:' : 'ws:'}//${hostname}`,
-      debug: true
-    };
-  }
-
   // Development environment
-  // When frontend runs on port 3000, use Vite proxy
-  if (port === '3000' || hostname === 'localhost' && port === '3000') {
+  if (hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '0.0.0.0') {
     return {
       name: 'development',
       apiBase: '/api', // Uses Vite proxy
-      wsBase: '/ws', // Uses Vite proxy
+      wsBase: '/ws',   // Uses Vite proxy
       debug: true
     };
   }
 
-  // Fallback - always use relative paths
+  // Fallback - always use relative paths for safety
   return {
-    name: 'development',
+    name: 'production',
     apiBase: '/api',
     wsBase: '/ws',
-    debug: true
+    debug: false
   };
 }
 

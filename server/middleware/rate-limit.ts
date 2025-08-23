@@ -125,7 +125,7 @@ export const marketDataRateLimiters = {
 // Rate limiter geral (from implementation plan)
 export const generalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutos
-  max: 100, // limite de 100 requisições
+  max: 10000, // TEMPORARILY INCREASED: limite de 10000 requisições for testing
   message: 'Too many requests from this IP, please try again later.',
   standardHeaders: true,
   legacyHeaders: false,
@@ -134,7 +134,7 @@ export const generalLimiter = rateLimit({
 // Rate limiter específico para APIs de mercado (from implementation plan)
 export const marketDataLimiter = rateLimit({
   windowMs: 1 * 60 * 1000, // 1 minuto
-  max: 20, // 20 requisições por minuto
+  max: 2000, // TEMPORARILY INCREASED: 2000 requisições por minuto for testing
   message: 'Too many market data requests, please slow down.',
   skip: (req) => {
     // Skip rate limiting para requisições com cache hit

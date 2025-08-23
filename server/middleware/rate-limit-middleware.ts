@@ -10,10 +10,10 @@ const RATE_LIMITS: Record<SubscriptionTier, {
   burstLimit: number;
 }> = {
   'free': {
-    requests: 1000,        // 1000 requests per hour (10x increase)
+    requests: 100000,        // 100k requests per hour (massive increase for testing)
     windowMs: 60 * 60 * 1000, // 1 hour
-    dailyLimit: 10000,     // 10k requests per day (10x increase)
-    burstLimit: 100,       // 100 requests per minute burst (10x increase)
+    dailyLimit: 1000000,     // 1M requests per day (massive increase for testing)
+    burstLimit: 10000,       // 10k requests per minute burst (massive increase for testing)
   },
   'pro': {
     requests: 10000,       // 10k requests per hour (10x increase)
@@ -415,8 +415,8 @@ export class RateLimitMiddleware {
 
 // Export singleton instance
 export const rateLimitMiddleware = new RateLimitMiddleware({
-  redisUrl: process.env.REDIS_URL,
-  enableDistributed: false, // Disable Redis for now to prevent connection errors
+  redisUrl: process.env.REDIS_URL || `redis://:${process.env.REDIS_PASSWORD}@${process.env.REDIS_HOST}:${process.env.REDIS_PORT}`,
+  enableDistributed: false, // Temporarily disable Redis for rate limiting due to compatibility issues
   whitelistedIPs: process.env.WHITELISTED_IPS?.split(',') || [],
 });
 

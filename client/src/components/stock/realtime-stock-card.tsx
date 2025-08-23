@@ -74,7 +74,7 @@ export function RealtimeStockCard({
           <>
             <div className="flex items-end justify-between">
               <div>
-                <p className="text-2xl font-bold">${quote.price.toFixed(2)}</p>
+                <p className="text-2xl font-bold">${(quote?.price ?? 0).toFixed(2)}</p>
                 <div className={cn("flex items-center gap-1 text-sm", changeColor)}>
                   {isPositive ? (
                     <ArrowUpIcon className="h-4 w-4" />

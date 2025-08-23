@@ -3,7 +3,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Lock, Crown, Users, TrendingUp } from 'lucide-react';
-import { useAuth } from '@/contexts/simple-auth-offline';
+import { useAuth } from '@/contexts/temp-auth';
 
 interface FeatureLimiterProps {
   children: ReactNode;

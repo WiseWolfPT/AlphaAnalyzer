@@ -300,16 +300,17 @@ app.use(globalBackoffMiddleware());
 app.use(auditLogger);
 app.use(sanitizeInput);
 
-// Rate limiting
-app.use('/api/', generalLimiter);
+// Rate limiting - TEMPORARILY DISABLED FOR TESTING
+// app.use('/api/', generalLimiter);
 
 // ROADMAP V4: Apply Upstash rate limiting based on endpoint sensitivity (30 req/min IP using contador KV)
-app.use('/api/auth', upstashRateLimiters.auth);        // 5 req/min for auth
-app.use('/api/admin', upstashRateLimiters.admin);      // 10 req/min for admin  
-app.use('/api/search', upstashRateLimiters.api);       // 20 req/min for search
-app.use('/api/stocks', upstashRateLimiters.api);       // 20 req/min for financial data
-app.use('/api/health', upstashRateLimiters.public);    // 60 req/min for health checks
-app.use('/api', upstashRateLimiters.general);          // 30 req/min general (as specified in roadmap)
+// TEMPORARILY DISABLED FOR TESTING
+// app.use('/api/auth', upstashRateLimiters.auth);        // 5 req/min for auth
+// app.use('/api/admin', upstashRateLimiters.admin);      // 10 req/min for admin  
+// app.use('/api/search', upstashRateLimiters.api);       // 20 req/min for search
+// app.use('/api/stocks', upstashRateLimiters.api);       // 20 req/min for financial data
+// app.use('/api/health', upstashRateLimiters.public);    // 60 req/min for health checks
+// app.use('/api', upstashRateLimiters.general);          // 30 req/min general (as specified in roadmap)
 
 // Health check endpoint
 app.get('/api/health', async (req, res) => {

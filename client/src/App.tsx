@@ -30,42 +30,14 @@ import { PortfolioProvider } from './contexts/portfolio-context';
 
 // AGGRESSIVE DYNAMIC IMPORTS - Load everything lazily with micro-bundles
 
-// Import fallback dashboard for better error handling
-const FallbackDashboard = lazy(() => import("@/components/dashboard/fallback-dashboard"));
-
-// Dashboard micro-bundles with enhanced error handling and preloading
-// Use FallbackDashboard directly since unified-dashboard is not available
-const UserDashboard = FallbackDashboard;
-
-const AdminDashboard = createLazyComponent(
-  () => import("@/pages/admin/admin-dashboard"),
-  {
-    name: 'AdminDashboard',
-    fallback: FallbackDashboard
-  }
-);
-
-const LogsDashboard = createLazyComponent(
-  () => import("@/pages/admin/logs-dashboard"),
-  {
-    name: 'LogsDashboard',
-    fallback: FallbackDashboard
-  }
-);
-
+// Admin pages
 const AdminUsers = createLazyComponent(
   () => import("@/pages/admin/admin-users"),
   {
-    name: 'AdminUsers',
-    fallback: FallbackDashboard
+    name: 'AdminUsers'
   }
 );
 
-// Use FallbackDashboard for all dashboard variants since unified-dashboard is not available
-const ValuationDashboard = FallbackDashboard;
-const DebugDashboard = FallbackDashboard;
-const SimpleDashboard = FallbackDashboard;
-const TestDashboard = FallbackDashboard;
 
 // Critical route micro-bundles (high priority)
 const Landing = createLazyComponent(
@@ -389,25 +361,14 @@ function Router() {
         <Route path="/home" component={FindStocks} />
         <Route path="/compare" component={Compare} />
         
-        {/* Unified Dashboard Routes */}
-        <Route path="/dashboard" component={UserDashboard} />
-        <Route path="/dashboard/enhanced" component={UserDashboard} />
-        <Route path="/dashboard/simple" component={SimpleDashboard} />
-        <Route path="/dashboard/test" component={TestDashboard} />
-        <Route path="/insights" component={UserDashboard} />
+        {/* Main routes */}
+        <Route path="/insights" component={FindStocks} />
         
-        {/* Admin Dashboard Routes - Protected */}
+        {/* Admin Routes - Protected */}
         <Route path="/admin">
           {() => (
             <AdminRoute>
-              <AdminDashboard />
-            </AdminRoute>
-          )}
-        </Route>
-        <Route path="/admin/dashboard">
-          {() => (
-            <AdminRoute>
-              <AdminDashboard />
+              <AdminUsers />
             </AdminRoute>
           )}
         </Route>
@@ -432,7 +393,6 @@ function Router() {
             </AdminRoute>
           )}
         </Route>
-        <Route path="/admin/debug" component={DebugDashboard} />
         <Route path="/admin/cache">
           {() => (
             <AdminRoute>
@@ -440,16 +400,9 @@ function Router() {
             </AdminRoute>
           )}
         </Route>
-        <Route path="/admin/logs">
-          {() => (
-            <AdminRoute>
-              <LogsDashboard />
-            </AdminRoute>
-          )}
-        </Route>
         
-        {/* Valuation Dashboard Route */}
-        <Route path="/valuation" component={ValuationDashboard} />
+        {/* Valuation Route */}
+        <Route path="/valuation" component={IntrinsicValue} />
         <Route path="/intrinsic-value" component={IntrinsicValue} />
         
         {/* Other Routes */}
@@ -521,23 +474,17 @@ function App() {
           <EnhancedErrorBoundary context="Root Application">
             <QueryClientProvider client={queryClient}>
               <QueryDebugWrapper queryClient={queryClient}>
-                <AppInitializer>
-                  <ThemeProvider defaultTheme="dark" storageKey="alfalyzer-theme">
-                    <SupabaseAuthProvider>
-                      <PortfolioProvider>
-                        <NotificationToast />
-                        <Toaster />
-                        <DebugModeToggle />
-                        <Router />
-                        <ReactQueryDevtools 
-                          initialIsOpen={false} 
-                          buttonPosition="bottom-right"
-                          position="bottom"
-                        />
-                      </PortfolioProvider>
-                    </SupabaseAuthProvider>
-                  </ThemeProvider>
-                </AppInitializer>
+                <ThemeProvider defaultTheme="dark" storageKey="alfalyzer-theme">
+                  <NotificationToast />
+                  <Toaster />
+                  <DebugModeToggle />
+                  <Router />
+                  <ReactQueryDevtools 
+                    initialIsOpen={false} 
+                    buttonPosition="bottom-right"
+                    position="bottom"
+                  />
+                </ThemeProvider>
               </QueryDebugWrapper>
             </QueryClientProvider>
           </EnhancedErrorBoundary>

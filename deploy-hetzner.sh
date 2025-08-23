@@ -1,108 +1,111 @@
 #!/bin/bash
 
-# Alfalyzer Deployment Script for Hetzner VPS
-# Last updated: 2025-08-17
+# Script de Deploy Simplificado para Servidor Hetzner
+# Alfalyzer Production Deployment
 
 set -e  # Exit on error
 
-echo "🚀 Alfalyzer Deployment Script"
-echo "================================"
+echo "🚀 Deploy Alfalyzer para Produção"
+echo "=================================="
 
-# Server configuration
+# Configurações
 SERVER_IP="128.140.45.28"
 SERVER_USER="root"
-PROJECT_PATH="/home/teste 1"
+SERVER_ALIAS="hetzner"  # Use SSH config alias
+REMOTE_DIR="/home/teste 1"
+LOCAL_BUILD_DIR="client/dist/public"
 
-# Colors for output
+# Cores para output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
-echo -e "${YELLOW}⚠️  This script will deploy Alfalyzer to production server${NC}"
-echo "Server: $SERVER_IP"
-echo "Path: $PROJECT_PATH"
-echo ""
-read -p "Continue? (y/n) " -n 1 -r
-echo ""
-if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-    echo "Deployment cancelled"
+echo -e "${YELLOW}📦 Verificando build local...${NC}"
+if [ ! -d "$LOCAL_BUILD_DIR" ]; then
+    echo -e "${RED}❌ Build não encontrado! Execute 'npm run build' primeiro.${NC}"
     exit 1
 fi
 
-# Step 1: Build locally
-echo -e "\n${GREEN}📦 Building frontend locally...${NC}"
-npm run build
+echo -e "${GREEN}✅ Build encontrado${NC}"
 
-# Step 2: Create deployment archive
-echo -e "\n${GREEN}📦 Creating deployment archive...${NC}"
-tar -czf alfalyzer-deploy.tar.gz \
-    dist/ \
-    server/ \
-    shared/ \
-    package.json \
-    package-lock.json \
-    ecosystem.config.cjs \
-    .env.production \
-    --exclude="node_modules" \
-    --exclude="*.log" \
-    --exclude=".git"
+echo -e "${YELLOW}🔄 Fazendo backup remoto...${NC}"
+ssh ${SERVER_ALIAS} << 'EOF'
+    cd "/home/teste 1"
+    if [ -d "dist/public" ]; then
+        rm -rf dist.backup
+        cp -r dist dist.backup
+        echo "✅ Backup criado: dist.backup"
+    fi
+EOF
 
-# Step 3: Upload to server
-echo -e "\n${GREEN}📤 Uploading to server...${NC}"
-scp alfalyzer-deploy.tar.gz $SERVER_USER@$SERVER_IP:/tmp/
+echo -e "${YELLOW}📤 Enviando arquivos para o servidor...${NC}"
+# Criar arquivo tar para transfer mais rápido
+tar -czf dist.tar.gz -C client/dist/public .
+scp dist.tar.gz ${SERVER_ALIAS}:"${REMOTE_DIR}/"
+rm dist.tar.gz
 
-# Step 4: Deploy on server
-echo -e "\n${GREEN}🚀 Deploying on server...${NC}"
-ssh $SERVER_USER@$SERVER_IP << 'ENDSSH'
-set -e
+echo -e "${YELLOW}📂 Extraindo arquivos no servidor...${NC}"
+ssh ${SERVER_ALIAS} << 'EOF'
+    cd "/home/teste 1"
+    rm -rf dist/public
+    mkdir -p dist/public
+    tar -xzf dist.tar.gz -C dist/public
+    rm dist.tar.gz
+    
+    # Garantir que index.html existe
+    if [ ! -f "dist/public/index.html" ]; then
+        echo "⚠️  AVISO: index.html não encontrado!"
+    else
+        echo "✅ index.html presente"
+    fi
+    
+    # Listar arquivos principais
+    echo "📁 Arquivos principais:"
+    ls -la dist/public/ | head -10
+EOF
 
-cd "/home/teste 1"
+echo -e "${YELLOW}🔄 Reiniciando aplicação com PM2...${NC}"
+ssh ${SERVER_ALIAS} << 'EOF'
+    cd "/home/teste 1"
+    pm2 restart alfalyzer --update-env
+    sleep 3
+    pm2 status alfalyzer
+EOF
 
-# Backup current deployment
-echo "📦 Creating backup..."
-timestamp=$(date +%Y%m%d-%H%M%S)
-tar -czf "backup-$timestamp.tar.gz" dist/ server/ shared/ .env.production 2>/dev/null || true
+echo -e "${YELLOW}🏥 Verificando saúde da aplicação...${NC}"
+sleep 5  # Aguardar inicialização
 
-# Extract new deployment
-echo "📦 Extracting new deployment..."
-tar -xzf /tmp/alfalyzer-deploy.tar.gz
+# Testar endpoints
+echo "Testando HTTPS..."
+HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" -k https://128.140.45.28.sslip.io/ || echo "000")
 
-# Install dependencies
-echo "📦 Installing dependencies..."
-npm ci --production
+if [ "$HTTP_STATUS" = "200" ]; then
+    echo -e "${GREEN}✅ Site respondendo corretamente (HTTP $HTTP_STATUS)${NC}"
+else
+    echo -e "${YELLOW}⚠️  Site retornou HTTP $HTTP_STATUS${NC}"
+fi
 
-# Stop current deployment
-echo "🛑 Stopping current deployment..."
-pm2 stop all || true
+# Testar API
+echo "Testando API..."
+API_STATUS=$(curl -s -o /dev/null -w "%{http_code}" -k https://128.140.45.28.sslip.io/api/health || echo "000")
 
-# Start new deployment
-echo "✅ Starting new deployment..."
-pm2 start ecosystem.config.cjs --env production
+if [ "$API_STATUS" = "200" ]; then
+    echo -e "${GREEN}✅ API respondendo corretamente${NC}"
+else
+    echo -e "${YELLOW}⚠️  API retornou HTTP $API_STATUS${NC}"
+fi
 
-# Save PM2 configuration
-pm2 save
-
-# Clean up
-rm -f /tmp/alfalyzer-deploy.tar.gz
-
-# Check status
-echo "📊 Deployment status:"
-pm2 status
-
-echo "✅ Deployment complete!"
-ENDSSH
-
-# Clean up local archive
-rm -f alfalyzer-deploy.tar.gz
-
-echo -e "\n${GREEN}✅ Deployment successful!${NC}"
+echo -e "${GREEN}🎉 Deploy concluído!${NC}"
 echo ""
-echo "🔗 Access your application at:"
-echo "   http://$SERVER_IP"
-echo "   http://128-140-45-28.nip.io"
+echo "📋 Resumo:"
+echo "  🌐 URL: https://128.140.45.28.sslip.io/"
+echo "  🔧 API: https://128.140.45.28.sslip.io/api/health"
 echo ""
-echo "📝 Next steps:"
-echo "1. Add real API keys to .env.production on server"
-echo "2. Restart backend: ssh $SERVER_USER@$SERVER_IP 'pm2 restart all'"
-echo "3. Check logs: ssh $SERVER_USER@$SERVER_IP 'pm2 logs --lines 50'"
+echo "💡 Comandos úteis:"
+echo "  SSH: ssh root@${SERVER_IP}"
+echo "  Logs: ssh root@${SERVER_IP} 'pm2 logs alfalyzer --lines 50'"
+echo "  Status: ssh root@${SERVER_IP} 'pm2 status'"
+echo ""
+echo "🔄 Para reverter (se necessário):"
+echo "  ssh root@${SERVER_IP} 'cd /home/teste\\ 1 && rm -rf dist && mv dist.backup dist && pm2 restart alfalyzer'"

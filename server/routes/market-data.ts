@@ -60,11 +60,11 @@ const cacheService = new CacheService();
 // SECURITY FIX: Replace simple Map with secure LRU cache to prevent memory exhaustion
 const searchCache = createSearchCache();
 
-// Rate limiting específico para market data
+// Rate limiting específico para market data - TEMPORARILY INCREASED FOR TESTING
 const marketDataRateLimit = rateLimitMiddleware.endpointRateLimit('/api/market-data', {
-  'free': 30,     // 30 requests per hour
-  'pro': 120,     // 120 requests per hour  
-  'premium': 500, // 500 requests per hour
+  'free': 10000,     // TEMPORARILY INCREASED: 10000 requests per hour
+  'pro': 10000,      // TEMPORARILY INCREASED: 10000 requests per hour  
+  'premium': 10000,  // TEMPORARILY INCREASED: 10000 requests per hour
 });
 
 // Validação de símbolo de ação

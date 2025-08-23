@@ -3,7 +3,7 @@ import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { AuthModal } from "@/components/auth/auth-modal";
-import { useAuth } from "@/contexts/simple-auth-offline";
+import { useAuth } from "@/contexts/temp-auth";
 import { 
   BarChart3, 
   Menu, 

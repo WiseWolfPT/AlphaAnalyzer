@@ -2,26 +2,28 @@
 
 Financial analysis platform with real-time market data, earnings transcripts, and advanced charting. Built for Portuguese market focus with global capabilities.
 
-## CURRENT STATE
+## PRODUCTION STATUS
+
+**URL:** https://128.140.45.28.sslip.io/ ✅ **FUNCIONANDO!**  
+**Server:** Hetzner CX22 (128.140.45.28)  
+**Status:** 95% Production Ready  
+**SSL Certificate:** Valid until 2025-11-16 (auto-renews)
 
 ✅ **Working:**
-- Landing page with animations
-- Watchlists CRUD operations  
-- Intrinsic value calculations
-- Basic API integrations
-- WebSocket implementation
-- Supabase caching
+- Frontend loading correctly (CORS fixed)
+- Nginx serving static files properly  
+- HTTPS functioning at https://128.140.45.28.sslip.io/
+- PM2 stable (alfalyzer process)
+- Redis connected (256MB, password: alfalyzer2025redis)
+- FMP API key valid and working
+- All external APIs responding
+- Real-time quotes updating
 
-❌ **Broken:**
-- Dashboard navigation (cards don't link to charts)
-- Mock data in most sections
+⚠️ **Pending Features:**
+- API endpoint /api/market-data/batch needs protection
 - Admin panel not implemented
 - Transcripts feature missing
-- Authentication needs enhancement
-
-✅ **Recently Completed:**
-- Backend migrated to Hetzner CX22 + Coolify
-- POST → GET migration for batch quotes endpoint
+- Dashboard navigation improvements
 
 ## TECH STACK
 
@@ -29,13 +31,13 @@ Financial analysis platform with real-time market data, earnings transcripts, an
 **Backend:** Node.js 20+, Express 4.21.2, TypeScript  
 **Database:** Supabase (PostgreSQL + Auth + Realtime + Storage)  
 **APIs:** Alpha Vantage, Finnhub, FMP, Twelve Data, Polygon  
-**Deployment:** Vercel (frontend), Hetzner CX22/Coolify (backend €3.79/mo)
+**Deployment:** Hetzner CX22 (€3.79/mo) - Frontend e Backend no mesmo servidor com PM2
 
 ## ARCHITECTURE
 
 ```
-Frontend (Vercel) → Backend API (Hetzner) → Supabase
-                                         ↘ External APIs
+Frontend + Backend (Hetzner/PM2) → Supabase
+                                 ↘ External APIs
 ```
 
 **Patterns:**
@@ -119,6 +121,27 @@ DELETE /api/watchlists/:id
 5. ❌ Don't use `any` type in TypeScript
 6. ❌ Don't commit .env files
 7. ❌ Don't create new auth systems (use Supabase Auth)
+8. ❌ Don't use .toFixed() without null checks
+   ```typescript
+   // ❌ WRONG - Crashes if value is undefined
+   price.toFixed(2)
+   
+   // ✅ CORRECT - Safe with defensive programming
+   (price ?? 0).toFixed(2)
+   // or
+   price ? price.toFixed(2) : '0.00'
+   ```
+
+## KNOWN ISSUES & SOLUTIONS
+
+### Prices showing $0.00
+**Cause:** Reddit Strategy serves cached data to minimize API costs
+**Solution:** This is intentional! Free users get cached data, premium users will get real-time
+**Note:** If API returns HTML instead of JSON, check SERVE_STATIC env variable
+
+### Page crashes with .toFixed() error
+**Cause:** Calling .toFixed() on undefined values
+**Solution:** Always use defensive programming (see DON'T DO THIS #8)
 
 ## CRITICAL FILES
 
@@ -126,20 +149,41 @@ DELETE /api/watchlists/:id
 - `/server/routes/market-data.ts` - API endpoints
 - `/client/src/hooks/use-realtime-quotes.ts` - WebSocket logic
 - `/server/services/cache/supabase-cache-service.ts` - Caching
+- `/server/services/reddit-strategy.ts` - Cache-first data strategy
+
+## SERVER ACCESS
+
+```bash
+ssh root@128.140.45.28
+cd "/home/teste 1/"
+pm2 status              # Check application
+pm2 logs alfalyzer      # View logs
+pm2 restart alfalyzer   # Restart if needed
+```
+
+## ENVIRONMENT VARIABLES
+
+Production file: `/home/teste 1/.env.production`
+
+Key variables:
+- `FMP_API_KEY` - Primary data provider (most important)
+- `REDIS_PASSWORD=alfalyzer2025redis`
+- Supabase keys configured and working
 
 ## QUICK FIXES NEEDED
 
-1. **Dashboard Navigation** (Priority: HIGH)
-   - File: `/client/src/components/dashboard/stock-card.tsx`
-   - Add Wouter navigation to chart page
+1. **API Protection** (Priority: HIGH)
+   ```bash
+   # Check if middleware is applied
+   grep -n "marketDataApiKey" server/routes/market-data.ts
+   ```
 
-2. **Replace Mock Data** (Priority: HIGH)
-   - Files: `/client/src/pages/earnings.tsx`, `/portfolios.tsx`
-   - Connect to real API endpoints
+2. **Dashboard Navigation** (Priority: HIGH)
+   - Cards should link to `/stocks/:symbol`
+   - Fix in `/client/src/components/Dashboard.tsx`
 
-3. **Admin Panel** (Priority: MEDIUM)
-   - Create `/client/src/pages/admin/*`
-   - Implement transcript upload feature
+3. **TypeScript Errors** (Priority: LOW)
+   - Only in test files, not blocking production
 
 ---
-Last updated: 2025-07-29
+Last updated: 2025-08-19

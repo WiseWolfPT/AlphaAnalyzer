@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useLocation, useRoute } from "wouter";
 import { cn } from "@/lib/utils";
-import { useAuth } from "@/contexts/simple-auth-offline";
+import { useAuth } from "@/contexts/temp-auth";
 import { Button } from "@/components/ui/button";
 import { AuthModal } from "@/components/auth/auth-modal";
 import { 

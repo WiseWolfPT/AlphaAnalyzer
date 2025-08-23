@@ -28,7 +28,7 @@ import {
   Database,
   Smartphone
 } from "lucide-react";
-import { useAuth } from "@/contexts/simple-auth-offline";
+import { useAuth } from "@/contexts/temp-auth";
 import { useTheme } from "@/hooks/use-theme";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";

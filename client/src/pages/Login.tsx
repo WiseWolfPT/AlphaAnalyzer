@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { BarChart3, Mail, Lock, Eye, EyeOff, ArrowLeft } from "lucide-react";
-import { useAuth } from "@/contexts/simple-auth-offline";
+import { useAuth } from "@/contexts/temp-auth";
 
 export default function Login() {
   const [email, setEmail] = useState("");

@@ -80,7 +80,7 @@ export default function ApiDebugPage() {
 
           <div className="space-y-2">
             <p><strong>Frontend URL:</strong> {window.location.origin}</p>
-            <p><strong>Backend Proxy:</strong> /api/* → http://jsg00k40sgo0k4swsoc4gcsg.128.140.45.28.sslip.io/api/*</p>
+            <p><strong>Backend Proxy:</strong> /api/* → Backend API</p>
           </div>
 
           <Button onClick={testEndpoints} disabled={testing} className="w-full">

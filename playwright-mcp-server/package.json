@@ -1,0 +1,16 @@
+{
+  "name": "playwright-mcp-server",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "start.js",
+  "scripts": {
+    "start": "node start.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@playwright/mcp": "^0.0.34"
+  }
+}

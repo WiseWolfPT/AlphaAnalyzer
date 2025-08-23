@@ -2,8 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { MainLayout } from "@/components/layout/main-layout";
 import { StockSearch } from "@/components/stock/stock-search";
-import { EnhancedStockCard } from "@/components/stock/enhanced-stock-card";
-import { CompactStockCard } from "@/components/stock/compact-stock-card";
+import { UnifiedStockCard } from "@/components/stock/unified-stock-card";
 import { RealtimeStockCard } from "@/components/stock/realtime-stock-card";
 import { BetaBanner } from "@/components/beta/beta-banner";
 import { Button } from "@/components/ui/button";
@@ -12,11 +11,9 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Search, TrendingUp, TrendingDown, Activity, Target, RefreshCw, Zap, AlertCircle, Filter, Grid3X3, List, Wifi, ArrowUpIcon, ArrowDownIcon, Clock, BarChart3 } from "lucide-react";
-import { useAuth } from "@/contexts/simple-auth-offline";
+import { useAuth } from "@/contexts/temp-auth";
 import { cn } from "@/lib/utils";
 import { useCachedBatchQuotes } from "@/hooks/use-cache-data";
-import { ApiDiagnostic } from "@/components/debug/api-diagnostic";
-import { env } from "@/lib/env";
 import { TestAPIConnection } from "@/components/test-api-connection";
 import { ConnectionTest } from "@/components/debug/connection-test";
 import { AuthTest } from "@/test/auth-test";
@@ -245,8 +242,8 @@ export default function FindStocks() {
   const [, setLocation] = useLocation();
   const { user } = useAuth();
   const [displayedSymbols, setDisplayedSymbols] = useState(() => {
-    // Show all stocks by default
-    return ALL_STOCKS;
+    // Start with popular stocks to reduce initial load
+    return POPULAR_SYMBOLS;
   });
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [searchQuery, setSearchQuery] = useState('');
@@ -318,19 +315,27 @@ export default function FindStocks() {
 
   // Transform the quotes data to match the component's expected format with error handling
   const stocks = React.useMemo(() => {
+    // Safety check: ensure we have valid data before attempting to transform
+    if (!quotesData?.quotes || !Array.isArray(quotesData.quotes)) {
+      console.log('Quotes data not ready or invalid:', quotesData);
+      return [];
+    }
+    
     try {
-      return quotesData?.quotes?.map((quote, index) => ({
+      return quotesData.quotes
+        .filter(quote => quote != null) // Filter out null/undefined quotes
+        .map((quote, index) => ({
         id: index + 1,
         symbol: quote.symbol || 'UNKNOWN',
         name: getCompanyName(quote.symbol || 'UNKNOWN'),
-        price: typeof quote.price === 'number' && !isNaN(quote.price) ? quote.price.toFixed(2) : '0.00',
-        change: typeof quote.change === 'number' && !isNaN(quote.change) ? quote.change.toFixed(2) : '0.00',
-        changePercent: typeof quote.changePercent === 'number' && !isNaN(quote.changePercent) ? quote.changePercent.toFixed(2) : '0.00',
-        marketCap: quote.marketCap && !isNaN(quote.marketCap) ? `$${(quote.marketCap / 1e9).toFixed(2)}B` : 'N/A',
+        price: (quote?.price != null && !isNaN(Number(quote.price))) ? Number(quote.price).toFixed(2) : '0.00',
+        change: (quote?.change != null && !isNaN(Number(quote.change))) ? Number(quote.change).toFixed(2) : '0.00',
+        changePercent: (quote?.changePercent != null && !isNaN(Number(quote.changePercent))) ? Number(quote.changePercent).toFixed(2) : '0.00',
+        marketCap: (quote?.marketCap != null && !isNaN(Number(quote.marketCap)) && Number(quote.marketCap) > 0) ? `$${(Number(quote.marketCap) / 1e9).toFixed(2)}B` : 'N/A',
         sector: getSector(quote.symbol || 'UNKNOWN'),
         industry: getIndustry(quote.symbol || 'UNKNOWN'),
-        eps: typeof quote.eps === 'number' && !isNaN(quote.eps) ? quote.eps.toFixed(2) : 'N/A',
-        peRatio: typeof quote.pe === 'number' && !isNaN(quote.pe) ? quote.pe.toFixed(2) : 'N/A',
+        eps: (quote?.eps != null && !isNaN(Number(quote.eps))) ? Number(quote.eps).toFixed(2) : 'N/A',
+        peRatio: (quote?.pe != null && !isNaN(Number(quote.pe))) ? Number(quote.pe).toFixed(2) : 'N/A',
         logo: `/api/placeholder/40/40`,
         lastUpdated: new Date(quote.timestamp || Date.now()),
         volume: quote.volume || 0,
@@ -340,7 +345,7 @@ export default function FindStocks() {
         _isRealData: !quote._cached,
         _provider: quote.provider || 'unknown',
         _cached: quote._cached || false
-      })) || [];
+      }));
     } catch (err) {
       console.error('Error transforming quotes data:', err);
       return [];
@@ -669,10 +674,7 @@ export default function FindStocks() {
           </Card>
         </div>
 
-        {/* API Diagnostic (Temporary - Remove in production) */}
-        {env.NODE_ENV === 'development' || window.location.search.includes('debug') ? (
-          <ApiDiagnostic />
-        ) : null}
+        {/* API Diagnostic removed for production stability */}
 
         {/* Results Section */}
         <div className="space-y-4">
@@ -705,14 +707,19 @@ export default function FindStocks() {
                     case 'alphabetical':
                       return a.localeCompare(b);
                     case 'gainers':
-                      return parseFloat(bStock.changePercent) - parseFloat(aStock.changePercent);
+                      const bChange = parseFloat(bStock.changePercent) || 0;
+                      const aChange = parseFloat(aStock.changePercent) || 0;
+                      return bChange - aChange;
                     case 'losers':
-                      return parseFloat(aStock.changePercent) - parseFloat(bStock.changePercent);
+                      const aLosersChange = parseFloat(aStock.changePercent) || 0;
+                      const bLosersChange = parseFloat(bStock.changePercent) || 0;
+                      return aLosersChange - bLosersChange;
                     case 'volume':
                       return (bStock.volume || 0) - (aStock.volume || 0);
                     case 'marketCap':
-                      const aMarket = parseFloat(aStock.marketCap.replace(/[^0-9.-]+/g,"")) || 0;
-                      const bMarket = parseFloat(bStock.marketCap.replace(/[^0-9.-]+/g,"")) || 0;
+                      // marketCap is already formatted as "$123.45B" or "N/A"
+                      const aMarket = aStock.marketCap === 'N/A' ? 0 : parseFloat(aStock.marketCap.replace(/[^0-9.-]+/g,"")) || 0;
+                      const bMarket = bStock.marketCap === 'N/A' ? 0 : parseFloat(bStock.marketCap.replace(/[^0-9.-]+/g,"")) || 0;
                       return bMarket - aMarket;
                     default:
                       return 0;
@@ -804,17 +811,17 @@ export default function FindStocks() {
                     
                     <div className="space-y-2">
                       <div className="flex justify-between items-center">
-                        <span className="text-lg font-bold">${parseFloat(stock.price).toFixed(2)}</span>
+                        <span className="text-lg font-bold">${stock.price}</span>
                         <div className={cn(
                           "flex items-center gap-1 text-sm font-medium",
-                          parseFloat(stock.changePercent) >= 0 ? "text-green-600" : "text-red-600"
+                          (parseFloat(stock.changePercent) || 0) >= 0 ? "text-green-600" : "text-red-600"
                         )}>
-                          {parseFloat(stock.changePercent) >= 0 ? (
+                          {(parseFloat(stock.changePercent) || 0) >= 0 ? (
                             <TrendingUp className="w-3 h-3" />
                           ) : (
                             <TrendingDown className="w-3 h-3" />
                           )}
-                          {parseFloat(stock.changePercent) >= 0 ? '+' : ''}{parseFloat(stock.changePercent).toFixed(2)}%
+                          {(parseFloat(stock.changePercent) || 0) >= 0 ? '+' : ''}{stock.changePercent}%
                         </div>
                       </div>
                       

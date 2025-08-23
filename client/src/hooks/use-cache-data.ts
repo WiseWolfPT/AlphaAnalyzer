@@ -1,20 +1,10 @@
 import { useQuery } from '@tanstack/react-query';
-import { env } from '@/lib/env';
 
 // Helper to get API URL
 const getApiUrl = () => {
-  // In production (Vercel), use relative URLs to leverage Vercel proxy
-  // This avoids mixed content blocking (HTTPS -> HTTP)
-  if (typeof window !== 'undefined') {
-    const hostname = window.location.hostname;
-    // Check if we're on any Vercel deployment (production or preview)
-    if (hostname.includes('.vercel.app') || hostname === 'alfalyzer.com') {
-      return ''; // Empty string for relative URLs
-    }
-  }
-  
-  // In development or other environments, use the configured backend URL
-  return (env as any).VITE_BACKEND_URL || 'http://jsg00k40sgo0k4swsoc4gcsg.128.140.45.28.sslip.io';
+  // Always use relative URLs to work with any deployment
+  // The server handles routing to the backend
+  return '';
 };
 
 // Hook for batch quotes - GET with chunking, delay and fallback
@@ -31,27 +21,29 @@ export function useCachedBatchQuotes(symbols: string[], options: any = {}) {
       const allQuotes: any[] = [];
 
       for (const c of chunks) {
-        // 1) GET "real" (preenche cache e evita CSRF)
-        const qs = c.map((s) => encodeURIComponent(s)).join(','); // importante: preservar vírgulas
+        // GET request with proper encoding
+        const qs = c.map((s) => encodeURIComponent(s)).join(',');
         const url = `/api/market-data/quotes/batch?symbols=${qs}`;
-        const r = await fetch(url, { method: 'GET', headers: { Accept: 'application/json' } });
-        if (r.ok) {
-          const b = await r.json();
-          const quotes = b?.quotes ?? b?.data ?? (Array.isArray(b) ? b : []);
-          allQuotes.push(...quotes);
-        } else {
-          // 2) Fallback cache (isento de CSRF)
-          const r2 = await fetch('/api/cache/quotes/batch', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-            body: JSON.stringify({ symbols: c }),
+        
+        try {
+          const r = await fetch(url, { 
+            method: 'GET', 
+            headers: { Accept: 'application/json' } 
           });
-          const b2 = r2.ok ? await r2.json() : { data: [] };
-          const quotes2 = b2?.quotes ?? b2?.data ?? [];
-          allQuotes.push(...quotes2);
+          
+          if (r.ok) {
+            const b = await r.json();
+            const quotes = b?.quotes ?? b?.data ?? (Array.isArray(b) ? b : []);
+            allQuotes.push(...quotes);
+          } else {
+            console.warn(`Failed to fetch quotes for ${c.join(',')}: ${r.status} ${r.statusText}`);
+            // Continue without fallback since /api/cache/quotes/batch doesn't exist
+          }
+        } catch (error) {
+          console.error('Error fetching quotes:', error);
         }
 
-        await sleep(300); // suaviza rate limit
+        await sleep(300); // rate limit protection
       }
 
       return {

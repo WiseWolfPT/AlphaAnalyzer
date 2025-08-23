@@ -46,7 +46,7 @@ export default function TestSprint1() {
     // Test 1: Direct backend call
     await testEndpoint(
       'Direct Backend Call',
-      'http://jsg00k40sgo0k4swsoc4gcsg.128.140.45.28.sslip.io/api/v1/stock/AAPL/quote'
+      '/api/v1/stock/AAPL/quote'
     );
     
     // Test 2: Via Vercel proxy (relative URL)

@@ -54,10 +54,10 @@ export function usePrefetch() {
             queryKey: queryKeys.stock(symbol),
             queryFn: async () => {
               // Use batch endpoint even for single stock to standardize API usage
-              // Use API client with full backend URL
-              const data = await api.post<{ quotes: any[] }>(
-                API_ENDPOINTS.quotes.batch,
-                { symbols: [symbol] }
+              // Use API client with full backend URL - changed to GET per backend requirements
+              const symbolsParam = encodeURIComponent(symbol);
+              const data = await api.get<{ quotes: any[] }>(
+                `${API_ENDPOINTS.quotes.batch}?symbols=${symbolsParam}`
               );
               
               // Extract the single stock from batch response
