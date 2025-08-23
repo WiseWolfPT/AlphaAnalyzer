@@ -16,8 +16,6 @@ import { cn } from "@/lib/utils";
 import { useCachedBatchQuotes } from "@/hooks/use-cache-data";
 import { TestAPIConnection } from "@/components/test-api-connection";
 import { ConnectionTest } from "@/components/debug/connection-test";
-import { AuthTest } from "@/test/auth-test";
-import { testAPIConnection } from "@/test-api-connection";
 
 // All stocks from Supabase - expanded list
 const ALL_STOCKS = [
@@ -260,8 +258,7 @@ export default function FindStocks() {
 
   // Run API connection test on mount
   useEffect(() => {
-    console.log('🚀 Running API connection test...');
-    testAPIConnection();
+    console.log('🚀 Find Stocks page loaded');
   }, []);
 
   // Helper function to count stocks by sector
@@ -402,10 +399,6 @@ export default function FindStocks() {
           </div>
           {/* Debug connection test */}
           <ConnectionTest />
-          {/* Authentication test */}
-          <div className="mt-8">
-            <AuthTest />
-          </div>
         </div>
       </MainLayout>
     );

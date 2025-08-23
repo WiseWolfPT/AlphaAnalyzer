@@ -1,6 +1,5 @@
 import type { Stock } from '../../shared/schema';
 
-import { yahooFinanceService } from './yahoo-finance-service';
 import { globalCache, DataType, CacheKeys } from '../cache/intelligent-cache-manager';
 import { getSupabaseClient } from '../lib/supabase-client';
 import { logger } from '../lib/logger';

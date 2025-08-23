@@ -1,18 +1,18 @@
 import { getSupabaseClient } from '../../lib/supabase-client';
 import { Logger } from '../structured-logger';
 import { AlphaVantageService } from '../alpha-vantage-service';
-import { FinnhubService } from '../finnhub-service';
-import { PolygonService } from '../polygon-service';
-import { YahooFinanceService } from '../yahoo-finance-service';
+// import { FinnhubService } from '../finnhub-service'; // Removed - keeping only FMP + Alpha Vantage
+// import { PolygonService } from '../polygon-service'; // Removed - keeping only FMP + Alpha Vantage
+// import { YahooFinanceService } from '../yahoo-finance-service'; // Removed - keeping only FMP + Alpha Vantage
 
 const logger = new Logger('PriceUpdateWorker');
 
 // API Services
 const apiServices = {
   alpha_vantage: new AlphaVantageService(),
-  finnhub: new FinnhubService(),
-  polygon: new PolygonService(),
-  yahoo_finance: new YahooFinanceService()
+  // finnhub: new FinnhubService(), // Removed - keeping only FMP + Alpha Vantage
+  // polygon: new PolygonService(), // Removed - keeping only FMP + Alpha Vantage
+  // yahoo_finance: new YahooFinanceService() // Removed - keeping only FMP + Alpha Vantage
 };
 
 interface PriceData {

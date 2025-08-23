@@ -1,6 +1,6 @@
 import { jobQueue, Job, JobPayload } from './job-queue';
 import { DataOrchestrator } from './data-orchestrator';
-import { PolygonService } from './polygon-service';
+// import { PolygonService } from './polygon-service'; // Removed - keeping only FMP + Alpha Vantage
 import { ServerMarketDataService } from './market-data-service';
 
 /**
@@ -9,13 +9,13 @@ import { ServerMarketDataService } from './market-data-service';
  */
 export class JobProcessor {
   private dataOrchestrator: DataOrchestrator;
-  private polygonService: PolygonService;
+  // private polygonService: PolygonService; // Removed - keeping only FMP + Alpha Vantage
   private marketDataService: ServerMarketDataService;
   private isProcessing = false;
 
   constructor() {
     this.dataOrchestrator = new DataOrchestrator();
-    this.polygonService = new PolygonService();
+    // this.polygonService = new PolygonService(); // Removed - keeping only FMP + Alpha Vantage
     this.marketDataService = new ServerMarketDataService();
   }
 

@@ -35,7 +35,7 @@ export const LazyComponents = {
   // Financial analysis components
   IntrinsicValue: createLazyComponent(() => import('@/pages/intrinsic-value')),
   Earnings: createLazyComponent(() => import('@/pages/earnings')),
-  Insights: createLazyComponent(() => import('@/pages/insights-safe')),
+  Insights: createLazyComponent(() => import('@/pages/insights')),
   
   // Portfolio management
   Portfolios: createLazyComponent(() => import('@/pages/portfolios')),

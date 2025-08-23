@@ -1,5 +1,5 @@
-import { FinnhubService, finnhubService } from './finnhub-service';
-import { PolygonService } from './polygon-service';
+// import { FinnhubService, finnhubService } from './finnhub-service'; // Removed - keeping only FMP + Alpha Vantage
+// import { PolygonService } from './polygon-service'; // Removed - keeping only FMP + Alpha Vantage
 import { ServerMarketDataService } from './market-data-service';
 import { multiLayerCache, MultiLayerCache } from '../cache/multi-layer-cache.js';
 import { getSupabaseClient, isSupabaseConfigured } from '../lib/supabase-client';
@@ -52,13 +52,13 @@ export class DataOrchestrator {
     }
   };
 
-  private finnhubService: FinnhubService;
-  private polygonService: PolygonService;
+  // private finnhubService: FinnhubService; // Removed - keeping only FMP + Alpha Vantage
+  // private polygonService: PolygonService; // Removed - keeping only FMP + Alpha Vantage
   private marketDataService: ServerMarketDataService;
 
   constructor() {
-    this.finnhubService = finnhubService;
-    this.polygonService = new PolygonService();
+    // this.finnhubService = finnhubService; // Removed - keeping only FMP + Alpha Vantage
+    // this.polygonService = new PolygonService(); // Removed - keeping only FMP + Alpha Vantage
     this.marketDataService = new ServerMarketDataService();
   }
 

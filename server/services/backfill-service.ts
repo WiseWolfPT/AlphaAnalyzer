@@ -1,5 +1,4 @@
 import { rateLimitTracker } from './rate-limit-tracker';
-import { PolygonService } from './polygon-service';
 import { getSupabaseClient } from '../lib/supabase-client';
 
 export interface BackfillJobConfig {
@@ -56,7 +55,7 @@ export interface BackfillStats {
  * - Admin dashboard integration for monitoring
  */
 export class BackfillService {
-  private polygonService: PolygonService;
+  // private polygonService: PolygonService; // Removed - keeping only FMP + Alpha Vantage
   private isRunning = false;
   private currentJob: BackfillJobConfig | null = null;
   private jobQueue: BackfillJobConfig[] = [];
@@ -65,7 +64,7 @@ export class BackfillService {
   private maxConcurrentJobs = 1; // Process one symbol at a time to avoid rate limits
 
   constructor() {
-    this.polygonService = new PolygonService();
+    // this.polygonService = new PolygonService(); // Removed - keeping only FMP + Alpha Vantage
   }
 
   /**
