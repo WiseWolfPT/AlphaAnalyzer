@@ -42,6 +42,7 @@ import { motion } from "framer-motion";
 import { useRealtimeQuote } from "@/hooks/use-realtime-quotes";
 import type { Stock } from "@shared/schema";
 import { useCachedQuote, useCachedFundamentals, useCachedFinancials } from "@/hooks/use-cache-data";
+import { DCFCalculatorCard } from "@/components/stock/dcf-calculator-card";
 
 interface ValuationResult {
   method: string;
@@ -84,6 +85,13 @@ export default function IntrinsicValue() {
   
   const { data: financials } = useCachedFinancials(selectedStock?.symbol || '', {
     enabled: !!selectedStock?.symbol
+  });
+  
+  // Fetch DCF data for the new calculator
+  const { data: dcfData } = useQuery({
+    queryKey: [`/api/market-data/dcf/${selectedStock?.symbol}`],
+    enabled: !!selectedStock?.symbol,
+    staleTime: 5 * 60 * 1000, // 5 minutes
   });
   
   const { data: searchResults, error: searchError, isLoading: searchLoading } = useQuery<Stock[]>({
@@ -493,79 +501,116 @@ export default function IntrinsicValue() {
               </div>
             )}
 
-            {/* Manual Calculator */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Activity className="h-5 w-5" />
-                  Manual Calculator
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <Tabs defaultValue="dcf" className="w-full">
-                  <TabsList className="grid w-full grid-cols-3">
-                    <TabsTrigger value="dcf">DCF Model</TabsTrigger>
-                    <TabsTrigger value="pe">P/E Valuation</TabsTrigger>
-                    <TabsTrigger value="advanced">Advanced</TabsTrigger>
-                  </TabsList>
-                  
-                  <TabsContent value="dcf" className="space-y-4 mt-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                      <div>
-                        <Label htmlFor="eps">EPS (TTM)</Label>
-                        <Input
-                          id="eps"
-                          type="number"
-                          value={eps}
-                          onChange={(e) => setEps(e.target.value)}
-                          step="0.01"
-                        />
+            {/* Advanced DCF Calculator with Real Data */}
+            <DCFCalculatorCard 
+              symbol={selectedStock.symbol}
+              currentPrice={realtimeQuote?.price || parseFloat(selectedStock.price)}
+              onCalculate={(result) => {
+                // Update the main calculation result
+                setCalculation({
+                  currentPrice: realtimeQuote?.price || parseFloat(selectedStock.price),
+                  intrinsicValue: result.intrinsicValuePerShare,
+                  discount: result.upside,
+                  isUndervalued: result.upside > 0,
+                  methods: [
+                    {
+                      method: "DCF (Free Cash Flow)",
+                      value: result.intrinsicValuePerShare,
+                      description: "Discounted Cash Flow with FCF",
+                      confidence: 90
+                    },
+                    {
+                      method: "Enterprise Value",
+                      value: result.enterpriseValue / (dcfData?.sharesOutstanding || 1000000000),
+                      description: "Enterprise value per share",
+                      confidence: 85
+                    },
+                    {
+                      method: "With Margin of Safety",
+                      value: result.intrinsicValuePerShare * 0.75,
+                      description: "25% margin of safety applied",
+                      confidence: 95
+                    }
+                  ]
+                });
+              }}
+            />
+
+            {/* Legacy Manual Calculator - Hidden but kept for backward compatibility */}
+            {false && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Activity className="h-5 w-5" />
+                    Manual Calculator
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <Tabs defaultValue="dcf" className="w-full">
+                    <TabsList className="grid w-full grid-cols-3">
+                      <TabsTrigger value="dcf">DCF Model</TabsTrigger>
+                      <TabsTrigger value="pe">P/E Valuation</TabsTrigger>
+                      <TabsTrigger value="advanced">Advanced</TabsTrigger>
+                    </TabsList>
+                    
+                    <TabsContent value="dcf" className="space-y-4 mt-6">
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <div>
+                          <Label htmlFor="eps">EPS (TTM)</Label>
+                          <Input
+                            id="eps"
+                            type="number"
+                            value={eps}
+                            onChange={(e) => setEps(e.target.value)}
+                            step="0.01"
+                          />
+                        </div>
+                        <div>
+                          <Label>Growth Rate: {growthRate}%</Label>
+                          <Slider
+                            value={[growthRate]}
+                            onValueChange={(value) => setGrowthRate(value[0])}
+                            max={30}
+                            min={0}
+                            step={0.5}
+                          />
+                        </div>
+                        <div>
+                          <Label>Discount Rate: {discountRate}%</Label>
+                          <Slider
+                            value={[discountRate]}
+                            onValueChange={(value) => setDiscountRate(value[0])}
+                            max={20}
+                            min={5}
+                            step={0.5}
+                          />
+                        </div>
                       </div>
-                      <div>
-                        <Label>Growth Rate: {growthRate}%</Label>
-                        <Slider
-                          value={[growthRate]}
-                          onValueChange={(value) => setGrowthRate(value[0])}
-                          max={30}
-                          min={0}
-                          step={0.5}
-                        />
+                      <Button 
+                        onClick={() => selectedStock && calculateIntrinsicValue(selectedStock)}
+                        className="w-full bg-gradient-to-r from-teya-green via-teya-green-dark to-teya-green hover:from-teya-green-dark hover:via-teya-green hover:to-teya-green-dark text-rich-black font-semibold shadow-lg shadow-teya-green/30 hover:shadow-teya-green/50 hover:scale-105 transition-all duration-300 border-0"
+                      >
+                        Recalculate
+                      </Button>
+                    </TabsContent>
+                    
+                    <TabsContent value="pe" className="space-y-4 mt-6">
+                      <div className="text-center py-8 text-muted-foreground">
+                        <PieChart className="w-8 h-8 mx-auto mb-3 opacity-50" />
+                        <p>P/E valuation model coming soon</p>
                       </div>
-                      <div>
-                        <Label>Discount Rate: {discountRate}%</Label>
-                        <Slider
-                          value={[discountRate]}
-                          onValueChange={(value) => setDiscountRate(value[0])}
-                          max={20}
-                          min={5}
-                          step={0.5}
-                        />
+                    </TabsContent>
+                    
+                    <TabsContent value="advanced" className="space-y-4 mt-6">
+                      <div className="text-center py-8 text-muted-foreground">
+                        <TrendingUp className="w-8 h-8 mx-auto mb-3 opacity-50" />
+                        <p>Advanced models coming soon</p>
                       </div>
-                    </div>
-                    <Button 
-                      onClick={() => selectedStock && calculateIntrinsicValue(selectedStock)}
-                      className="w-full bg-gradient-to-r from-teya-green via-teya-green-dark to-teya-green hover:from-teya-green-dark hover:via-teya-green hover:to-teya-green-dark text-rich-black font-semibold shadow-lg shadow-teya-green/30 hover:shadow-teya-green/50 hover:scale-105 transition-all duration-300 border-0"
-                    >
-                      Recalculate
-                    </Button>
-                  </TabsContent>
-                  
-                  <TabsContent value="pe" className="space-y-4 mt-6">
-                    <div className="text-center py-8 text-muted-foreground">
-                      <PieChart className="w-8 h-8 mx-auto mb-3 opacity-50" />
-                      <p>P/E valuation model coming soon</p>
-                    </div>
-                  </TabsContent>
-                  
-                  <TabsContent value="advanced" className="space-y-4 mt-6">
-                    <div className="text-center py-8 text-muted-foreground">
-                      <TrendingUp className="w-8 h-8 mx-auto mb-3 opacity-50" />
-                      <p>Advanced models coming soon</p>
-                    </div>
-                  </TabsContent>
-                </Tabs>
-              </CardContent>
-            </Card>
+                    </TabsContent>
+                  </Tabs>
+                </CardContent>
+              </Card>
+            )}
           </motion.div>
         )}
 

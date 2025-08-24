@@ -1178,4 +1178,149 @@ router.get('/quotes/batch',
   }
 );
 
+/**
+ * GET /api/market-data/dcf/:symbol
+ * PHASE 7: Fetch cash flow and financial data for DCF calculations
+ * Provides Free Cash Flow, growth rates, and other metrics needed for intrinsic value
+ */
+router.get('/dcf/:symbol',
+  authService,
+  marketDataRateLimit,
+  async (req: Request, res: Response) => {
+    const validation = z.object({
+      symbol: z.string().toUpperCase(),
+    }).safeParse({
+      symbol: req.params.symbol,
+    });
+
+    if (!validation.success) {
+      return res.status(400).json({
+        error: 'INVALID_SYMBOL',
+        message: 'Invalid stock symbol',
+      });
+    }
+
+    try {
+      const symbol = validation.data.symbol;
+      const period = req.query.period === 'annual' ? 'annual' : 'quarter';
+      
+      console.log(`💰 Fetching DCF data for ${symbol} (${period})`);
+
+      // Import Redis cache
+      const { cacheService: redisCache } = await import('../services/cache-service');
+      
+      // Check cache first
+      const cacheKey = `dcf:${symbol}:${period}`;
+      const cached = await redisCache.get(cacheKey);
+      
+      if (cached) {
+        console.log(`💰 Cache hit for DCF data: ${symbol}`);
+        return res.json({
+          ...cached,
+          _cached: true,
+          _timestamp: Date.now(),
+        });
+      }
+
+      // Fetch from FMP if not cached
+      const [cashFlowRes, incomeRes, balanceRes, keyMetricsRes] = await Promise.all([
+        fetch(`https://financialmodelingprep.com/api/v3/cash-flow-statement/${symbol}?period=${period}&limit=10&apikey=${process.env.FMP_API_KEY}`),
+        fetch(`https://financialmodelingprep.com/api/v3/income-statement/${symbol}?period=${period}&limit=10&apikey=${process.env.FMP_API_KEY}`),
+        fetch(`https://financialmodelingprep.com/api/v3/balance-sheet-statement/${symbol}?period=${period}&limit=10&apikey=${process.env.FMP_API_KEY}`),
+        fetch(`https://financialmodelingprep.com/api/v3/key-metrics/${symbol}?period=${period}&limit=10&apikey=${process.env.FMP_API_KEY}`)
+      ]);
+
+      const [cashFlowData, incomeData, balanceData, keyMetrics] = await Promise.all([
+        cashFlowRes.json(),
+        incomeRes.json(),
+        balanceRes.json(),
+        keyMetricsRes.json()
+      ]);
+
+      // Calculate Free Cash Flow (FCF) history
+      const fcfHistory = cashFlowData.slice(0, 5).map((item: any) => ({
+        period: item.date,
+        freeCashFlow: item.freeCashFlow || (item.operatingCashFlow - item.capitalExpenditure),
+        operatingCashFlow: item.operatingCashFlow,
+        capitalExpenditure: item.capitalExpenditure,
+      }));
+
+      // Calculate growth rates
+      const revenueGrowth = incomeData.length >= 2 ? 
+        ((incomeData[0].revenue - incomeData[1].revenue) / incomeData[1].revenue) * 100 : 0;
+      
+      const fcfGrowth = fcfHistory.length >= 2 && fcfHistory[1].freeCashFlow > 0 ? 
+        ((fcfHistory[0].freeCashFlow - fcfHistory[1].freeCashFlow) / fcfHistory[1].freeCashFlow) * 100 : 0;
+
+      // Get latest metrics
+      const latestMetrics = keyMetrics[0] || {};
+      const latestIncome = incomeData[0] || {};
+      const latestBalance = balanceData[0] || {};
+      const latestCashFlow = cashFlowData[0] || {};
+
+      // Calculate average FCF growth rate (3-year CAGR if available)
+      let fcfCAGR = 0;
+      if (fcfHistory.length >= 4 && fcfHistory[3].freeCashFlow > 0) {
+        const beginningFCF = fcfHistory[3].freeCashFlow;
+        const endingFCF = fcfHistory[0].freeCashFlow;
+        fcfCAGR = (Math.pow(endingFCF / beginningFCF, 1/3) - 1) * 100;
+      }
+
+      const dcfData = {
+        symbol,
+        period,
+        currentPrice: latestMetrics.priceBookValueRatio * latestMetrics.bookValuePerShare || 0,
+        
+        // FCF Data
+        freeCashFlow: latestCashFlow.freeCashFlow || (latestCashFlow.operatingCashFlow - latestCashFlow.capitalExpenditure),
+        fcfHistory,
+        fcfGrowthRate: fcfGrowth,
+        fcfCAGR,
+        
+        // Financial Metrics
+        revenue: latestIncome.revenue,
+        netIncome: latestIncome.netIncome,
+        eps: latestIncome.eps,
+        epsGrowth: latestMetrics.revenueGrowth || revenueGrowth,
+        
+        // Valuation Metrics
+        peRatio: latestMetrics.peRatio || (latestMetrics.priceBookValueRatio * latestMetrics.returnOnEquity) || 15,
+        pegRatio: latestMetrics.pegRatio || 1,
+        priceToFCF: latestMetrics.pfcfRatio || 0,
+        
+        // Balance Sheet
+        totalDebt: latestBalance.totalDebt || 0,
+        cashAndEquivalents: latestBalance.cashAndCashEquivalents || 0,
+        sharesOutstanding: latestIncome.weightedAverageShsOut || latestBalance.commonStock || 0,
+        
+        // Profitability
+        roic: latestMetrics.roic || 0,
+        roe: latestMetrics.roe || 0,
+        
+        // Suggested DCF Parameters
+        suggestedGrowthRate: Math.min(Math.max(fcfCAGR, 0), 20), // Cap at 20%
+        suggestedTerminalGrowth: 3, // Conservative terminal growth
+        suggestedDiscountRate: 10, // Standard WACC approximation
+      };
+
+      // Cache for 1 hour
+      await redisCache.set(cacheKey, dcfData, 3600);
+
+      console.log(`✅ DCF data fetched for ${symbol}`);
+      res.json({
+        ...dcfData,
+        _cached: false,
+        _timestamp: Date.now(),
+      });
+
+    } catch (error) {
+      console.error('DCF data fetch error:', error);
+      res.status(503).json({
+        error: 'DCF_FETCH_ERROR',
+        message: 'Failed to fetch DCF data',
+      });
+    }
+  }
+);
+
 export default router;
