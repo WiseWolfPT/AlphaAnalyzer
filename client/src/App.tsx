@@ -364,6 +364,9 @@ function Router() {
         {/* Main routes */}
         <Route path="/insights" component={FindStocks} />
         
+        {/* Test Route for Error Handling */}
+        <Route path="/test-error-handling" component={lazy(() => import('@/pages/test-error-handling'))} />
+        
         {/* Admin Routes - Protected */}
         <Route path="/admin">
           {() => (
