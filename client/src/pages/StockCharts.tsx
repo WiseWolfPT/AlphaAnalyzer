@@ -54,8 +54,8 @@ export default function AdvancedCharts() {
       setLoading(true);
       setError(null);
       
-      // Fetch aggregated data from cache service with real API integration
-      const stockData = await dataAggregatorService.getStockData(stockSymbol, chartPeriod);
+      // PHASE 2, Day 8: Fetch real financial data from FMP
+      const stockData = await dataAggregatorService.getStockDataWithRealFinancials(stockSymbol, chartPeriod);
       setStockData(stockData);
     } catch (err) {
       setError('Dados sendo atualizados... Recarregue em 1 minuto');

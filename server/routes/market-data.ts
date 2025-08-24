@@ -797,6 +797,117 @@ router.post('/direct/batch',
   }
 );
 
+/**
+ * GET /api/market-data/direct/financials/:symbol
+ * PHASE 2, Day 8: Direct FMP financial data for charts
+ * Fetches income statements and formats for frontend charts
+ */
+router.get('/direct/financials/:symbol',
+  authService,
+  marketDataRateLimit,
+  async (req: Request, res: Response) => {
+    try {
+      const validation = stockSymbolSchema.safeParse({ symbol: req.params.symbol });
+      if (!validation.success) {
+        return res.status(400).json({
+          error: 'INVALID_SYMBOL',
+          message: validation.error.errors[0].message,
+        });
+      }
+
+      const symbol = validation.data.symbol;
+      const period = req.query.period === 'annual' ? 'annual' : 'quarter'; // Default to quarterly
+      
+      console.log(`📊 Direct FMP: Fetching ${period} financials for ${symbol}`);
+
+      // Check for FMP API key
+      if (!process.env.FMP_API_KEY || process.env.FMP_API_KEY === 'demo') {
+        return res.status(503).json({
+          error: 'FMP_NOT_CONFIGURED',
+          message: 'FMP API key not configured',
+        });
+      }
+
+      // Fetch income statements from FMP
+      const incomeUrl = `https://financialmodelingprep.com/api/v3/income-statement/${symbol}?period=${period}&limit=12&apikey=${process.env.FMP_API_KEY}`;
+      console.log(`🔍 Fetching income statements from FMP...`);
+      
+      const incomeResponse = await fetch(incomeUrl);
+      
+      if (!incomeResponse.ok) {
+        throw new Error(`FMP API error: ${incomeResponse.status}`);
+      }
+
+      const incomeData = await incomeResponse.json();
+      
+      if (!Array.isArray(incomeData) || incomeData.length === 0) {
+        return res.status(404).json({
+          error: 'NO_DATA',
+          message: `No financial data available for ${symbol}`,
+        });
+      }
+
+      // Format data for charts (reverse to show oldest to newest)
+      const sortedData = incomeData.reverse();
+      
+      const chartData = {
+        symbol,
+        period,
+        revenue: sortedData.map(item => ({
+          quarter: period === 'annual' ? item.date.substring(0, 4) : `${item.date.substring(0, 7)}`,
+          value: Math.round((item.revenue || 0) / 1000000), // Convert to millions
+        })),
+        ebitda: sortedData.map(item => ({
+          quarter: period === 'annual' ? item.date.substring(0, 4) : `${item.date.substring(0, 7)}`,
+          value: Math.round((item.ebitda || 0) / 1000000), // Convert to millions
+        })),
+        netIncome: sortedData.map(item => ({
+          quarter: period === 'annual' ? item.date.substring(0, 4) : `${item.date.substring(0, 7)}`,
+          value: Math.round((item.netIncome || 0) / 1000000), // Convert to millions
+        })),
+        eps: sortedData.map(item => ({
+          quarter: period === 'annual' ? item.date.substring(0, 4) : `${item.date.substring(0, 7)}`,
+          value: item.eps || 0,
+        })),
+        operatingExpenses: sortedData.map(item => ({
+          quarter: period === 'annual' ? item.date.substring(0, 4) : `${item.date.substring(0, 7)}`,
+          value: Math.round((item.operatingExpenses || 0) / 1000000), // Convert to millions
+        })),
+        grossProfit: sortedData.map(item => ({
+          quarter: period === 'annual' ? item.date.substring(0, 4) : `${item.date.substring(0, 7)}`,
+          value: Math.round((item.grossProfit || 0) / 1000000), // Convert to millions
+        })),
+        // Add key metrics from the latest period
+        latestMetrics: {
+          revenue: incomeData[0].revenue || 0,
+          revenueGrowth: incomeData[0].revenueGrowth || 0,
+          grossProfitRatio: incomeData[0].grossProfitRatio || 0,
+          operatingIncomeRatio: incomeData[0].operatingIncomeRatio || 0,
+          netIncomeRatio: incomeData[0].netIncomeRatio || 0,
+          ebitdaRatio: incomeData[0].ebitdaratio || 0,
+          eps: incomeData[0].eps || 0,
+          epsDiluted: incomeData[0].epsdiluted || 0,
+        },
+        provider: 'fmp_direct',
+        _timestamp: Date.now(),
+        _cached: false,
+        _source: 'fmp_direct_financials',
+      };
+
+      console.log(`✅ Direct FMP: ${symbol} financials fetched successfully (${incomeData.length} periods)`);
+      res.json(chartData);
+    } catch (error) {
+      console.error('Direct FMP financials fetch error:', error);
+      
+      res.status(503).json({
+        error: 'FINANCIALS_FETCH_ERROR',
+        message: 'Unable to fetch financial data from FMP',
+        timestamp: new Date().toISOString(),
+      });
+    }
+  }
+);
+
 
 /**
  * GET /api/market-data/quotes/batch

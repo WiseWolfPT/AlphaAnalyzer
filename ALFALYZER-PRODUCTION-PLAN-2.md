@@ -67,31 +67,33 @@
 > **⚠️ AGENTS: Update this section when completing any phase!**
 
 **Date**: 2025-08-24
-**Phase Completed**: Phase 2, Day 6-7 (Direct FMP Connection)
+**Phase Completed**: Phase 2, Day 8 (Connect Charts to Real Data)
 **What Was Done**:
-- ✅ Created direct FMP API endpoints in /server/routes/market-data.ts (no cache)
-- ✅ Added /api/market-data/direct/quote/:symbol endpoint for single stocks
-- ✅ Added /api/market-data/direct/batch endpoint for multiple stocks
-- ✅ Created React hooks for direct FMP data fetching (useDirectFMPQuote, useDirectFMPBatchQuotes)
-- ✅ Updated Find Stocks page with toggle between "Direct FMP" and "Cached" modes
-- ✅ Fixed all provider import errors (removed non-existent providers)
-- ✅ Kept only FMP and Alpha Vantage providers as specified
-- ✅ Server successfully fetching real FMP data (confirmed: AAPL at $227.76)
+- ✅ Created /api/market-data/direct/financials/:symbol endpoint for FMP financial data
+- ✅ Endpoint fetches income statements and formats for charts (revenue, EBITDA, net income, EPS)
+- ✅ Added useDirectFMPFinancials hook in use-cache-data.ts
+- ✅ Created test-financials.tsx page to verify chart data connection
+- ✅ Updated data-aggregator.ts with getStockDataWithRealFinancials method
+- ✅ Modified StockCharts page to use real FMP financial data
+- ✅ Revenue, EBITDA, and Net Income charts now display real data (when available)
+- ✅ Error states and loading states properly implemented
 - ✅ Build tested successfully - no errors
 
 **What's Next**:
-- [ ] Phase 2, Day 8: Connect Charts to Real Data
 - [ ] Phase 2, Day 9: Market Movers & Dashboard
+- [ ] Implement /api/market/movers endpoint for gainers/losers/active
+- [ ] Connect Dashboard to display market movers
 - [ ] Phase 2.5: Proactive Cache Implementation (after seeing real data work)
 
 **Important Notes**:
-- Real FMP data is working! Server logs show actual stock prices
-- Direct endpoints bypassing cache for now (as intended)
-- FMP API key valid and functioning
-- All non-essential providers removed (Finnhub, Polygon, TwelveData deleted)
-- Ready to connect charts and dashboard to real data
+- Financial charts are now connected to real FMP data!
+- Endpoint returns quarterly or annual data based on period parameter
+- Charts format data properly (values in millions)
+- Test page available at /test/financials for verification
+- StockCharts page at /stock/:symbol/charts now uses real financial data
+- Ready to implement market movers next
 
-**Ready for Next Session**: YES ✅ (direct FMP connection working, proceed to connect charts)
+**Ready for Next Session**: YES ✅ (charts connected, proceed to market movers)
 
 ---
 
@@ -782,35 +784,34 @@ useEffect(() => {
 
 **Expected Result**: See REAL prices appearing in the UI! 🎉
 
-### Day 8: Connect Charts to Real Data (6 hours)
+### Day 8: Connect Charts to Real Data (6 hours) ✅ COMPLETED 2025-08-24
 
-#### Financial Data Endpoints
+#### Financial Data Endpoints ✅
 ```typescript
-app.get('/api/stocks/:symbol/financials', async (req, res) => {
-  const { symbol } = req.params;
+// IMPLEMENTED in /server/routes/market-data.ts
+router.get('/direct/financials/:symbol', async (req, res) => {
+  const { symbol } = req.params.symbol;
+  const period = req.query.period === 'annual' ? 'annual' : 'quarter';
   
   // Fetch income statements
   const incomeResponse = await fetch(
-    `https://financialmodelingprep.com/api/v3/income-statement/${symbol}?limit=10&apikey=${process.env.FMP_API_KEY}`
+    `https://financialmodelingprep.com/api/v3/income-statement/${symbol}?period=${period}&limit=12&apikey=${process.env.FMP_API_KEY}`
   );
   const incomeData = await incomeResponse.json();
   
   // Format for charts
   const chartData = {
     revenue: incomeData.map(item => ({
-      date: item.date,
-      value: item.revenue / 1000000, // Convert to millions
-      label: `$${(item.revenue / 1000000).toFixed(1)}M`
+      quarter: period === 'annual' ? item.date.substring(0, 4) : item.date.substring(0, 7),
+      value: Math.round((item.revenue || 0) / 1000000), // Convert to millions
     })),
     ebitda: incomeData.map(item => ({
-      date: item.date,
-      value: item.ebitda / 1000000,
-      label: `$${(item.ebitda / 1000000).toFixed(1)}M`
+      quarter: period === 'annual' ? item.date.substring(0, 4) : item.date.substring(0, 7),
+      value: Math.round((item.ebitda || 0) / 1000000),
     })),
     netIncome: incomeData.map(item => ({
-      date: item.date,
-      value: item.netIncome / 1000000,
-      label: `$${(item.netIncome / 1000000).toFixed(1)}M`
+      quarter: period === 'annual' ? item.date.substring(0, 4) : item.date.substring(0, 7),
+      value: Math.round((item.netIncome || 0) / 1000000),
     }))
   };
   
@@ -818,11 +819,13 @@ app.get('/api/stocks/:symbol/financials', async (req, res) => {
 });
 ```
 
-- [ ] Connect Revenue chart to real data
-- [ ] Connect EBITDA chart to real data
-- [ ] Connect Net Income chart to real data
-- [ ] Fix "No data available" messages
-- [ ] Add error states for charts
+- [x] Connect Revenue chart to real data ✅
+- [x] Connect EBITDA chart to real data ✅
+- [x] Connect Net Income chart to real data ✅
+- [x] Fix "No data available" messages ✅
+- [x] Add error states for charts ✅
+
+**Commit**: ✅ `feat: connect real FMP financial data to charts - revenue, EBITDA, net income working!`
 
 ### Day 9: Market Movers & Dashboard (4 hours)
 

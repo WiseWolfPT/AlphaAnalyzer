@@ -420,6 +420,14 @@ function Router() {
         <Route path="/news" component={News} />
         <Route path="/alerts" component={Alerts} />
         <Route path="/test/stock-header" component={StockHeaderTest} />
+        <Route path="/test/financials" component={() => {
+          const TestFinancials = lazy(() => import('./pages/test-financials'));
+          return (
+            <Suspense fallback={<div>Loading financial test...</div>}>
+              <TestFinancials />
+            </Suspense>
+          );
+        }} />
         <Route component={NotFound} />
       </Switch>
     </Suspense>

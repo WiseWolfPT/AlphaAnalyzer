@@ -195,6 +195,27 @@ export function useDirectFMPBatchQuotes(symbols: string[], options: any = {}) {
   });
 }
 
+// PHASE 2, Day 8: Direct FMP financials data hook for charts
+export function useDirectFMPFinancials(symbol: string, period: 'quarterly' | 'annual' = 'quarterly', options = {}) {
+  return useQuery({
+    queryKey: ['direct', 'financials', symbol, period],
+    queryFn: async () => {
+      const periodParam = period === 'annual' ? 'annual' : 'quarter';
+      const response = await fetch(`/api/market-data/direct/financials/${symbol}?period=${periodParam}`);
+      
+      if (!response.ok) {
+        throw new Error(`Failed to fetch direct financials: ${response.statusText}`);
+      }
+      
+      return response.json();
+    },
+    staleTime: 60 * 60 * 1000, // 1 hour - financials don't change often
+    gcTime: 2 * 60 * 60 * 1000, // 2 hours
+    retry: 2,
+    ...options,
+  });
+}
+
 // Hook for news from cache
 export function useCachedNews(symbol?: string, options = {}) {
   return useQuery({

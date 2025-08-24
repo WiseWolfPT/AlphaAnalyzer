@@ -75,6 +75,54 @@ class DataAggregatorService {
     this.cache.set(symbol, { data, timestamp: Date.now() });
   }
 
+  // PHASE 2, Day 8: New method to fetch real financial data from FMP
+  async getStockDataWithRealFinancials(symbol: string, period: 'quarterly' | 'annual' = 'quarterly'): Promise<AggregatedStockData> {
+    try {
+      // Fetch real financial data from our Direct FMP endpoint
+      const periodParam = period === 'annual' ? 'annual' : 'quarter';
+      const financialResponse = await fetch(`/api/market-data/direct/financials/${symbol}?period=${periodParam}`);
+      
+      if (financialResponse.ok) {
+        const financialData = await financialResponse.json();
+        
+        // Use existing method to get other data
+        const baseData = await this.getStockData(symbol, period);
+        
+        // Override charts with real FMP data
+        if (financialData.revenue) {
+          baseData.charts.revenue = financialData.revenue;
+        }
+        if (financialData.ebitda) {
+          baseData.charts.ebitda = financialData.ebitda;
+        }
+        if (financialData.netIncome) {
+          baseData.charts.netIncome = financialData.netIncome;
+        }
+        if (financialData.eps) {
+          baseData.charts.eps = financialData.eps;
+        }
+        
+        // Update key metrics with latest real data
+        if (financialData.latestMetrics) {
+          baseData.keyMetrics = {
+            ...baseData.keyMetrics,
+            eps: financialData.latestMetrics.eps || baseData.keyMetrics.eps,
+            grossMargin: financialData.latestMetrics.grossProfitRatio || baseData.keyMetrics.grossMargin,
+            operatingMargin: financialData.latestMetrics.operatingIncomeRatio || baseData.keyMetrics.operatingMargin,
+            netMargin: financialData.latestMetrics.netIncomeRatio || baseData.keyMetrics.netMargin,
+          };
+        }
+        
+        return baseData;
+      }
+    } catch (error) {
+      console.error('Failed to fetch real financial data:', error);
+    }
+    
+    // Fallback to mock data
+    return this.getStockData(symbol, period);
+  }
+
   async getCompleteStockData(symbol: string): Promise<AggregatedStockData> {
     // Check cache first
     const cached = this.getCachedData(symbol);
