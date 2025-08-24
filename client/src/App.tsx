@@ -28,6 +28,9 @@ import { DebugModeToggle } from "@/components/debug/debug-mode-toggle";
 import { CurrencyProvider } from './contexts/currency-context';
 import { PortfolioProvider } from './contexts/portfolio-context';
 
+// GDPR Compliance
+import { CookieConsentBanner } from '@/components/gdpr/cookie-consent-banner';
+
 // AGGRESSIVE DYNAMIC IMPORTS - Load everything lazily with micro-bundles
 
 // Admin pages
@@ -96,6 +99,35 @@ const StockDetail = createLazyComponent(
   () => import("@/pages/stock-detail"),
   {
     name: 'StockDetail'
+  }
+);
+
+// Legal pages micro-bundles
+const PrivacyPolicy = createLazyComponent(
+  () => import("@/pages/privacy-policy"),
+  {
+    name: 'PrivacyPolicy'
+  }
+);
+
+const TermsOfService = createLazyComponent(
+  () => import("@/pages/terms-of-service"),
+  {
+    name: 'TermsOfService'
+  }
+);
+
+const CookiePolicy = createLazyComponent(
+  () => import("@/pages/cookie-policy"),
+  {
+    name: 'CookiePolicy'
+  }
+);
+
+const FinancialDisclaimer = createLazyComponent(
+  () => import("@/pages/financial-disclaimer"),
+  {
+    name: 'FinancialDisclaimer'
   }
 );
 
@@ -430,6 +462,13 @@ function Router() {
         <Route path="/news" component={News} />
         <Route path="/alerts" component={Alerts} />
         <Route path="/health" component={HealthMonitor} />
+        
+        {/* Legal Pages */}
+        <Route path="/privacy-policy" component={PrivacyPolicy} />
+        <Route path="/terms-of-service" component={TermsOfService} />
+        <Route path="/cookie-policy" component={CookiePolicy} />
+        <Route path="/financial-disclaimer" component={FinancialDisclaimer} />
+        
         <Route path="/test/stock-header" component={StockHeaderTest} />
         <Route path="/test/financials" component={() => {
           const TestFinancials = lazy(() => import('./pages/test-financials'));
@@ -494,6 +533,7 @@ function App() {
                   <Toaster />
                   <DebugModeToggle />
                   <Router />
+                  <CookieConsentBanner />
                   <ReactQueryDevtools 
                     initialIsOpen={false} 
                     buttonPosition="bottom-right"

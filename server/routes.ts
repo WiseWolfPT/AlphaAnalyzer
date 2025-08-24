@@ -176,6 +176,10 @@ export async function registerRoutes(app: Express, server: Server): Promise<void
   // Image optimization proxy routes
   app.use("/api/image", imageProxyRouter);
   
+  // GDPR compliance routes
+  const gdprRouter = await import("./routes/gdpr").then(m => m.default);
+  app.use("/api/gdpr", gdprRouter);
+  
   // Cached data routes (eliminates CORS/Auth issues)
   app.use("/api/cached", cachedDataRouter);
   

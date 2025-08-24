@@ -1,5 +1,6 @@
 import { BarChart3, Instagram, Twitter, MessageCircle, ShoppingBag } from "lucide-react";
 import { motion } from "framer-motion";
+import { Link } from "wouter";
 
 export function Footer() {
   const currentYear = new Date().getFullYear();
@@ -12,8 +13,10 @@ export function Footer() {
   ];
 
   const legalLinks = [
-    { name: "Termos de Serviço", href: "#" },
-    { name: "Política de Privacidade", href: "#" }
+    { name: "Termos de Serviço", href: "/terms-of-service" },
+    { name: "Política de Privacidade", href: "/privacy-policy" },
+    { name: "Política de Cookies", href: "/cookie-policy" },
+    { name: "Aviso Legal", href: "/financial-disclaimer" }
   ];
 
   const renderSocialLinks = () => socialLinks.map((link, index) => (
@@ -31,12 +34,12 @@ export function Footer() {
 
   const renderLegalLinks = () => legalLinks.map((link, index) => (
     <span key={link.name} className="flex items-center">
-      <a
+      <Link
         href={link.href}
         className="text-muted-foreground hover:text-foreground transition-colors duration-200"
       >
         {link.name}
-      </a>
+      </Link>
       {index < legalLinks.length - 1 && (
         <span className="mx-3 text-muted-foreground/50">·</span>
       )}
