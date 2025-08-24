@@ -642,6 +642,14 @@ async function initializeMarketDataServices() {
         console.warn('⚠️ Market data services initialization failed:', error);
       });
       
+      // Initialize Supabase Keep-Alive Service
+      import('./services/supabase-keepalive').then(({ default: keepAlive }) => {
+        keepAlive.start();
+        console.log('✅ Supabase Keep-Alive Service started');
+      }).catch(error => {
+        console.warn('⚠️ Supabase Keep-Alive Service failed to start:', error);
+      });
+      
       // PHASE 1 - DAY 1: Initialize Background Job Processor
       if (process.env.ENABLE_BACKGROUND_JOBS !== 'false') {
         import('./services/job-processor').then(async ({ jobProcessor }) => {

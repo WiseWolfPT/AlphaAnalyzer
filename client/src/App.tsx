@@ -201,6 +201,13 @@ const CacheMonitor = createLazyComponent(
   }
 );
 
+const HealthMonitor = createLazyComponent(
+  () => import("@/pages/health-monitor"),
+  {
+    name: 'HealthMonitor'
+  }
+);
+
 // Support and onboarding micro-bundles
 const Help = createLazyComponent(
   () => import("@/pages/help"),
@@ -422,6 +429,7 @@ function Router() {
         <Route path="/help" component={Help} />
         <Route path="/news" component={News} />
         <Route path="/alerts" component={Alerts} />
+        <Route path="/health" component={HealthMonitor} />
         <Route path="/test/stock-header" component={StockHeaderTest} />
         <Route path="/test/financials" component={() => {
           const TestFinancials = lazy(() => import('./pages/test-financials'));
