@@ -1427,32 +1427,126 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 
 ### Day 44-50: Payment System
 
-#### Subscription Tiers
+#### 💰 APPROVED PRICING STRUCTURE (3 Tiers)
+
+> **Decisão Final (2025-08-24)**: Usar 3 planos baseado em psicologia de compra (70% escolhe o do meio)
+
 ```typescript
-const plans = {
-  free: {
-    price: 0,
-    features: ['5 watchlists', '1 portfolio', 'Daily updates']
+const pricingPlans = {
+  starter: {
+    name: 'Starter',
+    monthlyPrice: 9.99,  // €9.99/mês
+    yearlyPrice: 99,     // €99/ano (save 17%)
+    trial: 7,            // 7 dias grátis
+    features: [
+      '✅ Dados financeiros organizados e fáceis de ler',
+      '✅ 5 ações no watchlist',
+      '✅ 1 portfolio com tracking',
+      '✅ Gráficos essenciais',
+      '✅ Notícias do mercado',
+      '❌ Sinais de compra/venda',
+      '❌ AI Analysis'
+    ]
   },
-  premium: {
-    price: 9.99,
-    features: ['Unlimited watchlists', '5 portfolios', 'Real-time updates', 'Price alerts']
-  },
+  
   pro: {
-    price: 29.99,
-    features: ['Everything in Premium', 'AI Transcripts', 'API access', 'Priority support']
+    name: 'Pro',
+    monthlyPrice: 19.99,  // €19.99/mês
+    yearlyPrice: 199,     // €199/ano (save 17%)
+    trial: 7,             // 7 dias grátis
+    badge: 'MAIS POPULAR 🔥',
+    highlighted: true,
+    features: [
+      '✅ Tudo do Starter +',
+      '✅ Sinais de Compra/Venda (baseado em indicadores)',
+      '✅ Watchlists ilimitados',
+      '✅ 5 portfolios',
+      '✅ Alertas de preço (sabe quando agir!)',
+      '✅ Todos os 14 gráficos profissionais',
+      '✅ Calculadora Valor Intrínseco',
+      '✅ Comparação entre empresas',
+      '❌ AI Analysis'
+    ]
+  },
+  
+  elite: {
+    name: 'Elite',
+    monthlyPrice: 39.99,  // €39.99/mês
+    yearlyPrice: 399,     // €399/ano (save 17%)
+    trial: 7,             // 7 dias grátis
+    features: [
+      '✅ Tudo do Pro +',
+      '✅ AI Stock Analysis (análise inteligente)',
+      '✅ AI Buy/Sell Recommendations',
+      '✅ AI Risk Assessment',
+      '✅ "Porque comprar/vender agora" (AI explica)',
+      '✅ Portfolios ilimitados',
+      '✅ Alertas ilimitados',
+      '✅ Suporte prioritário'
+    ]
   }
 };
 ```
 
-#### Stripe Integration (Already partially done!)
-- [ ] Create products in Stripe Dashboard
-- [ ] Setup checkout flow
-- [ ] Webhook handlers
-- [ ] Customer portal
-- [ ] Usage limits enforcement
+#### 🎯 Estratégia de Pricing
 
-**Commit**: `feat: Stripe monetization activated`
+**Por que 3 planos?**
+1. **Psicologia de Compra**: Com 3 opções, 70% escolhe o do meio
+2. **Teste A/B comprovado**: Trading Long Short usa 3 e funciona
+3. **AI como Premium**: Posiciona AI como feature exclusiva do Elite
+
+**Key Features por Tier:**
+- **Starter**: Básico para começar a investir
+- **Pro**: Ferramentas profissionais SEM AI (target principal)
+- **Elite**: Tudo + AI ilimitado para traders sérios
+
+#### 🔗 Stripe Link Integration
+
+> **IMPORTANTE**: Usar [Stripe Link](https://link.com/pt-pt) para checkout
+> - Checkout mais rápido (1-click após primeiro uso)
+> - Salva dados do cliente automaticamente
+> - Aumenta conversão em até 7%
+> - Trading Long Short usa com sucesso
+
+```typescript
+// Configuração Stripe Link
+const stripeConfig = {
+  mode: 'subscription',
+  lineItems: [{ price: priceId, quantity: 1 }],
+  successUrl: `${FRONTEND_URL}/success?session_id={CHECKOUT_SESSION_ID}`,
+  cancelUrl: `${FRONTEND_URL}/pricing`,
+  allowPromotionCodes: true,
+  billingAddressCollection: 'required',
+  paymentMethodTypes: ['card'],
+  
+  // Stripe Link Configuration
+  customerCreation: 'always',
+  paymentMethodCollection: 'always',
+  shippingAddressCollection: {
+    allowedCountries: ['PT', 'ES', 'FR', 'DE', 'GB', 'US']
+  },
+  
+  // 7 days free trial
+  subscriptionData: {
+    trialPeriodDays: 7,
+    metadata: {
+      plan: planName
+    }
+  }
+};
+```
+
+#### Implementation Tasks
+- [ ] Create products in Stripe Dashboard (3 plans × 2 periods)
+- [ ] Setup Stripe Link checkout flow
+- [ ] Implement pricing page with Monthly/Yearly toggle
+- [ ] Add "7 days free trial" banner
+- [ ] Configure webhooks for subscription events
+- [ ] Customer portal for manage subscription
+- [ ] Usage limits enforcement per tier
+- [ ] Add "MAIS POPULAR" badge to Pro plan
+
+**Commit**: `feat: Stripe monetization with 3-tier pricing and 7-day trial`
 
 ---
 
