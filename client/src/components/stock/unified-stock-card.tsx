@@ -313,9 +313,9 @@ function CompactVariant({
   return (
     <Card 
       className={cn(
-        "cursor-pointer transition-all duration-200 hover:shadow-md hover:-translate-y-0.5",
-        "bg-gradient-to-br from-background/50 to-background/30 backdrop-blur-sm",
-        "border-border/50 hover:border-primary/50",
+        "cursor-pointer transition-all duration-300 ease-out hover:shadow-lg hover:-translate-y-1",
+        "glass-card animate-fade-in",
+        "hover:border-teya-green/50 hover:shadow-teya-green/10",
         className
       )}
       onClick={onCardClick}
@@ -416,7 +416,10 @@ function StandardVariant({
   return (
     <div 
       className={cn(
-        "group relative bg-card/50 backdrop-blur-sm border border-teya-green/30 hover:border-teya-green rounded-xl p-6 cursor-pointer transition-all duration-300 hover:shadow-lg hover:shadow-teya-green/20 hover:-translate-y-1 hover:bg-gradient-to-br hover:from-teya-green/5 hover:to-teya-green/10",
+        "group relative glass-card p-6 cursor-pointer animate-zoom-in",
+        "transition-all duration-300 ease-out hover:shadow-xl hover:shadow-teya-green/20",
+        "hover:-translate-y-1 hover:border-teya-green/50",
+        "hover:bg-gradient-to-br hover:from-teya-green/5 hover:to-transparent",
         className
       )}
       onClick={onCardClick}
@@ -620,7 +623,7 @@ function EnhancedVariant({
   setImageError
 }: any) {
   return (
-    <Card className={cn("h-full hover:shadow-lg transition-shadow", className)}>
+    <Card className={cn("h-full glass-card animate-slide-in-up transition-all duration-300 hover:shadow-xl hover:-translate-y-1 hover:border-teya-green/50", className)}>
       <CardHeader>
         <div className="flex justify-between items-start mb-2">
           <div className="flex items-center gap-3 flex-1 min-w-0">
@@ -840,7 +843,7 @@ function EnhancedVariant({
 function LoadingSkeleton({ variant, isColdStart }: { variant: string; isColdStart?: boolean }) {
   if (variant === 'compact') {
     return (
-      <Card className="cursor-pointer">
+      <Card className="cursor-pointer glass-card animate-pulse">
         <CardContent className="p-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -867,7 +870,7 @@ function LoadingSkeleton({ variant, isColdStart }: { variant: string; isColdStar
   
   if (variant === 'enhanced') {
     return (
-      <Card className="h-full">
+      <Card className="h-full glass-card animate-pulse">
         <CardHeader>
           <div className="flex items-center gap-3">
             <Skeleton className="w-10 h-10 rounded-xl" />
@@ -893,7 +896,7 @@ function LoadingSkeleton({ variant, isColdStart }: { variant: string; isColdStar
   
   // Standard variant
   return (
-    <div className="bg-card/50 backdrop-blur-sm border border-border rounded-xl p-6">
+    <div className="glass-card p-6 animate-pulse">
       <div className="flex items-start gap-4 mb-4">
         <Skeleton className="w-12 h-12 rounded-xl" />
         <div className="flex-1 space-y-2">

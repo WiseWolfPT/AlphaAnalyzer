@@ -116,7 +116,7 @@ const Portfolios = createLazyComponent(
 );
 
 const Watchlists = createLazyComponent(
-  () => import("@/pages/watchlists"),
+  () => import("@/pages/watchlists-v2"),
   {
     name: 'Watchlists'
   }

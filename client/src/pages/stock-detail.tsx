@@ -25,6 +25,8 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useRealtimeQuote } from "@/hooks/use-realtime-quotes";
+import { useCompanyData } from "@/hooks/use-company-profile";
+import { useCachedQuote } from "@/hooks/use-cache-data";
 
 // Mock company data
 const getCompanyData = (symbol: string) => {
@@ -111,7 +113,41 @@ export default function StockDetail() {
     enabled: useRealtime
   });
   
-  const company = getCompanyData(symbol);
+  // Get real company data from API
+  const { profile, metrics, isLoading: isLoadingCompany } = useCompanyData(symbol);
+  
+  // Get cached quote data
+  const { data: cachedQuote, isLoading: isLoadingQuote } = useCachedQuote(symbol);
+  
+  // Use real data if available, fallback to mock
+  const mockData = getCompanyData(symbol);
+  const company = profile ? {
+    ...mockData,
+    name: profile.name || mockData.name,
+    sector: profile.sector || mockData.sector,
+    industry: profile.industry || mockData.industry,
+    description: profile.description || mockData.description,
+    marketCap: profile.marketCap ? `$${(profile.marketCap / 1e9).toFixed(1)}B` : mockData.marketCap,
+    logo: profile.logo || mockData.logo,
+    website: profile.website,
+    ceo: profile.ceo,
+    employees: profile.employees,
+    country: profile.country,
+    // Use metrics if available
+    pe: metrics?.peRatio?.toFixed(2) || mockData.pe,
+    dividend: metrics?.dividendYield ? `${(metrics.dividendYield * 100).toFixed(2)}%` : mockData.dividend,
+    beta: metrics?.beta?.toFixed(2) || mockData.beta,
+    eps: metrics?.eps?.toFixed(2),
+    roe: metrics?.roe ? `${(metrics.roe * 100).toFixed(2)}%` : undefined,
+    // Use cached quote for price data
+    price: cachedQuote?.price || mockData.price,
+    change: cachedQuote?.change || mockData.change,
+    changePercent: cachedQuote?.changePercent || mockData.changePercent,
+    volume: cachedQuote?.volume ? `${(cachedQuote.volume / 1e6).toFixed(1)}M` : mockData.volume,
+    dayRange: cachedQuote ? `${cachedQuote.low?.toFixed(2)} - ${cachedQuote.high?.toFixed(2)}` : mockData.dayRange,
+    yearRange: metrics ? `${metrics['52WeekLow']?.toFixed(2)} - ${metrics['52WeekHigh']?.toFixed(2)}` : mockData.yearRange,
+  } : mockData;
+  
   const isPositive = company.change >= 0;
 
   const handleAddToWatchlist = () => {

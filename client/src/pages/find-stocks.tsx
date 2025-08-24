@@ -4,6 +4,8 @@ import { MainLayout } from "@/components/layout/main-layout";
 import { StockSearch } from "@/components/stock/stock-search";
 import { UnifiedStockCard } from "@/components/stock/unified-stock-card";
 import { RealtimeStockCard } from "@/components/stock/realtime-stock-card";
+import { OptimizedSearchBar } from "@/components/stock/optimized-search-bar";
+import { AdvancedFilters, FilterOptions } from "@/components/stock/advanced-filters";
 import { BetaBanner } from "@/components/beta/beta-banner";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -250,6 +252,7 @@ export default function FindStocks() {
   const [activeFilter, setActiveFilter] = useState<string>('all');
   const [sortBy, setSortBy] = useState<string>('alphabetical');
   const [useDirectFMP, setUseDirectFMP] = useState(true); // PHASE 2: Use direct FMP by default
+  const [advancedFilters, setAdvancedFilters] = useState<FilterOptions>({ sectors: [] });
   
   // PHASE 2: Use direct FMP data (no cache) for real-time prices
   const directFMPQuery = useDirectFMPBatchQuotes(displayedSymbols, {
@@ -448,6 +451,33 @@ export default function FindStocks() {
     // First check if stock is in displayed symbols (sector filter)
     if (!displayedSymbols.includes(stock.symbol)) return false;
     
+    // Apply advanced filters
+    if (advancedFilters.sectors && advancedFilters.sectors.length > 0) {
+      if (!advancedFilters.sectors.includes(stock.sector)) return false;
+    }
+    
+    const price = parseFloat(stock.price) || 0;
+    if (advancedFilters.minPrice && price < advancedFilters.minPrice) return false;
+    if (advancedFilters.maxPrice && price > advancedFilters.maxPrice) return false;
+    
+    const changePercent = parseFloat(stock.changePercent) || 0;
+    if (advancedFilters.minChangePercent && changePercent < advancedFilters.minChangePercent) return false;
+    if (advancedFilters.maxChangePercent && changePercent > advancedFilters.maxChangePercent) return false;
+    
+    if (advancedFilters.showOnlyGainers && changePercent <= 0) return false;
+    if (advancedFilters.showOnlyLosers && changePercent >= 0) return false;
+    
+    const marketCapValue = stock.marketCap === 'N/A' ? 0 : 
+      parseFloat(stock.marketCap.replace(/[^0-9.-]+/g,"")) * 1e9 || 0;
+    if (advancedFilters.minMarketCap && marketCapValue < advancedFilters.minMarketCap) return false;
+    if (advancedFilters.maxMarketCap && marketCapValue > advancedFilters.maxMarketCap) return false;
+    
+    const pe = stock.peRatio === 'N/A' ? 0 : parseFloat(stock.peRatio) || 0;
+    if (advancedFilters.minPE && pe < advancedFilters.minPE) return false;
+    if (advancedFilters.maxPE && pe > advancedFilters.maxPE) return false;
+    
+    if (advancedFilters.minVolume && stock.volume < advancedFilters.minVolume) return false;
+    
     // Then apply search filter
     if (!searchQuery) return true;
     
@@ -461,20 +491,20 @@ export default function FindStocks() {
 
   return (
     <MainLayout>
-      <div className="space-y-6">
+      <div className="space-y-6 px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
         {/* Header Section */}
         <div className="flex flex-col space-y-4">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
             <div>
-              <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
-                <Search className="w-8 h-8 text-teya-green" />
+              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight flex items-center gap-2">
+                <Search className="w-6 h-6 sm:w-8 sm:h-8 text-teya-green" />
                 🔍 Find Stocks
               </h1>
-              <p className="text-muted-foreground">
+              <p className="text-sm sm:text-base text-muted-foreground mt-1">
                 Discover and analyze stocks with powerful search and filtering tools
               </p>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               {/* PHASE 2: Toggle between Direct FMP and Cached data */}
               <Button
                 variant={useDirectFMP ? 'default' : 'outline'}
@@ -532,16 +562,16 @@ export default function FindStocks() {
           <Card className="border-teya-green/20">
             <CardContent className="p-6">
               <div className="space-y-4">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5" />
-                  <input
-                    type="text"
-                    placeholder="Search 50+ stocks by symbol, name, or sector..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full pl-10 pr-4 py-3 border border-teya-green/20 rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-teya-green/50 focus:border-teya-green"
-                  />
-                </div>
+                <OptimizedSearchBar
+                  allStocks={ALL_STOCKS.map(symbol => ({
+                    symbol,
+                    name: getCompanyName(symbol),
+                    sector: getSector(symbol),
+                    industry: getIndustry(symbol)
+                  }))}
+                  onStockSelect={handleStockSelect}
+                  placeholder="Search 50+ stocks by symbol, name, or sector..."
+                />
                 <div className="flex flex-wrap gap-2">
                   <Badge 
                     variant={activeFilter === 'all' ? 'default' : 'outline'}
@@ -770,10 +800,10 @@ export default function FindStocks() {
                   <SelectItem value="marketCap">Market Cap</SelectItem>
                 </SelectContent>
               </Select>
-              <Button variant="outline" size="sm" className="gap-2">
-                <Filter className="w-4 h-4" />
-                More Filters
-              </Button>
+              <AdvancedFilters
+                onFiltersChange={setAdvancedFilters}
+                availableSectors={[...new Set(ALL_STOCKS.map(s => getSector(s)))]}
+              />
             </div>
           </div>
 
