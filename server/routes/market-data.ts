@@ -661,8 +661,22 @@ router.get('/direct/quote/:symbol',
 
       const { symbol } = validation.data;
       console.log(`🎯 DIRECT FMP request for quote: ${symbol}`);
+      
+      // PHASE 2.5: Check Redis cache first (updated by ProactiveWorker)
+      const cachedQuote = await cacheService.getQuote(symbol);
+      if (cachedQuote) {
+        console.log(`✅ Cache HIT for ${symbol} - serving in <1ms`);
+        return res.json({
+          ...cachedQuote,
+          _cached: true,
+          _cacheTime: cachedQuote.cachedAt || new Date().toISOString(),
+          _source: cachedQuote.fromWorker ? 'proactive_worker' : 'cache',
+        });
+      }
+      
+      console.log(`❌ Cache MISS for ${symbol} - fetching from FMP`);
 
-      // Direct FMP API call - NO CACHE!
+      // Direct FMP API call if cache miss
       const response = await fetch(
         `https://financialmodelingprep.com/api/v3/quote/${symbol}?apikey=${process.env.FMP_API_KEY}`,
         { timeout: 10000 } as any
@@ -705,8 +719,11 @@ router.get('/direct/quote/:symbol',
         _cached: false,
         _source: 'fmp_direct',
       };
+      
+      // PHASE 2.5: Cache the response for 60 seconds
+      await cacheService.setQuote(symbol, quoteResponse, 60);
 
-      console.log(`✅ Direct FMP: ${symbol} fetched successfully`);
+      console.log(`✅ Direct FMP: ${symbol} fetched successfully and cached`);
       res.json(quoteResponse);
     } catch (error) {
       console.error('Direct FMP quote fetch error:', error);
