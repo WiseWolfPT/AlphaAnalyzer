@@ -80,9 +80,10 @@
 - ✅ Build tested successfully - no errors
 
 **What's Next**:
-- [ ] Phase 2, Day 9: Market Movers & Dashboard
+- [ ] Phase 2, Day 9: Market Movers in Find Stocks page
 - [ ] Implement /api/market/movers endpoint for gainers/losers/active
-- [ ] Connect Dashboard to display market movers
+- [ ] Add Market Movers section to Find Stocks page (/find-stocks)
+- [ ] Show top gainers, losers, and most active stocks
 - [ ] Phase 2.5: Proactive Cache Implementation (after seeing real data work)
 
 **Important Notes**:
@@ -827,7 +828,9 @@ router.get('/direct/financials/:symbol', async (req, res) => {
 
 **Commit**: ✅ `feat: connect real FMP financial data to charts - revenue, EBITDA, net income working!`
 
-### Day 9: Market Movers & Dashboard (4 hours)
+### Day 9: Market Movers & Find Stocks Page (4 hours)
+
+> **IMPORTANT**: "Dashboard" refers to the Find Stocks page (`/find-stocks` or `/home`) - the main landing page of the webapp where users see stock cards and search for stocks.
 
 #### Market Movers Endpoints
 ```typescript
@@ -852,10 +855,10 @@ app.get('/api/market/movers', async (req, res) => {
 });
 ```
 
-- [ ] Show top gainers with real data
-- [ ] Show top losers with real data
-- [ ] Show most active stocks
-- [ ] Dashboard fully functional with real data!
+- [ ] Show top gainers with real data in Find Stocks page
+- [ ] Show top losers with real data in Find Stocks page
+- [ ] Show most active stocks in Find Stocks page
+- [ ] Find Stocks page fully functional with market movers!
 
 **Commit**: `feat: connect real FMP data to UI - prices and charts working!`
 
