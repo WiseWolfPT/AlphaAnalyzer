@@ -13,8 +13,14 @@ const logger = {
 // Load environment variables
 const envPath = process.env.NODE_ENV === 'production' 
   ? '.env.production' 
-  : '.env.development';
+  : '.env';  // Use .env for development (where our FMP_API_KEY is)
 config({ path: resolve(process.cwd(), envPath) });
+
+// Verify FMP API key is loaded
+if (!process.env.FMP_API_KEY) {
+  console.error('❌ FMP_API_KEY not found in environment variables!');
+  console.log('Loading from:', envPath);
+}
 
 /**
  * Proactive Worker for updating stock prices in cache
