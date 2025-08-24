@@ -579,7 +579,7 @@ export const AuthComponent = () => {
     });
     
     if (response.ok) {
-      setLocation('/dashboard');
+      setLocation('/find-stocks'); // or '/home' - the main Find Stocks page
     } else {
       const error = await response.json();
       alert(error.message);
@@ -745,7 +745,7 @@ app.post('/api/stocks/batch', async (req, res) => {
 });
 ```
 
-#### Connect Dashboard Cards
+#### Connect Find Stocks Page Cards
 - [x] Update Find Stocks page to fetch real data ✅
 - [x] Show real prices in stock cards ✅
 - [x] Display real percentage changes ✅
