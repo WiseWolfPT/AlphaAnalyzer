@@ -95,13 +95,10 @@ import { validateJWTForWebSocket, extractTokenFromHeaders } from './utils/jwt-va
 import crypto from 'crypto';
 // SECURITY FIX: Import log retention policy
 import logRetention from './security/log-retention-policy';
-// PRIORITY 1: Import market data services for API activation
+// PHASE 2: Import only FMP and Alpha Vantage providers
 import { getUnifiedAPIService } from './services/unified-api';
-import { FinnhubProvider } from './services/unified-api/providers/finnhub.provider';
 import { AlphaVantageProvider } from './services/unified-api/providers/alpha-vantage.provider';
 import { FMPProvider } from './services/unified-api/providers/fmp.provider';
-import { TwelveDataProvider } from './services/unified-api/providers/twelve-data.provider';
-import { PolygonProvider } from './services/unified-api/providers/polygon.provider';
 import * as schema from '@shared/schema';
 // ROADMAP V4: Import global back-off middleware for 429 responses
 import { globalBackoffMiddleware } from './middleware/global-backoff';
@@ -415,62 +412,30 @@ async function initializeMarketDataServices() {
   try {
     const unifiedAPI = getUnifiedAPIService();
     
-    // Initialize providers based on available API keys
+    // PHASE 2: Initialize only FMP and Alpha Vantage providers
     const providers = [];
     
-    // Check and initialize each provider
-    if (process.env.FINNHUB_API_KEY && process.env.FINNHUB_API_KEY !== 'demo') {
-      try {
-        const finnhub = new FinnhubProvider();
-        await finnhub.initialize();
-        providers.push(finnhub);
-        console.log('✅ Finnhub provider initialized');
-      } catch (error) {
-        console.warn('⚠️ Finnhub provider failed to initialize:', error);
-      }
-    }
-    
-    if (process.env.ALPHA_VANTAGE_API_KEY && process.env.ALPHA_VANTAGE_API_KEY !== 'demo') {
-      try {
-        const alphaVantage = new AlphaVantageProvider();
-        await alphaVantage.initialize();
-        providers.push(alphaVantage);
-        console.log('✅ Alpha Vantage provider initialized');
-      } catch (error) {
-        console.warn('⚠️ Alpha Vantage provider failed to initialize:', error);
-      }
-    }
-    
+    // Primary provider: FMP
     if (process.env.FMP_API_KEY && process.env.FMP_API_KEY !== 'demo') {
       try {
         const fmp = new FMPProvider();
         await fmp.initialize();
         providers.push(fmp);
-        console.log('✅ FMP provider initialized');
+        console.log('✅ FMP provider initialized (PRIMARY)');
       } catch (error) {
         console.warn('⚠️ FMP provider failed to initialize:', error);
       }
     }
     
-    if (process.env.TWELVE_DATA_API_KEY && process.env.TWELVE_DATA_API_KEY !== 'demo') {
+    // Backup provider: Alpha Vantage
+    if (process.env.ALPHA_VANTAGE_API_KEY && process.env.ALPHA_VANTAGE_API_KEY !== 'demo') {
       try {
-        const twelveData = new TwelveDataProvider();
-        await twelveData.initialize();
-        providers.push(twelveData);
-        console.log('✅ Twelve Data provider initialized');
+        const alphaVantage = new AlphaVantageProvider();
+        await alphaVantage.initialize();
+        providers.push(alphaVantage);
+        console.log('✅ Alpha Vantage provider initialized (BACKUP)');
       } catch (error) {
-        console.warn('⚠️ Twelve Data provider failed to initialize:', error);
-      }
-    }
-    
-    if (process.env.POLYGON_API_KEY && process.env.POLYGON_API_KEY !== 'demo') {
-      try {
-        const polygon = new PolygonProvider();
-        await polygon.initialize();
-        providers.push(polygon);
-        console.log('✅ Polygon.io provider initialized');
-      } catch (error) {
-        console.warn('⚠️ Polygon.io provider failed to initialize:', error);
+        console.warn('⚠️ Alpha Vantage provider failed to initialize:', error);
       }
     }
     

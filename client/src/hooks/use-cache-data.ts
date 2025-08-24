@@ -140,6 +140,61 @@ export function useCachedFinancials(symbol: string, options = {}) {
   });
 }
 
+// PHASE 2: Direct FMP data hooks (no cache)
+export function useDirectFMPQuote(symbol: string, options = {}) {
+  return useQuery({
+    queryKey: ['direct', 'quote', symbol],
+    queryFn: async () => {
+      const response = await fetch(`/api/market-data/direct/quote/${symbol}`);
+      
+      if (!response.ok) {
+        throw new Error(`Failed to fetch direct quote: ${response.statusText}`);
+      }
+      
+      return response.json();
+    },
+    staleTime: 10 * 1000, // 10 seconds - very fresh data
+    gcTime: 60 * 1000, // 1 minute
+    refetchInterval: 30 * 1000, // Auto-refresh every 30 seconds
+    ...options,
+  });
+}
+
+// PHASE 2: Direct FMP batch quotes (no cache)
+export function useDirectFMPBatchQuotes(symbols: string[], options: any = {}) {
+  const unique = Array.from(new Set(symbols)).filter(Boolean);
+
+  return useQuery({
+    queryKey: ['direct', 'batch', unique],
+    queryFn: async () => {
+      const response = await fetch('/api/market-data/direct/batch', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({ symbols: unique })
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Failed to fetch direct batch quotes: ${response.statusText}`);
+      }
+      
+      const data = await response.json();
+      return {
+        quotes: data.quotes || [],
+        _source: 'fmp_direct',
+        _cached: false
+      };
+    },
+    staleTime: 10 * 1000, // 10 seconds - very fresh data
+    gcTime: 60 * 1000, // 1 minute  
+    refetchInterval: 60 * 1000, // Auto-refresh every minute
+    retry: 2,
+    ...options,
+  });
+}
+
 // Hook for news from cache
 export function useCachedNews(symbol?: string, options = {}) {
   return useQuery({

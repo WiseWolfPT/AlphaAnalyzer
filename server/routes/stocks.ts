@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { z } from 'zod';
-import { finnhubService } from '../services/finnhub-service';
+// PHASE 2: Removed finnhub-service - using only FMP + Alpha Vantage
 import { alphaVantageService } from '../services/alpha-vantage-service';
 // REMOVED: Cache imports due to startup issues
 // import { cacheService } from '../services/cache-service';
@@ -30,7 +30,8 @@ router.get('/stocks/:symbol/quote',
       const symbol = stockSymbolSchema.parse(req.params.symbol);
       
       // Try Finnhub first for real-time data
-      let quote = await finnhubService.getQuote(symbol);
+      // PHASE 2: Use Alpha Vantage as backup instead of Finnhub
+      let quote = await alphaVantageService.getQuote(symbol);
       
       // If Finnhub fails, try Alpha Vantage
       if (!quote) {
@@ -64,7 +65,8 @@ router.get('/stocks/:symbol/profile',
       const symbol = stockSymbolSchema.parse(req.params.symbol);
       
       // Try Finnhub first
-      let profile = await finnhubService.getCompanyProfile(symbol);
+      // PHASE 2: Use Alpha Vantage for company profile
+      let profile = await alphaVantageService.getCompanyOverview(symbol);
       
       // If Finnhub fails, try Alpha Vantage
       if (!profile) {
@@ -159,15 +161,17 @@ router.get('/stocks/:symbol/metrics', authMiddleware.instance.authenticate(), as
   try {
     const symbol = stockSymbolSchema.parse(req.params.symbol);
     
-    // Try cache first
-    const cacheKey = `metrics:${symbol}`;
-    const cached = await cacheService.get(cacheKey);
-    if (cached) {
-      return res.json(cached);
-    }
+    // REMOVED: Cache check due to startup issues
+    // const cacheKey = `metrics:${symbol}`;
+    // const cached = await cacheService.get(cacheKey);
+    // if (cached) {
+    //   return res.json(cached);
+    // }
     
     // Try Finnhub for basic financials
-    const metrics = await finnhubService.getBasicFinancials(symbol);
+    // PHASE 2: Use Alpha Vantage for financials
+    // Note: Alpha Vantage doesn't have a getBasicFinancials method, using overview instead
+    const metrics = await alphaVantageService.getCompanyOverview(symbol);
     
     if (!metrics) {
       return res.status(503).json({ 
@@ -176,8 +180,8 @@ router.get('/stocks/:symbol/metrics', authMiddleware.instance.authenticate(), as
       });
     }
     
-    // Cache for 1 hour
-    await cacheService.set(cacheKey, metrics, 3600);
+    // REMOVED: Cache set due to startup issues
+    // await cacheService.set(cacheKey, metrics, 3600);
     
     res.json(metrics);
   } catch (error) {

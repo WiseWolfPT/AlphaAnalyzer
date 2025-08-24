@@ -13,7 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Search, TrendingUp, TrendingDown, Activity, Target, RefreshCw, Zap, AlertCircle, Filter, Grid3X3, List, Wifi, ArrowUpIcon, ArrowDownIcon, Clock, BarChart3 } from "lucide-react";
 import { useAuth } from "@/contexts/temp-auth";
 import { cn } from "@/lib/utils";
-import { useCachedBatchQuotes } from "@/hooks/use-cache-data";
+import { useCachedBatchQuotes, useDirectFMPBatchQuotes } from "@/hooks/use-cache-data";
 import { TestAPIConnection } from "@/components/test-api-connection";
 import { ConnectionTest } from "@/components/debug/connection-test";
 
@@ -248,13 +248,27 @@ export default function FindStocks() {
   const [useRealtime, setUseRealtime] = useState(true);
   const [activeFilter, setActiveFilter] = useState<string>('all');
   const [sortBy, setSortBy] = useState<string>('alphabetical');
+  const [useDirectFMP, setUseDirectFMP] = useState(true); // PHASE 2: Use direct FMP by default
   
-  // Use cached market data from /api/cache/quotes/batch
-  const { data: quotesData, isLoading, error, refetch, status, fetchStatus } = useCachedBatchQuotes(displayedSymbols, {
+  // PHASE 2: Use direct FMP data (no cache) for real-time prices
+  const directFMPQuery = useDirectFMPBatchQuotes(displayedSymbols, {
+    enabled: useDirectFMP,
+    onError: (error) => {
+      console.error('Failed to fetch direct FMP quotes:', error);
+    }
+  });
+  
+  // Fallback to cached data if direct FMP fails
+  const cachedQuery = useCachedBatchQuotes(displayedSymbols, {
+    enabled: !useDirectFMP || directFMPQuery.isError,
     onError: (error) => {
       console.error('Failed to fetch cached quotes:', error);
     }
   });
+  
+  // Use direct FMP data if available, otherwise fall back to cached
+  const { data: quotesData, isLoading, error, refetch, status, fetchStatus } = 
+    useDirectFMP && !directFMPQuery.isError ? directFMPQuery : cachedQuery;
 
   // Run API connection test on mount
   useEffect(() => {
@@ -460,6 +474,19 @@ export default function FindStocks() {
               </p>
             </div>
             <div className="flex items-center gap-2">
+              {/* PHASE 2: Toggle between Direct FMP and Cached data */}
+              <Button
+                variant={useDirectFMP ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setUseDirectFMP(!useDirectFMP)}
+                className={useDirectFMP ? 'bg-blue-500 hover:bg-blue-600 text-white' : ''}
+                title={useDirectFMP ? "Using Direct FMP (Real-time)" : "Using Cached Data"}
+              >
+                <Zap className="w-4 h-4" />
+                <span className="ml-1 hidden sm:inline">
+                  {useDirectFMP ? 'Direct FMP' : 'Cached'}
+                </span>
+              </Button>
               <Button
                 variant="outline"
                 size="sm"
@@ -678,12 +705,20 @@ export default function FindStocks() {
                 {searchQuery && ` for "${searchQuery}"`}
                 {activeFilter !== 'all' && ` in ${activeFilter}`}
               </p>
-              {quotesData && quotesData.quotes && quotesData.quotes.some(q => q._cached) && (
-                <Badge variant="outline" className="text-xs">
+              {quotesData && quotesData._source && (
+                <Badge 
+                  variant="outline" 
+                  className={cn(
+                    "text-xs",
+                    quotesData._source === 'fmp_direct' ? "border-green-500 text-green-600" : ""
+                  )}
+                >
                   <Activity className="w-3 h-3 mr-1" />
-                  {quotesData.quotes.some(q => q.provider === 'fallback') 
+                  {quotesData._source === 'fmp_direct' 
+                    ? '🎯 Real-time FMP Data' 
+                    : quotesData.quotes?.some(q => q.provider === 'fallback')
                     ? 'Demo data (backend unavailable)' 
-                    : 'Some data from cache'}
+                    : 'Cached data'}
                 </Badge>
               )}
             </div>

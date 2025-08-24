@@ -131,15 +131,15 @@ router.post('/login', authRateLimit, async (req: Request, res: Response) => {
       maxAge: rememberMe ? 30 * 24 * 60 * 60 * 1000 : 7 * 24 * 60 * 60 * 1000 // 30 days or 7 days
     });
     
-    // Create session
-    const session = await sessionManager.createSession(
+    // Create user session
+    const userSession = await sessionManager.createSession(
       userProfile.id,
       req.ip || '',
       req.headers['user-agent'] || '',
       { loginMethod: 'email_password', rememberMe }
     );
 
-    if (!session) {
+    if (!userSession) {
       return res.status(500).json({
         error: 'SESSION_CREATION_FAILED',
         message: 'Failed to create session',
@@ -152,7 +152,7 @@ router.post('/login', authRateLimit, async (req: Request, res: Response) => {
       sessionCookieOptions.maxAge = 30 * 24 * 60 * 60 * 1000; // 30 days
     }
     
-    res.cookie('alfalyzer_session', session.session_token, sessionCookieOptions);
+    res.cookie('alfalyzer_session', userSession.session_token, sessionCookieOptions);
 
     // Log successful authentication
     await db.logSecurityEvent({

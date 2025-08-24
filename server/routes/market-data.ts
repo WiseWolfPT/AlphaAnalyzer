@@ -641,6 +641,162 @@ router.get('/test', async (req: Request, res: Response) => {
   });
 });
 
+/**
+ * GET /api/market-data/direct/quote/:symbol
+ * PHASE 2: Direct FMP API call without cache
+ * This endpoint connects directly to FMP for real-time data
+ */
+router.get('/direct/quote/:symbol',
+  authService,
+  marketDataRateLimit,
+  async (req: Request, res: Response) => {
+    try {
+      const validation = stockSymbolSchema.safeParse({ symbol: req.params.symbol });
+      if (!validation.success) {
+        return res.status(400).json({
+          error: 'INVALID_SYMBOL',
+          message: validation.error.errors[0].message,
+        });
+      }
+
+      const { symbol } = validation.data;
+      console.log(`🎯 DIRECT FMP request for quote: ${symbol}`);
+
+      // Direct FMP API call - NO CACHE!
+      const response = await fetch(
+        `https://financialmodelingprep.com/api/v3/quote/${symbol}?apikey=${process.env.FMP_API_KEY}`,
+        { timeout: 10000 } as any
+      );
+
+      if (!response.ok) {
+        throw new Error(`FMP API error: ${response.status}`);
+      }
+
+      const data = await response.json();
+      
+      if (!Array.isArray(data) || data.length === 0) {
+        return res.status(404).json({
+          error: 'QUOTE_NOT_FOUND',
+          message: `No data found for ${symbol}`,
+          symbol,
+          timestamp: new Date().toISOString(),
+        });
+      }
+
+      const quote = data[0];
+      
+      // Transform to our standard format
+      const quoteResponse = {
+        symbol: quote.symbol,
+        price: quote.price || 0,
+        change: quote.change || 0,
+        changePercent: quote.changesPercentage || 0,
+        high: quote.dayHigh || 0,
+        low: quote.dayLow || 0,
+        open: quote.open || 0,
+        previousClose: quote.previousClose || 0,
+        volume: quote.volume || 0,
+        marketCap: quote.marketCap || 0,
+        eps: quote.eps || null,
+        pe: quote.pe || null,
+        timestamp: new Date(quote.timestamp * 1000).toISOString(),
+        provider: 'fmp_direct',
+        _timestamp: Date.now(),
+        _cached: false,
+        _source: 'fmp_direct',
+      };
+
+      console.log(`✅ Direct FMP: ${symbol} fetched successfully`);
+      res.json(quoteResponse);
+    } catch (error) {
+      console.error('Direct FMP quote fetch error:', error);
+      
+      res.status(503).json({
+        error: 'QUOTE_FETCH_ERROR',
+        message: 'Unable to fetch quote data from FMP',
+        symbol: req.params.symbol,
+        timestamp: new Date().toISOString(),
+      });
+    }
+  }
+);
+
+/**
+ * POST /api/market-data/direct/batch
+ * PHASE 2: Direct FMP batch quotes without cache
+ */
+router.post('/direct/batch',
+  authService,
+  marketDataRateLimit,
+  async (req: Request, res: Response) => {
+    try {
+      const validation = batchSymbolsSchema.safeParse(req.body);
+      if (!validation.success) {
+        return res.status(400).json({
+          error: 'INVALID_REQUEST',
+          message: validation.error.errors[0].message,
+        });
+      }
+
+      const { symbols } = validation.data;
+      const symbolString = symbols.join(',');
+      
+      console.log(`🎯 DIRECT FMP batch request for: ${symbolString}`);
+
+      // Direct FMP API call for batch quotes
+      const response = await fetch(
+        `https://financialmodelingprep.com/api/v3/quote/${symbolString}?apikey=${process.env.FMP_API_KEY}`,
+        { timeout: 15000 } as any
+      );
+
+      if (!response.ok) {
+        throw new Error(`FMP API error: ${response.status}`);
+      }
+
+      const data = await response.json();
+      
+      if (!Array.isArray(data)) {
+        throw new Error('Invalid response from FMP');
+      }
+
+      // Transform all quotes to our standard format
+      const quotes = data.map(quote => ({
+        symbol: quote.symbol,
+        price: quote.price || 0,
+        change: quote.change || 0,
+        changePercent: quote.changesPercentage || 0,
+        high: quote.dayHigh || 0,
+        low: quote.dayLow || 0,
+        open: quote.open || 0,
+        previousClose: quote.previousClose || 0,
+        volume: quote.volume || 0,
+        marketCap: quote.marketCap || 0,
+        eps: quote.eps || null,
+        pe: quote.pe || null,
+        timestamp: new Date(quote.timestamp * 1000).toISOString(),
+        provider: 'fmp_direct',
+      }));
+
+      console.log(`✅ Direct FMP batch: ${quotes.length} quotes fetched successfully`);
+
+      res.json({
+        quotes,
+        _timestamp: Date.now(),
+        _cached: false,
+        _source: 'fmp_direct',
+      });
+    } catch (error) {
+      console.error('Direct FMP batch fetch error:', error);
+      
+      res.status(503).json({
+        error: 'BATCH_FETCH_ERROR',
+        message: 'Unable to fetch batch quotes from FMP',
+        timestamp: new Date().toISOString(),
+      });
+    }
+  }
+);
+
 
 /**
  * GET /api/market-data/quotes/batch
