@@ -34,16 +34,18 @@ const subscriptionRateLimit = rateLimitMiddleware.endpointRateLimit('/api/subscr
   'premium': 100,
 });
 
-// Validation schemas
+// Validation schemas for 3-tier pricing
 const createCheckoutSchema = z.object({
-  planId: z.enum(['monthly', 'annual']),
+  planId: z.enum(['starter', 'pro', 'elite']),
+  billingCycle: z.enum(['monthly', 'yearly']),
   successUrl: z.string().url().optional(),
   cancelUrl: z.string().url().optional(),
-  trialDays: z.number().min(0).max(30).optional(),
+  trialDays: z.number().min(0).max(30).optional().default(7),
 });
 
 const updateSubscriptionSchema = z.object({
-  planId: z.enum(['monthly', 'annual']),
+  planId: z.enum(['starter', 'pro', 'elite']),
+  billingCycle: z.enum(['monthly', 'yearly']),
   prorationBehavior: z.enum(['create_prorations', 'none']).optional(),
 });
 
@@ -102,9 +104,9 @@ router.get('/plans', authMiddleware.instance.optionalAuth(), async (req: Request
 });
 
 /**
- * Create checkout session for subscription upgrade
+ * Create checkout session for subscription upgrade with 3-tier pricing
  */
-router.post('/checkout', 
+router.post('/create-checkout', 
   authMiddleware.instance.authenticate(),
   subscriptionRateLimit,
   async (req: Request, res: Response) => {
@@ -119,37 +121,47 @@ router.post('/checkout',
         user.id
       );
 
-      // Get the correct price ID
+      // Get the correct price ID based on plan and billing cycle
       const priceIds = stripeService.getPriceIds();
-      const priceId = priceIds[validatedData.planId];
-
-      if (!priceId) {
+      const planPrices = priceIds[validatedData.planId as keyof typeof priceIds];
+      
+      if (!planPrices || typeof planPrices !== 'object') {
         return res.status(400).json({
           success: false,
           error: 'Invalid subscription plan',
         });
       }
 
-      // Create checkout session
+      const priceId = planPrices[validatedData.billingCycle as keyof typeof planPrices];
+
+      if (!priceId) {
+        return res.status(400).json({
+          success: false,
+          error: 'Invalid billing cycle for selected plan',
+        });
+      }
+
+      // Create checkout session with Stripe Link enabled
       const checkoutUrl = await stripeService.createCheckoutSession({
         customerId: customer.id,
         priceId,
-        successUrl: validatedData.successUrl,
-        cancelUrl: validatedData.cancelUrl,
-        trialDays: validatedData.trialDays,
+        successUrl: validatedData.successUrl || `${process.env.CLIENT_URL}/subscription/success?session_id={CHECKOUT_SESSION_ID}`,
+        cancelUrl: validatedData.cancelUrl || `${process.env.CLIENT_URL}/pricing`,
+        trialDays: validatedData.trialDays || 7,
         metadata: {
           userId: user.id,
           planId: validatedData.planId,
+          billingCycle: validatedData.billingCycle,
         },
       });
 
       // Log checkout attempt
-      console.log(`Checkout session created for user ${user.id}, plan: ${validatedData.planId}`);
+      console.log(`Checkout session created for user ${user.id}, plan: ${validatedData.planId}-${validatedData.billingCycle}`);
 
       res.json({
         success: true,
         data: {
-          checkoutUrl,
+          url: checkoutUrl, // Changed from checkoutUrl to url to match frontend expectation
           customerId: customer.id,
         },
       });

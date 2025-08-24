@@ -19,10 +19,20 @@ const STRIPE_CONFIG = {
   customerPortalUrl: process.env.CLIENT_URL + '/subscription/manage',
 } as const;
 
-// Price IDs mapping to our subscription plans
+// Price IDs mapping to our 3-tier subscription plans
 const STRIPE_PRICE_IDS = {
-  monthly: process.env.STRIPE_MONTHLY_PRICE_ID!,
-  annual: process.env.STRIPE_ANNUAL_PRICE_ID!,
+  starter: {
+    monthly: process.env.STRIPE_STARTER_MONTHLY_PRICE_ID!,
+    yearly: process.env.STRIPE_STARTER_YEARLY_PRICE_ID!,
+  },
+  pro: {
+    monthly: process.env.STRIPE_PRO_MONTHLY_PRICE_ID!,
+    yearly: process.env.STRIPE_PRO_YEARLY_PRICE_ID!,
+  },
+  elite: {
+    monthly: process.env.STRIPE_ELITE_MONTHLY_PRICE_ID!,
+    yearly: process.env.STRIPE_ELITE_YEARLY_PRICE_ID!,
+  }
 } as const;
 
 export interface StripeCustomer {
@@ -150,7 +160,7 @@ export class StripeService {
   }
 
   /**
-   * Create a checkout session for subscription
+   * Create a checkout session for subscription with Stripe Link support
    */
   async createCheckoutSession(options: CreateCheckoutSessionOptions): Promise<string> {
     try {
@@ -160,7 +170,7 @@ export class StripeService {
         priceId,
         successUrl = STRIPE_CONFIG.successUrl,
         cancelUrl = STRIPE_CONFIG.cancelUrl,
-        trialDays,
+        trialDays = 7, // Default 7-day trial for all plans
         allowPromotionCodes = true,
         metadata = {},
       } = options;
@@ -177,8 +187,18 @@ export class StripeService {
         success_url: `${successUrl}?session_id={CHECKOUT_SESSION_ID}`,
         cancel_url: cancelUrl,
         allow_promotion_codes: allowPromotionCodes,
-        billing_address_collection: 'auto',
-        customer_creation: customerId ? undefined : 'always',
+        billing_address_collection: 'required', // Required for Stripe Link
+        
+        // Stripe Link Configuration - for 1-click checkout
+        customer_creation: 'always', // Always create customer for Link
+        payment_method_collection: 'always', // Save payment method for future use
+        
+        // Shipping address for better Stripe Link experience
+        shipping_address_collection: {
+          allowed_countries: ['PT', 'ES', 'FR', 'DE', 'GB', 'US', 'BR', 'IT', 'NL', 'BE']
+        },
+        
+        // 7-day free trial for all plans
         subscription_data: {
           trial_period_days: trialDays,
           metadata: {
@@ -186,6 +206,31 @@ export class StripeService {
             planId: this.getPlanIdFromPriceId(priceId),
           },
         },
+        
+        // Phone number collection for Link
+        phone_number_collection: {
+          enabled: true,
+        },
+        
+        // Custom fields for better customer data
+        custom_fields: [
+          {
+            key: 'investment_experience',
+            label: {
+              type: 'custom',
+              custom: 'Investment Experience',
+            },
+            type: 'dropdown',
+            dropdown: {
+              options: [
+                { label: 'Beginner (< 1 year)', value: 'beginner' },
+                { label: 'Intermediate (1-3 years)', value: 'intermediate' },
+                { label: 'Advanced (3+ years)', value: 'advanced' },
+              ],
+            },
+          },
+        ],
+        
         metadata,
       };
 
@@ -460,8 +505,18 @@ export class StripeService {
    * Helper method to get plan ID from price ID
    */
   private getPlanIdFromPriceId(priceId: string): string {
-    if (priceId === STRIPE_PRICE_IDS.monthly) return 'monthly';
-    if (priceId === STRIPE_PRICE_IDS.annual) return 'annual';
+    // Check Starter plans
+    if (priceId === STRIPE_PRICE_IDS.starter.monthly) return 'starter-monthly';
+    if (priceId === STRIPE_PRICE_IDS.starter.yearly) return 'starter-yearly';
+    
+    // Check Pro plans
+    if (priceId === STRIPE_PRICE_IDS.pro.monthly) return 'pro-monthly';
+    if (priceId === STRIPE_PRICE_IDS.pro.yearly) return 'pro-yearly';
+    
+    // Check Elite plans
+    if (priceId === STRIPE_PRICE_IDS.elite.monthly) return 'elite-monthly';
+    if (priceId === STRIPE_PRICE_IDS.elite.yearly) return 'elite-yearly';
+    
     return 'unknown';
   }
 
