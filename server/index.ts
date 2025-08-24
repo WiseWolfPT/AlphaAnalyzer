@@ -55,6 +55,7 @@ import { setupVite, serveStatic, log } from "./vite";
 import { db } from "./db";
 import csrf from 'csrf';
 import session from 'express-session';
+import cookieParser from 'cookie-parser';
 
 // Extend Express Request interface
 declare module 'express-serve-static-core' {
@@ -164,6 +165,9 @@ app.use(enforceJsonContentType);
 
 // Trust proxy for accurate IP addresses
 app.set('trust proxy', 1);
+
+// Cookie parser middleware for httpOnly cookies (BEFORE session)
+app.use(cookieParser());
 
 // Body parsing middleware with different limits
 // Standard JSON parsing with 1MB limit

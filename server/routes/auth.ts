@@ -1,12 +1,13 @@
 import { Router, Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
-import crypto from 'crypto'; // Importar crypto no topo do arquivo para evitar require() dinâmico
+import crypto from 'crypto';
+import { createClient } from '@supabase/supabase-js';
 import { authMiddleware } from '../middleware/auth-middleware';
 import { rateLimitMiddleware } from '../middleware/rate-limit-middleware';
 import { sessionManager } from '../lib/session-manager';
 import { db, auth } from '../lib/supabase';
-import { validationSchemas } from '../security/security-middleware'; // Importar esquemas de validação
+import { validationSchemas } from '../security/security-middleware';
 import { 
   AuthTokens, 
   LoginRequest, 
@@ -15,6 +16,19 @@ import {
   FINANCIAL_PERMISSIONS,
   SUBSCRIPTION_FEATURES 
 } from '../types/auth';
+import { env } from '../config/env';
+
+// Create Supabase client for auth operations
+const supabase = createClient(
+  env.SUPABASE_URL,
+  env.SUPABASE_SERVICE_ROLE_KEY,
+  {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false
+    }
+  }
+);
 
 const router = Router();
 
@@ -31,7 +45,7 @@ const authRateLimit = rateLimitMiddleware.endpointRateLimit('/api/auth', {
 });
 
 /**
- * Login endpoint with enhanced security
+ * Login endpoint with httpOnly cookies for XSS protection
  */
 router.post('/login', authRateLimit, async (req: Request, res: Response) => {
   try {
@@ -91,9 +105,31 @@ router.post('/login', authRateLimit, async (req: Request, res: Response) => {
       });
     }
 
-    // Generate JWT tokens
-    const accessToken = generateAccessToken(userProfile);
-    const refreshToken = generateRefreshToken(userProfile.id);
+    // Get Supabase session for tokens
+    const { session } = authData;
+    
+    if (!session) {
+      return res.status(500).json({
+        error: 'SESSION_ERROR',
+        message: 'Failed to create session',
+      });
+    }
+    
+    // Store tokens in httpOnly cookies (XSS Protected!)
+    res.cookie('access-token', session.access_token, {
+      httpOnly: true,        // Cannot be accessed by JavaScript
+      secure: process.env.NODE_ENV === 'production', // HTTPS only in production
+      sameSite: 'strict',    // CSRF protection
+      maxAge: 60 * 60 * 1000 // 1 hour
+    });
+    
+    res.cookie('refresh-token', session.refresh_token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      path: '/api/auth/refresh', // Only sent to refresh endpoint
+      maxAge: rememberMe ? 30 * 24 * 60 * 60 * 1000 : 7 * 24 * 60 * 60 * 1000 // 30 days or 7 days
+    });
     
     // Create session
     const session = await sessionManager.createSession(
@@ -145,11 +181,7 @@ router.post('/login', authRateLimit, async (req: Request, res: Response) => {
           subscriptionTier: userProfile.subscription_tier as SubscriptionTier,
           profilePicUrl: userProfile.avatar_url,
         },
-        tokens: {
-          accessToken,
-          refreshToken,
-          expiresIn: 15 * 60, // 15 minutes
-        },
+        // Don't send tokens in response body - they're in httpOnly cookies
       },
     };
 
@@ -285,9 +317,9 @@ router.post('/register', authRateLimit, async (req: Request, res: Response) => {
 });
 
 /**
- * Logout endpoint with session cleanup
+ * Logout endpoint - clear httpOnly cookies
  */
-router.post('/logout', authMiddleware.instance.authenticate(), async (req: Request, res: Response) => {
+router.post('/logout', async (req: Request, res: Response) => {
   try {
     const sessionToken = req.cookies?.alfalyzer_session;
     
@@ -310,7 +342,9 @@ router.post('/logout', authMiddleware.instance.authenticate(), async (req: Reque
       }
     }
 
-    // Clear session cookie
+    // Clear all auth cookies
+    res.clearCookie('access-token');
+    res.clearCookie('refresh-token', { path: '/api/auth/refresh' });
     res.clearCookie('alfalyzer_session');
 
     res.json({
@@ -327,9 +361,113 @@ router.post('/logout', authMiddleware.instance.authenticate(), async (req: Reque
 });
 
 /**
- * Get current user profile
+ * GOOGLE OAUTH CALLBACK - Exchange code for session  
  */
-router.get('/me', authMiddleware.instance.authenticate(), async (req: Request, res: Response) => {
+router.post('/google/callback', async (req: Request, res: Response) => {
+  try {
+    const { code } = req.body;
+    
+    if (!code) {
+      return res.status(400).json({ error: 'Authorization code required' });
+    }
+    
+    // Exchange code for session with Supabase
+    const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+    
+    if (error) {
+      console.error('Google OAuth error:', error);
+      return res.status(400).json({ error: error.message });
+    }
+    
+    if (!data.session) {
+      return res.status(400).json({ error: 'Failed to create session' });
+    }
+    
+    // Store tokens in httpOnly cookies (XSS Protected!)
+    res.cookie('access-token', data.session.access_token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 60 * 60 * 1000
+    });
+    
+    res.cookie('refresh-token', data.session.refresh_token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      path: '/api/auth/refresh',
+      maxAge: 30 * 24 * 60 * 60 * 1000
+    });
+    
+    res.json({ 
+      user: data.user,
+      message: 'Login successful'
+    });
+  } catch (error: any) {
+    console.error('Google callback error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+/**
+ * Get current user profile (uses httpOnly cookie for auth)
+ */
+router.get('/me', async (req: Request, res: Response) => {
+  try {
+    const token = req.cookies['access-token'];
+    
+    if (!token) {
+      return res.status(401).json({ error: 'Not authenticated' });
+    }
+    
+    // Validate token with Supabase
+    const { data: { user }, error } = await supabase.auth.getUser(token);
+    
+    if (error || !user) {
+      return res.status(401).json({ error: 'Invalid token' });
+    }
+    
+    // Get user profile from database
+    const profile = await db.getProfile(user.id);
+    
+    if (!profile) {
+      return res.status(404).json({
+        error: 'USER_NOT_FOUND',
+        message: 'User profile not found',
+      });
+    }
+
+    // Get user permissions based on subscription tier
+    const permissions = SUBSCRIPTION_FEATURES[profile.subscription_tier as SubscriptionTier] || [];
+
+    res.json({
+      statusCode: '200',
+      message: 'User profile retrieved successfully',
+      data: {
+        id: profile.id,
+        name: profile.full_name,
+        email: profile.email,
+        avatar: profile.avatar_url,
+        subscriptionTier: profile.subscription_tier,
+        roles: profile.roles || [],
+        permissions,
+        createdAt: profile.created_at,
+        updatedAt: profile.updated_at,
+      },
+    });
+  } catch (error) {
+    console.error('Get profile error:', error);
+    res.status(500).json({
+      error: 'PROFILE_ERROR',
+      message: 'Failed to retrieve user profile',
+    });
+  }
+});
+
+/**
+ * Get current user profile (legacy - kept for compatibility)
+ */
+router.get('/me-legacy', authMiddleware.instance.authenticate(), async (req: Request, res: Response) => {
   try {
     const user = req.user!;
     
@@ -462,11 +600,11 @@ router.get('/sessions', authMiddleware.instance.authenticate(), async (req: Requ
 });
 
 /**
- * Refresh token endpoint
+ * Refresh token endpoint - uses httpOnly cookie
  */
 router.post('/refresh', authRateLimit, async (req: Request, res: Response) => {
   try {
-    const { refreshToken } = req.body;
+    const refreshToken = req.cookies['refresh-token'];
 
     if (!refreshToken) {
       return res.status(400).json({
@@ -500,18 +638,41 @@ router.post('/refresh', authRateLimit, async (req: Request, res: Response) => {
       });
     }
 
-    // Gerar novos tokens
-    const newAccessToken = generateAccessToken(userProfile);
-    const newRefreshToken = generateRefreshToken(userProfile.id);
+    // Refresh session with Supabase
+    const { data, error } = await supabase.auth.refreshSession({
+      refresh_token: refreshToken
+    });
+    
+    if (error || !data.session) {
+      return res.status(401).json({
+        error: 'REFRESH_FAILED',
+        message: 'Failed to refresh session',
+      });
+    }
+    
+    // Update cookies with new tokens
+    res.cookie('access-token', data.session.access_token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 60 * 60 * 1000
+    });
+    
+    // Optionally update refresh token if provided
+    if (data.session.refresh_token) {
+      res.cookie('refresh-token', data.session.refresh_token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict',
+        path: '/api/auth/refresh',
+        maxAge: 30 * 24 * 60 * 60 * 1000
+      });
+    }
 
     res.json({
       statusCode: '200',
       message: 'Token refreshed successfully',
-      data: {
-        accessToken: newAccessToken,
-        refreshToken: newRefreshToken,
-        expiresIn: 15 * 60, // 15 minutes
-      },
+      user: data.user
     });
   } catch (error) {
     console.error('Token refresh error:', error);

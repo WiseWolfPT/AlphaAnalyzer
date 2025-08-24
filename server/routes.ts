@@ -29,6 +29,7 @@ import cacheRoutes from "./routes/cache-routes";
 // import pushNotificationsRouter from "./routes/push-notifications"; // TODO: Create this file
 // import circuitBreakerRouter from "./routes/circuit-breaker"; // TODO: Create this file
 import { authMiddleware } from "./middleware/auth-middleware";
+import { authMiddleware as cookieAuth, optionalAuth, autoRefreshMiddleware } from "./middleware/auth-cookie";
 import { validateRequest, validationSchemas } from "./security/security-middleware";
 import { 
   apiSecurityMiddleware, 
