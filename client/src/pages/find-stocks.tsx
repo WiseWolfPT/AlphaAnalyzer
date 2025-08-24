@@ -16,6 +16,7 @@ import { cn } from "@/lib/utils";
 import { useCachedBatchQuotes, useDirectFMPBatchQuotes } from "@/hooks/use-cache-data";
 import { TestAPIConnection } from "@/components/test-api-connection";
 import { ConnectionTest } from "@/components/debug/connection-test";
+import { MarketMovers } from "@/components/market/market-movers";
 
 // All stocks from Supabase - expanded list
 const ALL_STOCKS = [
@@ -646,6 +647,9 @@ export default function FindStocks() {
 
         {/* Beta Banner */}
         <BetaBanner />
+
+        {/* Market Movers Section - PHASE 2, Day 9 */}
+        <MarketMovers />
 
         {/* Dynamic Sections - Special Categories */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">

@@ -743,9 +743,42 @@ router.post('/direct/batch',
       
       console.log(`🎯 DIRECT FMP batch request for: ${symbolString}`);
 
+      // Import our Redis cache service
+      const { cacheService: redisCache } = await import('../services/cache-service');
+
+      // Check cache for each symbol
+      const cachedQuotes = await redisCache.getBatchQuotes(symbols);
+      const uncachedSymbols: string[] = [];
+      const resultQuotes: any[] = [];
+
+      // Separate cached and uncached symbols
+      for (const symbol of symbols) {
+        if (cachedQuotes[symbol]) {
+          console.log(`✅ Cache hit for ${symbol}`);
+          resultQuotes.push(cachedQuotes[symbol]);
+        } else {
+          uncachedSymbols.push(symbol);
+        }
+      }
+
+      // If all are cached, return immediately
+      if (uncachedSymbols.length === 0) {
+        console.log(`✅ All ${symbols.length} quotes served from Redis cache`);
+        return res.json({
+          quotes: resultQuotes,
+          _timestamp: Date.now(),
+          _cached: true,
+          _source: 'redis_cache',
+        });
+      }
+
+      // Fetch uncached symbols from FMP
+      console.log(`📊 Fetching ${uncachedSymbols.length} uncached symbols from FMP...`);
+      const uncachedString = uncachedSymbols.join(',');
+      
       // Direct FMP API call for batch quotes
       const response = await fetch(
-        `https://financialmodelingprep.com/api/v3/quote/${symbolString}?apikey=${process.env.FMP_API_KEY}`,
+        `https://financialmodelingprep.com/api/v3/quote/${uncachedString}?apikey=${process.env.FMP_API_KEY}`,
         { timeout: 15000 } as any
       );
 
@@ -759,31 +792,43 @@ router.post('/direct/batch',
         throw new Error('Invalid response from FMP');
       }
 
-      // Transform all quotes to our standard format
-      const quotes = data.map(quote => ({
-        symbol: quote.symbol,
-        price: quote.price || 0,
-        change: quote.change || 0,
-        changePercent: quote.changesPercentage || 0,
-        high: quote.dayHigh || 0,
-        low: quote.dayLow || 0,
-        open: quote.open || 0,
-        previousClose: quote.previousClose || 0,
-        volume: quote.volume || 0,
-        marketCap: quote.marketCap || 0,
-        eps: quote.eps || null,
-        pe: quote.pe || null,
-        timestamp: new Date(quote.timestamp * 1000).toISOString(),
-        provider: 'fmp_direct',
-      }));
+      // Transform and cache quotes
+      const quotesToCache: Record<string, any> = {};
+      for (const quote of data) {
+        const formattedQuote = {
+          symbol: quote.symbol,
+          name: quote.name || '',
+          price: quote.price || 0,
+          change: quote.change || 0,
+          changePercent: quote.changesPercentage || 0,
+          high: quote.dayHigh || 0,
+          low: quote.dayLow || 0,
+          open: quote.open || 0,
+          previousClose: quote.previousClose || 0,
+          volume: quote.volume || 0,
+          marketCap: quote.marketCap || 0,
+          eps: quote.eps || null,
+          pe: quote.pe || null,
+          timestamp: new Date(quote.timestamp * 1000).toISOString(),
+          provider: 'fmp_direct',
+        };
+        
+        quotesToCache[quote.symbol] = formattedQuote;
+        resultQuotes.push(formattedQuote);
+      }
 
-      console.log(`✅ Direct FMP batch: ${quotes.length} quotes fetched successfully`);
+      // Cache the new quotes (60 second TTL)
+      await redisCache.setQuotes(quotesToCache);
+
+      const cacheHitRate = ((symbols.length - uncachedSymbols.length) / symbols.length * 100).toFixed(1);
+      console.log(`✅ Batch complete: ${resultQuotes.length} quotes (${cacheHitRate}% cache hit rate)`);
 
       res.json({
-        quotes,
+        quotes: resultQuotes,
         _timestamp: Date.now(),
-        _cached: false,
-        _source: 'fmp_direct',
+        _cached: uncachedSymbols.length === 0,
+        _cacheHitRate: `${cacheHitRate}%`,
+        _source: uncachedSymbols.length === 0 ? 'redis_cache' : 'mixed',
       });
     } catch (error) {
       console.error('Direct FMP batch fetch error:', error);
@@ -798,9 +843,108 @@ router.post('/direct/batch',
 );
 
 /**
+ * GET /api/market-data/market/movers
+ * PHASE 2, Day 9: Market movers - gainers, losers, and active stocks
+ * PHASE 2.5: Now with Redis caching for fast response times
+ */
+router.get('/market/movers',
+  authService,
+  marketDataRateLimit,
+  async (req: Request, res: Response) => {
+    try {
+      console.log('📈 Fetching market movers...');
+
+      // Import our Redis cache service
+      const { cacheService: redisCache } = await import('../services/cache-service');
+
+      // Try cache first (5 minute TTL for market movers)
+      const cached = await redisCache.getMarketMovers();
+      if (cached) {
+        console.log('✅ Market movers served from Redis cache');
+        return res.json({
+          ...cached,
+          _cached: true,
+          _cacheAge: Date.now() - cached.cachedAt,
+          _source: 'redis_cache'
+        });
+      }
+
+      // Check for FMP API key
+      if (!process.env.FMP_API_KEY || process.env.FMP_API_KEY === 'demo') {
+        return res.status(503).json({
+          error: 'FMP_NOT_CONFIGURED',
+          message: 'FMP API key not configured',
+        });
+      }
+
+      console.log('📊 Cache miss - fetching from FMP API...');
+
+      // Fetch gainers, losers, and most active in parallel
+      const [gainersRes, losersRes, activeRes] = await Promise.all([
+        fetch(`https://financialmodelingprep.com/api/v3/stock_market/gainers?apikey=${process.env.FMP_API_KEY}`),
+        fetch(`https://financialmodelingprep.com/api/v3/stock_market/losers?apikey=${process.env.FMP_API_KEY}`),
+        fetch(`https://financialmodelingprep.com/api/v3/stock_market/actives?apikey=${process.env.FMP_API_KEY}`)
+      ]);
+
+      // Check responses
+      if (!gainersRes.ok || !losersRes.ok || !activeRes.ok) {
+        throw new Error('Failed to fetch market movers from FMP');
+      }
+
+      const [gainersData, losersData, activeData] = await Promise.all([
+        gainersRes.json(),
+        losersRes.json(),
+        activeRes.json()
+      ]);
+
+      // Format and limit results (top 5 of each)
+      const formatMover = (stock: any) => ({
+        symbol: stock.symbol,
+        name: stock.name || stock.companyName || '',
+        price: stock.price || 0,
+        change: stock.change || 0,
+        changePercent: stock.changesPercentage || stock.changePercent || 0,
+        volume: stock.volume || 0,
+      });
+
+      const moversResponse = {
+        gainers: (Array.isArray(gainersData) ? gainersData : [])
+          .slice(0, 5)
+          .map(formatMover),
+        losers: (Array.isArray(losersData) ? losersData : [])
+          .slice(0, 5)
+          .map(formatMover),
+        mostActive: (Array.isArray(activeData) ? activeData : [])
+          .slice(0, 5)
+          .map(formatMover),
+        timestamp: new Date().toISOString(),
+        provider: 'fmp_direct',
+        _cached: false,
+        _source: 'fmp_market_movers'
+      };
+
+      // Cache the response for 5 minutes (300 seconds)
+      await redisCache.setMarketMovers(moversResponse, 300);
+
+      console.log(`✅ Market movers fetched and cached: ${moversResponse.gainers.length} gainers, ${moversResponse.losers.length} losers, ${moversResponse.mostActive.length} active`);
+      
+      res.json(moversResponse);
+    } catch (error) {
+      console.error('Market movers fetch error:', error);
+      
+      res.status(503).json({
+        error: 'MOVERS_FETCH_ERROR',
+        message: 'Unable to fetch market movers from FMP',
+        timestamp: new Date().toISOString(),
+      });
+    }
+  }
+);
+
+/**
  * GET /api/market-data/direct/financials/:symbol
  * PHASE 2, Day 8: Direct FMP financial data for charts
- * Fetches income statements and formats for frontend charts
+ * PHASE 2.5: Now with Redis caching for 1 hour TTL
  */
 router.get('/direct/financials/:symbol',
   authService,
@@ -818,7 +962,22 @@ router.get('/direct/financials/:symbol',
       const symbol = validation.data.symbol;
       const period = req.query.period === 'annual' ? 'annual' : 'quarter'; // Default to quarterly
       
-      console.log(`📊 Direct FMP: Fetching ${period} financials for ${symbol}`);
+      console.log(`📊 Fetching ${period} financials for ${symbol}`);
+
+      // Import our Redis cache service
+      const { cacheService: redisCache } = await import('../services/cache-service');
+
+      // Try cache first (1 hour TTL for financial data)
+      const cached = await redisCache.getFinancials(symbol, period);
+      if (cached) {
+        console.log(`✅ Financials for ${symbol} (${period}) served from Redis cache`);
+        return res.json({
+          ...cached,
+          _cached: true,
+          _cacheAge: Date.now() - cached.cachedAt,
+          _source: 'redis_cache'
+        });
+      }
 
       // Check for FMP API key
       if (!process.env.FMP_API_KEY || process.env.FMP_API_KEY === 'demo') {
@@ -827,6 +986,8 @@ router.get('/direct/financials/:symbol',
           message: 'FMP API key not configured',
         });
       }
+
+      console.log(`📊 Cache miss - fetching from FMP API...`);
 
       // Fetch income statements from FMP
       const incomeUrl = `https://financialmodelingprep.com/api/v3/income-statement/${symbol}?period=${period}&limit=12&apikey=${process.env.FMP_API_KEY}`;
@@ -894,7 +1055,10 @@ router.get('/direct/financials/:symbol',
         _source: 'fmp_direct_financials',
       };
 
-      console.log(`✅ Direct FMP: ${symbol} financials fetched successfully (${incomeData.length} periods)`);
+      // Cache the response for 1 hour (3600 seconds)
+      await redisCache.setFinancials(symbol, period, chartData, 3600);
+
+      console.log(`✅ Direct FMP: ${symbol} financials fetched and cached (${incomeData.length} periods)`);
       res.json(chartData);
     } catch (error) {
       console.error('Direct FMP financials fetch error:', error);
