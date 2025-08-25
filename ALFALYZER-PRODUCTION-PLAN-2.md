@@ -66,8 +66,9 @@
 
 > **⚠️ AGENTS: Update this section when completing any phase!**
 
-**Date**: 2025-08-25 (Session 14)
-**Phase Status**: Phase 10 Email Notifications ✅ COMPLETE
+**Date**: 2025-08-25 (Session 15) 
+**Phase Status**: Phase 16 Domain Configuration 🆕 IN PROGRESS
+**Current Task**: Setting up alfalyzer.com domain
 **What Was Done**:
 - ✅ **Email Service Implementation**
   - Created comprehensive email-service.ts with Resend integration
@@ -1771,7 +1772,7 @@ Note: Test logic and coverage targets are solid, just need import/setup fixes
 
 ---
 
-## 📅 PHASE 15: CI/CD & DEPLOYMENT
+## 📅 PHASE 15: CI/CD & DEPLOYMENT ✅ COMPLETED 2025-08-25
 **Duration: 2 days | Priority: HIGH**
 
 ### Day 63-64: Automation & Launch
@@ -1819,6 +1820,150 @@ jobs:
 - [ ] Backups configured
 
 **Commit**: `feat: CI/CD pipeline - PRODUCTION READY! 🚀`
+
+---
+
+## 📅 PHASE 16: DOMAIN CONFIGURATION & SETUP 🆕
+**Duration: 1 day | Priority: CRITICAL**
+**Domain Purchased: alfalyzer.com (OVHcloud - €9,83/year)**
+
+### Day 65: Complete Domain Setup (2025-08-25)
+
+#### 🌐 DNS Configuration Tasks
+
+##### 1. Point Domain to Hetzner Server
+```dns
+Type: A Record
+Name: @ (or alfalyzer.com)
+Value: 128.140.45.28
+TTL: 3600
+
+Type: A Record  
+Name: www
+Value: 128.140.45.28
+TTL: 3600
+```
+
+##### 2. Configure Resend for Email Sending
+**Resend Dashboard Steps:**
+1. Go to https://resend.com/domains
+2. Click "Add Domain"
+3. Enter: alfalyzer.com
+4. Add these DNS records in OVH:
+
+```dns
+# SPF Record
+Type: TXT
+Name: @
+Value: "v=spf1 include:amazonses.com ~all"
+
+# DKIM Records (3 records - Resend will provide exact values)
+Type: CNAME
+Name: resend._domainkey
+Value: [Resend will provide]
+
+Type: CNAME
+Name: resend2._domainkey  
+Value: [Resend will provide]
+
+Type: CNAME
+Name: resend3._domainkey
+Value: [Resend will provide]
+
+# DMARC Record
+Type: TXT
+Name: _dmarc
+Value: "v=DMARC1; p=none; rua=mailto:support@alfalyzer.com"
+```
+
+##### 3. Configure MX Records for Zimbra
+```dns
+Type: MX
+Name: @
+Priority: 10
+Value: mx.mail.ovh.net.
+```
+
+#### 📧 Email Configuration
+
+##### Zimbra Setup (Corporate Email)
+- [ ] Access Zimbra webmail
+- [ ] Create support@alfalyzer.com
+- [ ] Create info@alfalyzer.com
+- [ ] Configure email signature
+- [ ] Set up forwarding rules if needed
+
+##### Resend Setup (Transactional Emails)
+- [ ] Verify domain in Resend dashboard
+- [ ] Update .env:
+  ```env
+  RESEND_FROM_EMAIL=notifications@alfalyzer.com
+  ```
+- [ ] Test email sending to any address
+- [ ] Configure email templates with new domain
+
+#### 🔒 SSL Certificate for Domain
+```bash
+# On Hetzner server
+sudo certbot certonly --nginx -d alfalyzer.com -d www.alfalyzer.com
+sudo nginx -s reload
+```
+
+#### ⚙️ Update Nginx Configuration
+```nginx
+server {
+    listen 80;
+    server_name alfalyzer.com www.alfalyzer.com;
+    return 301 https://$server_name$request_uri;
+}
+
+server {
+    listen 443 ssl http2;
+    server_name alfalyzer.com www.alfalyzer.com;
+    
+    ssl_certificate /etc/letsencrypt/live/alfalyzer.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/alfalyzer.com/privkey.pem;
+    
+    root /home/teste\ 1/dist/public;
+    
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+    
+    location /api {
+        proxy_pass http://localhost:3001;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_cache_bypass $http_upgrade;
+    }
+}
+```
+
+#### 📱 Update Application URLs
+- [ ] Update all references from 128.140.45.28.sslip.io to alfalyzer.com
+- [ ] Update CORS settings in backend
+- [ ] Update frontend API URLs
+- [ ] Update Supabase allowed URLs
+- [ ] Update Stripe webhook URLs
+
+#### ✅ Verification Checklist
+- [ ] Domain resolves to server: `ping alfalyzer.com`
+- [ ] Website loads on https://alfalyzer.com
+- [ ] SSL certificate valid (green padlock)
+- [ ] Emails send from notifications@alfalyzer.com
+- [ ] Can receive emails at support@alfalyzer.com
+- [ ] Resend domain verified
+- [ ] All DNS records propagated (check with `dig alfalyzer.com`)
+
+#### 🚀 Production URLs After Configuration
+- **Website**: https://alfalyzer.com
+- **API**: https://alfalyzer.com/api
+- **Support Email**: support@alfalyzer.com
+- **Notifications**: notifications@alfalyzer.com
+
+**Commit**: `feat: domain configuration - alfalyzer.com fully configured`
 
 ---
 

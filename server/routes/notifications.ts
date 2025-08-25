@@ -5,7 +5,7 @@ import { priceAlertWorker } from '../workers/price-alert-worker';
 import { portfolioSummaryWorker } from '../workers/portfolio-summary-worker';
 import { authMiddleware } from '../middleware/auth';
 import { supabaseAdmin } from '../lib/supabase-admin';
-import { logger } from '../middleware/logger';
+import { logger } from '../lib/logger';
 
 const router = Router();
 

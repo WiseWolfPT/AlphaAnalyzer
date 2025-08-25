@@ -1,6 +1,6 @@
 import { emailService } from '../services/email-service';
 import { supabaseAdmin } from '../lib/supabase-admin';
-import { logger } from '../middleware/logger';
+import { logger } from '../lib/logger';
 import { cacheService } from '../services/cache/cache-service';
 
 interface PriceAlert {

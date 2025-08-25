@@ -1,5 +1,5 @@
 import { Resend } from 'resend';
-import { logger } from '../middleware/logger';
+import { logger } from '../lib/logger';
 
 interface EmailOptions {
   to: string | string[];
