@@ -270,5 +270,8 @@ class ExchangeRateService {
 // Export singleton instance
 export const exchangeRateService = new ExchangeRateService();
 
+// Export class for testing
+export { ExchangeRateService };
+
 // Export types for external use
 export type { ExchangeRateResponse };

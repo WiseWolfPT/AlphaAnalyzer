@@ -67,3 +67,7 @@ fix-production-server.sh
 PROMPT-CONTINUACAO-ALFALYZER*.md
 PROMPT-DEFINITIVO-ALFALYZER*.md
 
+
+# Files with sensitive information
+GITHUB_ACTIONS_SETUP.md
+GITHUB_SECRETS_SETUP.md

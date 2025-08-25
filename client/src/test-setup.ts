@@ -3,9 +3,13 @@
  * International Markets Testing Environment (USA/EU)
  */
 
+import React from 'react';
 import { config } from 'dotenv';
 import '@testing-library/jest-dom';
 import { vi } from 'vitest';
+
+// Make React available globally for tests
+global.React = React;
 
 // Carregar .env antes de tudo para testes
 config();
