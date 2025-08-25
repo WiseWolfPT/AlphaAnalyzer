@@ -25,6 +25,7 @@ import logsRouter from "./routes/logs";
 // import cacheAdminRouter from "./routes/cache-admin";
 import { alertsRouter } from "./routes/alerts";
 import cacheRoutes from "./routes/cache-routes";
+import notificationsRouter from "./routes/notifications";
 // BROKEN IMPORTS - Modules don't exist yet
 // import pushNotificationsRouter from "./routes/push-notifications"; // TODO: Create this file
 // import circuitBreakerRouter from "./routes/circuit-breaker"; // TODO: Create this file
@@ -188,6 +189,9 @@ export async function registerRoutes(app: Express, server: Server): Promise<void
   
   // Alert system routes
   app.use("/api/alerts", alertsRouter);
+  
+  // Email notifications and preferences
+  app.use(notificationsRouter);
   
   // BROKEN - Push notifications routes (module doesn't exist)
   // app.use("/api/push", pushNotificationsRouter);

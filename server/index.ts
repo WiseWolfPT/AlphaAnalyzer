@@ -406,6 +406,39 @@ app.get('/api/worker/status', (req, res) => {
 });
 
 // PRIORITY 1: Initialize Market Data Services with all providers
+// Initialize email notification workers
+async function startEmailWorkers() {
+  try {
+    // Only start workers if email service is configured
+    if (!process.env.RESEND_API_KEY) {
+      console.log('📧 Email service not configured (RESEND_API_KEY missing) - workers disabled');
+      return;
+    }
+    
+    // Import workers dynamically to avoid startup issues
+    const { priceAlertWorker } = await import('./workers/price-alert-worker');
+    const { portfolioSummaryWorker } = await import('./workers/portfolio-summary-worker');
+    
+    // Start price alert worker (checks every 5 minutes)
+    await priceAlertWorker.start();
+    console.log('🔔 Price alert worker started successfully');
+    
+    // Start portfolio summary worker (sends weekly summaries)
+    await portfolioSummaryWorker.start();
+    console.log('📊 Portfolio summary worker started successfully');
+    
+    // Graceful shutdown
+    process.on('SIGTERM', () => {
+      console.log('Stopping email workers...');
+      priceAlertWorker.stop();
+      portfolioSummaryWorker.stop();
+    });
+    
+  } catch (error) {
+    console.error('Failed to start email workers:', error);
+  }
+}
+
 async function initializeMarketDataServices() {
   console.log('🔧 Initializing Market Data Services...');
   
@@ -864,6 +897,9 @@ async function initializeMarketDataServices() {
       console.log(`🔧 API:      http://localhost:${port}/api/stocks`);
       console.log(`🔧 Health:   http://localhost:${port}/health`);
       console.log('✅ Ready to accept connections...');
+      
+      // Start email notification workers
+      startEmailWorkers();
       
       // Initialize Market Data APIs
       initializeMarketDataServices().catch(error => {

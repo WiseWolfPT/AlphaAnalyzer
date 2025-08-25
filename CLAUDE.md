@@ -83,6 +83,20 @@ npm test             # Run tests
 npm run lint         # Lint code
 ```
 
+## DEPLOYMENT COMMANDS ✅ (SSH Key Configured - No Password!)
+
+```bash
+npm run deploy       # Build + Deploy to Hetzner (quick)
+npm run ship         # Git commit + push + deploy (complete)
+./ship-to-production.sh  # Interactive deploy with custom commit message
+
+# Manual deployment if needed:
+scp -r dist/* root@128.140.45.28:"/home/teste 1/dist/"
+ssh root@128.140.45.28 "pm2 restart alfalyzer"
+```
+
+**SSH Setup Complete**: Passwordless deployment configured on 2025-08-25
+
 ## DATABASE SCHEMA
 
 ```sql
