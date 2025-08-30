@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>WebSocket Test</title>
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+</head>
+<body>
+    <h1>Socket.IO Connection Test</h1>
+    <div id="status">Connecting...</div>
+    <div id="messages"></div>
+    
+    <script>
+        const socket = io('http://localhost:3001', {
+            transports: ['websocket', 'polling'],
+            withCredentials: true
+        });
+        
+        const status = document.getElementById('status');
+        const messages = document.getElementById('messages');
+        
+        function addMessage(msg) {
+            const p = document.createElement('p');
+            p.textContent = `[${new Date().toISOString()}] ${msg}`;
+            messages.appendChild(p);
+            console.log(msg);
+        }
+        
+        socket.on('connect', () => {
+            status.textContent = '✅ Connected! Socket ID: ' + socket.id;
+            addMessage('Connected to server');
+        });
+        
+        socket.on('connected', (data) => {
+            addMessage('Received connected event: ' + JSON.stringify(data));
+        });
+        
+        socket.on('batch-update', (data) => {
+            addMessage(`Batch update received! ${data.count} quotes`);
+            console.log('Batch data:', data);
+        });
+        
+        socket.on('market-update', (data) => {
+            addMessage(`Market update: ${data.symbol} = $${data.data?.price}`);
+        });
+        
+        socket.on('disconnect', () => {
+            status.textContent = '❌ Disconnected';
+            addMessage('Disconnected from server');
+        });
+        
+        socket.on('connect_error', (error) => {
+            status.textContent = '❌ Connection Error';
+            addMessage('Connection error: ' + error.message);
+            console.error('Socket.IO error:', error);
+        });
+    </script>
+</body>
+</html>

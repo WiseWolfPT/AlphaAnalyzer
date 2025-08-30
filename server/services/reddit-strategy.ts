@@ -14,6 +14,7 @@ import { redisCacheService } from '../cache/redis-cache-service';
 import { MarketDataService } from './market-data-service';
 import { FMPProvider } from './providers/fmp-provider';
 import cron from 'node-cron';
+import { EventEmitter } from 'events';
 
 interface QueuedUpdate {
   symbol: string;
@@ -23,7 +24,7 @@ interface QueuedUpdate {
   attempts: number;
 }
 
-export class RedditStrategy {
+export class RedditStrategy extends EventEmitter {
   private static instance: RedditStrategy;
   private updateQueue: Map<string, QueuedUpdate> = new Map();
   private isProcessing = false;
@@ -36,6 +37,7 @@ export class RedditStrategy {
   private readonly MAX_CALLS_PER_MINUTE = 290; // Leave 10 calls buffer
   
   private constructor() {
+    super(); // Call EventEmitter constructor
     this.marketDataService = new MarketDataService();
     
     // Get FMP API key from environment
@@ -262,6 +264,14 @@ export class RedditStrategy {
         // Remove from queue
         this.updateQueue.delete(`quote:${quote.symbol}`);
       }
+      
+      // Emit event for Socket.IO broadcasting
+      logger.info(`📡 Emitting batch-quotes-updated event for ${quotes.length} quotes`);
+      this.emit('batch-quotes-updated', {
+        quotes,
+        timestamp: Date.now(),
+        source: 'fmp_batch'
+      });
       
       logger.info(`✅ Updated ${quotes.length} quotes with 1 API call`);
       

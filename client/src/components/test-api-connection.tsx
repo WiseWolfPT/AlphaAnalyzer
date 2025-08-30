@@ -97,10 +97,9 @@ export function TestAPIConnection() {
 
     // Test 3: Batch Quotes API - Fixed endpoint and added proper error handling
     try {
-      const batchRes = await fetch(`${baseURL}/api/market-data/quotes/batch`, {
-        method: 'POST',
+      const batchRes = await fetch(`${baseURL}/api/market-data/quotes/batch?symbols=AAPL,GOOGL,MSFT`, {
+        method: 'GET',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ symbols: ['AAPL', 'GOOGL', 'MSFT'] }),
       });
       
       // Check if response is JSON

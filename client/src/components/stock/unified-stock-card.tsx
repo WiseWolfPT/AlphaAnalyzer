@@ -178,7 +178,7 @@ export const UnifiedStockCard = memo(function UnifiedStockCard({
     //   change_percent: calculations.changePercent,
     // });
     
-    setLocation(`/stock/${stockSymbol}/charts`);
+    setLocation(`/stock/${symbol}`);
   }, [stockSymbol, setLocation, variant, stock, calculations]);
   
   const handleQuickInfoClick = useCallback((e: React.MouseEvent) => {

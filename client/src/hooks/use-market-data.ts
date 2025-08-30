@@ -33,9 +33,11 @@ export function useStockQuote(symbol: string, options = {}) {
   const query = useQuery({
     queryKey: marketDataKeys.quote(symbol),
     queryFn: () => marketDataService.getQuote(symbol),
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 60 * 1000, // 1 minute - matches FMP update frequency
     gcTime: 10 * 60 * 1000, // 10 minutes (renamed from cacheTime)
     enabled: !!symbol,
+    refetchInterval: 60 * 1000, // Refetch every minute (FMP only updates each minute)
+    refetchOnWindowFocus: true, // Also refresh when user returns to tab
     ...options
   });
 
@@ -100,11 +102,11 @@ export function useBatchQuotes(symbols: string[], options = {}) {
   const query = useQuery({
     queryKey: marketDataKeys.batchQuotes(symbols),
     queryFn: () => marketDataService.getBatchQuotes(symbols),
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    gcTime: 10 * 60 * 1000, // 10 minutes
+    staleTime: 60 * 1000, // 1 minute - matches FMP update frequency
+    gcTime: 10 * 60 * 1000, // 10 minutes - keep in cache
     enabled: symbols.length > 0,
-    refetchInterval: false, // Disable auto refetch to save API calls
-    refetchOnWindowFocus: false,
+    refetchInterval: 60 * 1000, // Refetch every minute (FMP only updates each minute)
+    refetchOnWindowFocus: true, // Also refresh when user returns to tab
     ...options
   });
 

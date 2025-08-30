@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useLocation } from "wouter";
 import { MainLayout } from "@/components/layout/main-layout";
 import { StockSearch } from "@/components/stock/stock-search";
 import { UnifiedStockCard } from "@/components/stock/unified-stock-card";
 import { RealtimeStockCard } from "@/components/stock/realtime-stock-card";
+import { WebSocketStockCard } from "@/components/stock/websocket-stock-card";
 import { OptimizedSearchBar } from "@/components/stock/optimized-search-bar";
 import { AdvancedFilters, FilterOptions } from "@/components/stock/advanced-filters";
 import { BetaBanner } from "@/components/beta/beta-banner";
@@ -12,10 +13,11 @@ import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Search, TrendingUp, TrendingDown, Activity, Target, RefreshCw, Zap, AlertCircle, Filter, Grid3X3, List, Wifi, ArrowUpIcon, ArrowDownIcon, Clock, BarChart3 } from "lucide-react";
+import { Search, TrendingUp, TrendingDown, Activity, Target, RefreshCw, Zap, AlertCircle, Filter, Grid3X3, List, Wifi, WifiOff, ArrowUpIcon, ArrowDownIcon, Clock, BarChart3 } from "lucide-react";
 import { useAuth } from "@/contexts/temp-auth";
 import { cn } from "@/lib/utils";
 import { useCachedBatchQuotes, useDirectFMPBatchQuotes } from "@/hooks/use-cache-data";
+import { useSocketQuotes } from "@/hooks/use-socket-quotes";
 import { TestAPIConnection } from "@/components/test-api-connection";
 import { ConnectionTest } from "@/components/debug/connection-test";
 import { MarketMovers } from "@/components/market/market-movers";
@@ -251,7 +253,8 @@ export default function FindStocks() {
   const [useRealtime, setUseRealtime] = useState(true);
   const [activeFilter, setActiveFilter] = useState<string>('all');
   const [sortBy, setSortBy] = useState<string>('alphabetical');
-  const [useDirectFMP, setUseDirectFMP] = useState(true); // PHASE 2: Use direct FMP by default
+  const [useDirectFMP, setUseDirectFMP] = useState(false); // Disable polling when using WebSocket
+  const [useWebSocket, setUseWebSocket] = useState(false); // Disable WebSocket since it's not working
   const [advancedFilters, setAdvancedFilters] = useState<FilterOptions>({ sectors: [] });
   
   // PHASE 2: Use direct FMP data (no cache) for real-time prices
@@ -273,6 +276,33 @@ export default function FindStocks() {
   // Use direct FMP data if available, otherwise fall back to cached
   const { data: quotesData, isLoading, error, refetch, status, fetchStatus } = 
     useDirectFMP && !directFMPQuery.isError ? directFMPQuery : cachedQuery;
+
+  // WebSocket connection for real-time updates
+  const { 
+    quotes: socketQuotes, 
+    connected: socketConnected, 
+    error: socketError,
+    getQuote 
+  } = useSocketQuotes({
+    symbols: displayedSymbols,
+    enabled: useWebSocket,
+    onQuoteUpdate: (quote) => {
+      // Update the specific card via direct DOM manipulation
+      const updater = window.__stockCardUpdaters?.get(quote.symbol);
+      if (updater) {
+        updater.updateQuote(quote);
+      }
+    }
+  });
+
+  // Update connection status for all cards
+  useEffect(() => {
+    if (window.__stockCardUpdaters) {
+      window.__stockCardUpdaters.forEach(updater => {
+        updater.updateConnection(socketConnected);
+      });
+    }
+  }, [socketConnected]);
 
   // Run API connection test on mount
   useEffect(() => {
@@ -330,46 +360,46 @@ export default function FindStocks() {
 
   // Transform the quotes data to match the component's expected format with error handling
   const stocks = React.useMemo(() => {
-    // Safety check: ensure we have valid data before attempting to transform
-    if (!quotesData?.quotes || !Array.isArray(quotesData.quotes)) {
-      console.log('Quotes data not ready or invalid:', quotesData);
-      return [];
-    }
-    
-    try {
-      return quotesData.quotes
-        .filter(quote => quote != null) // Filter out null/undefined quotes
-        .map((quote, index) => ({
+    // For now, create stock cards for all displayed symbols, even if we don't have quote data
+    return displayedSymbols.map((symbol, index) => {
+      // Try to find quote data for this symbol
+      const quote = quotesData?.quotes?.find(q => q?.symbol === symbol);
+      
+      // Use quote data if available, otherwise use default values
+      const price = quote?.price || quote?.close || quote?.last || 0;
+      const change = quote?.change || 0;
+      const changePercent = quote?.changePercent || quote?.changesPercentage || 0;
+      const volume = quote?.volume || 0;
+      const marketCap = quote?.marketCap || 0;
+      
+      return {
         id: index + 1,
-        symbol: quote.symbol || 'UNKNOWN',
-        name: getCompanyName(quote.symbol || 'UNKNOWN'),
-        price: (quote?.price != null && !isNaN(Number(quote.price))) ? Number(quote.price).toFixed(2) : '0.00',
-        change: (quote?.change != null && !isNaN(Number(quote.change))) ? Number(quote.change).toFixed(2) : '0.00',
-        changePercent: (quote?.changePercent != null && !isNaN(Number(quote.changePercent))) ? Number(quote.changePercent).toFixed(2) : '0.00',
-        marketCap: (quote?.marketCap != null && !isNaN(Number(quote.marketCap)) && Number(quote.marketCap) > 0) ? `$${(Number(quote.marketCap) / 1e9).toFixed(2)}B` : 'N/A',
-        sector: getSector(quote.symbol || 'UNKNOWN'),
-        industry: getIndustry(quote.symbol || 'UNKNOWN'),
-        eps: (quote?.eps != null && !isNaN(Number(quote.eps))) ? Number(quote.eps).toFixed(2) : 'N/A',
-        peRatio: (quote?.pe != null && !isNaN(Number(quote.pe))) ? Number(quote.pe).toFixed(2) : 'N/A',
+        symbol: symbol,
+        name: getCompanyName(symbol),
+        price: price > 0 ? price.toFixed(2) : '0.00',
+        change: change.toFixed(2),
+        changePercent: changePercent.toFixed(2),
+        marketCap: marketCap > 0 ? `$${(marketCap / 1e9).toFixed(2)}B` : 'N/A',
+        sector: getSector(symbol),
+        industry: getIndustry(symbol),
+        eps: quote?.eps ? quote.eps.toFixed(2) : 'N/A',
+        peRatio: quote?.pe ? quote.pe.toFixed(2) : 'N/A',
         logo: `/api/placeholder/40/40`,
-        lastUpdated: new Date(quote.timestamp || Date.now()),
-        volume: quote.volume || 0,
-        high: quote.high || 0,
-        low: quote.low || 0,
-        open: quote.open || 0,
-        _isRealData: !quote._cached,
-        _provider: quote.provider || 'unknown',
-        _cached: quote._cached || false
-      }));
-    } catch (err) {
-      console.error('Error transforming quotes data:', err);
-      return [];
-    }
-  }, [quotesData]);
+        lastUpdated: new Date(quote?.timestamp || Date.now()),
+        volume: volume,
+        high: quote?.high || 0,
+        low: quote?.low || 0,
+        open: quote?.open || 0,
+        _isRealData: !quote?._cached,
+        _provider: quote?.provider || 'unknown',
+        _cached: quote?._cached || false
+      };
+    });
+  }, [displayedSymbols, quotesData]);
 
   const handleStockSelect = (symbol: string) => {
     trackStockView(symbol); // Track popularity
-    setLocation(`/stock/${symbol}/charts`);
+    setLocation(`/stock/${symbol}`);
   };
 
   const handleQuickInfoClick = (symbol: string) => {
@@ -505,6 +535,23 @@ export default function FindStocks() {
               </p>
             </div>
             <div className="flex flex-wrap items-center gap-2">
+              {/* WebSocket Connection Status */}
+              {useWebSocket && (
+                <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-background border">
+                  {socketConnected ? (
+                    <>
+                      <Wifi className="w-4 h-4 text-green-500 animate-pulse" />
+                      <span className="text-sm font-medium text-green-600">Live</span>
+                    </>
+                  ) : (
+                    <>
+                      <WifiOff className="w-4 h-4 text-gray-400" />
+                      <span className="text-sm text-gray-500">Connecting...</span>
+                    </>
+                  )}
+                </div>
+              )}
+              
               {/* PHASE 2: Toggle between Direct FMP and Cached data */}
               <Button
                 variant={useDirectFMP ? 'default' : 'outline'}
@@ -832,22 +879,30 @@ export default function FindStocks() {
               ? "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4"
               : "space-y-4"
           )}>
-            {useRealtime && viewMode === 'grid' ? (
-              // Render realtime cards for displayed symbols
-              displayedSymbols.map((symbol) => (
-                <RealtimeStockCard
-                  key={symbol}
-                  symbol={symbol}
-                  companyName={getCompanyName(symbol)}
-                  industry={getIndustry(symbol)}
-                  sector={getSector(symbol)}
-                  onRemove={() => {
-                    const newSymbols = displayedSymbols.filter(s => s !== symbol);
-                    setDisplayedSymbols(newSymbols);
-                    localStorage.setItem('alfalyzer-watchlist', JSON.stringify(newSymbols));
-                  }}
-                />
-              ))
+            {useWebSocket && viewMode === 'grid' ? (
+              // Render WebSocket cards for real-time updates without re-renders
+              displayedSymbols.map((symbol) => {
+                // Get initial price from socketQuotes or quotesData
+                const socketQuote = socketQuotes.get(symbol);
+                const fallbackQuote = quotesData?.quotes?.find(q => q.symbol === symbol);
+                const initialPrice = socketQuote?.price || fallbackQuote?.price || 0;
+                
+                return (
+                  <WebSocketStockCard
+                    key={symbol}
+                    symbol={symbol}
+                    companyName={getCompanyName(symbol)}
+                    industry={getIndustry(symbol)}
+                    sector={getSector(symbol)}
+                    initialPrice={initialPrice}
+                    onRemove={() => {
+                      const newSymbols = displayedSymbols.filter(s => s !== symbol);
+                      setDisplayedSymbols(newSymbols);
+                      localStorage.setItem('alfalyzer-watchlist', JSON.stringify(newSymbols));
+                    }}
+                  />
+                );
+              })
             ) : (
               // Render standard cards
               filteredStocks.map((stock) => (

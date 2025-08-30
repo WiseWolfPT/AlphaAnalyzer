@@ -4,9 +4,9 @@
  */
 
 export const API_CONFIG = {
-  // Use empty baseURL to work with Vercel proxy
-  // The proxy is configured in vercel.json to redirect /api/* to Coolify backend
-  baseURL: '',
+  // Use empty baseURL to work with Vercel proxy in production
+  // In development, use localhost:3001
+  baseURL: import.meta.env.DEV ? 'http://localhost:3001' : '',
   
   // Request timeout - 30 seconds to handle cold starts
   timeout: 30000,

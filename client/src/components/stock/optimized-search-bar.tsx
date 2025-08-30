@@ -164,7 +164,7 @@ export function OptimizedSearchBar({
     if (onStockSelect) {
       onStockSelect(symbol);
     } else {
-      setLocation(`/stock/${symbol}/charts`);
+      setLocation(`/stock/${symbol}`);
     }
   };
 

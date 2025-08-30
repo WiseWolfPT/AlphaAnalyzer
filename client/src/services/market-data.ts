@@ -138,10 +138,13 @@ export class MarketDataService {
           setTimeout(() => reject(new Error('Request timeout')), 8000); // 8 second timeout
         });
         
+        // Use relative endpoint - apiClient already has the baseURL
+        const endpoint = `/api/market-data/quotes/batch?symbols=${symbolsParam}`;
+        
         // Race between the API call and timeout
         try {
           const response = await Promise.race([
-            apiClient.get<any>(`${API_ENDPOINTS.quotes.batch}?symbols=${symbolsParam}`),
+            apiClient.get<any>(endpoint),
             timeoutPromise
           ]) as any;
           
@@ -209,7 +212,7 @@ export class MarketDataService {
   async getMarketStatus(market: string = 'US'): Promise<MarketStatus> {
     try {
       const status = await apiClient.get<MarketStatus>(
-        `${API_ENDPOINTS.market.status}?market=${market}`
+        `/api/market-data/market-status?market=${market}`
       );
       
       return status;
@@ -229,7 +232,7 @@ export class MarketDataService {
       const params = new URLSearchParams({ query });
       
       const response = await apiClient.get<{ results: SearchResult[]; count: number }>(
-        `${API_ENDPOINTS.stocks.search}?${params}`
+        `/api/stocks/search?${params}`
       );
       
       return response.results || [];

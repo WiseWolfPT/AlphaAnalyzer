@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { emailService } from '../services/email-service';
 import { priceAlertWorker } from '../workers/price-alert-worker';
 import { portfolioSummaryWorker } from '../workers/portfolio-summary-worker';
-import { authMiddleware } from '../middleware/auth';
+import { requireAuth } from '../middleware/auth';
 import { supabaseAdmin } from '../lib/supabase-admin';
 import { logger } from '../lib/logger';
 
@@ -24,7 +24,7 @@ const updatePreferencesSchema = z.object({
 });
 
 // Get user's price alerts
-router.get('/api/alerts', authMiddleware, async (req, res) => {
+router.get('/api/alerts', requireAuth, async (req, res) => {
   try {
     const userId = req.userId;
     
@@ -49,7 +49,7 @@ router.get('/api/alerts', authMiddleware, async (req, res) => {
 });
 
 // Create new price alert
-router.post('/api/alerts', authMiddleware, async (req, res) => {
+router.post('/api/alerts', requireAuth, async (req, res) => {
   try {
     const userId = req.userId;
     const validation = createAlertSchema.safeParse(req.body);
@@ -110,7 +110,7 @@ router.post('/api/alerts', authMiddleware, async (req, res) => {
 });
 
 // Delete price alert
-router.delete('/api/alerts/:id', authMiddleware, async (req, res) => {
+router.delete('/api/alerts/:id', requireAuth, async (req, res) => {
   try {
     const userId = req.userId;
     const alertId = req.params.id;
@@ -133,7 +133,7 @@ router.delete('/api/alerts/:id', authMiddleware, async (req, res) => {
 });
 
 // Get email preferences
-router.get('/api/notifications/preferences', authMiddleware, async (req, res) => {
+router.get('/api/notifications/preferences', requireAuth, async (req, res) => {
   try {
     const userId = req.userId;
     
@@ -158,7 +158,7 @@ router.get('/api/notifications/preferences', authMiddleware, async (req, res) =>
 });
 
 // Update email preferences
-router.put('/api/notifications/preferences', authMiddleware, async (req, res) => {
+router.put('/api/notifications/preferences', requireAuth, async (req, res) => {
   try {
     const userId = req.userId;
     const validation = updatePreferencesSchema.safeParse(req.body);
@@ -206,7 +206,7 @@ router.put('/api/notifications/preferences', authMiddleware, async (req, res) =>
 // Test endpoints (development only)
 if (process.env.NODE_ENV !== 'production') {
   // Send test email
-  router.post('/api/notifications/test-email', authMiddleware, async (req, res) => {
+  router.post('/api/notifications/test-email', requireAuth, async (req, res) => {
     try {
       const userId = req.userId;
       const { type = 'test' } = req.body;
@@ -270,7 +270,7 @@ if (process.env.NODE_ENV !== 'production') {
   });
 
   // Manually trigger alert check
-  router.post('/api/notifications/check-alerts', authMiddleware, async (req, res) => {
+  router.post('/api/notifications/check-alerts', requireAuth, async (req, res) => {
     try {
       const triggeredCount = await priceAlertWorker.checkAlertsManually();
       res.json({ 

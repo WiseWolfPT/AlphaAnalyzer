@@ -156,7 +156,7 @@ export default function StockDetail() {
   };
 
   const handleViewCharts = () => {
-    setLocation(`/stock/${symbol}/charts`);
+    setLocation(`/stock/${symbol}`);
   };
 
   const handleCalculateValue = () => {
@@ -488,7 +488,7 @@ export default function StockDetail() {
                     </div>
                     
                     <Button 
-                      onClick={() => setLocation(`/stock/${symbol}/charts`)}
+                      onClick={() => setLocation(`/stock/${symbol}`)}
                       variant="outline"
                       className="w-full border-teya-green/30 hover:bg-teya-green/10"
                     >

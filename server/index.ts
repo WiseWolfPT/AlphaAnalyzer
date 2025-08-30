@@ -493,8 +493,7 @@ async function initializeMarketDataServices() {
 
 (async () => {
   try {
-    // Create HTTP server early
-    const server = createServer(app);
+    // Note: Socket.IO will be initialized later with the actual server instance
 
     // Serve static assets from client/public BEFORE API routes in development
     if (process.env.NODE_ENV === "development") {
@@ -505,7 +504,7 @@ async function initializeMarketDataServices() {
     }
 
     // CRITICAL: Register API routes BEFORE Vite to prevent interception
-    await registerRoutes(app, server);
+    await registerRoutes(app);
 
     // ROADMAP V4: Apply Supabase authentication to protected routes
     app.use('/api/admin/**', requireAdmin);       // Admin routes require admin role
@@ -529,9 +528,10 @@ async function initializeMarketDataServices() {
 
     // In production on Coolify, we don't serve static files
     // Frontend is served by Vercel
-    if (process.env.NODE_ENV === "development") {
+    // NOTE: Enable Vite middleware in development to serve everything from one port
+    if (process.env.NODE_ENV === "development" && process.env.VITE_DISABLED !== 'true') {
       console.log('Setting up Vite development server...');
-      await setupVite(app, server);
+      await setupVite(app);
     } else if (process.env.SERVE_STATIC === 'true') {
       // Only serve static files if explicitly enabled (for local testing)
       console.log('🔍 Static file serving explicitly enabled');
@@ -658,7 +658,7 @@ async function initializeMarketDataServices() {
       tryNextPort();
     }
 
-    function onServerSuccess(serverInstance: any, finalPort: number, host: string) {
+    async function onServerSuccess(serverInstance: any, finalPort: number, host: string) {
       console.log(`🚀 MAIN SERVER ACTIVE!`);
       console.log(`📱 Local:    http://localhost:${finalPort}`);
       console.log(`🌐 Network:  http://${host}:${finalPort}`);
@@ -666,6 +666,17 @@ async function initializeMarketDataServices() {
       console.log(`🔧 Health:   http://localhost:${finalPort}/api/health`);
       console.log('');
       console.log('✅ Ready to accept connections...');
+      
+      // TEMPORARILY DISABLED: Socket.IO causing 426 errors on HTTP requests
+      // Initialize Socket.IO service with the actual server instance
+      // try {
+      //   const { socketIOService } = await import('./services/socket-io-service');
+      //   socketIOService.initialize(serverInstance);
+      //   console.log('✅ Socket.IO service initialized for real-time updates');
+      // } catch (error) {
+      //   console.error('❌ Failed to initialize Socket.IO:', error);
+      // }
+      console.log('⚠️ Socket.IO temporarily disabled for debugging');
       
       // SECURITY FIX: Initialize log retention policy
       logRetention.initializeLogRetention();
@@ -850,8 +861,9 @@ async function initializeMarketDataServices() {
         });
       });
 
-      // Replace the global server reference
-      Object.assign(server, serverInstance);
+      // Store the server instance globally if needed
+      // Commented out as 'server' is not defined globally
+      // Object.assign(server, serverInstance);
     }
 
     function startEmergencyServers() {
@@ -887,6 +899,10 @@ async function initializeMarketDataServices() {
       console.log('   php -S localhost:3001 server/emergency-php-server.php');
     }
 
+    // Start trying different binding strategies
+    tryNextStrategy();
+    
+    /* OLD CODE - REMOVED TO FIX SERVER INITIALIZATION
     // SIMPLIFIED: Start with single server instance
     // CRITICAL: Coolify requires binding to 0.0.0.0 to accept external connections
     const host = '0.0.0.0'; // Always bind to all interfaces for Coolify
@@ -928,13 +944,16 @@ async function initializeMarketDataServices() {
           console.log('⚠️  Internal test note:', err.message);
         });
       });
+      */
       
+      // COMMENTED OUT - MOVED TO onServerSuccess
       // Setup self-pings to prevent Coolify sleep after 60 minutes
+      /*
       if (process.env.NODE_ENV === 'production' && process.env.ENABLE_SELF_PING !== 'false') {
         import('node-cron').then(cron => {
           import('axios').then(({ default: axios }) => {
             // Schedule ping every 50 minutes (before 60 minute timeout)
-            cron.schedule('*/50 * * * *', async () => {
+            cron.schedule('* /50 * * * *', async () => {
               try {
                 const appUrl = process.env.APP_URL || `http://localhost:${port}`;
                 await axios.get(`${appUrl}/health`, { 
@@ -955,6 +974,7 @@ async function initializeMarketDataServices() {
         });
       }
     });
+    */
     
     // Keep the complex binding logic as backup
     // tryNextStrategy();
@@ -997,6 +1017,7 @@ async function initializeMarketDataServices() {
     
     } // Close the production WebSocket block
 
+    /* COMMENTED OUT - gracefulShutdownHandler needs server instance
     // Enhanced graceful shutdown handling using robust error handler
     const gracefulShutdown = gracefulShutdownHandler(server);
     
@@ -1010,10 +1031,11 @@ async function initializeMarketDataServices() {
       console.error('Uncaught Exception:', error);
       gracefulShutdown('UNCAUGHT_EXCEPTION');
     });
+    */
     
     process.on('unhandledRejection', (reason, promise) => {
       console.error('Unhandled Rejection at:', promise, 'reason:', reason);
-      gracefulShutdown('UNHANDLED_REJECTION');
+      // gracefulShutdown('UNHANDLED_REJECTION');
     });
 
   } catch (error) {

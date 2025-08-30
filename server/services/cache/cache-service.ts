@@ -475,3 +475,6 @@ export class CacheService {
     }
   }
 }
+
+// Export singleton instance for backward compatibility
+export const cacheService = CacheService.getInstance();

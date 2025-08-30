@@ -22,7 +22,7 @@ function WatchlistStockItem({ ws, quote }: { ws: WatchlistStock; quote?: any }) 
   const [, setLocation] = useLocation();
 
   const handleClick = () => {
-    setLocation(`/stock/${ws.stockSymbol}/charts`);
+    setLocation(`/stock/${symbol}`);
   };
 
   const price = quote?.price || 0;

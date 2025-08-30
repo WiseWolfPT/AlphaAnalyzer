@@ -417,3 +417,6 @@ export const helpers = {
   isAdmin,
   extractToken,
 };
+
+// Export authMiddleware as alias for requireAuth (for backward compatibility)
+export const authMiddleware = requireAuth;

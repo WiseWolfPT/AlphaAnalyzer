@@ -138,7 +138,7 @@ export default function TranscriptDetail() {
   };
 
   const handleStockClick = () => {
-    setLocation(`/stock/${transcript.symbol}/charts`);
+    setLocation(`/stock/${symbol}`);
   };
 
   const handleDownload = () => {

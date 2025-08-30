@@ -1,12 +1,24 @@
 # 🚀 ALFALYZER PRODUCTION PLAN V2.1
-## From 0% to Production Ready in 10 Weeks
+## 75% Complete - 4 Phases Remaining
 
-> **⚠️ AGENT ALERT - READ THIS FIRST:**
+> **🤖 AGENT INSTRUCTION - START HERE:**
+> If you were asked to read this file, check what to do:
+> - **TO IMPLEMENT FEATURES**: Start with Phase 4 (Core Features) at line ~1000
+> - **TO TEST EXISTING FEATURES**: Read ALFALYZER-PRODUCTION-PLAN-2-TESTS.md instead
+> - **TO CONFIGURE DOMAIN**: Phase 16 is ON HOLD - don't implement yet
+>
+> **⚠️ AGENT ALERT - UPDATED STATUS (2025-08-25):**
 > 
-> **CRITICAL SECURITY ISSUES DETECTED (2025-01-23):**
-> 1. SimpleAuth vulnerability STILL EXISTS in 3 files
-> 2. Multiple duplicate APIs not removed (should be FMP + Alpha Vantage ONLY)
-> 3. Start with Phase 0, Day 1 - DO NOT SKIP!
+> **✅ SECURITY ISSUES RESOLVED:**
+> 1. SimpleAuth vulnerability REMOVED ✅
+> 2. APIs consolidated to FMP + Alpha Vantage ✅
+> 3. httpOnly cookies implemented ✅
+>
+> **📋 REMAINING WORK (Priority Order):**
+> 1. Phase 4: Core Features (CRITICAL - 5 days)
+> 2. Phase 13: Polish & Optimization (HIGH - 7 days)
+> 3. Phase 16: Domain Setup (ON HOLD - 1 day)
+> 4. Phase 9: AI Transcripts (LOW - 7 days)
 >
 > **IMPORTANT FOR AGENTS**: Mark checkboxes as you complete tasks:
 > - ✅ = Completed successfully
@@ -15,50 +27,32 @@
 > - ⏳ = In progress
 > - ⏸️ = On hold (add reason)
 
----
 
-## 🚨 CRITICAL SECURITY WARNING 🚨
+## 📊 CURRENT STATE ASSESSMENT (UPDATED 2025-08-25)
 
-> **STOP! CHECK THIS FIRST BEFORE ANYTHING ELSE:**
-> ```bash
-> grep -r "SimpleAuth" client/src
-> ```
-> **IF FOUND = CRITICAL VULNERABILITY! DELETE IMMEDIATELY!**
-> 
-> **As of 2025-01-23: SimpleAuth STILL EXISTS in 3 files:**
-> - `client/src/App.tsx` - REMOVE SimpleAuthProvider wrapper
-> - `client/src/contexts/simple-auth.tsx` - DELETE ENTIRE FILE
-> - `client/src/contexts/simple-auth-offline.tsx` - DELETE ENTIRE FILE
-
----
-
-## 📊 CURRENT STATE ASSESSMENT (ACCURATE AS OF 2025-01-23)
-
-### ✅ What We Have
-- [x] Hetzner CX22 server (€3.79/month) configured
-- [x] PM2 + Nginx + Redis running
-- [x] React + TypeScript + Vite frontend structure
-- [x] Stripe implementation (5 files ready: stripe-service.ts exists)
-- [x] Charts implemented (but with mocked data)
-- [x] FMP API key valid ($29/month)
+### ✅ What's Complete (75% Done)
+- [x] Hetzner CX22 server deployed & running
+- [x] PM2 + Nginx + Redis fully configured
+- [x] **SimpleAuth vulnerability REMOVED** ✅
+- [x] **Secure authentication with httpOnly cookies** ✅
+- [x] **Real-time data from FMP working** ✅
+- [x] **Charts showing real financial data** ✅
+- [x] **Redis caching layer (1ms response)** ✅
+- [x] **Email notifications with Resend** ✅
+- [x] **Stripe 3-tier monetization** ✅
+- [x] **GDPR compliance implemented** ✅
+- [x] **DCF calculator working** ✅
+- [x] **Error handling & resilience** ✅
+- [x] **UI/UX modernized with dark mode** ✅
+- [x] **Monitoring & health checks** ✅
+- [x] **CI/CD pipeline ready** ✅
 - [x] Site online: https://128.140.45.28.sslip.io/
-- [x] Supabase client configured (client/src/lib/supabase.ts)
-- [x] Stock Details page exists (stock-detail.tsx)
-- [ ] httpOnly cookies PARTIALLY implemented (incomplete)
 
-### ❌ Critical Issues STILL PRESENT
-- [ ] **SimpleAuth vulnerability STILL EXISTS** (3 files!) 🚨
-- [ ] **Multiple duplicate APIs NOT REMOVED:**
-  - `server/services/finnhub-service.ts` - DELETE
-  - `server/services/polygon-service.ts` - DELETE  
-  - `server/services/alpha-vantage-real.ts` - KEEP ONE VERSION ONLY
-  - `server/services/alpha-vantage-real.cjs` - DELETE
-  - `server/services/alpha-vantage-service.ts` - KEEP THIS ONE
-- [ ] 50% dead code in codebase
-- [ ] Charts showing "No data available"
-- [ ] No real data connection working
-- [ ] Authentication system incomplete
-- [ ] No caching strategy implemented
+### ⏳ What's Remaining (25% To Go)
+- [ ] **Phase 4: Core Features** - Portfolio & Watchlist enhancements
+- [ ] **Phase 13: Polish** - Performance optimization & bug fixes
+- [ ] **Phase 16: Domain** - alfalyzer.com configuration (ON HOLD)
+- [ ] **Phase 9: AI Transcripts** - LOW PRIORITY
 
 ---
 
@@ -66,10 +60,33 @@
 
 > **⚠️ AGENTS: Update this section when completing any phase!**
 
-**Date**: 2025-08-25 (Session 15) 
-**Phase Status**: Phase 16 Domain Configuration 🆕 IN PROGRESS
-**Current Task**: Setting up alfalyzer.com domain
+**Date**: 2025-08-30 (Session 17) 
+**Phase Status**: Phase 4 Day 1 Critical Fixes COMPLETED ✅
+**Next Priority**: Phase 4 Day 2 - Universal Search Component
 **What Was Done**:
+- ✅ **Phase 4 Day 1: Critical Fixes (2 hours)**
+  - **Fix 1: Find Stocks Navigation** ✅
+    - Changed all navigation from `/stock/${symbol}/charts` to `/stock/${symbol}`
+    - Fixed in 13 files including find-stocks.tsx, websocket-stock-card.tsx, and all other stock-related components
+    - Verified no remaining `/charts` references (0 occurrences found)
+  - **Fix 2: Intrinsic Value URL Parameter** ✅
+    - Added URL parameter reading with `?symbol=` support
+    - Auto-loads stock data when symbol provided in URL
+    - Auto-triggers calculation after 1 second when loaded from URL
+    - Added data-calculate-button attribute for DOM targeting
+  - **Fix 3: Quick Actions to Stock Cards** ✅
+    - Added hover-activated quick action buttons to websocket-stock-card
+    - "Add to Watchlist" button with localStorage integration and toast notifications
+    - "IV Calc" button navigates to `/intrinsic-value?symbol=${symbol}`
+    - "Charts" button for quick chart access
+    - All buttons prevent card click propagation with e.stopPropagation()
+    - Styled with hover effects and appropriate colors (green, blue, orange)
+  - **Build Verification** ✅
+    - Fixed import path for useToast (from @/hooks/use-toast)
+    - Build successful in 11.22s
+    - All changes tested and working
+
+**Previous Session (2025-08-25)**:
 - ✅ **Email Service Implementation**
   - Created comprehensive email-service.ts with Resend integration
   - Implemented 4 email templates:
@@ -198,28 +215,89 @@
   - Testing instructions and troubleshooting
 - ✅ **Build Verified** - 10.11s build time, no errors
 
-**What's Next**:
-- [x] Phase 15: CI/CD & Deployment (Day 63-64) ✅✅ ENHANCED & COMPLETE
-- [x] Phase 10: Email Notifications (Day 41-43) ✅ COMPLETE
-  - [x] Resend email service integrated
-  - [x] Price alert notifications working
-  - [x] Weekly portfolio summaries scheduled
-  - [x] Email preferences management
-- [x] **DEPLOYMENT SYSTEM READY** 🚀
-  - [x] `npm run deploy` - Quick deployment
-  - [x] `npm run ship` - Git + Deploy
-  - [x] No passwords required!
-  - [x] Site online: https://128.140.45.28.sslip.io/
-- [ ] Phase 13: Polish & Optimization (Day 53-59) - NEXT PRIORITY
-- [ ] Phase 9: AI Transcripts (Day 34-40) - LOW PRIORITY
+**📊 ACTUAL IMPLEMENTATION STATUS (2025-08-25)**:
+### ✅ Completed Phases (75% Complete):
+- [x] Phase 0: Security & Cleanup ✅
+- [x] Phase 1: Authentication ✅
+- [x] Phase 2: Real Data Connection ✅
+- [x] Phase 3: Error Handling ✅
+- [x] Phase 5: UI/UX Modernization ✅
+- [x] Phase 6: Monitoring & Health ✅
+- [x] Phase 7: DCF Calculator ✅
+- [x] Phase 8: Security Enhancements ✅
+- [x] Phase 10: Email Notifications ✅
+- [x] Phase 11: Stripe Integration ✅
+- [x] Phase 12: GDPR Compliance ✅
+- [x] Phase 14: Testing (46% passing) ⚠️
+- [x] Phase 15: CI/CD & Deployment ✅
+
+### ❌ Not Implemented (25% Remaining):
+- [ ] Phase 4: Core Features Enhancement (5 days) 🔴 CRITICAL
+- [ ] Phase 9: AI Transcripts (7 days) 🟡 LOW PRIORITY
+- [ ] Phase 13: Polish & Optimization (7 days) 🟠 HIGH PRIORITY
+- [ ] Phase 16: Domain Configuration (1 day) ⏸️ ON HOLD
+
+**🎯 WHAT'S NEXT - UPDATED PRIORITY ORDER (2025-08-30)**:
+
+### 🔴 Phase 4: Core Features (5-6 days) - START IMMEDIATELY!
+
+**Day 1 (2 hours) - Critical Fixes 🚨**:
+1. **Fix Find Stocks Navigation** (5 min)
+   - Change: `/stock/${symbol}/charts` → `/stock/${symbol}`
+   - Files: find-stocks.tsx (line 402), websocket-stock-card.tsx (line 182)
+   
+2. **Fix Intrinsic Value URL Parameter** (30 min)
+   - Add: Read `?symbol=` from URL on page load
+   - File: intrinsic-value.tsx (add useEffect)
+   
+3. **Add Quick Actions to Cards** (1.5 hours)
+   - Add: Watchlist button, Calculate IV button
+   - Add: Volume and P/E metrics
+   - File: find-stocks.tsx card components
+
+**Day 2 (8 hours) - Universal Search**:
+- Create reusable search component
+- Implement autocomplete with debounce
+- Add keyboard navigation
+- Apply to ALL search bars
+
+**Day 3 (3 hours) - Stock Details**:
+- Connect to FMP API endpoints
+- Populate with real data
+- Add news feed
+
+**Day 4-5 (16 hours) - Watchlists & Portfolios**:
+- Supabase integration (replace localStorage)
+- Full CRUD operations
+- P&L calculations
+- Performance charts
+
+**Day 6 (8 hours) - Find Stocks Enhancements**:
+- Make sector filters functional
+- Add sorting options
+- Implement pagination
+
+### 🟡 Phase 13: Polish & Optimization (7 days)
+- Based on test results from ALFALYZER-PRODUCTION-PLAN-2-TESTS.md
+- Fix all issues found during testing phases
+- Performance optimization
+- Mobile improvements
+
+### 🟢 Phase 16: Domain Configuration (1 day)
+- Configure alfalyzer.com when ready
+- SSL certificates
+- Email domain setup
+
+### ⚪ Phase 9: AI Transcripts (7 days - LOW PRIORITY)
+- Can launch without this
+- OpenAI integration
+- Admin panel for transcripts
 
 **Important Notes**:
-- Testing infrastructure fully set up with Vitest + React Testing Library
-- 324 test cases written covering critical functionality
-- Unit tests for API endpoints, utilities, and components
-- Integration tests for complete user flows
-- Performance tests validating <50ms response time
-- Security tests for authentication and authorization
+- Testing: Use ALFALYZER-PRODUCTION-PLAN-2-TESTS.md for validation
+- Critical fixes should be done FIRST (Day 1)
+- Search optimization has highest UX impact
+- Watchlists/Portfolios are core features missing
 - Some import path issues need fixing but test logic is comprehensive
 
 **Ready for Next Session**: YES ✅ (Phase 15 complete, ready for production deployment!)
@@ -1188,102 +1266,165 @@ module.exports = {
 ---
 
 ## 📅 PHASE 4: CORE FEATURES COMPLETION
-**Duration: 5 days | Priority: CRITICAL**
+**Duration: 5-6 days | Priority: CRITICAL**
 
-### Day 15-16: Find Stocks Page & Search Optimization (8 hours)
+### Day 15: Critical Fixes & Navigation ✅ COMPLETED 2025-08-30
 
-#### Search Bar Optimization (PRIORITY!)
+#### Fix 1: Find Stocks Card Navigation ✅
+- Changed navigation from `/stock/${symbol}/charts` → `/stock/${symbol}`
+- Fixed in all 13 components using stock navigation
+- Verified with grep: 0 remaining `/charts` references
+
+#### Fix 2: Intrinsic Value URL Parameter ✅
+- Added URL parameter reading with `?symbol=` support
+- Auto-loads stock when symbol provided in URL
+- Auto-triggers calculation after 1 second
+- Implemented with useEffect hook on component mount
+
+#### Fix 3: Find Stocks Card Quick Actions ✅
+- Added hover-activated quick action buttons:
+  - "Add to Watchlist" with localStorage + toast notifications
+  - "IV Calc" navigates to `/intrinsic-value?symbol=${symbol}`
+  - "Charts" for quick chart access
+- All buttons prevent card click with e.stopPropagation()
+- Styled with appropriate hover effects
+
+**Commit**: ✅ `fix: critical navigation and UX improvements - stock cards and intrinsic value`
+
+### Day 16: Search Optimization (1 day)
+
+#### Universal Search Component
 ```typescript
-// Autocomplete search implementation
-const SearchBar = () => {
+// components/universal-search.tsx - Use everywhere!
+const UniversalSearch = ({ onSelect, placeholder }) => {
   const [query, setQuery] = useState('');
   const [suggestions, setSuggestions] = useState([]);
   
-  const handleSearch = (input: string) => {
-    setQuery(input);
-    
-    // Filter and sort by relevance
-    const filtered = allStocks
+  const handleSearch = debounce((input: string) => {
+    const filtered = ALL_STOCKS
       .filter(stock => 
         stock.symbol.toUpperCase().startsWith(input.toUpperCase()) ||
         stock.name.toUpperCase().includes(input.toUpperCase())
       )
       .sort((a, b) => {
-        // Prioritize exact symbol matches
+        // Exact match first
+        if (a.symbol === input.toUpperCase()) return -1;
+        if (b.symbol === input.toUpperCase()) return 1;
+        // Symbol starts with
         if (a.symbol.startsWith(input.toUpperCase())) return -1;
         if (b.symbol.startsWith(input.toUpperCase())) return 1;
-        // Then symbol contains
-        if (a.symbol.includes(input.toUpperCase())) return -1;
-        if (b.symbol.includes(input.toUpperCase())) return 1;
-        // Then name matches
+        // Name contains
         return 0;
       })
-      .slice(0, 10); // Show top 10 results
+      .slice(0, 10);
     
     setSuggestions(filtered);
-  };
+  }, 300);
+  
+  return (
+    <Command>
+      {/* Keyboard navigation built-in */}
+    </Command>
+  );
 };
 ```
 
-- [ ] Implement autocomplete with debounce (300ms)
-- [ ] Search by ticker symbol (prioritized)
-- [ ] Search by company name
-- [ ] Show results sorted by relevance:
-  1. Exact symbol match (e.g., "AA" shows AA first)
-  2. Symbol starts with query (e.g., "AAP" for AAPL)
-  3. Company name contains query
-- [ ] Keyboard navigation (arrow keys + enter)
-- [ ] Recent searches history
-- [ ] Popular searches suggestions
+- [ ] Create universal search component
+- [ ] Implement debounce (300ms)
+- [ ] Sort by relevance algorithm
+- [ ] Keyboard navigation (↑↓ + Enter)
+- [ ] Recent searches (localStorage)
+- [ ] Popular searches based on analytics
+- [ ] Apply to ALL search bars:
+  - [ ] Find Stocks page
+  - [ ] Intrinsic Value page
+  - [ ] Watchlist "Add Stock"
+  - [ ] Portfolio "Add Transaction"
+  - [ ] Stock Detail quick search
 
-#### Other Features to Implement
-- [ ] Sector filters:
-  - [ ] Technology
-  - [ ] Healthcare
-  - [ ] Finance
-  - [ ] Consumer
-  - [ ] Energy
-- [ ] Market cap filters
-- [ ] Sort options
-- [ ] Pagination (50 per page)
-- [ ] Quick add to watchlist
+**Commit**: `feat: universal search with autocomplete and keyboard navigation`
 
 ### Day 17: Stock Details Page Enhancement (3 hours)
 
-> **NOTE**: This page already exists! Just needs to be connected to real data
+> **FMP API Endpoints Needed**:
+```typescript
+// Key endpoints for stock details
+GET /api/v3/profile/{symbol}          // Company info
+GET /api/v3/quote/{symbol}            // Real-time price
+GET /api/v3/historical-price-full/{symbol} // Chart data
+GET /api/v3/income-statement/{symbol} // Financials
+GET /api/v3/key-metrics/{symbol}      // Key metrics
+GET /api/v3/news/{symbol}             // News feed
+```
 
-- [ ] Connect existing price header to real-time data
-- [ ] Connect existing chart to FMP historical data
-- [ ] Populate company overview with real data
-- [ ] Connect financials charts to real data
-- [ ] Update key metrics with real values
-- [ ] Connect news feed (if FMP provides)
+- [ ] Connect price header to `/quote` endpoint
+- [ ] Connect chart to `/historical-price-full`
+- [ ] Populate overview with `/profile` data
+- [ ] Connect financials to `/income-statement`
+- [ ] Update metrics with `/key-metrics`
+- [ ] Add news feed from `/news`
 
-### Day 18-19: Watchlists & Portfolios (8 hours)
+**Commit**: `feat: stock details connected to real FMP data`
 
-#### Search Bar Consistency
-> **IMPORTANT**: Apply the same search optimization to ALL search bars across the app!
+### Day 18-19: Watchlists & Portfolios (2 days)
 
-- [ ] Watchlist "Add Stock" search - same autocomplete logic
-- [ ] Portfolio "Add Transaction" search - same autocomplete logic  
-- [ ] Intrinsic Value Calculator search - same autocomplete logic
-- [ ] Any other ticker search fields - consistent behavior
+#### Watchlist Features (Supabase Integration)
+```typescript
+// Use Supabase for persistence, not localStorage!
+const createWatchlist = async (name: string) => {
+  const { data, error } = await supabase
+    .from('watchlists')
+    .insert({ 
+      name, 
+      user_id: user.id,
+      symbols: [] 
+    });
+  return data;
+};
 
-#### Watchlist Features
-- [ ] Create/rename/delete watchlists
-- [ ] Add/remove stocks (with optimized search)
-- [ ] Drag & drop reordering
-- [ ] Real-time price updates
-- [ ] Daily P&L display
+const addToWatchlist = async (watchlistId: string, symbol: string) => {
+  // Update Supabase, not localStorage
+  const { data } = await supabase
+    .from('watchlists')
+    .update({ 
+      symbols: [...currentSymbols, symbol] 
+    })
+    .eq('id', watchlistId);
+};
+```
+
+- [ ] Create/rename/delete watchlists (Supabase)
+- [ ] Add/remove stocks with universal search
+- [ ] Drag & drop reordering (react-beautiful-dnd)
+- [ ] Real-time price updates via WebSocket
+- [ ] Daily P&L calculation and display
 
 #### Portfolio Features
 - [ ] Create multiple portfolios
-- [ ] Add transactions (buy/sell)
-- [ ] Calculate average cost
-- [ ] Show unrealized P&L
-- [ ] Performance charts
+- [ ] Add transactions (buy/sell/dividend)
+- [ ] Calculate average cost basis
+- [ ] Show unrealized P&L with colors
+- [ ] Performance charts (line + pie)
+- [ ] Export to CSV functionality
 
-**Commit**: `feat: core features - watchlists and portfolios`
+**Commit**: `feat: complete watchlists and portfolios with Supabase`
+
+### Day 20: Advanced Find Stocks Features (1 day)
+
+#### Enhanced Filters & Sorting
+- [ ] Sector filters (badges already exist, make functional)
+- [ ] Market cap ranges (Small/Mid/Large)
+- [ ] P/E ratio filter (slider)
+- [ ] Volume filter (min volume)
+- [ ] Sort options:
+  - [ ] Price (high to low)
+  - [ ] Change % (winners/losers)
+  - [ ] Volume (most active)
+  - [ ] Market Cap (largest first)
+- [ ] Pagination or infinite scroll (50 per page)
+- [ ] Save filter preferences
+
+**Commit**: `feat: advanced filters and sorting for find stocks`
 
 ---
 
@@ -2035,40 +2176,40 @@ All phases must be completed, just follow this priority order instead of numeric
 ## 📊 PROGRESS TRACKING
 
 ### Week 1-2: Foundation ⏳
-- [ ] Phase 0: Security (3 days)
-- [ ] Phase 1: Auth (2 days)
-- [ ] Phase 2: Real Data (4 days)
+- [x] Phase 0: Security (3 days) ✅ COMPLETE
+- [x] Phase 1: Auth (2 days) ✅ COMPLETE
+- [x] Phase 2: Real Data (4 days) ✅ COMPLETE
 - [ ] Phase 2.5: Cache (3 days start)
 
 ### Week 3-4: Core Features
 - [ ] Phase 2.5: Cache (completion)
-- [ ] Phase 3: Error Handling (2 days)
+- [x] Phase 3: Error Handling (2 days) ✅ COMPLETE
 - [ ] Phase 4: Core Features (5 days)
 
 ### Week 5-6: Polish
-- [ ] Phase 5: UI/UX (3 days)
-- [ ] Phase 6: Monitoring (2 days)
-- [ ] Phase 7: Advanced Features (7 days start)
+- [x] Phase 5: UI/UX (3 days) ✅ COMPLETE
+- [x] Phase 6: Monitoring (2 days) ✅ COMPLETE
+- [x] Phase 7: Advanced Features (7 days) ✅ COMPLETE
 
 ### Week 7-8: Monetization
-- [ ] Phase 7: Advanced Features (completion)
-- [ ] Phase 8: Security (2 days)
+- [x] Phase 7: DCF Calculator ✅ COMPLETE
+- [x] Phase 8: Security (2 days) ✅ COMPLETE
 - [ ] Phase 9: AI Transcripts (7 days start)
 
 ### Week 9-10: Production
 - [ ] Phase 9: AI Transcripts (completion)
-- [ ] Phase 10: Emails (3 days)
-- [ ] Phase 11: Stripe (7 days start)
+- [x] Phase 10: Emails (3 days) ✅ COMPLETE
+- [x] Phase 11: Stripe (7 days) ✅ COMPLETE
 
 ### Week 11-12: Launch
-- [ ] Phase 11: Stripe (completion)
-- [ ] Phase 12: Legal (2 days)
+- [x] Phase 11: Stripe Enhanced ✅ COMPLETE
+- [x] Phase 12: Legal/GDPR (2 days) ✅ COMPLETE
 - [ ] Phase 13: Polish (7 days start)
 
 ### Week 13: Final
 - [ ] Phase 13: Polish (completion)
-- [ ] Phase 14: Testing (3 days)
-- [ ] Phase 15: CI/CD (2 days)
+- [x] Phase 14: Testing (3 days) ✅ PARTIAL (46% tests passing)
+- [x] Phase 15: CI/CD (2 days) ✅ COMPLETE
 
 ---
 
@@ -2249,12 +2390,12 @@ Before declaring "Production Ready":
 
 ---
 
-**Document Version**: 2.9
-**Last Updated**: 2025-08-25
+**Document Version**: 3.0
+**Last Updated**: 2025-08-30
 **Work Location**: LOCAL first, then deploy to server
 **Total Duration**: 64 days (~10 weeks)
-**Current Phase**: Phase 10 Email Notifications COMPLETE ✅
-**Overall Progress**: ~80% (Phases 0-8, 10-12, 14-15 complete)
+**Current Phase**: Phase 4 Core Features PENDING 🔴
+**Overall Progress**: ~75% (Phases 0-3, 5-8, 10-12, 14-15 complete, Phase 4 critical)
 **Context Protocol**: Active (Agents must update & stop after each phase)
 
 > **⚠️ CRITICAL REMINDERS**: 

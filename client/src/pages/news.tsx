@@ -197,7 +197,7 @@ export default function News() {
   };
 
   const handleStockClick = (symbol: string) => {
-    setLocation(`/stock/${symbol}/charts`);
+    setLocation(`/stock/${symbol}`);
   };
 
   return (

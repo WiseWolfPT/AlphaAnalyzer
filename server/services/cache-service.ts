@@ -1,5 +1,5 @@
 import Redis from 'ioredis';
-import { logger } from '../utils/logger';
+import { logger } from '../lib/logger';
 
 interface CachedQuote {
   symbol: string;

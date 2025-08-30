@@ -21,7 +21,7 @@ function EarningsItem({ earning }: { earning: EarningsEvent }) {
   const { data: stock, isLoading } = useStock(earning.symbol);
 
   const handleClick = () => {
-    setLocation(`/stock/${earning.symbol}/charts`);
+    setLocation(`/stock/${symbol}`);
   };
 
   if (isLoading) {

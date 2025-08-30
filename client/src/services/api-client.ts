@@ -25,10 +25,17 @@ class ApiClient {
   private coldStartHandlers: Set<(isColdStart: boolean) => void> = new Set();
 
   constructor() {
+    // Force absolute URL in development to bypass Vite proxy
+    const baseURL = import.meta.env.DEV ? 'http://localhost:3001' : API_CONFIG.baseURL;
+    
     this.client = axios.create({
-      baseURL: API_CONFIG.baseURL,
+      baseURL,
       timeout: API_CONFIG.timeout,
       headers: API_CONFIG.headers,
+      // Ensure axios doesn't strip the baseURL
+      transformRequest: [(data, headers) => {
+        return data;
+      }, ...axios.defaults.transformRequest as any],
     });
 
     this.setupInterceptors();
@@ -42,6 +49,11 @@ class ApiClient {
         const token = this.getAuthToken();
         if (token) {
           config.headers.Authorization = `Bearer ${token}`;
+        }
+
+        // Add API key for market data endpoints
+        if (config.url?.includes('/market-data/')) {
+          config.headers['X-API-Key'] = 'alfalyzer-mkt-2025-secure-key';
         }
 
         // Add request timestamp for cold start detection

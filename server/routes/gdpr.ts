@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { z } from 'zod';
 import { authMiddleware } from '../middleware/auth';
-import { supabase } from '../lib/supabase-admin';
+import { supabaseAdmin as supabase } from '../lib/supabase-admin';
 import { format } from 'date-fns';
 
 const router = Router();

@@ -17,7 +17,7 @@ export function RealtimePortfolioHolding({ holding }: RealtimePortfolioHoldingPr
   const { quote, isConnected } = useRealtimeQuote(holding.symbol);
 
   const handleClick = () => {
-    setLocation(`/stock/${holding.symbol}/charts`);
+    setLocation(`/stock/${symbol}`);
   };
 
   // Use real price if available, otherwise fall back to avgPrice

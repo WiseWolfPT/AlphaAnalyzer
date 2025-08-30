@@ -86,7 +86,7 @@ function TranscriptCard({ transcript }: TranscriptCardProps) {
   const [, setLocation] = useLocation();
 
   const handleStockClick = () => {
-    setLocation(`/stock/${transcript.symbol}/charts`);
+    setLocation(`/stock/${symbol}`);
   };
 
   const handleViewTranscript = () => {

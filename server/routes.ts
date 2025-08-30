@@ -1,5 +1,4 @@
 import type { Express } from "express";
-import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertStockSchema, insertWatchlistSchema, insertWatchlistStockSchema, insertIntrinsicValueSchema, insertRecentSearchSchema } from "@shared/schema";
 import { z } from "zod";
@@ -105,7 +104,7 @@ const routeValidationSchemas = {
   }),
 };
 
-export async function registerRoutes(app: Express, server: Server): Promise<void> {
+export async function registerRoutes(app: Express): Promise<void> {
   // SECURITY FIX: Initialize auth middleware
   const authService = authMiddleware.instance;
 
@@ -202,6 +201,12 @@ export async function registerRoutes(app: Express, server: Server): Promise<void
   // SECURITY FIX: Register versioned routes first
   app.use(`/api/${API_VERSION}/market-data`, marketDataRouter);
   app.use(`/api/${API_VERSION}/valuation`, enhancedValuationRouter);
+  
+  // Special redirect for AAPL steel thread endpoint (compatibility with frontend)
+  app.get(`/api/${API_VERSION}/stock/AAPL/quote`, (req, res) => {
+    // Redirect to standard market-data endpoint
+    res.redirect('/api/market-data/quote/AAPL');
+  });
   
   // Maintain backward compatibility
   // TEMPORARILY: Remove apiSecurityMiddleware for development

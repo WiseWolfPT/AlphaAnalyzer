@@ -72,6 +72,36 @@ export default function IntrinsicValue() {
   const [discountRate, setDiscountRate] = useState(10);
   const [terminalGrowth, setTerminalGrowth] = useState(3);
   const [years, setYears] = useState(10);
+
+  // Read symbol from URL on page load
+  useEffect(() => {
+    const searchParams = new URLSearchParams(window.location.search);
+    const symbolFromUrl = searchParams.get('symbol');
+    
+    if (symbolFromUrl) {
+      // Set the search query to trigger the search
+      setSearchQuery(symbolFromUrl);
+      
+      // Create a stock object for the symbol
+      const stockFromUrl: Stock = {
+        symbol: symbolFromUrl.toUpperCase(),
+        name: symbolFromUrl.toUpperCase(), // Will be updated when search results load
+        price: 0,
+        change: 0,
+        changePercent: 0,
+        volume: 0,
+        marketCap: 0
+      };
+      
+      setSelectedStock(stockFromUrl);
+      
+      // Auto-calculate when data loads
+      setTimeout(() => {
+        const button = document.querySelector('[data-calculate-button]') as HTMLButtonElement;
+        if (button) button.click();
+      }, 1000);
+    }
+  }, []);
   
   // Get realtime quote if enabled and stock is selected
   const { quote: realtimeQuote, isConnected } = useRealtimeQuote(selectedStock?.symbol || '', {
@@ -589,6 +619,7 @@ export default function IntrinsicValue() {
                       <Button 
                         onClick={() => selectedStock && calculateIntrinsicValue(selectedStock)}
                         className="w-full bg-gradient-to-r from-teya-green via-teya-green-dark to-teya-green hover:from-teya-green-dark hover:via-teya-green hover:to-teya-green-dark text-rich-black font-semibold shadow-lg shadow-teya-green/30 hover:shadow-teya-green/50 hover:scale-105 transition-all duration-300 border-0"
+                        data-calculate-button
                       >
                         Recalculate
                       </Button>

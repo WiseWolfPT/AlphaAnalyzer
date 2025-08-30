@@ -29,7 +29,7 @@ export function RealtimeStockCard({
   const { data: quote, isLoading, error, isRealtime } = useStockQuote(symbol);
 
   const handleCardClick = () => {
-    setLocation(`/stock/${symbol}/charts`);
+    setLocation(`/stock/${symbol}`);
   };
 
   const isPositive = quote ? (quote.change ?? 0) >= 0 : false;

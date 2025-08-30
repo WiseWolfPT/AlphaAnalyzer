@@ -15,16 +15,19 @@ export function log(message: string, source = "express") {
   console.log(`${formattedTime} [${source}] ${message}`);
 }
 
-export async function setupVite(app: Express, server: Server) {
+export async function setupVite(app: Express, server?: Server) {
   // Dynamic import for Vite - only loaded in development
   const { createServer: createViteServer, createLogger } = await import("vite");
   const viteConfig = await import("../vite.config");
   const viteLogger = createLogger();
-  const serverOptions = {
+  const serverOptions: any = {
     middlewareMode: true,
-    hmr: { server },
     allowedHosts: true,
   };
+  
+  // Disable HMR in middleware mode to avoid port conflicts
+  // HMR will be handled by the standalone Vite server on port 3000
+  serverOptions.hmr = false;
 
   const vite = await createViteServer({
     ...viteConfig.default,

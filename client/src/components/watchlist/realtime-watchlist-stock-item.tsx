@@ -14,7 +14,7 @@ export function RealtimeWatchlistStockItem({ ws }: RealtimeWatchlistStockItemPro
   const { quote, isConnected, error } = useRealtimeQuote(ws.stockSymbol);
 
   const handleClick = () => {
-    setLocation(`/stock/${ws.stockSymbol}/charts`);
+    setLocation(`/stock/${symbol}`);
   };
 
   if (error) {

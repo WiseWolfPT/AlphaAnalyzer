@@ -14,7 +14,7 @@ const getPort = () => {
 // Utility function to get HMR port
 const getHMRPort = () => {
   const basePort = getPort();
-  return basePort + 1; // Use next port for HMR to avoid conflicts
+  return basePort + 2; // Changed from +1 to +2 to avoid conflict with Express on 3001
 };
 
 export default defineConfig({
@@ -88,59 +88,9 @@ export default defineConfig({
       ignored: ['**/node_modules/**', '**/.git/**', '**/dist/**'],
     },
     
-    // Enhanced proxy configuration
-    proxy: {
-      // API proxy with enhanced configuration
-      '/api': {
-        target: 'http://localhost:3001',
-        changeOrigin: true,
-        secure: false,
-        ws: false, // Disable WebSocket proxying to avoid conflicts
-        timeout: 30000, // 30 second timeout
-        followRedirects: true,
-        rewrite: (path) => path, // Don't rewrite paths
-        // Enhanced error handling
-        configure: (proxy, _options) => {
-          proxy.on('error', (err, req, res) => {
-            console.log('🔴 Proxy error:', err.message);
-            console.log(`🔴 Failed request: ${req.method} ${req.url}`);
-            // Graceful error handling
-            if (!res.headersSent) {
-              res.writeHead(500, { 'Content-Type': 'application/json' });
-              res.end(JSON.stringify({ 
-                error: 'Proxy Error', 
-                message: 'Backend server unavailable',
-                timestamp: new Date().toISOString()
-              }));
-            }
-          });
-          proxy.on('proxyReq', (proxyReq, req, _res) => {
-            console.log(`🔄 Proxy request: ${req.method} ${req.url} -> ${proxyReq.getHeader('host')}${proxyReq.path}`);
-          });
-          proxy.on('proxyRes', (proxyRes, req, _res) => {
-            console.log(`✅ Proxy response: ${req.method} ${req.url} -> ${proxyRes.statusCode}`);
-          });
-        }
-      },
-      // WebSocket proxy for real-time data
-      '/ws': {
-        target: process.env.VITE_WS_URL || 'ws://localhost:3001',
-        ws: true,
-        changeOrigin: true,
-        // Enhanced WebSocket error handling
-        configure: (proxy, _options) => {
-          proxy.on('error', (err) => {
-            console.log('🔴 WebSocket proxy error:', err.message);
-          });
-          proxy.on('open', () => {
-            console.log('🟢 WebSocket proxy connection opened');
-          });
-          proxy.on('close', () => {
-            console.log('🔴 WebSocket proxy connection closed');
-          });
-        }
-      }
-    },
+    // TEMPORARILY DISABLED: Proxy causing 426 errors
+    // Frontend will call backend directly at http://localhost:3001
+    proxy: {},
     
     // Performance optimizations for development
     middlewareMode: false,

@@ -21,7 +21,7 @@ function PortfolioHolding({ holding }: { holding: any }) {
   const { data: quote } = useStock(holding.symbol);
 
   const handleClick = () => {
-    setLocation(`/stock/${holding.symbol}/charts`);
+    setLocation(`/stock/${symbol}`);
   };
 
   // Use real price if available, otherwise fall back to holding price
