@@ -10,6 +10,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Calendar as CalendarIcon, DollarSign, Loader2, AlertCircle } from "lucide-react";
+import { UniversalSearch } from "@/components/universal-search";
 
 import { cn } from "@/lib/utils";
 import { PortfolioService, type TransactionInput } from "@/services/portfolio-service";

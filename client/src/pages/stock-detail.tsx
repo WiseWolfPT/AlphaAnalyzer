@@ -4,6 +4,8 @@ import { MainLayout } from "@/components/layout/main-layout";
 import { AdvancedTradingChart } from "@/components/charts/advanced-trading-chart";
 import { StockHeaderV2 } from "@/components/stock/stock-header-v2";
 import { RealtimeStockHeaderV2 } from "@/components/stock/realtime-stock-header-v2";
+import { StockNewsFeed } from "@/components/stock/stock-news-feed";
+import { StockFinancialsChart } from "@/components/stock/stock-financials-chart";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -21,12 +23,15 @@ import {
   ChartLine,
   BarChart3,
   Activity,
-  Wifi
+  Wifi,
+  Target,
+  Newspaper
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useRealtimeQuote } from "@/hooks/use-realtime-quotes";
 import { useCompanyData } from "@/hooks/use-company-profile";
 import { useCachedQuote } from "@/hooks/use-cache-data";
+import { useStockDetails } from "@/hooks/use-stock-details";
 
 // Mock company data
 const getCompanyData = (symbol: string) => {
@@ -119,33 +124,57 @@ export default function StockDetail() {
   // Get cached quote data
   const { data: cachedQuote, isLoading: isLoadingQuote } = useCachedQuote(symbol);
   
+  // Debug: Log the cached quote data
+  useEffect(() => {
+    if (cachedQuote) {
+      console.log('📊 Cached Quote Data:', cachedQuote);
+      console.log('📊 Actual Price:', cachedQuote?.data?.price);
+    }
+  }, [cachedQuote]);
+  
+  // Get detailed stock data from new endpoints
+  const { 
+    profile: detailedProfile, 
+    metrics: detailedMetrics, 
+    incomeStatements, 
+    news, 
+    historicalPrices,
+    isLoading: isLoadingDetails 
+  } = useStockDetails(symbol);
+  
   // Use real data if available, fallback to mock
   const mockData = getCompanyData(symbol);
-  const company = profile ? {
+  const company = (detailedProfile || profile) ? {
     ...mockData,
-    name: profile.name || mockData.name,
-    sector: profile.sector || mockData.sector,
-    industry: profile.industry || mockData.industry,
-    description: profile.description || mockData.description,
-    marketCap: profile.marketCap ? `$${(profile.marketCap / 1e9).toFixed(1)}B` : mockData.marketCap,
-    logo: profile.logo || mockData.logo,
-    website: profile.website,
-    ceo: profile.ceo,
-    employees: profile.employees,
-    country: profile.country,
+    name: detailedProfile?.name || profile?.name || mockData.name,
+    sector: detailedProfile?.sector || profile?.sector || mockData.sector,
+    industry: detailedProfile?.industry || profile?.industry || mockData.industry,
+    description: detailedProfile?.description || profile?.description || mockData.description,
+    marketCap: detailedProfile?.marketCap ? `$${(detailedProfile.marketCap / 1e9).toFixed(1)}B` : 
+               profile?.marketCap ? `$${(profile.marketCap / 1e9).toFixed(1)}B` : mockData.marketCap,
+    logo: detailedProfile?.logo || profile?.logo || mockData.logo,
+    website: detailedProfile?.website || profile?.website,
+    ceo: detailedProfile?.ceo || profile?.ceo,
+    employees: detailedProfile?.employees || profile?.employees,
+    country: detailedProfile?.country || profile?.country,
+    exchange: detailedProfile?.exchange,
+    ipo: detailedProfile?.ipo,
     // Use metrics if available
-    pe: metrics?.peRatio?.toFixed(2) || mockData.pe,
-    dividend: metrics?.dividendYield ? `${(metrics.dividendYield * 100).toFixed(2)}%` : mockData.dividend,
-    beta: metrics?.beta?.toFixed(2) || mockData.beta,
-    eps: metrics?.eps?.toFixed(2),
-    roe: metrics?.roe ? `${(metrics.roe * 100).toFixed(2)}%` : undefined,
-    // Use cached quote for price data
-    price: cachedQuote?.price || mockData.price,
-    change: cachedQuote?.change || mockData.change,
-    changePercent: cachedQuote?.changePercent || mockData.changePercent,
-    volume: cachedQuote?.volume ? `${(cachedQuote.volume / 1e6).toFixed(1)}M` : mockData.volume,
-    dayRange: cachedQuote ? `${cachedQuote.low?.toFixed(2)} - ${cachedQuote.high?.toFixed(2)}` : mockData.dayRange,
-    yearRange: metrics ? `${metrics['52WeekLow']?.toFixed(2)} - ${metrics['52WeekHigh']?.toFixed(2)}` : mockData.yearRange,
+    pe: detailedMetrics?.peRatio?.toFixed(2) || metrics?.peRatio?.toFixed(2) || mockData.pe,
+    dividend: detailedMetrics?.dividendYield ? `${(detailedMetrics.dividendYield * 100).toFixed(2)}%` : 
+              metrics?.dividendYield ? `${(metrics.dividendYield * 100).toFixed(2)}%` : mockData.dividend,
+    beta: detailedMetrics?.beta?.toFixed(2) || metrics?.beta?.toFixed(2) || mockData.beta,
+    eps: detailedMetrics?.eps?.toFixed(2) || metrics?.eps?.toFixed(2),
+    roe: detailedMetrics?.roe ? `${(detailedMetrics.roe * 100).toFixed(2)}%` : 
+         metrics?.roe ? `${(metrics.roe * 100).toFixed(2)}%` : undefined,
+    // Use cached quote for price data - cachedQuote contains { success, data, cached, strategy }
+    price: cachedQuote?.data?.price || mockData.price,
+    change: cachedQuote?.data?.change || mockData.change,
+    changePercent: cachedQuote?.data?.changePercent || mockData.changePercent,
+    volume: cachedQuote?.data?.volume ? `${(cachedQuote.data.volume / 1e6).toFixed(1)}M` : mockData.volume,
+    dayRange: cachedQuote?.data ? `${cachedQuote.data.low?.toFixed(2)} - ${cachedQuote.data.high?.toFixed(2)}` : mockData.dayRange,
+    yearRange: detailedMetrics ? `${detailedMetrics['52WeekLow']?.toFixed(2)} - ${detailedMetrics['52WeekHigh']?.toFixed(2)}` : 
+               metrics ? `${metrics['52WeekLow']?.toFixed(2)} - ${metrics['52WeekHigh']?.toFixed(2)}` : mockData.yearRange,
   } : mockData;
   
   const isPositive = company.change >= 0;
@@ -277,7 +306,7 @@ export default function StockDetail() {
 
         {/* Main Content Tabs */}
         <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="overview" className="flex items-center gap-2">
               <Activity className="h-4 w-4" />
               Overview
@@ -289,6 +318,10 @@ export default function StockDetail() {
             <TabsTrigger value="valuation" className="flex items-center gap-2">
               <Calculator className="h-4 w-4" />
               Valuation
+            </TabsTrigger>
+            <TabsTrigger value="news" className="flex items-center gap-2">
+              <Newspaper className="h-4 w-4" />
+              News
             </TabsTrigger>
             <TabsTrigger value="compare" className="flex items-center gap-2">
               <ChartLine className="h-4 w-4" />
@@ -391,114 +424,7 @@ export default function StockDetail() {
 
           <TabsContent value="financials" className="space-y-6">
             {/* Financials Tab - Gráficos de receitas, lucros, FCF (tipo Qualtrim) */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Revenue Chart */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <BarChart3 className="h-5 w-5 text-teya-green" />
-                    Receitas (Quarterly)
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="h-64 border border-border/50 rounded bg-secondary/20 flex items-center justify-center">
-                    <div className="text-center text-muted-foreground">
-                      <BarChart3 className="h-8 w-8 mx-auto mb-2" />
-                      <p className="text-sm">Gráfico de Receitas</p>
-                      <p className="text-xs">Q1'23: $95B | Q2'23: $98B | Q3'23: $102B | Q4'23: $108B</p>
-                    </div>
-                  </div>
-                  <div className="mt-4 flex justify-between text-sm">
-                    <span className="text-muted-foreground">Crescimento YoY</span>
-                    <span className="font-bold text-green-600">+12.5%</span>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Profit Chart */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <TrendingUp className="h-5 w-5 text-blue-500" />
-                    Lucro Líquido (Quarterly)
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="h-64 border border-border/50 rounded bg-secondary/20 flex items-center justify-center">
-                    <div className="text-center text-muted-foreground">
-                      <TrendingUp className="h-8 w-8 mx-auto mb-2" />
-                      <p className="text-sm">Gráfico de Lucros</p>
-                      <p className="text-xs">Q1'23: $23B | Q2'23: $24B | Q3'23: $25B | Q4'23: $27B</p>
-                    </div>
-                  </div>
-                  <div className="mt-4 flex justify-between text-sm">
-                    <span className="text-muted-foreground">Margem de Lucro</span>
-                    <span className="font-bold text-blue-600">25.0%</span>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Cash Flow Chart */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Activity className="h-5 w-5 text-purple-500" />
-                    Free Cash Flow (Quarterly)
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="h-64 border border-border/50 rounded bg-secondary/20 flex items-center justify-center">
-                    <div className="text-center text-muted-foreground">
-                      <Activity className="h-8 w-8 mx-auto mb-2" />
-                      <p className="text-sm">Gráfico de FCF</p>
-                      <p className="text-xs">Q1'23: $18B | Q2'23: $19B | Q3'23: $20B | Q4'23: $22B</p>
-                    </div>
-                  </div>
-                  <div className="mt-4 flex justify-between text-sm">
-                    <span className="text-muted-foreground">FCF Yield</span>
-                    <span className="font-bold text-purple-600">8.2%</span>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Key Financial Metrics */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Métricas Fundamentais</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="text-center p-3 border rounded-lg">
-                        <p className="text-xs text-muted-foreground">ROE</p>
-                        <p className="text-lg font-bold text-green-600">18.7%</p>
-                      </div>
-                      <div className="text-center p-3 border rounded-lg">
-                        <p className="text-xs text-muted-foreground">ROIC</p>
-                        <p className="text-lg font-bold text-blue-600">15.2%</p>
-                      </div>
-                      <div className="text-center p-3 border rounded-lg">
-                        <p className="text-xs text-muted-foreground">Debt/Equity</p>
-                        <p className="text-lg font-bold">0.42</p>
-                      </div>
-                      <div className="text-center p-3 border rounded-lg">
-                        <p className="text-xs text-muted-foreground">Current Ratio</p>
-                        <p className="text-lg font-bold">1.8</p>
-                      </div>
-                    </div>
-                    
-                    <Button 
-                      onClick={() => setLocation(`/stock/${symbol}`)}
-                      variant="outline"
-                      className="w-full border-teya-green/30 hover:bg-teya-green/10"
-                    >
-                      <ChartLine className="w-4 h-4 mr-2" />
-                      Ver Gráficos Avançados
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
+            <StockFinancialsChart data={incomeStatements} isLoading={isLoadingDetails} />
           </TabsContent>
 
           <TabsContent value="valuation" className="space-y-6">
@@ -640,6 +566,15 @@ export default function StockDetail() {
                   </div>
                 </CardContent>
               </Card>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="news" className="space-y-6">
+            {/* News Tab - Latest company news */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div className="lg:col-span-2">
+                <StockNewsFeed articles={news} isLoading={isLoadingDetails} />
+              </div>
             </div>
           </TabsContent>
 

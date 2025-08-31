@@ -1,5 +1,6 @@
 import { Router, Request, Response } from 'express';
 import { z } from 'zod';
+import axios from 'axios';
 import { authMiddleware } from '../middleware/auth-middleware';
 import { demoAuthMiddleware, optionalDemoAuth } from '../middleware/demo-auth-middleware';
 import { rateLimitMiddleware } from '../middleware/rate-limit-middleware';
@@ -1318,6 +1319,315 @@ router.get('/dcf/:symbol',
       res.status(503).json({
         error: 'DCF_FETCH_ERROR',
         message: 'Failed to fetch DCF data',
+      });
+    }
+  }
+);
+
+/**
+ * GET /api/market-data/profile/:symbol
+ * Get company profile information
+ */
+router.get('/profile/:symbol',
+  authService,
+  marketDataRateLimit,
+  async (req: Request, res: Response) => {
+    try {
+      const validation = stockSymbolSchema.safeParse({ symbol: req.params.symbol });
+      if (!validation.success) {
+        return res.status(400).json({
+          error: 'INVALID_SYMBOL',
+          message: 'Invalid stock symbol',
+        });
+      }
+
+      const symbol = validation.data.symbol;
+      console.log(`🏢 Fetching company profile for ${symbol}`);
+
+      // Use the existing FMP provider which has built-in caching
+      const fmpProvider = new FMPProvider(process.env.FMP_API_KEY || '');
+      
+      try {
+        const fundamentals = await fmpProvider.getFundamentals(symbol);
+        
+        res.json({
+          ...fundamentals,
+          _cached: false,
+          _timestamp: Date.now(),
+        });
+      } catch (providerError) {
+        // Fallback to direct API call if provider fails
+        const response = await axios.get(
+          `https://financialmodelingprep.com/api/v3/profile/${symbol}`,
+          {
+            params: { apikey: process.env.FMP_API_KEY },
+            timeout: 10000
+          }
+        );
+        
+        const data = response.data;
+        const profile = Array.isArray(data) ? data[0] : data || {};
+
+        res.json({
+          ...profile,
+          _cached: false,
+          _timestamp: Date.now(),
+        });
+      }
+
+    } catch (error) {
+      console.error('Profile fetch error:', error);
+      res.status(503).json({
+        error: 'PROFILE_FETCH_ERROR',
+        message: 'Failed to fetch company profile',
+      });
+    }
+  }
+);
+
+/**
+ * GET /api/market-data/historical-price-full/:symbol
+ * Get historical price data for charts
+ */
+router.get('/historical-price-full/:symbol',
+  authService,
+  marketDataRateLimit,
+  async (req: Request, res: Response) => {
+    try {
+      const validation = stockSymbolSchema.safeParse({ symbol: req.params.symbol });
+      if (!validation.success) {
+        return res.status(400).json({
+          error: 'INVALID_SYMBOL',
+          message: 'Invalid stock symbol',
+        });
+      }
+
+      const symbol = validation.data.symbol;
+      const from = req.query.from || '';
+      const to = req.query.to || '';
+      
+      console.log(`📈 Fetching historical prices for ${symbol}`);
+
+      // Use the existing FMP provider which has built-in caching
+      const fmpProvider = new FMPProvider(process.env.FMP_API_KEY || '');
+      
+      try {
+        const historical = await fmpProvider.getHistorical(symbol, '1y');
+        
+        res.json({
+          ...historical,
+          _cached: false,
+          _timestamp: Date.now(),
+        });
+      } catch (providerError) {
+        // Fallback to direct API call if provider fails
+        const params: any = { apikey: process.env.FMP_API_KEY };
+        if (from) params.from = from;
+        if (to) params.to = to;
+        
+        const response = await axios.get(
+          `https://financialmodelingprep.com/api/v3/historical-price-full/${symbol}`,
+          {
+            params,
+            timeout: 10000
+          }
+        );
+        const data = response.data;
+
+        res.json({
+          ...data,
+          _cached: false,
+          _timestamp: Date.now(),
+        });
+      }
+
+    } catch (error) {
+      console.error('Historical price fetch error:', error);
+      res.status(503).json({
+        error: 'HISTORICAL_FETCH_ERROR',
+        message: 'Failed to fetch historical prices',
+      });
+    }
+  }
+);
+
+/**
+ * GET /api/market-data/income-statement/:symbol
+ * Get income statement data
+ */
+router.get('/income-statement/:symbol',
+  authService,
+  marketDataRateLimit,
+  async (req: Request, res: Response) => {
+    try {
+      const validation = stockSymbolSchema.safeParse({ symbol: req.params.symbol });
+      if (!validation.success) {
+        return res.status(400).json({
+          error: 'INVALID_SYMBOL',
+          message: 'Invalid stock symbol',
+        });
+      }
+
+      const symbol = validation.data.symbol;
+      const period = req.query.period === 'annual' ? 'annual' : 'quarter';
+      const limit = req.query.limit || '12';
+      
+      console.log(`💵 Fetching income statement for ${symbol} (${period})`);
+
+      // TODO: Add caching once generic cache methods are available
+
+      // Fetch from FMP using axios
+      const response = await axios.get(
+        `https://financialmodelingprep.com/api/v3/income-statement/${symbol}`,
+        {
+          params: { 
+            period, 
+            limit, 
+            apikey: process.env.FMP_API_KEY 
+          },
+          timeout: 10000
+        }
+      );
+      
+      const data = response.data;
+
+      // TODO: Cache for 1 hour
+
+      res.json({
+        data,
+        _cached: false,
+        _timestamp: Date.now(),
+      });
+
+    } catch (error) {
+      console.error('Income statement fetch error:', error);
+      res.status(503).json({
+        error: 'INCOME_FETCH_ERROR',
+        message: 'Failed to fetch income statement',
+      });
+    }
+  }
+);
+
+/**
+ * GET /api/market-data/key-metrics/:symbol
+ * Get key financial metrics
+ */
+router.get('/key-metrics/:symbol',
+  authService,
+  marketDataRateLimit,
+  async (req: Request, res: Response) => {
+    try {
+      const validation = stockSymbolSchema.safeParse({ symbol: req.params.symbol });
+      if (!validation.success) {
+        return res.status(400).json({
+          error: 'INVALID_SYMBOL',
+          message: 'Invalid stock symbol',
+        });
+      }
+
+      const symbol = validation.data.symbol;
+      const period = req.query.period === 'annual' ? 'annual' : 'quarter';
+      const limit = req.query.limit || '10';
+      
+      console.log(`📊 Fetching key metrics for ${symbol} (${period})`);
+
+      // TODO: Add caching once generic cache methods are available
+
+      // Fetch from FMP using axios
+      const response = await axios.get(
+        `https://financialmodelingprep.com/api/v3/key-metrics/${symbol}`,
+        {
+          params: { 
+            period, 
+            limit, 
+            apikey: process.env.FMP_API_KEY 
+          },
+          timeout: 10000
+        }
+      );
+      
+      const data = response.data;
+
+      // TODO: Cache for 1 hour
+
+      res.json({
+        data,
+        _cached: false,
+        _timestamp: Date.now(),
+      });
+
+    } catch (error) {
+      console.error('Key metrics fetch error:', error);
+      res.status(503).json({
+        error: 'METRICS_FETCH_ERROR',
+        message: 'Failed to fetch key metrics',
+      });
+    }
+  }
+);
+
+/**
+ * GET /api/market-data/news/:symbol
+ * Get company news
+ */
+router.get('/news/:symbol',
+  authService,
+  marketDataRateLimit,
+  async (req: Request, res: Response) => {
+    try {
+      const validation = stockSymbolSchema.safeParse({ symbol: req.params.symbol });
+      if (!validation.success) {
+        return res.status(400).json({
+          error: 'INVALID_SYMBOL',
+          message: 'Invalid stock symbol',
+        });
+      }
+
+      const symbol = validation.data.symbol;
+      const limit = req.query.limit || '10';
+      
+      console.log(`📰 Fetching news for ${symbol}`);
+
+      // Use the existing FMP provider which has built-in caching
+      const fmpProvider = new FMPProvider(process.env.FMP_API_KEY || '');
+      
+      try {
+        const news = await fmpProvider.getNews(symbol, parseInt(limit as string));
+        
+        res.json({
+          ...news,
+          _cached: false,
+          _timestamp: Date.now(),
+        });
+      } catch (providerError) {
+        // Fallback to direct API call if provider fails
+        const response = await axios.get(
+          `https://financialmodelingprep.com/api/v3/stock_news`,
+          {
+            params: { 
+              tickers: symbol, 
+              limit, 
+              apikey: process.env.FMP_API_KEY 
+            },
+            timeout: 10000
+          }
+        );
+        
+        const data = response.data;
+
+        res.json({
+          articles: data,
+          _cached: false,
+          _timestamp: Date.now(),
+        });
+      }
+
+    } catch (error) {
+      console.error('News fetch error:', error);
+      res.status(503).json({
+        error: 'NEWS_FETCH_ERROR',
+        message: 'Failed to fetch news',
       });
     }
   }

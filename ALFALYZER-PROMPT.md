@@ -4,11 +4,14 @@
 
 ```
 Continue Alfalyzer implementation:
-1. Read ALFALYZER-PRODUCTION-PLAN-2.md
-2. Check "LAST SESSION SUMMARY" section
-3. Implement the next pending phase LOCALLY
-4. Update document when complete
-5. Stop for context management
+1. Read ENTIRE ALFALYZER-PRODUCTION-PLAN-2.md (2752 lines for full context)
+2. Focus on "LAST SESSION SUMMARY" section for current status
+3. CRITICAL: Check sync status before any work
+4. Follow ENVIRONMENT PARITY REQUIREMENTS (line 46)
+5. Implement the next pending phase LOCALLY
+6. Deploy same day (MANDATORY - line 2385)
+7. Update LAST SESSION SUMMARY before stopping
+8. Stop for context management
 
 Work location: LOCAL (never edit production directly)
 Keep only: FMP (main) + Alpha Vantage (backup)

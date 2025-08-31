@@ -51,8 +51,9 @@ export function useCachedBatchQuotes(symbols: string[], options: any = {}) {
         _source: 'normalized',
       };
     },
-    staleTime: 30_000,
-    gcTime: 300_000,
+    staleTime: 10_000, // 10 seconds for real-time updates
+    gcTime: 60_000, // 1 minute garbage collection
+    refetchInterval: 30_000, // Auto-refresh every 30 seconds
     retry: (count) => count < 2,
     ...options,
   });
@@ -72,9 +73,10 @@ export function useCachedQuote(symbol: string, options = {}) {
       
       return response.json();
     },
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    gcTime: 10 * 60 * 1000,
-    refetchOnWindowFocus: false,
+    staleTime: 10 * 1000, // 10 seconds - much shorter for real-time updates
+    gcTime: 60 * 1000, // 1 minute garbage collection
+    refetchOnWindowFocus: true, // Refetch when window regains focus
+    refetchInterval: 30 * 1000, // Auto-refresh every 30 seconds
     ...options,
   });
 }

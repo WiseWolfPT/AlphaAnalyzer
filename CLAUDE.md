@@ -30,8 +30,24 @@ Financial analysis platform with real-time market data, earnings transcripts, an
 **Frontend:** React 18.3.1, TypeScript 5.6.3, Vite 6.0, Tailwind 3.4, shadcn/ui, Wouter 3.3.5  
 **Backend:** Node.js 20+, Express 4.21.2, TypeScript  
 **Database:** Supabase (PostgreSQL + Auth + Realtime + Storage)  
+**Cache:** Redis 6.2+ (256MB configured)
 **APIs:** Alpha Vantage, Finnhub, FMP, Twelve Data, Polygon  
 **Deployment:** Hetzner CX22 (€3.79/mo) - Frontend e Backend no mesmo servidor com PM2
+
+## PORTS & SERVICES
+
+### Local Development
+- **Frontend (Vite):** http://localhost:3000
+- **Backend (Express):** http://localhost:3001
+- **Redis Cache:** localhost:6379
+- **Supabase:** Hosted cloud (not local)
+
+### Production (Hetzner)
+- **Public URL:** https://128.140.45.28.sslip.io
+- **Nginx:** Port 80/443 (proxies to backend 3001)
+- **Backend:** localhost:3001 (internal)
+- **Redis:** 127.0.0.1:6379 (password: alfalyzer2025redis)
+- **PM2 Process:** alfalyzer
 
 ## ARCHITECTURE
 

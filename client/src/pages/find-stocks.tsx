@@ -5,7 +5,7 @@ import { StockSearch } from "@/components/stock/stock-search";
 import { UnifiedStockCard } from "@/components/stock/unified-stock-card";
 import { RealtimeStockCard } from "@/components/stock/realtime-stock-card";
 import { WebSocketStockCard } from "@/components/stock/websocket-stock-card";
-import { OptimizedSearchBar } from "@/components/stock/optimized-search-bar";
+import { UniversalSearch } from "@/components/universal-search";
 import { AdvancedFilters, FilterOptions } from "@/components/stock/advanced-filters";
 import { BetaBanner } from "@/components/beta/beta-banner";
 import { Button } from "@/components/ui/button";
@@ -609,15 +609,14 @@ export default function FindStocks() {
           <Card className="border-teya-green/20">
             <CardContent className="p-6">
               <div className="space-y-4">
-                <OptimizedSearchBar
-                  allStocks={ALL_STOCKS.map(symbol => ({
-                    symbol,
-                    name: getCompanyName(symbol),
-                    sector: getSector(symbol),
-                    industry: getIndustry(symbol)
-                  }))}
-                  onStockSelect={handleStockSelect}
+                <UniversalSearch
+                  onSelect={(stock) => {
+                    setSearchQuery(stock.symbol);
+                    handleStockSelect(stock.symbol);
+                  }}
                   placeholder="Search 50+ stocks by symbol, name, or sector..."
+                  showRecentSearches={true}
+                  showPopularStocks={true}
                 />
                 <div className="flex flex-wrap gap-2">
                   <Badge 

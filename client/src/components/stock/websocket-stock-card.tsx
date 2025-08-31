@@ -1,11 +1,10 @@
-import React, { useRef, useEffect, memo } from 'react';
+import React, { useRef, useEffect, memo, useCallback } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ArrowUpIcon, ArrowDownIcon, Activity, Wifi, WifiOff, Plus, Calculator, TrendingUp } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useLocation } from 'wouter';
-import { useToast } from '@/hooks/use-toast';
 
 interface WebSocketStockCardProps {
   symbol: string;
@@ -28,7 +27,6 @@ export const WebSocketStockCard = memo(({
   onQuoteUpdate,
 }: WebSocketStockCardProps) => {
   const [, setLocation] = useLocation();
-  const { toast } = useToast();
   
   // Refs for DOM manipulation without re-render
   const priceRef = useRef<HTMLSpanElement>(null);
@@ -185,7 +183,7 @@ export const WebSocketStockCard = memo(({
     setLocation(`/stock/${symbol}`);
   };
 
-  const handleAddToWatchlist = (e: React.MouseEvent) => {
+  const handleAddToWatchlist = useCallback((e: React.MouseEvent) => {
     e.stopPropagation(); // Prevent card click
     
     // Get existing watchlist from localStorage
@@ -194,11 +192,7 @@ export const WebSocketStockCard = memo(({
     
     // Check if already in watchlist
     if (watchlist.some((item: any) => item.symbol === symbol)) {
-      toast({
-        title: "Already in Watchlist",
-        description: `${symbol} is already in your watchlist`,
-        variant: "default",
-      });
+      console.log(`${symbol} is already in watchlist`);
       return;
     }
     
@@ -206,12 +200,8 @@ export const WebSocketStockCard = memo(({
     watchlist.push({ symbol, name: companyName });
     localStorage.setItem('watchlist', JSON.stringify(watchlist));
     
-    toast({
-      title: "Added to Watchlist",
-      description: `${symbol} has been added to your watchlist`,
-      variant: "default",
-    });
-  };
+    console.log(`${symbol} added to watchlist`);
+  }, [symbol, companyName]);
 
   const handleCalculateIV = (e: React.MouseEvent) => {
     e.stopPropagation(); // Prevent card click

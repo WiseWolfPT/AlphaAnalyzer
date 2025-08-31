@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { MainLayout } from "@/components/layout/main-layout";
-import { StockSearch } from "@/components/stock/stock-search";
+import { UniversalSearch } from "@/components/universal-search";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -304,14 +304,15 @@ export default function IntrinsicValue() {
 
           {/* Search Bar */}
           <div className="max-w-2xl">
-            <StockSearch 
-              onSearch={setSearchQuery}
-              searchResults={searchResults || []}
-              onStockSelect={(stock) => {
+            <UniversalSearch
+              onSelect={(stock) => {
                 setSelectedStock(stock);
+                setSearchQuery(stock.symbol);
                 calculateIntrinsicValue(stock);
               }}
               placeholder="Search for a stock to analyze..."
+              showRecentSearches={true}
+              showPopularStocks={true}
             />
           </div>
         </div>

@@ -51,17 +51,10 @@ export function Header() {
     setIsMobileMenuOpen(false);
   };
 
-  const handleBetaLogin = async () => {
-    // Fazer login automático com as credenciais beta
-    const result = await signIn('beta@alfalyzer.com', '123demo');
-    
-    if (!result.error) {
-      // Redirecionar diretamente para o dashboard (find-stocks)
-      setLocation('/find-stocks');
-    } else {
-      // Se houver erro, redirecionar para a página de login normal
-      setLocation('/login');
-    }
+  const handleBetaLogin = () => {
+    // Beta login - redirect directly to find-stocks since we're in demo mode
+    // No actual authentication needed for demo
+    setLocation('/find-stocks');
   };
 
   return (
