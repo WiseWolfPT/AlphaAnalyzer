@@ -256,6 +256,7 @@ export default function FindStocks() {
   const [useDirectFMP, setUseDirectFMP] = useState(true); // Enable direct FMP API for real prices
   const [useWebSocket, setUseWebSocket] = useState(false); // Disable WebSocket since it's not working
   const [advancedFilters, setAdvancedFilters] = useState<FilterOptions>({ sectors: [] });
+  const [marketCapFilter, setMarketCapFilter] = useState<string>('all'); // New state for market cap categories
   
   // PHASE 2: Use direct FMP data (no cache) for real-time prices
   const directFMPQuery = useDirectFMPBatchQuotes(displayedSymbols, {
@@ -313,6 +314,45 @@ export default function FindStocks() {
   const countStocksBySector = (sector: string): number => {
     if (sector === 'all') return ALL_STOCKS.length;
     return ALL_STOCKS.filter(symbol => getSector(symbol) === sector).length;
+  };
+
+  // Helper function to get market cap category
+  const getMarketCapCategory = (marketCapStr: string): string => {
+    if (marketCapStr === 'N/A') return 'Unknown';
+    const value = parseFloat(marketCapStr.replace(/[^0-9.-]+/g,""));
+    if (value >= 200) return 'Mega Cap'; // $200B+
+    if (value >= 10) return 'Large Cap'; // $10B-$200B
+    if (value >= 2) return 'Mid Cap';    // $2B-$10B
+    if (value >= 0.3) return 'Small Cap'; // $300M-$2B
+    return 'Micro Cap'; // <$300M
+  };
+
+  // Function to filter by market cap category
+  const filterByMarketCap = (category: string) => {
+    setMarketCapFilter(category);
+    if (category === 'all') {
+      // Don't change displayed symbols, just update the filter
+      return;
+    }
+    
+    // Define market cap ranges in billions
+    const ranges: { [key: string]: { min: number; max: number } } = {
+      'mega': { min: 200, max: Infinity },
+      'large': { min: 10, max: 200 },
+      'mid': { min: 2, max: 10 },
+      'small': { min: 0.3, max: 2 },
+      'micro': { min: 0, max: 0.3 }
+    };
+    
+    const range = ranges[category];
+    if (range) {
+      // Update advanced filters with the market cap range
+      setAdvancedFilters(prev => ({
+        ...prev,
+        minMarketCap: range.min * 1e9,
+        maxMarketCap: range.max === Infinity ? undefined : range.max * 1e9
+      }));
+    }
   };
 
   // Function to filter stocks by sector
@@ -435,6 +475,90 @@ export default function FindStocks() {
     setActiveFilter('popular');
   };
 
+  const filteredStocks = React.useMemo(() => {
+    let filtered = stocks.filter(stock => {
+      // First check if stock is in displayed symbols (sector filter)
+      if (!displayedSymbols.includes(stock.symbol)) return false;
+      
+      // Apply advanced filters
+      if (advancedFilters.sectors && advancedFilters.sectors.length > 0) {
+        if (!advancedFilters.sectors.includes(stock.sector)) return false;
+      }
+      
+      const price = parseFloat(stock.price) || 0;
+      if (advancedFilters.minPrice && price < advancedFilters.minPrice) return false;
+      if (advancedFilters.maxPrice && price > advancedFilters.maxPrice) return false;
+      
+      const changePercent = parseFloat(stock.changePercent) || 0;
+      if (advancedFilters.minChangePercent && changePercent < advancedFilters.minChangePercent) return false;
+      if (advancedFilters.maxChangePercent && changePercent > advancedFilters.maxChangePercent) return false;
+      
+      if (advancedFilters.showOnlyGainers && changePercent <= 0) return false;
+      if (advancedFilters.showOnlyLosers && changePercent >= 0) return false;
+      
+      const marketCapValue = stock.marketCap === 'N/A' ? 0 : 
+        parseFloat(stock.marketCap.replace(/[^0-9.-]+/g,"")) * 1e9 || 0;
+      if (advancedFilters.minMarketCap && marketCapValue < advancedFilters.minMarketCap) return false;
+      if (advancedFilters.maxMarketCap && marketCapValue > advancedFilters.maxMarketCap) return false;
+      
+      const pe = stock.peRatio === 'N/A' ? 0 : parseFloat(stock.peRatio) || 0;
+      if (advancedFilters.minPE && pe < advancedFilters.minPE) return false;
+      if (advancedFilters.maxPE && pe > advancedFilters.maxPE) return false;
+      
+      if (advancedFilters.minVolume && stock.volume < advancedFilters.minVolume) return false;
+      
+      // Then apply search filter
+      if (!searchQuery) return true;
+      
+      return (
+        stock.symbol.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        stock.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        stock.sector.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        stock.industry.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    });
+
+    // Apply sorting
+    if (sortBy && sortBy !== 'alphabetical') {
+      filtered = [...filtered].sort((a, b) => {
+        switch(sortBy) {
+          case 'alphabetical-desc':
+            return b.symbol.localeCompare(a.symbol);
+          case 'price-high':
+            return parseFloat(b.price) - parseFloat(a.price);
+          case 'price-low':
+            return parseFloat(a.price) - parseFloat(b.price);
+          case 'gainers':
+            const bChange = parseFloat(b.changePercent) || 0;
+            const aChange = parseFloat(a.changePercent) || 0;
+            return bChange - aChange;
+          case 'losers':
+            const aLosersChange = parseFloat(a.changePercent) || 0;
+            const bLosersChange = parseFloat(b.changePercent) || 0;
+            return aLosersChange - bLosersChange;
+          case 'volume':
+            return (b.volume || 0) - (a.volume || 0);
+          case 'marketCap':
+            const aMarket = a.marketCap === 'N/A' ? 0 : parseFloat(a.marketCap.replace(/[^0-9.-]+/g,"")) || 0;
+            const bMarket = b.marketCap === 'N/A' ? 0 : parseFloat(b.marketCap.replace(/[^0-9.-]+/g,"")) || 0;
+            return bMarket - aMarket;
+          case 'pe-high':
+            const aPE = a.peRatio === 'N/A' ? 0 : parseFloat(a.peRatio) || 0;
+            const bPE = b.peRatio === 'N/A' ? 0 : parseFloat(b.peRatio) || 0;
+            return bPE - aPE;
+          case 'pe-low':
+            const aPELow = a.peRatio === 'N/A' ? 999999 : parseFloat(a.peRatio) || 999999;
+            const bPELow = b.peRatio === 'N/A' ? 999999 : parseFloat(b.peRatio) || 999999;
+            return aPELow - bPELow;
+          default:
+            return 0;
+        }
+      });
+    }
+
+    return filtered;
+  }, [stocks, displayedSymbols, advancedFilters, searchQuery, sortBy]);
+
   // Show loading state
   if (isLoading) {
     return (
@@ -476,48 +600,6 @@ export default function FindStocks() {
       </MainLayout>
     );
   }
-
-  const filteredStocks = stocks.filter(stock => {
-    // First check if stock is in displayed symbols (sector filter)
-    if (!displayedSymbols.includes(stock.symbol)) return false;
-    
-    // Apply advanced filters
-    if (advancedFilters.sectors && advancedFilters.sectors.length > 0) {
-      if (!advancedFilters.sectors.includes(stock.sector)) return false;
-    }
-    
-    const price = parseFloat(stock.price) || 0;
-    if (advancedFilters.minPrice && price < advancedFilters.minPrice) return false;
-    if (advancedFilters.maxPrice && price > advancedFilters.maxPrice) return false;
-    
-    const changePercent = parseFloat(stock.changePercent) || 0;
-    if (advancedFilters.minChangePercent && changePercent < advancedFilters.minChangePercent) return false;
-    if (advancedFilters.maxChangePercent && changePercent > advancedFilters.maxChangePercent) return false;
-    
-    if (advancedFilters.showOnlyGainers && changePercent <= 0) return false;
-    if (advancedFilters.showOnlyLosers && changePercent >= 0) return false;
-    
-    const marketCapValue = stock.marketCap === 'N/A' ? 0 : 
-      parseFloat(stock.marketCap.replace(/[^0-9.-]+/g,"")) * 1e9 || 0;
-    if (advancedFilters.minMarketCap && marketCapValue < advancedFilters.minMarketCap) return false;
-    if (advancedFilters.maxMarketCap && marketCapValue > advancedFilters.maxMarketCap) return false;
-    
-    const pe = stock.peRatio === 'N/A' ? 0 : parseFloat(stock.peRatio) || 0;
-    if (advancedFilters.minPE && pe < advancedFilters.minPE) return false;
-    if (advancedFilters.maxPE && pe > advancedFilters.maxPE) return false;
-    
-    if (advancedFilters.minVolume && stock.volume < advancedFilters.minVolume) return false;
-    
-    // Then apply search filter
-    if (!searchQuery) return true;
-    
-    return (
-      stock.symbol.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      stock.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      stock.sector.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      stock.industry.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-  });
 
   return (
     <MainLayout>
@@ -716,6 +798,71 @@ export default function FindStocks() {
                     Industrials ({countStocksBySector('Industrials')})
                   </Badge>
                 </div>
+                
+                {/* Market Cap Filter Badges */}
+                <div className="flex flex-wrap gap-2 pt-2 border-t">
+                  <span className="text-sm text-muted-foreground">Market Cap:</span>
+                  <Badge 
+                    variant={marketCapFilter === 'all' ? 'default' : 'outline'}
+                    className={cn(
+                      "cursor-pointer",
+                      marketCapFilter === 'all'
+                        ? "bg-blue-500 text-white hover:bg-blue-600" 
+                        : "border-blue-500/30 hover:bg-blue-500/10"
+                    )}
+                    onClick={() => filterByMarketCap('all')}
+                  >
+                    All Sizes
+                  </Badge>
+                  <Badge 
+                    variant={marketCapFilter === 'mega' ? 'default' : 'outline'}
+                    className={cn(
+                      "cursor-pointer",
+                      marketCapFilter === 'mega'
+                        ? "bg-blue-500 text-white hover:bg-blue-600" 
+                        : "border-blue-500/30 hover:bg-blue-500/10"
+                    )}
+                    onClick={() => filterByMarketCap('mega')}
+                  >
+                    Mega Cap ($200B+)
+                  </Badge>
+                  <Badge 
+                    variant={marketCapFilter === 'large' ? 'default' : 'outline'}
+                    className={cn(
+                      "cursor-pointer",
+                      marketCapFilter === 'large'
+                        ? "bg-blue-500 text-white hover:bg-blue-600" 
+                        : "border-blue-500/30 hover:bg-blue-500/10"
+                    )}
+                    onClick={() => filterByMarketCap('large')}
+                  >
+                    Large Cap ($10B-$200B)
+                  </Badge>
+                  <Badge 
+                    variant={marketCapFilter === 'mid' ? 'default' : 'outline'}
+                    className={cn(
+                      "cursor-pointer",
+                      marketCapFilter === 'mid'
+                        ? "bg-blue-500 text-white hover:bg-blue-600" 
+                        : "border-blue-500/30 hover:bg-blue-500/10"
+                    )}
+                    onClick={() => filterByMarketCap('mid')}
+                  >
+                    Mid Cap ($2B-$10B)
+                  </Badge>
+                  <Badge 
+                    variant={marketCapFilter === 'small' ? 'default' : 'outline'}
+                    className={cn(
+                      "cursor-pointer",
+                      marketCapFilter === 'small'
+                        ? "bg-blue-500 text-white hover:bg-blue-600" 
+                        : "border-blue-500/30 hover:bg-blue-500/10"
+                    )}
+                    onClick={() => filterByMarketCap('small')}
+                  >
+                    Small Cap ($300M-$2B)
+                  </Badge>
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -803,47 +950,21 @@ export default function FindStocks() {
               )}
             </div>
             <div className="flex items-center gap-2">
-              <Select value={sortBy} onValueChange={(value) => {
-                setSortBy(value);
-                // Apply sorting logic here
-                const sorted = [...displayedSymbols].sort((a, b) => {
-                  const aStock = stocks.find(s => s.symbol === a);
-                  const bStock = stocks.find(s => s.symbol === b);
-                  if (!aStock || !bStock) return 0;
-                  
-                  switch(value) {
-                    case 'alphabetical':
-                      return a.localeCompare(b);
-                    case 'gainers':
-                      const bChange = parseFloat(bStock.changePercent) || 0;
-                      const aChange = parseFloat(aStock.changePercent) || 0;
-                      return bChange - aChange;
-                    case 'losers':
-                      const aLosersChange = parseFloat(aStock.changePercent) || 0;
-                      const bLosersChange = parseFloat(bStock.changePercent) || 0;
-                      return aLosersChange - bLosersChange;
-                    case 'volume':
-                      return (bStock.volume || 0) - (aStock.volume || 0);
-                    case 'marketCap':
-                      // marketCap is already formatted as "$123.45B" or "N/A"
-                      const aMarket = aStock.marketCap === 'N/A' ? 0 : parseFloat(aStock.marketCap.replace(/[^0-9.-]+/g,"")) || 0;
-                      const bMarket = bStock.marketCap === 'N/A' ? 0 : parseFloat(bStock.marketCap.replace(/[^0-9.-]+/g,"")) || 0;
-                      return bMarket - aMarket;
-                    default:
-                      return 0;
-                  }
-                });
-                setDisplayedSymbols(sorted);
-              }}>
+              <Select value={sortBy} onValueChange={setSortBy}>
                 <SelectTrigger className="w-[180px]">
                   <SelectValue placeholder="Sort by..." />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="alphabetical">A-Z</SelectItem>
-                  <SelectItem value="gainers">Top Gainers</SelectItem>
-                  <SelectItem value="losers">Top Losers</SelectItem>
+                  <SelectItem value="alphabetical">A → Z</SelectItem>
+                  <SelectItem value="alphabetical-desc">Z → A</SelectItem>
+                  <SelectItem value="price-high">Price (High → Low)</SelectItem>
+                  <SelectItem value="price-low">Price (Low → High)</SelectItem>
+                  <SelectItem value="gainers">Top Gainers ↑</SelectItem>
+                  <SelectItem value="losers">Top Losers ↓</SelectItem>
                   <SelectItem value="volume">Most Active</SelectItem>
-                  <SelectItem value="marketCap">Market Cap</SelectItem>
+                  <SelectItem value="marketCap">Market Cap ↓</SelectItem>
+                  <SelectItem value="pe-high">P/E Ratio (High)</SelectItem>
+                  <SelectItem value="pe-low">P/E Ratio (Low)</SelectItem>
                 </SelectContent>
               </Select>
               <AdvancedFilters
