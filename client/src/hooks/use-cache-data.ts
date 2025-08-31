@@ -2,8 +2,11 @@ import { useQuery } from '@tanstack/react-query';
 
 // Helper to get API URL
 const getApiUrl = () => {
-  // Always use relative URLs to work with any deployment
-  // The server handles routing to the backend
+  // In development, use localhost:3001
+  // In production, use relative URLs (proxy handles it)
+  if (import.meta.env.DEV) {
+    return 'http://localhost:3001';
+  }
   return '';
 };
 
@@ -147,7 +150,8 @@ export function useDirectFMPQuote(symbol: string, options = {}) {
   return useQuery({
     queryKey: ['direct', 'quote', symbol],
     queryFn: async () => {
-      const response = await fetch(`/api/market-data/direct/quote/${symbol}`);
+      const apiUrl = getApiUrl();
+      const response = await fetch(`${apiUrl}/api/market-data/direct/quote/${symbol}`);
       
       if (!response.ok) {
         throw new Error(`Failed to fetch direct quote: ${response.statusText}`);
@@ -169,7 +173,8 @@ export function useDirectFMPBatchQuotes(symbols: string[], options: any = {}) {
   return useQuery({
     queryKey: ['direct', 'batch', unique],
     queryFn: async () => {
-      const response = await fetch('/api/market-data/direct/batch', {
+      const apiUrl = getApiUrl();
+      const response = await fetch(`${apiUrl}/api/market-data/direct/batch`, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
@@ -202,8 +207,9 @@ export function useDirectFMPFinancials(symbol: string, period: 'quarterly' | 'an
   return useQuery({
     queryKey: ['direct', 'financials', symbol, period],
     queryFn: async () => {
+      const apiUrl = getApiUrl();
       const periodParam = period === 'annual' ? 'annual' : 'quarter';
-      const response = await fetch(`/api/market-data/direct/financials/${symbol}?period=${periodParam}`);
+      const response = await fetch(`${apiUrl}/api/market-data/direct/financials/${symbol}?period=${periodParam}`);
       
       if (!response.ok) {
         throw new Error(`Failed to fetch direct financials: ${response.statusText}`);

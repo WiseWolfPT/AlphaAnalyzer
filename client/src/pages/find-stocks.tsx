@@ -253,7 +253,7 @@ export default function FindStocks() {
   const [useRealtime, setUseRealtime] = useState(true);
   const [activeFilter, setActiveFilter] = useState<string>('all');
   const [sortBy, setSortBy] = useState<string>('alphabetical');
-  const [useDirectFMP, setUseDirectFMP] = useState(false); // Disable polling when using WebSocket
+  const [useDirectFMP, setUseDirectFMP] = useState(true); // Enable direct FMP API for real prices
   const [useWebSocket, setUseWebSocket] = useState(false); // Disable WebSocket since it's not working
   const [advancedFilters, setAdvancedFilters] = useState<FilterOptions>({ sectors: [] });
   
