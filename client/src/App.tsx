@@ -142,7 +142,7 @@ const AdvancedCharts = createLazyComponent(
 
 // Portfolio management micro-bundles
 const Portfolios = createLazyComponent(
-  () => import("@/pages/portfolios-enhanced"),
+  () => import("@/pages/portfolios"),
   {
     name: 'Portfolios'
   }
