@@ -27,6 +27,7 @@ import { DebugModeToggle } from "@/components/debug/debug-mode-toggle";
 // Currency Context imports
 import { CurrencyProvider } from './contexts/currency-context';
 import { PortfolioProvider } from './contexts/portfolio-context';
+import { PortfolioProvider as PortfolioManagerProvider } from './contexts/portfolio-manager';
 
 // GDPR Compliance
 import { CookieConsentBanner } from '@/components/gdpr/cookie-consent-banner';
@@ -141,7 +142,7 @@ const AdvancedCharts = createLazyComponent(
 
 // Portfolio management micro-bundles
 const Portfolios = createLazyComponent(
-  () => import("@/pages/portfolios"),
+  () => import("@/pages/portfolios-enhanced"),
   {
     name: 'Portfolios'
   }
@@ -524,27 +525,29 @@ function App() {
   return (
     <DebugErrorBoundary>
       <CurrencyProvider>
-        <FinancialWidgetErrorBoundary>
-          <EnhancedErrorBoundary context="Root Application">
-            <QueryClientProvider client={queryClient}>
-              <QueryDebugWrapper queryClient={queryClient}>
-                <ThemeProvider defaultTheme="dark" storageKey="alfalyzer-theme">
-                  <NotificationToast />
-                  <Toaster />
-                  <DebugModeToggle />
-                  <Router />
-                  <CookieConsentBanner />
-                  <ReactQueryDevtools 
-                    initialIsOpen={false} 
-                    buttonPosition="bottom-right"
-                    position="bottom"
-                  />
-                </ThemeProvider>
-              </QueryDebugWrapper>
-            </QueryClientProvider>
-          </EnhancedErrorBoundary>
-      </FinancialWidgetErrorBoundary>
-    </CurrencyProvider>
+        <PortfolioManagerProvider>
+          <FinancialWidgetErrorBoundary>
+            <EnhancedErrorBoundary context="Root Application">
+              <QueryClientProvider client={queryClient}>
+                <QueryDebugWrapper queryClient={queryClient}>
+                  <ThemeProvider defaultTheme="dark" storageKey="alfalyzer-theme">
+                    <NotificationToast />
+                    <Toaster />
+                    <DebugModeToggle />
+                    <Router />
+                    <CookieConsentBanner />
+                    <ReactQueryDevtools 
+                      initialIsOpen={false} 
+                      buttonPosition="bottom-right"
+                      position="bottom"
+                    />
+                  </ThemeProvider>
+                </QueryDebugWrapper>
+              </QueryClientProvider>
+            </EnhancedErrorBoundary>
+          </FinancialWidgetErrorBoundary>
+        </PortfolioManagerProvider>
+      </CurrencyProvider>
     </DebugErrorBoundary>
   );
 }
