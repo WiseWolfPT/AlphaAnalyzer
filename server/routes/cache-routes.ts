@@ -7,7 +7,7 @@
 
 import { Router, Request, Response } from 'express';
 import { z } from 'zod';
-import { redditStrategy } from '../services/reddit-strategy';
+import { simpleCacheService } from '../services/simple-cache-service';
 import { logger } from '../lib/logger';
 
 const router = Router();
@@ -46,8 +46,8 @@ router.get('/quotes/:symbol', async (req: Request, res: Response) => {
 
     const { symbol } = validation.data;
     
-    // Use Reddit Strategy - user NEVER triggers API call
-    const quote = await redditStrategy.getQuoteForUser(symbol);
+    // Use simple cache service with 60s TTL
+    const quote = await simpleCacheService.getQuote(symbol);
     
     res.json({
       success: true,
@@ -82,7 +82,7 @@ router.post('/quotes/batch', async (req: Request, res: Response) => {
     const { symbols } = validation.data;
     
     // Use Reddit Strategy for batch
-    const quotes = await redditStrategy.getBatchQuotesForUser(symbols);
+    const quotes = await simpleCacheService.getBatchQuotes(symbols);
     
     res.json({
       success: true,
@@ -209,9 +209,8 @@ router.get('/historical/:symbol/:period', async (req: Request, res: Response) =>
  */
 router.get('/status', async (req: Request, res: Response) => {
   try {
-    const queueStats = redditStrategy.getQueueStats();
-    
     // Get cache stats
+    const cacheStats = await simpleCacheService.getCacheStats();
     const { redisCacheService } = await import('../cache/redis-cache-service');
     const redisHealth = await redisCacheService.healthCheck();
     
@@ -219,9 +218,9 @@ router.get('/status', async (req: Request, res: Response) => {
       success: true,
       cache: {
         redis: redisHealth,
-        strategy: 'reddit'
+        strategy: 'simple',
+        stats: cacheStats
       },
-      queue: queueStats,
       timestamp: new Date().toISOString()
     });
     

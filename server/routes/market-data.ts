@@ -25,7 +25,7 @@ import {
   FiscalAIProvider
 } from '../services/providers';
 import { CacheService } from '../services/cache/cache-service';
-import { redditStrategy } from '../services/reddit-strategy';
+import { simpleCacheService } from '../services/simple-cache-service';
 import { threeTierCache } from '../cache/three-tier-cache';
 
 const router = Router();
@@ -107,25 +107,13 @@ router.get('/quote/:symbol',
       const { symbol } = validation.data;
       console.log(`🔍 API request for quote: ${symbol}`);
 
-      // ✅ REDDIT STRATEGY - Users NEVER trigger API calls!
-      const quote = await redditStrategy.getQuoteForUser(symbol);
+      // Use simple cache service with 60s TTL
+      const quote = await simpleCacheService.getQuote(symbol);
       
-      // If no data or stale, queue for background update
-      if (!quote || quote.isStale) {
-        return res.json({
-          symbol,
-          message: "Dados sendo atualizados... Recarregue em 1 minuto",
-          isStale: true,
-          timestamp: new Date().toISOString(),
-        });
-      }
-
-      const quoteData = quote;
-      
-      if (!quoteData) {
+      if (!quote) {
         return res.status(404).json({
           error: 'QUOTE_NOT_FOUND',
-          message: `Unable to fetch quote for ${symbol}. All providers failed.`,
+          message: `Unable to fetch quote for ${symbol}`,
           symbol,
           timestamp: new Date().toISOString(),
         });
@@ -133,13 +121,13 @@ router.get('/quote/:symbol',
 
       // Add cache information to response
       const quoteResponse = {
-        ...quoteData,
+        ...quote,
         _timestamp: Date.now(),
         _cached: true,
-        _source: 'reddit_strategy',
+        _source: 'simple_cache',
       };
 
-      console.log(`✅ Reddit Strategy: ${symbol} served from cache (provider: ${quoteData.provider || 'cached'})`);
+      console.log(`✅ Quote for ${symbol}: $${quote.price}`);
 
       res.json(quoteResponse);
     } catch (error) {
@@ -228,7 +216,7 @@ router.get('/chart/:symbol/:period',
         ...chartData,
         _timestamp: Date.now(),
         _cached: true,
-        _source: 'reddit_strategy',
+        _source: 'simple_cache',
       });
     } catch (error) {
       console.error('Chart data error:', error);
@@ -287,7 +275,7 @@ router.get('/market-status',
         ...status,
         _timestamp: Date.now(),
         _cached: true,
-        _source: 'reddit_strategy',
+        _source: 'simple_cache',
       });
     } catch (error) {
       console.error('Market status error:', error);
@@ -1129,45 +1117,31 @@ router.get('/quotes/batch',
       const results: any[] = [];
       const errors: Record<string, string> = {};
 
-      // ✅ REDDIT STRATEGY - Batch quotes from cache only!
-      const quotes = await redditStrategy.getBatchQuotesForUser(symbols);
+      // Use simple cache service with 60s TTL
+      const quotes = await simpleCacheService.getBatchQuotes(symbols);
       
       // Transform to API response format
-      for (const quote of quotes) {
-        if (quote && !quote.isStale) {
+      for (const [symbol, quote] of Object.entries(quotes)) {
+        if (quote) {
           results.push({
             ...quote,
             _timestamp: Date.now(),
             _cached: true,
-            _source: 'reddit_strategy',
+            _source: 'simple_cache',
           });
-        } else if (quote && quote.isStale) {
-          // Return stale data with indication
-          results.push({
-            ...quote,
-            _timestamp: Date.now(),
-            _cached: true,
-            _source: 'reddit_strategy',
-            _stale: true,
-          });
-        }
-      }
-
-      // Add errors for symbols that failed
-      for (const symbol of symbols) {
-        if (!results.find(r => r.symbol === symbol)) {
+        } else {
           errors[symbol] = 'Failed to fetch quote';
         }
       }
 
-      console.log(`✅ Batch quotes: ${results.length} success, ${Object.keys(errors).length} failed (via Reddit Strategy)`);
+      console.log(`✅ Batch quotes: ${results.length} success, ${Object.keys(errors).length} failed`);
 
       res.json({
         quotes: results,
         errors: Object.keys(errors).length > 0 ? errors : undefined,
         _timestamp: Date.now(),
         _cached: true,
-        _source: 'reddit_strategy',
+        _source: 'simple_cache',
       });
     } catch (error) {
       console.error('Batch quotes error:', error);

@@ -1,0 +1,261 @@
+/**
+ * Simple Cache Service - Phase 4.5 Cache Simplification
+ * 
+ * Single Redis cache layer with 60s TTL
+ * Eliminates the complex 3-layer architecture
+ * Direct FMP calls on cache miss
+ * Thundering herd protection with in-flight request tracking
+ */
+
+import { redisCacheService } from '../cache/redis-cache-service';
+import { FMPProvider } from './providers/fmp-provider';
+import { AlphaVantageProvider } from './providers/alpha-vantage-provider';
+import type { StockQuote } from '@/types/market-data';
+
+// Track in-flight requests to prevent thundering herd
+const inFlightRequests = new Map<string, Promise<StockQuote | null>>();
+
+// Cache configuration
+const CACHE_TTL = 60; // 60 seconds
+const MAX_BATCH_SIZE = 50; // FMP supports up to 50 symbols per batch
+
+// Initialize providers
+const fmpProvider = process.env.FMP_API_KEY ? new FMPProvider(process.env.FMP_API_KEY) : null;
+const alphaVantageProvider = process.env.ALPHA_VANTAGE_API_KEY ? new AlphaVantageProvider(process.env.ALPHA_VANTAGE_API_KEY) : null;
+
+class SimpleCacheService {
+  /**
+   * Get a single stock quote with caching
+   */
+  async getQuote(symbol: string): Promise<StockQuote | null> {
+    try {
+      const upperSymbol = symbol.toUpperCase();
+      const cacheKey = `quote:${upperSymbol}`;
+
+      // Check cache first
+      const cached = await redisCacheService.get<StockQuote>(cacheKey);
+      if (cached) {
+        console.log(`✅ Cache hit for ${upperSymbol}`);
+        return cached;
+      }
+
+      // Check if there's already an in-flight request for this symbol
+      const inFlight = inFlightRequests.get(upperSymbol);
+      if (inFlight) {
+        console.log(`⏳ Waiting for in-flight request for ${upperSymbol}`);
+        return await inFlight;
+      }
+
+      // Create new request and track it
+      console.log(`📡 Cache miss for ${upperSymbol}, fetching from FMP`);
+      const requestPromise = this.fetchQuoteFromAPI(upperSymbol);
+      inFlightRequests.set(upperSymbol, requestPromise);
+
+      try {
+        const quote = await requestPromise;
+        
+        // Cache the result if successful
+        if (quote) {
+          await redisCacheService.set(cacheKey, quote, CACHE_TTL);
+          console.log(`💾 Cached ${upperSymbol} for ${CACHE_TTL}s`);
+        }
+
+        return quote;
+      } finally {
+        // Clean up in-flight tracking
+        inFlightRequests.delete(upperSymbol);
+      }
+    } catch (error) {
+      console.error(`❌ Error getting quote for ${symbol}:`, error);
+      return null;
+    }
+  }
+
+  /**
+   * Get batch quotes with caching
+   */
+  async getBatchQuotes(symbols: string[]): Promise<Record<string, StockQuote>> {
+    try {
+      // Normalize symbols
+      const upperSymbols = symbols.map(s => s.toUpperCase());
+      const results: Record<string, StockQuote> = {};
+      const missingSymbols: string[] = [];
+
+      // Check cache for each symbol
+      await Promise.all(
+        upperSymbols.map(async (symbol) => {
+          const cacheKey = `quote:${symbol}`;
+          const cached = await redisCacheService.get<StockQuote>(cacheKey);
+          
+          if (cached) {
+            results[symbol] = cached;
+            console.log(`✅ Batch cache hit for ${symbol}`);
+          } else {
+            missingSymbols.push(symbol);
+          }
+        })
+      );
+
+      // Fetch missing symbols in batches
+      if (missingSymbols.length > 0) {
+        console.log(`📡 Fetching ${missingSymbols.length} missing symbols from FMP`);
+        
+        // Split into batches if needed
+        const batches = [];
+        for (let i = 0; i < missingSymbols.length; i += MAX_BATCH_SIZE) {
+          batches.push(missingSymbols.slice(i, i + MAX_BATCH_SIZE));
+        }
+
+        // Fetch each batch
+        await Promise.all(
+          batches.map(async (batch) => {
+            const batchQuotes = await this.fetchBatchQuotesFromAPI(batch);
+            
+            // Cache and store results
+            await Promise.all(
+              Object.entries(batchQuotes).map(async ([symbol, quote]) => {
+                const cacheKey = `quote:${symbol}`;
+                await redisCacheService.set(cacheKey, quote, CACHE_TTL);
+                results[symbol] = quote;
+                console.log(`💾 Batch cached ${symbol} for ${CACHE_TTL}s`);
+              })
+            );
+          })
+        );
+      }
+
+      return results;
+    } catch (error) {
+      console.error('❌ Error getting batch quotes:', error);
+      return {};
+    }
+  }
+
+  /**
+   * Fetch single quote from API (FMP with Alpha Vantage fallback)
+   */
+  private async fetchQuoteFromAPI(symbol: string): Promise<StockQuote | null> {
+    try {
+      // Try FMP first (our paid service)
+      if (fmpProvider) {
+        const fmpQuote = await fmpProvider.getQuote(symbol);
+        if (fmpQuote) {
+          return this.normalizeQuote(fmpQuote, symbol);
+        }
+      }
+
+      // Fallback to Alpha Vantage
+      if (alphaVantageProvider) {
+        console.log(`⚠️ FMP failed for ${symbol}, trying Alpha Vantage`);
+        const avQuote = await alphaVantageProvider.getQuote(symbol);
+        if (avQuote) {
+          return this.normalizeQuote(avQuote, symbol);
+        }
+      }
+
+      console.error(`❌ All APIs failed for ${symbol}`);
+      return null;
+    } catch (error) {
+      console.error(`❌ Error fetching quote for ${symbol}:`, error);
+      return null;
+    }
+  }
+
+  /**
+   * Fetch batch quotes from API
+   */
+  private async fetchBatchQuotesFromAPI(symbols: string[]): Promise<Record<string, StockQuote>> {
+    try {
+      // FMP supports batch requests
+      if (fmpProvider) {
+        const quotes = await fmpProvider.getBatchQuotes(symbols);
+        
+        // Normalize all quotes
+        const normalized: Record<string, StockQuote> = {};
+        for (const [symbol, quote] of Object.entries(quotes)) {
+          if (quote) {
+            normalized[symbol] = this.normalizeQuote(quote, symbol);
+          }
+        }
+
+        if (Object.keys(normalized).length > 0) {
+          return normalized;
+        }
+      }
+    } catch (error) {
+      console.error('❌ Error fetching batch quotes:', error);
+    }
+    
+    // Fallback: fetch individually
+    const results: Record<string, StockQuote> = {};
+    await Promise.all(
+      symbols.map(async (symbol) => {
+        const quote = await this.fetchQuoteFromAPI(symbol);
+        if (quote) {
+          results[symbol] = quote;
+        }
+      })
+    );
+    
+    return results;
+  }
+
+  /**
+   * Normalize quote data to ensure consistent format
+   */
+  private normalizeQuote(quote: any, symbol: string): StockQuote {
+    return {
+      symbol: symbol.toUpperCase(),
+      price: Number(quote.price || quote.latestPrice || 0),
+      change: Number(quote.change || quote.priceChange || 0),
+      changePercent: Number(quote.changePercent || quote.changePercentage || 0),
+      volume: Number(quote.volume || 0),
+      marketCap: Number(quote.marketCap || 0),
+      peRatio: Number(quote.peRatio || quote.pe || 0),
+      high: Number(quote.high || quote.dayHigh || 0),
+      low: Number(quote.low || quote.dayLow || 0),
+      open: Number(quote.open || 0),
+      previousClose: Number(quote.previousClose || quote.prevClose || 0),
+      updatedAt: new Date().toISOString()
+    };
+  }
+
+  /**
+   * Clear cache for a symbol
+   */
+  async clearCache(symbol?: string): Promise<void> {
+    if (symbol) {
+      const cacheKey = `quote:${symbol.toUpperCase()}`;
+      await redisCacheService.delete(cacheKey);
+      console.log(`🗑️ Cleared cache for ${symbol}`);
+    } else {
+      // Clear all quote cache keys
+      const keys = await redisCacheService.keys('quote:*');
+      if (keys.length > 0) {
+        await Promise.all(keys.map(key => redisCacheService.delete(key)));
+        console.log(`🗑️ Cleared ${keys.length} cached quotes`);
+      }
+    }
+  }
+
+  /**
+   * Get cache statistics
+   */
+  async getCacheStats(): Promise<{
+    cacheSize: number;
+    memoryUsage: string;
+    ttl: number;
+  }> {
+    const keys = await redisCacheService.keys('quote:*');
+    const health = await redisCacheService.healthCheck();
+    
+    return {
+      cacheSize: keys.length,
+      memoryUsage: health.memoryUsage ? `${(health.memoryUsage / 1024 / 1024).toFixed(2)}MB` : 'N/A',
+      ttl: CACHE_TTL
+    };
+  }
+}
+
+// Export singleton instance
+export const simpleCacheService = new SimpleCacheService();

@@ -167,12 +167,12 @@ export default function StockDetail() {
     eps: detailedMetrics?.eps?.toFixed(2) || metrics?.eps?.toFixed(2),
     roe: detailedMetrics?.roe ? `${(detailedMetrics.roe * 100).toFixed(2)}%` : 
          metrics?.roe ? `${(metrics.roe * 100).toFixed(2)}%` : undefined,
-    // Use cached quote for price data - cachedQuote contains { success, data, cached, strategy }
-    price: cachedQuote?.data?.price || mockData.price,
-    change: cachedQuote?.data?.change || mockData.change,
-    changePercent: cachedQuote?.data?.changePercent || mockData.changePercent,
-    volume: cachedQuote?.data?.volume ? `${(cachedQuote.data.volume / 1e6).toFixed(1)}M` : mockData.volume,
-    dayRange: cachedQuote?.data ? `${cachedQuote.data.low?.toFixed(2)} - ${cachedQuote.data.high?.toFixed(2)}` : mockData.dayRange,
+    // Use cached quote for price data - NO MOCK FALLBACK
+    price: cachedQuote?.data?.price || 0,
+    change: cachedQuote?.data?.change || 0,
+    changePercent: cachedQuote?.data?.changePercent || 0,
+    volume: cachedQuote?.data?.volume ? `${(cachedQuote.data.volume / 1e6).toFixed(1)}M` : '0M',
+    dayRange: cachedQuote?.data ? `${cachedQuote.data.low?.toFixed(2)} - ${cachedQuote.data.high?.toFixed(2)}` : '0.00 - 0.00',
     yearRange: detailedMetrics ? `${detailedMetrics['52WeekLow']?.toFixed(2)} - ${detailedMetrics['52WeekHigh']?.toFixed(2)}` : 
                metrics ? `${metrics['52WeekLow']?.toFixed(2)} - ${metrics['52WeekHigh']?.toFixed(2)}` : mockData.yearRange,
   } : mockData;

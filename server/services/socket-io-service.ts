@@ -6,7 +6,7 @@
 import { Server } from 'http';
 import { Server as SocketIOServer } from 'socket.io';
 import { logger } from '../lib/logger';
-import { redditStrategy } from './reddit-strategy';
+import { simpleCacheService } from './simple-cache-service';
 
 export class SocketIOService {
   private io: SocketIOServer | null = null;

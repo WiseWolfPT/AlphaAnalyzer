@@ -810,18 +810,8 @@ async function initializeMarketDataServices() {
         console.error('⚠️ WARNING: Database may exceed 500MB limit without cleanup!');
       });
       
-      // CRITICAL: Initialize Reddit Strategy (Users NEVER trigger API calls)
-      console.log('🔄 Attempting to initialize Reddit Strategy...');
-      import('./services/reddit-strategy').then(({ redditStrategy }) => {
-        console.log('✅ Reddit Strategy module loaded successfully');
-        redditStrategy.initializeCronJobs();
-        console.log('🎯 Reddit Strategy initialized - Users will NEVER trigger API calls');
-        console.log('📊 Queue processing will run every minute');
-      }).catch(error => {
-        console.error('❌ Reddit Strategy failed to start:', error);
-        console.error('Error details:', error.stack);
-        console.warn('⚠️ Falling back to direct API calls (not recommended)');
-      });
+      // Reddit Strategy removed - using simple cache service now
+      console.log('✅ Cache simplified to single Redis layer with 60s TTL');
       
       // AGENT 5: Initialize Keep-Alive Service to prevent cold starts
       if (process.env.ENABLE_KEEP_ALIVE !== 'false') {

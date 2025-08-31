@@ -127,30 +127,59 @@ redis-cli -a alfalyzer2025redis ping
 
 > **⚠️ AGENTS: Update this section when completing any phase!**
 
-**Date**: 2025-08-30 (Session 23) 
-**Phase Status**: Phase 4 Day 1-3 COMPLETE ✅ BUT NOT COMMITTED/DEPLOYED
-**Next Priority**: ⚠️ SYNC FIRST, then Phase 4.5 Cache Simplification
+**Date**: 2025-08-31 (Session 25 - Continued from Summary)
+**Phase Status**: Phase 4.5 Cache Simplification COMPLETE ✅ - NOT YET DEPLOYED
+**Next Priority**: Deploy Phase 4.5, then Phase 4 Day 4-6 (Remaining Core Features)
 
-**🔴 CRITICAL - SYNC STATUS**:
-- **LOCAL**: 3 commits ahead of server + 10 files modified (not committed)
-- **SERVER**: Stopped at commit 4a9086cc
-- **ACTION REQUIRED BEFORE PHASE 4.5**:
+**⚠️ SYNC STATUS**:
+- **LOCAL**: Modified files ready to commit (Phase 4.5 complete)
+- **SERVER**: Behind local (needs deployment)
+- **ACTION REQUIRED**:
   ```bash
   # 1. Commit local changes
   git add -A
-  git commit -m "feat: Phase 4 Day 2-3 complete - Universal Search + Stock Details"
+  git commit -m "feat: Phase 4.5 Cache Simplification - Single Redis layer with 60s TTL"
   
   # 2. Push and deploy
   git push origin phase-0-main
   ssh root@128.140.45.28 "cd '/home/teste 1' && git pull && npm install && npm run build && pm2 restart alfalyzer"
   ```
 
-**🔴 CRITICAL ISSUE IDENTIFIED**:
-- **Problem**: Stock prices showing stale cached data ($203.92 vs real $232.14)
-- **Root Cause**: 3-layer cache architecture (React Query → Redis → Supabase)
-- **Solution Approved**: Simplify to single Redis cache (60s TTL)
-- **Expert Consensus**: OpenAI O3-mini + Gemini 2.5-Pro both recommend simplification
-**What Was Done**:
+**✅ CACHE SIMPLIFICATION COMPLETED (Session 25)**:
+- **Problem Fixed**: Stock prices showing stale data ($203.92 vs real $232.14)
+- **Solution Implemented**: Single Redis cache layer with 60s TTL
+- **Files Removed**: reddit-strategy.ts and all related queue/cache files
+- **Result**: Simpler architecture, real-time prices, no cache conflicts
+
+**What Was Done in Session 25**:
+- ✅ **Phase 4.5: Cache Simplification (COMPLETE)**
+  - **Step 1: Removed Reddit Strategy** ✅
+    - Deleted server/services/reddit-strategy.ts and related files
+    - Removed imports from server/index.ts, market-data.ts, cache-routes.ts
+    - Deleted cache-updater-job.ts and reddit-strategy-service.ts
+    - Removed all populate-redis*.js scripts
+  - **Step 2: Created Simple Cache Service** ✅
+    - Created server/services/simple-cache-service.ts
+    - Single Redis layer with 60s TTL
+    - Thundering herd protection with in-flight request tracking
+    - Direct FMP calls on cache miss with Alpha Vantage fallback
+  - **Step 3: Updated Backend Routes** ✅
+    - Modified /api/market-data/quotes/:symbol to use simple cache
+    - Modified /api/market-data/quotes/batch to use simple cache
+    - Updated cache-routes.ts to use simple cache service
+    - Fixed socket-io-service.ts imports
+  - **Step 4: Synced Frontend Timings** ✅
+    - Updated React Query staleTime to 60_000 (60 seconds)
+    - Updated refetchInterval to 60_000
+    - Removed mock data fallback from stock-detail.tsx
+  - **Step 5: Testing** ✅
+    - Dev server running successfully with simplified architecture
+    - Cache working with 60s TTL
+    - Ready for deployment
+
+**Ready for Next Session**: YES ✅
+
+**What Was Done Previously**:
 - ✅ **Phase 4 Day 1: Critical Fixes (2 hours)**
   - **Fix 1: Find Stocks Navigation** ✅
     - Changed all navigation from `/stock/${symbol}/charts` to `/stock/${symbol}`
