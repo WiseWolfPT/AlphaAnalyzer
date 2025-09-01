@@ -218,6 +218,11 @@ const csrfProtection = (req: Request, res: Response, next: NextFunction) => {
     return next();
   }
 
+  // Skip CSRF for market-data routes (public data endpoints)
+  if (req.path.startsWith('/api/market-data/')) {
+    return next();
+  }
+
   // Skip in development mode for API testing
   if (process.env.NODE_ENV !== 'production') {
     return next();

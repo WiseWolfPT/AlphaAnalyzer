@@ -8,7 +8,7 @@ export const stocksApi = {
     if (limit) params.append('limit', limit.toString());
     if (offset) params.append('offset', offset.toString());
     
-    const response = await apiRequest("GET", `/api/stocks?${params}`);
+    const response = await apiRequest("GET", `/stocks?${params}`);
     return response.json();
   },
 
@@ -16,17 +16,17 @@ export const stocksApi = {
     const params = new URLSearchParams({ q: query });
     if (limit) params.append('limit', limit.toString());
     
-    const response = await apiRequest("GET", `/api/stocks/search?${params}`);
+    const response = await apiRequest("GET", `/stocks/search?${params}`);
     return response.json();
   },
 
   getBySymbol: async (symbol: string): Promise<Stock> => {
-    const response = await apiRequest("GET", `/api/stocks/${symbol}`);
+    const response = await apiRequest("GET", `/stocks/${symbol}`);
     return response.json();
   },
 
   create: async (stock: Partial<Stock>): Promise<Stock> => {
-    const response = await apiRequest("POST", "/api/stocks", stock);
+    const response = await apiRequest("POST", "/stocks", stock);
     return response.json();
   }
 };
@@ -37,33 +37,33 @@ export const watchlistsApi = {
     const params = new URLSearchParams();
     if (userId) params.append('userId', userId);
     
-    const response = await apiRequest("GET", `/api/watchlists?${params}`);
+    const response = await apiRequest("GET", `/watchlists?${params}`);
     return response.json();
   },
 
   create: async (name: string, userId?: string): Promise<Watchlist> => {
-    const response = await apiRequest("POST", "/api/watchlists", { name, userId });
+    const response = await apiRequest("POST", "/watchlists", { name, userId });
     return response.json();
   },
 
   delete: async (id: number): Promise<void> => {
-    await apiRequest("DELETE", `/api/watchlists/${id}`);
+    await apiRequest("DELETE", `/watchlists/${id}`);
   },
 
   getStocks: async (watchlistId: number): Promise<any[]> => {
-    const response = await apiRequest("GET", `/api/watchlists/${watchlistId}/stocks`);
+    const response = await apiRequest("GET", `/watchlists/${watchlistId}/stocks`);
     return response.json();
   },
 
   addStock: async (watchlistId: number, stockSymbol: string): Promise<any> => {
-    const response = await apiRequest("POST", `/api/watchlists/${watchlistId}/stocks`, {
+    const response = await apiRequest("POST", `/watchlists/${watchlistId}/stocks`, {
       stockSymbol
     });
     return response.json();
   },
 
   removeStock: async (watchlistId: number, stockSymbol: string): Promise<void> => {
-    await apiRequest("DELETE", `/api/watchlists/${watchlistId}/stocks/${stockSymbol}`);
+    await apiRequest("DELETE", `/watchlists/${watchlistId}/stocks/${stockSymbol}`);
   }
 };
 
@@ -73,12 +73,12 @@ export const intrinsicValueApi = {
     const params = new URLSearchParams();
     if (limit) params.append('limit', limit.toString());
     
-    const response = await apiRequest("GET", `/api/intrinsic-values?${params}`);
+    const response = await apiRequest("GET", `/intrinsic-values?${params}`);
     return response.json();
   },
 
   getBySymbol: async (symbol: string): Promise<IntrinsicValue> => {
-    const response = await apiRequest("GET", `/api/intrinsic-values/${symbol}`);
+    const response = await apiRequest("GET", `/intrinsic-values/${symbol}`);
     return response.json();
   },
 
@@ -91,12 +91,12 @@ export const intrinsicValueApi = {
     requiredReturn?: number;
     marginOfSafety?: number;
   }): Promise<any> => {
-    const response = await apiRequest("POST", "/api/intrinsic-values/calculate", params);
+    const response = await apiRequest("POST", "/intrinsic-values/calculate", params);
     return response.json();
   },
 
   create: async (intrinsicValue: Partial<IntrinsicValue>): Promise<IntrinsicValue> => {
-    const response = await apiRequest("POST", "/api/intrinsic-values", intrinsicValue);
+    const response = await apiRequest("POST", "/intrinsic-values", intrinsicValue);
     return response.json();
   }
 };
@@ -107,12 +107,12 @@ export const earningsApi = {
     const params = new URLSearchParams();
     if (limit) params.append('limit', limit.toString());
     
-    const response = await apiRequest("GET", `/api/earnings?${params}`);
+    const response = await apiRequest("GET", `/earnings?${params}`);
     return response.json();
   },
 
   getBySymbol: async (symbol: string): Promise<Earnings[]> => {
-    const response = await apiRequest("GET", `/api/earnings/${symbol}`);
+    const response = await apiRequest("GET", `/earnings/${symbol}`);
     return response.json();
   }
 };
@@ -124,12 +124,12 @@ export const recentSearchesApi = {
     if (userId) params.append('userId', userId);
     if (limit) params.append('limit', limit.toString());
     
-    const response = await apiRequest("GET", `/api/recent-searches?${params}`);
+    const response = await apiRequest("GET", `/recent-searches?${params}`);
     return response.json();
   },
 
   add: async (symbol: string, name: string, userId?: string): Promise<any> => {
-    const response = await apiRequest("POST", "/api/recent-searches", {
+    const response = await apiRequest("POST", "/recent-searches", {
       symbol,
       name,
       userId

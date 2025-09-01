@@ -238,7 +238,7 @@ export function useCalculation<T>(
         // Validate inputs before calculation
         validateCalculationInputs(calculationType, inputs);
         
-        const result = await calculationAPI.post('/api/intrinsic-values/calculate', inputs);
+        const result = await calculationAPI.post('/intrinsic-values/calculate', inputs);
         return result.data;
       } catch (error) {
         const calculationError = ErrorFactory.createCalculationError(

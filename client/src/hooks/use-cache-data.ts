@@ -166,7 +166,8 @@ export function useDirectFMPQuote(symbol: string, options = {}) {
   });
 }
 
-// PHASE 2: Direct FMP batch quotes (no cache)
+// PHASE 2: Direct FMP batch quotes (no cache) 
+// Fixed to use the correct working endpoint with GET method
 export function useDirectFMPBatchQuotes(symbols: string[], options: any = {}) {
   const unique = Array.from(new Set(symbols)).filter(Boolean);
 
@@ -174,11 +175,12 @@ export function useDirectFMPBatchQuotes(symbols: string[], options: any = {}) {
     queryKey: ['direct', 'batch', unique],
     queryFn: async () => {
       const apiUrl = getApiUrl();
+      // Use POST to /direct/batch endpoint for real FMP data
       const response = await fetch(`${apiUrl}/api/market-data/direct/batch`, {
         method: 'POST',
         headers: { 
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify({ symbols: unique })
       });
@@ -189,7 +191,7 @@ export function useDirectFMPBatchQuotes(symbols: string[], options: any = {}) {
       
       const data = await response.json();
       return {
-        quotes: data.quotes || [],
+        quotes: data.quotes || data || [],
         _source: 'fmp_direct',
         _cached: false
       };

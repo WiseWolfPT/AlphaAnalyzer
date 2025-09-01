@@ -23,28 +23,60 @@ export interface ApiResponse<T = any> {
 class ApiClient {
   private client: AxiosInstance;
   private coldStartHandlers: Set<(isColdStart: boolean) => void> = new Set();
+  private csrfToken: string | null = null;
+  private csrfTokenPromise: Promise<string> | null = null;
 
   constructor() {
-    // Force absolute URL in development to bypass Vite proxy
-    const baseURL = import.meta.env.DEV ? 'http://localhost:3001' : API_CONFIG.baseURL;
+    // Use appropriate baseURL for each environment
+    const baseURL = import.meta.env.DEV 
+      ? 'http://localhost:3001' 
+      : ''; // In production, use relative URLs (same origin)
     
     this.client = axios.create({
       baseURL,
       timeout: API_CONFIG.timeout,
       headers: API_CONFIG.headers,
-      // Ensure axios doesn't strip the baseURL
-      transformRequest: [(data, headers) => {
-        return data;
-      }, ...axios.defaults.transformRequest as any],
+      withCredentials: true, // Enable cookies for CSRF
     });
 
     this.setupInterceptors();
+    // Fetch CSRF token on initialization in production
+    if (!import.meta.env.DEV) {
+      this.fetchCsrfToken();
+    }
+  }
+
+  private async fetchCsrfToken(): Promise<string> {
+    // If we're already fetching, wait for that promise
+    if (this.csrfTokenPromise) {
+      return this.csrfTokenPromise;
+    }
+
+    // If we have a valid token, return it
+    if (this.csrfToken) {
+      return this.csrfToken;
+    }
+
+    // Start fetching
+    this.csrfTokenPromise = this.client.get('/api/csrf-token')
+      .then(response => {
+        this.csrfToken = response.data.csrfToken;
+        this.csrfTokenPromise = null;
+        return this.csrfToken!;
+      })
+      .catch(error => {
+        console.error('Failed to fetch CSRF token:', error);
+        this.csrfTokenPromise = null;
+        throw error;
+      });
+
+    return this.csrfTokenPromise;
   }
 
   private setupInterceptors() {
     // Request interceptor
     this.client.interceptors.request.use(
-      (config) => {
+      async (config) => {
         // Add auth token if available
         const token = this.getAuthToken();
         if (token) {
@@ -54,6 +86,20 @@ class ApiClient {
         // Add API key for market data endpoints
         if (config.url?.includes('/market-data/')) {
           config.headers['X-API-Key'] = 'alfalyzer-mkt-2025-secure-key';
+        }
+
+        // Add CSRF token for state-changing requests in production
+        if (!import.meta.env.DEV && 
+            config.method && 
+            ['POST', 'PUT', 'DELETE', 'PATCH'].includes(config.method.toUpperCase()) &&
+            !config.url?.includes('/csrf-token')) {
+          try {
+            const csrfToken = await this.fetchCsrfToken();
+            config.headers['X-CSRF-Token'] = csrfToken;
+          } catch (error) {
+            console.warn('Could not fetch CSRF token:', error);
+            // Continue without CSRF token - server will reject if required
+          }
         }
 
         // Add request timestamp for cold start detection

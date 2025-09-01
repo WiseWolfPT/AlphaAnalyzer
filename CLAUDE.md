@@ -49,18 +49,54 @@ Financial analysis platform with real-time market data, earnings transcripts, an
 - **Redis:** 127.0.0.1:6379 (password: alfalyzer2025redis)
 - **PM2 Process:** alfalyzer
 
-## ARCHITECTURE
+## ARCHITECTURE (UPDATED 2025-09-01)
 
+### Arquitetura Híbrida Viável - €18.78/mês Total
 ```
-Frontend + Backend (Hetzner/PM2) → Supabase
-                                 ↘ External APIs
+┌─────────────────────────────────────────┐
+│         1000+ Utilizadores              │
+└─────────────┬───────────────────────────┘
+              │
+              ▼
+┌─────────────────────────────────────────┐
+│     NGINX (Hetzner - Port 443/80)       │
+└─────────────┬───────────────────────────┘
+              │
+              ▼
+┌─────────────────────────────────────────┐
+│    EXPRESS BACKEND (Hetzner:3001)       │
+│    RAM: 200MB                           │
+├─────────────────────────────────────────┤
+│  ┌─────────────┐  ┌──────────────────┐ │
+│  │Redis Local  │  │PostgreSQL Local  │ │
+│  │RAM: 256MB   │  │RAM: 500MB        │ │
+│  └─────────────┘  └──────────────────┘ │
+│                                         │
+│  ┌────────────────────────────────────┐ │
+│  │   Supabase Free (Remoto)           │ │
+│  │   - Auth (Login/Register)          │ │
+│  │   - User Profiles (Leve)           │ │
+│  └────────────────────────────────────┘ │
+└─────────────────────────────────────────┘
 ```
+
+**Recursos Confirmados (Hetzner CX22):**
+- CPU: 2 vCPUs ✅ Suficiente
+- RAM: 4 GB (1.5 GB usado, 2.5 GB livre) ✅
+- Disco: 40 GB (5 GB usado, 35 GB livre) ✅
+- Capacidade: 1000-2000 users simultâneos
+
+**Data Distribution:**
+- **Redis Local**: Cache temporário (preços, news) - TTL 60s a 24h
+- **PostgreSQL Local**: Dados pesados (transcripts, portfolios, AI analysis)
+- **Supabase Free**: Apenas auth + profiles leves
 
 **Patterns:**
 - 3-tier backend: Controllers → Services → Repositories
 - API rotation with automatic fallback
-- Aggressive caching (5min prices, 1hr fundamentals)
+- Single Redis cache layer (60s TTL for prices)
 - Shared types in `/shared` directory
+- Worker updates cache proactively every 60s
 
 ## KEY CONVENTIONS
 
@@ -216,4 +252,4 @@ Key variables:
    - Only in test files, not blocking production
 
 ---
-Last updated: 2025-08-19
+Last updated: 2025-09-01
