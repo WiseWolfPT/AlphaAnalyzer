@@ -254,7 +254,7 @@ function ComparisonCard({
         {/* Current Price */}
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <span className="text-2xl font-bold">${calculations.currentPrice.toFixed(2)}</span>
+            <span className="text-2xl font-bold">${calculations.currentPrice?.toFixed(2) || '0.00'}</span>
             <Badge 
               variant={calculations.isPositive ? "default" : "secondary"}
               className={cn(
@@ -263,7 +263,7 @@ function ComparisonCard({
                   : "bg-red-500/10 text-red-600"
               )}
             >
-              {calculations.isPositive ? '+' : ''}{calculations.changePercent.toFixed(1)}%
+              {calculations.isPositive ? '+' : ''}{calculations.changePercent?.toFixed(1) || '0.0'}%
             </Badge>
           </div>
         </div>
@@ -277,7 +277,7 @@ function ComparisonCard({
             </div>
             {ivLoading ? (
               <div className="w-4 h-4 border border-teya-green border-t-transparent rounded-full animate-spin" />
-            ) : intrinsicValue ? (
+            ) : intrinsicValue !== null && intrinsicValue !== undefined && typeof intrinsicValue === 'number' ? (
               <span className="text-sm font-bold text-teya-green">
                 ${intrinsicValue.toFixed(2)}
               </span>
@@ -313,7 +313,7 @@ function ComparisonCard({
                 "text-xs font-medium",
                 calculations.isUndervalued ? "text-green-600" : "text-red-600"
               )}>
-                {calculations.valuationDiff > 0 ? '+' : ''}{calculations.valuationDiff.toFixed(1)}%
+                {calculations.valuationDiff > 0 ? '+' : ''}{calculations.valuationDiff?.toFixed(1) || '0.0'}%
               </span>
             </div>
           )}
@@ -402,9 +402,9 @@ function PriceVsIVRow({ symbol }: { symbol: string }) {
       <div className="flex items-center gap-3">
         <span className="font-semibold w-16">{symbol}</span>
         <div className="text-sm space-x-4">
-          <span>Preço: <span className="font-medium">${currentPrice.toFixed(2)}</span></span>
+          <span>Preço: <span className="font-medium">${currentPrice?.toFixed(2) || '0.00'}</span></span>
           <span>IV: <span className="font-medium text-teya-green">
-            {intrinsicValue ? `$${intrinsicValue.toFixed(2)}` : "N/A"}
+            {intrinsicValue && typeof intrinsicValue === 'number' ? `$${intrinsicValue.toFixed(2)}` : "N/A"}
           </span></span>
         </div>
       </div>
@@ -417,7 +417,7 @@ function PriceVsIVRow({ symbol }: { symbol: string }) {
               : "bg-red-500/10 text-red-600"
           )}
         >
-          {valuationDiff > 0 ? '+' : ''}{valuationDiff.toFixed(1)}%
+          {valuationDiff > 0 ? '+' : ''}{valuationDiff?.toFixed(1) || '0.0'}%
         </Badge>
       )}
     </div>
@@ -451,7 +451,7 @@ function PerformanceRow({ symbol }: { symbol: string }) {
           "font-semibold",
           isPositive ? "text-green-600" : "text-red-600"
         )}>
-          {isPositive ? '+' : ''}{changePercent.toFixed(2)}%
+          {isPositive ? '+' : ''}{changePercent?.toFixed(2) || '0.00'}%
         </span>
       </div>
     </div>
