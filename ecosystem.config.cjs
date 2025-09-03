@@ -2,8 +2,9 @@ module.exports = {
   apps: [
     {
       name: 'alfalyzer',
-      script: 'dist/server/index.js',
-      interpreter: 'node',
+      script: 'server/index.ts',
+      interpreter: 'npx',
+      interpreter_args: 'tsx',
       instances: 1,
       exec_mode: 'fork',
       error_file: './logs/err.log',
@@ -24,8 +25,9 @@ module.exports = {
     },
     {
       name: 'price-worker',
-      script: 'dist/server/workers/price-worker.js',
-      interpreter: 'node',
+      script: 'server/workers/price-worker.ts',
+      interpreter: 'npx',
+      interpreter_args: 'tsx',
       instances: 1,
       exec_mode: 'fork',
       error_file: './logs/worker-err.log',
