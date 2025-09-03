@@ -109,7 +109,7 @@ const BASE_URL = __ENV.BASE_URL || 'http://localhost:3001';
 const API_KEY = __ENV.API_KEY || 'test-key';
 
 // Test data for realistic scenarios
-const STOCK_SYMBOLS = ['AAPL', 'MSFT', 'GOOGL', 'AMZN', 'TSLA', 'NVDA', 'META', 'BRK.B'];
+const STOCK_SYMBOLS = ['AAPL', 'MSFT', 'GOOGL', 'AMZN', 'TSLA', 'NVDA', 'META', 'BRK-B'];
 const SEARCH_TERMS = ['apple', 'microsoft', 'tech', 'energy', 'finance'];
 
 // BASELINE TEST: Establish performance baseline with single user

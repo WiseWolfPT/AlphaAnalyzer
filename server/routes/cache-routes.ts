@@ -149,6 +149,41 @@ router.get('/fundamentals/:symbol', async (req: Request, res: Response) => {
 });
 
 /**
+ * GET /api/cache/financials/:symbol
+ * Get cached financials - queues for update if stale
+ */
+router.get('/financials/:symbol', async (req: Request, res: Response) => {
+  try {
+    const validation = symbolSchema.safeParse({ symbol: req.params.symbol });
+    if (!validation.success) {
+      return res.status(400).json({
+        error: 'INVALID_SYMBOL',
+        message: validation.error.errors[0].message
+      });
+    }
+
+    const { symbol } = validation.data;
+    const { redisCacheService } = await import('../cache/redis-cache-service');
+    const cacheKey = `financials:${symbol}`;
+    const data = await redisCacheService.get(cacheKey);
+
+    if (!data) {
+      return res.json({
+        success: true,
+        data: null,
+        message: 'Financials are being fetched. Please refresh in a moment.',
+        cached: false
+      });
+    }
+
+    res.json({ success: true, data, cached: true });
+  } catch (error) {
+    logger.error('Financials fetch error:', error);
+    res.status(500).json({ error: 'CACHE_ERROR', message: 'Failed to fetch cached financials' });
+  }
+});
+
+/**
  * GET /api/cache/historical/:symbol/:period
  * Get cached historical data
  */
@@ -200,6 +235,69 @@ router.get('/historical/:symbol/:period', async (req: Request, res: Response) =>
       error: 'CACHE_ERROR',
       message: 'Failed to fetch historical data'
     });
+  }
+});
+
+/**
+ * GET /api/cache/intrinsic-values/:symbol
+ * Read-only intrinsic value from cache/DB (no calculation)
+ */
+router.get('/intrinsic-values/:symbol', async (req: Request, res: Response) => {
+  try {
+    const validation = symbolSchema.safeParse({ symbol: req.params.symbol });
+    if (!validation.success) {
+      return res.status(400).json({
+        error: 'INVALID_SYMBOL',
+        message: validation.error.errors[0].message
+      });
+    }
+
+    const { symbol } = validation.data;
+    const { redisCacheService } = await import('../cache/redis-cache-service');
+    const cacheKey = `iv:${symbol}`;
+    const data = await redisCacheService.get(cacheKey);
+
+    if (data) {
+      return res.json({ success: true, data, cached: true });
+    }
+
+    // Optional fallback to DB for last value
+    const { storage } = await import('../storage');
+    const dbVal = await storage.getIntrinsicValue(symbol).catch(() => undefined);
+    if (dbVal) {
+      return res.json({ success: true, data: dbVal, cached: false, source: 'db' });
+    }
+
+    return res.json({ success: true, data: null, cached: false });
+  } catch (error) {
+    logger.error('IV cache fetch error:', error);
+    res.status(500).json({
+      error: 'CACHE_ERROR',
+      message: 'Failed to fetch intrinsic value'
+    });
+  }
+});
+
+// Alias endpoint for intrinsic values cache
+router.get('/iv/:symbol', async (req: Request, res: Response) => {
+  const symbolParam = req.params.symbol;
+  try {
+    const validation = symbolSchema.safeParse({ symbol: symbolParam });
+    if (!validation.success) {
+      return res.status(400).json({ error: 'INVALID_SYMBOL', message: validation.error.errors[0].message });
+    }
+    const { symbol } = validation.data;
+    const { redisCacheService } = await import('../cache/redis-cache-service');
+    const cacheKey = `iv:${symbol}`;
+    const data = await redisCacheService.get(cacheKey);
+    if (data) return res.json({ success: true, data, cached: true });
+    const { storage } = await import('../storage');
+    const dbVal = await storage.getIntrinsicValue(symbol).catch(() => undefined);
+    if (dbVal) return res.json({ success: true, data: dbVal, cached: false, source: 'db' });
+    return res.json({ success: true, data: null, cached: false });
+  } catch (error) {
+    logger.error('IV cache alias fetch error:', error);
+    res.status(500).json({ error: 'CACHE_ERROR', message: 'Failed to fetch intrinsic value' });
   }
 });
 

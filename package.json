@@ -33,7 +33,17 @@
     "deploy:quick": "npm run build && scp -r dist/* root@128.140.45.28:\"/home/teste 1/dist/\" && ssh root@128.140.45.28 \"pm2 restart alfalyzer\"",
     "ship": "npm run ship:git && npm run deploy",
     "ship:git": "git add . && git commit -m 'chore: deploy to production' && git push origin phase-0-main",
-    "ship:safe": "npm run test && npm run ship"
+    "ship:safe": "npm run test && npm run ship",
+    "smoke:prod:compare": "TARGET_URL=https://128.140.45.28.sslip.io/compare WAIT_FOR='h1:has-text(\"Compare Stocks\")' node scripts/verify-compare-playwright.mjs",
+    "smoke:prod:find": "TARGET_URL=https://128.140.45.28.sslip.io/find-stocks WAIT_FOR='h1:has-text(\"Find Stocks\")' node scripts/verify-compare-playwright.mjs",
+    "smoke:prod:stock": "TARGET_URL=https://128.140.45.28.sslip.io/stock/AAPL WAIT_FOR='h1:has-text(\"AAPL\")' node scripts/verify-compare-playwright.mjs",
+    "smoke:prod:iv": "TARGET_URL='https://128.140.45.28.sslip.io/intrinsic-value?symbol=AAPL' WAIT_FOR='h1:has-text(\"Intrinsic Value Calculator\")' node scripts/verify-compare-playwright.mjs",
+    "smoke:prod": "npm run -s smoke:prod:compare && npm run -s smoke:prod:find && npm run -s smoke:prod:stock && npm run -s smoke:prod:iv",
+    "smoke:local:compare": "BROWSER=chromium TARGET_URL=http://localhost:3000/compare WAIT_FOR='h1:has-text(\"Compare Stocks\")' node scripts/verify-compare-playwright.mjs",
+    "smoke:local:find": "BROWSER=chromium TARGET_URL=http://localhost:3000/find-stocks WAIT_FOR='h1:has-text(\"Find Stocks\")' node scripts/verify-compare-playwright.mjs",
+    "smoke:local:stock": "BROWSER=chromium TARGET_URL=http://localhost:3000/stock/AAPL WAIT_FOR='h1:has-text(\"AAPL\")' node scripts/verify-compare-playwright.mjs",
+    "smoke:local:iv": "BROWSER=chromium TARGET_URL='http://localhost:3000/intrinsic-value?symbol=AAPL' WAIT_FOR='h1:has-text(\"Intrinsic Value Calculator\")' node scripts/verify-compare-playwright.mjs",
+    "smoke:local": "npm run -s smoke:local:compare && npm run -s smoke:local:find && npm run -s smoke:local:stock && npm run -s smoke:local:iv"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.56.0",

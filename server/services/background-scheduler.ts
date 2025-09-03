@@ -54,7 +54,7 @@ export class BackgroundScheduler {
     ...this.POPULAR_STOCKS,
     'NFLX', 'PYPL', 'ADBE', 'CRM', 'INTC',
     'AMD', 'ORCL', 'IBM', 'QCOM', 'BABA',
-    'BRK.B', 'KO', 'PFE', 'MRK', 'XOM'
+    'BRK-B', 'KO', 'PFE', 'MRK', 'XOM'
   ];
 
   constructor() {

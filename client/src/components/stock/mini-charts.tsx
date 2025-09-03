@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { LightweightMiniChart } from "@/components/ui/lightweight-chart";
-import { realAPI } from "@/lib/real-api";
+import { getAPIURL } from "@/lib/api-config";
 import { cn } from "@/lib/utils";
 import type { MockStock } from "@/lib/mock-api";
 
@@ -110,54 +110,68 @@ export function MiniChart({ stock, type, height = 40, className }: MiniChartProp
 // Data generation functions
 async function generatePriceData(stock: MockStock): Promise<ChartData[]> {
   try {
-    const historicalData = await realAPI.getHistoricalData(stock.symbol, '1M');
-    
-    if (historicalData && historicalData.length > 0) {
-      return historicalData.slice(-15).map(item => ({
-        date: new Date(item.date).toLocaleDateString(),
-        value: item.price
-      }));
+    // Prefer cached historical data to avoid external API usage
+    const endpoint = getAPIURL(`/cache/historical/${encodeURIComponent(stock.symbol)}/1m`);
+    const resp = await fetch(endpoint, { credentials: 'include' });
+    if (resp.ok) {
+      const body = await resp.json();
+      const arr = body?.data || body || [];
+      if (Array.isArray(arr) && arr.length > 0) {
+        return arr.slice(-15).map((item: any) => ({
+          date: new Date(item.date || item.timestamp || Date.now()).toLocaleDateString(),
+          value: Number(item.close ?? item.price ?? item.value ?? 0)
+        }));
+      }
     }
   } catch (error) {
-    console.warn('Failed to get historical data, using fallback');
+    console.warn('Failed to get cached historical data, using fallback');
   }
-  
   return generateFallbackData(stock, 'price');
 }
 
 async function generateRevenueData(stock: MockStock): Promise<ChartData[]> {
   try {
-    const financials = await realAPI.getFinancials(stock.symbol);
-    
-    if (financials && financials.revenue) {
-      return financials.revenue.slice(-8).map(item => ({
-        date: item.quarter,
-        value: item.value,
-        label: `${item.quarter}: $${(item.value / 1000).toFixed(1)}B`
-      }));
+    // Prefer cached financials (pure read)
+    const endpoint = getAPIURL(`/cache/financials/${encodeURIComponent(stock.symbol)}`);
+    const resp = await fetch(endpoint, { credentials: 'include' });
+    if (resp.ok) {
+      const body = await resp.json();
+      const fin = body?.data || body || {};
+      const series = fin.revenue || fin.quarterlyRevenue || [];
+      if (Array.isArray(series) && series.length > 0) {
+        return series.slice(-8).map((item: any) => ({
+          date: item.quarter || item.date || '',
+          value: Number(item.value ?? item.amount ?? 0),
+          label: `${item.quarter || item.date}: $${((Number(item.value ?? item.amount ?? 0)) / 1_000).toFixed(1)}B`
+        }));
+      }
     }
   } catch (error) {
-    console.warn('Failed to get revenue data, using fallback');
+    console.warn('Failed to get cached financials (revenue), using fallback');
   }
-  
   return generateFallbackData(stock, 'revenue');
 }
 
 async function generateEarningsData(stock: MockStock): Promise<ChartData[]> {
   try {
-    const financials = await realAPI.getFinancials(stock.symbol);
-    
-    if (financials && financials.eps) {
-      return financials.eps.slice(-8).map(item => ({
-        date: item.quarter,
-        value: item.value,
-        label: `${item.quarter}: $${item.value.toFixed(2)}`
-      }));
+    // Prefer cached financials (pure read)
+    const endpoint = getAPIURL(`/cache/financials/${encodeURIComponent(stock.symbol)}`);
+    const resp = await fetch(endpoint, { credentials: 'include' });
+    if (resp.ok) {
+      const body = await resp.json();
+      const fin = body?.data || body || {};
+      const series = fin.eps || fin.quarterlyEPS || [];
+      if (Array.isArray(series) && series.length > 0) {
+        return series.slice(-8).map((item: any) => ({
+          date: item.quarter || item.date || '',
+          value: Number(item.value ?? item.amount ?? 0),
+          label: `${item.quarter || item.date}: $${Number(item.value ?? item.amount ?? 0).toFixed(2)}`
+        }));
+      }
     }
   } catch (error) {
-    console.warn('Failed to get earnings data, using fallback');
+    console.warn('Failed to get cached financials (earnings), using fallback');
   }
-  
   return generateFallbackData(stock, 'earnings');
 }
 

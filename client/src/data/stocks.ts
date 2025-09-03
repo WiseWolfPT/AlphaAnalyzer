@@ -21,7 +21,7 @@ export const ALL_STOCKS: Stock[] = [
   { symbol: 'MA', name: 'Mastercard Incorporated', sector: 'Financial', industry: 'Payment Processing' },
   { symbol: 'BAC', name: 'Bank of America Corp.', sector: 'Financial', industry: 'Banking' },
   { symbol: 'WFC', name: 'Wells Fargo & Company', sector: 'Financial', industry: 'Banking' },
-  { symbol: 'BRK.B', name: 'Berkshire Hathaway Inc.', sector: 'Financial', industry: 'Conglomerate' },
+  { symbol: 'BRK-B', name: 'Berkshire Hathaway Inc.', sector: 'Financial', industry: 'Conglomerate' },
   
   // Healthcare
   { symbol: 'JNJ', name: 'Johnson & Johnson', sector: 'Healthcare', industry: 'Pharmaceuticals' },

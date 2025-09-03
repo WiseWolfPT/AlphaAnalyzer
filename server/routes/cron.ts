@@ -22,7 +22,7 @@ router.post('/update-tier-1', async (req: Request, res: Response) => {
     // High-priority stocks
     const tier1Symbols = [
       'AAPL', 'GOOGL', 'MSFT', 'TSLA', 'AMZN', 
-      'META', 'NVDA', 'BRK.B', 'JPM', 'JNJ'
+      'META', 'NVDA', 'BRK-B', 'JPM', 'JNJ'
     ];
 
     // Add jobs to queue
@@ -158,7 +158,7 @@ router.post('/warm-cache', async (req: Request, res: Response) => {
     
     const popularSymbols = [
       'AAPL', 'GOOGL', 'MSFT', 'TSLA', 'AMZN',
-      'META', 'NVDA', 'BRK.B', 'JPM', 'JNJ'
+      'META', 'NVDA', 'BRK-B', 'JPM', 'JNJ'
     ];
     
     await jobQueue.addJob('cache_warm_up', { symbols: popularSymbols }, { priority: 8 });

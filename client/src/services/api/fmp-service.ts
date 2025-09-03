@@ -163,13 +163,11 @@ export interface FMPCashFlow {
 
 export class FMPService {
   private cache: CacheManager;
-  private apiKey: string;
-  private baseUrl: string;
+  private proxyUrl: string;
 
   constructor(cache?: CacheManager) {
     this.cache = cache || new CacheManager();
-    this.apiKey = API_CONFIG.FMP.apiKey;
-    this.baseUrl = API_CONFIG.FMP.baseUrl;
+    this.proxyUrl = API_CONFIG.FMP.proxyUrl;
   }
 
   async getKeyMetrics(symbol: string): Promise<FMPFundamentals | null> {
@@ -179,7 +177,7 @@ export class FMPService {
 
     try {
       const response = await fetch(
-        `${this.baseUrl}/key-metrics/${symbol}?apikey=${this.apiKey}`
+        `${this.proxyUrl}/key-metrics/${symbol}`
       );
 
       if (!response.ok) {
@@ -208,7 +206,7 @@ export class FMPService {
 
     try {
       const response = await fetch(
-        `${this.baseUrl}/income-statement/${symbol}?period=${period}&apikey=${this.apiKey}`
+        `${this.proxyUrl}/income-statement/${symbol}?period=${period}`
       );
 
       if (!response.ok) {
@@ -235,7 +233,7 @@ export class FMPService {
 
     try {
       const response = await fetch(
-        `${this.baseUrl}/balance-sheet-statement/${symbol}?period=${period}&apikey=${this.apiKey}`
+        `${this.proxyUrl}/balance-sheet-statement/${symbol}?period=${period}`
       );
 
       if (!response.ok) {
@@ -262,7 +260,7 @@ export class FMPService {
 
     try {
       const response = await fetch(
-        `${this.baseUrl}/cash-flow-statement/${symbol}?period=${period}&apikey=${this.apiKey}`
+        `${this.proxyUrl}/cash-flow-statement/${symbol}?period=${period}`
       );
 
       if (!response.ok) {
@@ -289,7 +287,7 @@ export class FMPService {
 
     try {
       const response = await fetch(
-        `${this.baseUrl}/profile/${symbol}?apikey=${this.apiKey}`
+        `${this.proxyUrl}/profile/${symbol}`
       );
 
       if (!response.ok) {
@@ -318,7 +316,7 @@ export class FMPService {
 
     try {
       const response = await fetch(
-        `${this.baseUrl}/quote-short/${symbol}?apikey=${this.apiKey}`
+        `${this.proxyUrl}/quote-short/${symbol}`
       );
 
       if (!response.ok) {

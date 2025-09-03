@@ -25,8 +25,8 @@ import {
   Search,
   Wifi
 } from "lucide-react";
-import { useStock, useIntrinsicValue } from "@/hooks/use-enhanced-stocks";
-import { useNormalizedStock, getStockPrice, getStockChangePercent, isStockPositive } from "@/lib/stock-data-normalizer";
+import { useCachedQuote } from "@/hooks/use-cache-data";
+import { getStockChangePercent, isStockPositive } from "@/lib/stock-data-normalizer";
 import { MiniChart } from "@/components/stock/mini-charts";
 import { useRealtimeQuote } from "@/hooks/use-realtime-quotes";
 
@@ -43,7 +43,8 @@ export default function ComparePage() {
     { symbol: "MSFT" }
   ]);
   const [searchSymbol, setSearchSymbol] = useState("");
-  const [useRealtime, setUseRealtime] = useState(true);
+  // Use cached prices by default; realtime can be toggled on
+  const [useRealtime, setUseRealtime] = useState(false);
 
   const addStock = () => {
     if (searchSymbol.trim() && comparisonStocks.length < 4) {
@@ -155,21 +156,22 @@ function ComparisonCard({
   canRemove: boolean;
   useRealtime: boolean;
 }) {
-  const { data: rawStock, isLoading: stockLoading } = useStock(symbol);
-  const { data: intrinsicValue, isLoading: ivLoading } = useIntrinsicValue(symbol);
+  // Cache-first quote to avoid exhausting external API quotas
+  const { data: cachedQuote, isLoading: stockLoading } = useCachedQuote(symbol);
+  // Public compare view: skip intrinsic value API (auth-required)
+  const intrinsicValue: number | null = null;
+  const ivLoading = false;
   const { quote: realtimeQuote, isConnected } = useRealtimeQuote(symbol, {
     enabled: useRealtime
   });
   
-  const stock = useNormalizedStock(rawStock);
-  
   const calculations = useMemo(() => {
-    if (!stock && !realtimeQuote) return null;
+    if (!cachedQuote?.data && !realtimeQuote) return null;
     
-    // Use realtime data if available, otherwise fall back to stock data
-    const currentPrice = realtimeQuote?.price || getStockPrice(stock);
-    const changePercent = realtimeQuote?.change_percent || getStockChangePercent(stock);
-    const isPositive = realtimeQuote ? realtimeQuote.change >= 0 : isStockPositive(stock);
+    // Use realtime data if available, otherwise fall back to cached quote
+    const currentPrice = realtimeQuote?.price || cachedQuote?.data?.price || 0;
+    const changePercent = realtimeQuote?.change_percent ?? (cachedQuote?.data?.changePercent ?? 0);
+    const isPositive = realtimeQuote ? (realtimeQuote.change >= 0) : ((cachedQuote?.data?.changePercent ?? 0) >= 0);
     
     const valuationDiff = intrinsicValue ? 
       ((currentPrice - intrinsicValue) / intrinsicValue) * 100 : 
@@ -185,7 +187,7 @@ function ComparisonCard({
       valuationDiff,
       isUndervalued
     };
-  }, [stock, intrinsicValue, realtimeQuote]);
+  }, [cachedQuote, intrinsicValue, realtimeQuote]);
 
   if (stockLoading) {
     return (
@@ -198,7 +200,7 @@ function ComparisonCard({
     );
   }
 
-  if (!stock || !calculations) {
+  if (!calculations) {
     return (
       <Card className="h-[400px] flex items-center justify-center">
         <div className="text-center">
@@ -243,9 +245,7 @@ function ComparisonCard({
           </div>
           <div>
             <CardTitle className="text-lg">{symbol}</CardTitle>
-            <p className="text-sm text-muted-foreground truncate">
-              {stock.name || "Company Name"}
-            </p>
+            <p className="text-sm text-muted-foreground truncate">Company</p>
           </div>
         </div>
       </CardHeader>
@@ -326,7 +326,7 @@ function ComparisonCard({
             <BarChart3 className="h-3 w-3 text-muted-foreground" />
           </div>
           <div className="h-16 border border-border/50 rounded">
-            <MiniChart stock={stock} type="price" height={60} />
+            <MiniChart stock={{ symbol, price: String(calculations.currentPrice ?? 0) } as any} type="price" height={60} />
           </div>
         </div>
 
@@ -334,11 +334,11 @@ function ComparisonCard({
         <div className="space-y-2 text-sm">
           <div className="flex justify-between">
             <span className="text-muted-foreground">Market Cap</span>
-            <span className="font-medium">{stock.marketCap || "N/A"}</span>
+            <span className="font-medium">{cachedQuote?.data?.marketCap ? `$${Number(cachedQuote.data.marketCap).toLocaleString()}` : "N/A"}</span>
           </div>
           <div className="flex justify-between">
             <span className="text-muted-foreground">P/E Ratio</span>
-            <span className="font-medium">{stock.pe || "N/A"}</span>
+            <span className="font-medium">{cachedQuote?.data?.pe ?? "N/A"}</span>
           </div>
         </div>
       </CardContent>
@@ -387,13 +387,10 @@ function ComparisonCharts({ stocks }: { stocks: ComparisonStock[] }) {
 }
 
 function PriceVsIVRow({ symbol }: { symbol: string }) {
-  const { data: rawStock } = useStock(symbol);
-  const { data: intrinsicValue } = useIntrinsicValue(symbol);
-  const stock = useNormalizedStock(rawStock);
+  const { data: cachedQuote } = useCachedQuote(symbol);
+  const intrinsicValue: number | null = null; // Public compare – IV not fetched
   
-  if (!stock) return null;
-  
-  const currentPrice = getStockPrice(stock);
+  const currentPrice = cachedQuote?.data?.price ?? 0;
   const valuationDiff = intrinsicValue ? 
     ((currentPrice - intrinsicValue) / intrinsicValue) * 100 : null;
   
@@ -402,7 +399,7 @@ function PriceVsIVRow({ symbol }: { symbol: string }) {
       <div className="flex items-center gap-3">
         <span className="font-semibold w-16">{symbol}</span>
         <div className="text-sm space-x-4">
-          <span>Preço: <span className="font-medium">${currentPrice?.toFixed(2) || '0.00'}</span></span>
+          <span>Preço: <span className="font-medium">${(currentPrice ?? 0).toFixed(2)}</span></span>
           <span>IV: <span className="font-medium text-teya-green">
             {intrinsicValue && typeof intrinsicValue === 'number' ? `$${intrinsicValue.toFixed(2)}` : "N/A"}
           </span></span>
@@ -425,20 +422,17 @@ function PriceVsIVRow({ symbol }: { symbol: string }) {
 }
 
 function PerformanceRow({ symbol }: { symbol: string }) {
-  const { data: rawStock } = useStock(symbol);
-  const stock = useNormalizedStock(rawStock);
+  const { data: cachedQuote } = useCachedQuote(symbol);
   
-  if (!stock) return null;
-  
-  const changePercent = getStockChangePercent(stock);
-  const isPositive = isStockPositive(stock);
+  const changePercent = cachedQuote?.data?.changePercent ?? 0;
+  const isPositive = (changePercent ?? 0) >= 0;
   
   return (
     <div className="flex items-center justify-between p-3 bg-secondary/20 rounded-lg">
       <div className="flex items-center gap-3">
         <span className="font-semibold w-16">{symbol}</span>
         <div className="text-sm">
-          Market Cap: <span className="font-medium">{stock.marketCap || "N/A"}</span>
+          Market Cap: <span className="font-medium">{cachedQuote?.data?.marketCap ? `$${Number(cachedQuote.data.marketCap).toLocaleString()}` : "N/A"}</span>
         </div>
       </div>
       <div className="flex items-center gap-2">

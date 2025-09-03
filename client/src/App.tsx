@@ -204,10 +204,7 @@ const Compare = createLazyComponent(
   () => import("@/pages/compare"),
   {
     name: 'Compare',
-    preload: [
-      () => import("@/components/stock/unified-stock-card"),
-      () => import("@/components/stock/mini-charts")
-    ]
+    // Remove heavy preloads to evitar side-effects e reduzir 404 residuais
   }
 );
 

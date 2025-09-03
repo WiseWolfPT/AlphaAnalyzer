@@ -134,7 +134,7 @@ const DEFAULT_WARMING_SCHEDULES: WarmingSchedule[] = [
 
 // Popular stocks by category
 const POPULAR_STOCKS = {
-  megaCap: ['AAPL', 'MSFT', 'GOOGL', 'AMZN', 'NVDA', 'META', 'TSLA', 'BRK.B'],
+  megaCap: ['AAPL', 'MSFT', 'GOOGL', 'AMZN', 'NVDA', 'META', 'TSLA', 'BRK-B'],
   techGrowth: ['NVDA', 'AMD', 'CRM', 'ADBE', 'NFLX', 'UBER', 'SHOP', 'SQ'],
   etfs: ['SPY', 'QQQ', 'IWM', 'VTI', 'VOO', 'VGT', 'XLK', 'SMH'],
   crypto: ['COIN', 'MSTR', 'RIOT', 'MARA', 'HUT', 'BITF'],

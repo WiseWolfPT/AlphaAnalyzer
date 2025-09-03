@@ -214,6 +214,64 @@ export async function registerRoutes(app: Express): Promise<void> {
   
   // Stock data routes
   app.use("/api", stocksRouter);
+
+  // Backward-compat alias: some bundles still call /api/api/intrinsic-values/:symbol
+  app.get("/api/api/intrinsic-values/:symbol", async (req, res) => {
+    try {
+      const symbol = String(req.params.symbol || '').toUpperCase().trim();
+      if (!symbol) return res.status(400).json({ error: 'INVALID_SYMBOL', message: 'Symbol required' });
+      const { redisCacheService } = await import('./cache/redis-cache-service');
+      const data = await redisCacheService.get(`iv:${symbol}`);
+      if (data) return res.json({ success: true, data, cached: true });
+      const { storage } = await import('./storage');
+      const dbVal = await storage.getIntrinsicValue(symbol).catch(() => undefined);
+      if (dbVal) return res.json({ success: true, data: dbVal, cached: false, source: 'db' });
+      return res.json({ success: true, data: null, cached: false });
+    } catch (error) {
+      res.status(500).json({ error: 'CACHE_ERROR', message: 'Failed to fetch intrinsic value' });
+    }
+  });
+
+  // Stub notifications to avoid 404 noise on public pages
+  app.get("/api/alerts/notifications", (req, res) => {
+    res.json([]);
+  });
+
+  // Read-only Intrinsic Value from cache/DB (no calculation)
+  app.get("/api/cache/intrinsic-values/:symbol", async (req, res) => {
+    try {
+      const symbol = String(req.params.symbol || '').toUpperCase().trim();
+      if (!symbol) return res.status(400).json({ error: 'INVALID_SYMBOL', message: 'Symbol required' });
+      const { redisCacheService } = await import('./cache/redis-cache-service');
+      const data = await redisCacheService.get(`iv:${symbol}`);
+      if (data) return res.json({ success: true, data, cached: true });
+      const { storage } = await import('./storage');
+      const dbVal = await storage.getIntrinsicValue(symbol).catch(() => undefined);
+      if (dbVal) return res.json({ success: true, data: dbVal, cached: false, source: 'db' });
+      return res.json({ success: true, data: null, cached: false });
+    } catch (error) {
+      console.error('IV cache fetch error:', error);
+      res.status(500).json({ error: 'CACHE_ERROR', message: 'Failed to fetch intrinsic value' });
+    }
+  });
+
+  // Alias: /api/cache/iv/:symbol
+  app.get("/api/cache/iv/:symbol", async (req, res) => {
+    try {
+      const symbol = String(req.params.symbol || '').toUpperCase().trim();
+      if (!symbol) return res.status(400).json({ error: 'INVALID_SYMBOL', message: 'Symbol required' });
+      const { redisCacheService } = await import('./cache/redis-cache-service');
+      const data = await redisCacheService.get(`iv:${symbol}`);
+      if (data) return res.json({ success: true, data, cached: true });
+      const { storage } = await import('./storage');
+      const dbVal = await storage.getIntrinsicValue(symbol).catch(() => undefined);
+      if (dbVal) return res.json({ success: true, data: dbVal, cached: false, source: 'db' });
+      return res.json({ success: true, data: null, cached: false });
+    } catch (error) {
+      console.error('IV cache alias fetch error:', error);
+      res.status(500).json({ error: 'CACHE_ERROR', message: 'Failed to fetch intrinsic value' });
+    }
+  });
   
   // Stock routes - public data, allow optional auth for rate limiting
   app.get("/api/stocks", 
@@ -457,8 +515,16 @@ export async function registerRoutes(app: Express): Promise<void> {
         presentValue: presentValue.toFixed(2)
       };
 
-      // Store the calculation
+      // Store the calculation (DB)
       await storage.createIntrinsicValue(calculationResult);
+      
+      // Cache the result in Redis for fast reads
+      try {
+        const { redisCacheService } = await import('./cache/redis-cache-service');
+        await redisCacheService.set(`iv:${stockSymbol.toUpperCase()}`, calculationResult, 24 * 60 * 60);
+      } catch (cacheError) {
+        console.warn('⚠️ Failed to cache intrinsic value:', cacheError);
+      }
 
       res.json(calculationResult);
     } catch (error) {

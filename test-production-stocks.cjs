@@ -10,10 +10,10 @@ setTimeout(() => {
 async function testProductionStocks() {
   console.log('🧪 Testing production find-stocks page...\n');
   
-  const problemSymbols = ['BAC', 'WFC', 'BRK.B', 'PFE'];
+  const problemSymbols = ['BAC', 'WFC', 'BRK-B', 'PFE'];
   const allSymbols = [
     'AAPL', 'MSFT', 'GOOGL', 'AMZN', 'META', 'NVDA',
-    'JPM', 'V', 'MA', 'BAC', 'WFC', 'BRK.B',
+    'JPM', 'V', 'MA', 'BAC', 'WFC', 'BRK-B',
     'JNJ', 'UNH', 'PFE'
   ];
   

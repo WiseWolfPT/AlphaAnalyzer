@@ -31,7 +31,7 @@ import {
 import { cn } from "@/lib/utils";
 import { MiniChart } from "./mini-charts";
 import { FeatureLimiter } from "@/components/beta/feature-limiter";
-import { useStock, useIntrinsicValue } from "@/hooks/use-enhanced-stocks";
+import { useStock } from "@/hooks/use-enhanced-stocks";
 import { useStockQuote } from "@/hooks/use-market-data";
 import { useNormalizedStock, getStockPrice, getStockChangePercent, getStockChange, isStockPositive } from "@/lib/stock-data-normalizer";
 import type { Stock } from "@shared/schema";
@@ -97,7 +97,9 @@ export const UnifiedStockCard = memo(function UnifiedStockCard({
   
   // Fallback to old data source if needed
   const { data: rawStock, isLoading: stockLoading, error: stockError } = useStock(stockSymbol, { enabled: !propStock && !realtimeQuote });
-  const { data: intrinsicValue, isLoading: ivLoading } = useIntrinsicValue(stockSymbol);
+  // Avoid background IV fetches; IV should be provided explicitly or fetched on dedicated page
+  const intrinsicValue = undefined as unknown as number | undefined;
+  const ivLoading = false;
   
   // Use provided stock data, real-time quote, or fetched data
   const stock = propStock || (realtimeQuote ? {

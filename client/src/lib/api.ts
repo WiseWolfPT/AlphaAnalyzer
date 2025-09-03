@@ -78,7 +78,8 @@ export const intrinsicValueApi = {
   },
 
   getBySymbol: async (symbol: string): Promise<IntrinsicValue> => {
-    const response = await apiRequest("GET", `/intrinsic-values/${symbol}`);
+    // Cache-first endpoint (public, read-only)
+    const response = await apiRequest("GET", `/cache/intrinsic-values/${symbol}`);
     return response.json();
   },
 

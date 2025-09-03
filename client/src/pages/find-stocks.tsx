@@ -27,7 +27,7 @@ const ALL_STOCKS = [
   // Tech Giants
   'AAPL', 'MSFT', 'GOOGL', 'AMZN', 'META', 'NVDA',
   // Financial
-  'JPM', 'V', 'MA', 'BAC', 'WFC', 'BRK.B',
+  'JPM', 'V', 'MA', 'BAC', 'WFC', 'BRK-B',
   // Healthcare
   'JNJ', 'UNH', 'PFE', 'ABBV', 'TMO', 'ABT', 'CVS', 'MDT', 'BMY',
   // Consumer
@@ -59,7 +59,7 @@ function getCompanyName(symbol: string): string {
     'MA': 'Mastercard Incorporated',
     'BAC': 'Bank of America Corp.',
     'WFC': 'Wells Fargo & Company',
-    'BRK.B': 'Berkshire Hathaway Inc.',
+    'BRK-B': 'Berkshire Hathaway Inc.',
     // Healthcare
     'JNJ': 'Johnson & Johnson',
     'UNH': 'UnitedHealth Group Inc.',
@@ -124,7 +124,7 @@ function getIndustry(symbol: string): string {
     'MA': 'Payment Services',
     'BAC': 'Banking',
     'WFC': 'Banking',
-    'BRK.B': 'Insurance & Investments',
+    'BRK-B': 'Insurance & Investments',
     // Healthcare
     'JNJ': 'Pharmaceuticals',
     'UNH': 'Health Insurance',
@@ -197,7 +197,7 @@ function getSector(symbol: string): string {
     'MA': 'Financial Services',
     'BAC': 'Financial Services',
     'WFC': 'Financial Services',
-    'BRK.B': 'Financial Services',
+    'BRK-B': 'Financial Services',
     // Healthcare
     'JNJ': 'Healthcare',
     'UNH': 'Healthcare',
@@ -253,7 +253,8 @@ export default function FindStocks() {
   const [useRealtime, setUseRealtime] = useState(true);
   const [activeFilter, setActiveFilter] = useState<string>('all');
   const [sortBy, setSortBy] = useState<string>('alphabetical');
-  const [useDirectFMP, setUseDirectFMP] = useState(true); // Enable direct FMP API for real prices
+  // Use direct FMP only in development by default; production uses cache-only
+  const [useDirectFMP, setUseDirectFMP] = useState(import.meta.env.DEV);
   const [useWebSocket, setUseWebSocket] = useState(false); // Disable WebSocket since it's not working
   const [advancedFilters, setAdvancedFilters] = useState<FilterOptions>({ sectors: [] });
   const [marketCapFilter, setMarketCapFilter] = useState<string>('all'); // New state for market cap categories

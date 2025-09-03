@@ -164,7 +164,42 @@ app.use(enforceJsonContentType);
 app.set('trust proxy', 1);
 
 // Cookie parser middleware for httpOnly cookies (BEFORE session)
-app.use(cookieParser());
+  app.use(cookieParser());
+
+  // Normalize accidental duplicated /api/api/* paths early
+  app.use((req: Request, _res: Response, next: NextFunction) => {
+    // Map legacy intrinsic-values path directly to cache endpoint
+    if (req.url.startsWith('/api/api/intrinsic-values/')) {
+      req.url = req.url.replace('/api/api/intrinsic-values/', '/api/cache/intrinsic-values/');
+      return next();
+    }
+    // Generic duplicate /api normalization
+    if (req.url.startsWith('/api/api/')) {
+      req.url = req.url.replace('/api/api/', '/api/');
+    }
+    next();
+  });
+
+  // Back-compat alias and stub BEFORE registering routes
+  app.get('/api/api/intrinsic-values/:symbol', async (req: any, res: any) => {
+    try {
+      const symbol = String(req.params.symbol || '').toUpperCase().trim();
+      if (!symbol) return res.status(400).json({ error: 'INVALID_SYMBOL', message: 'Symbol required' });
+      const { redisCacheService } = await import('./cache/redis-cache-service');
+      const data = await redisCacheService.get(`iv:${symbol}`);
+      if (data) return res.json({ success: true, data, cached: true });
+      const { storage } = await import('./storage');
+      const dbVal = await storage.getIntrinsicValue(symbol).catch(() => undefined);
+      if (dbVal) return res.json({ success: true, data: dbVal, cached: false, source: 'db' });
+      return res.json({ success: true, data: null, cached: false });
+    } catch (error) {
+      res.status(500).json({ error: 'CACHE_ERROR', message: 'Failed to fetch intrinsic value' });
+    }
+  });
+
+  app.get('/api/alerts/notifications', (_req: any, res: any) => {
+    res.json({ notifications: [], unreadCount: 0 });
+  });
 
 // Body parsing middleware with different limits
 // Standard JSON parsing with 1MB limit
@@ -510,6 +545,27 @@ async function initializeMarketDataServices() {
 
     // CRITICAL: Register API routes BEFORE Vite to prevent interception
     await registerRoutes(app);
+
+    // Back-compat aliases and stubs to avoid 404 noise
+    app.get('/api/api/intrinsic-values/:symbol', async (req: any, res: any) => {
+      try {
+        const symbol = String(req.params.symbol || '').toUpperCase().trim();
+        if (!symbol) return res.status(400).json({ error: 'INVALID_SYMBOL', message: 'Symbol required' });
+        const { redisCacheService } = await import('./cache/redis-cache-service');
+        const data = await redisCacheService.get(`iv:${symbol}`);
+        if (data) return res.json({ success: true, data, cached: true });
+        const { storage } = await import('./storage');
+        const dbVal = await storage.getIntrinsicValue(symbol).catch(() => undefined);
+        if (dbVal) return res.json({ success: true, data: dbVal, cached: false, source: 'db' });
+        return res.json({ success: true, data: null, cached: false });
+      } catch (error) {
+        res.status(500).json({ error: 'CACHE_ERROR', message: 'Failed to fetch intrinsic value' });
+      }
+    });
+
+    app.get('/api/alerts/notifications', (req: any, res: any) => {
+      res.json([]);
+    });
 
     // ROADMAP V4: Apply Supabase authentication to protected routes
     app.use('/api/admin/**', requireAdmin);       // Admin routes require admin role

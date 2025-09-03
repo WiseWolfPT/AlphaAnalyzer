@@ -95,11 +95,7 @@ export default function IntrinsicValue() {
       
       setSelectedStock(stockFromUrl);
       
-      // Auto-calculate when data loads
-      setTimeout(() => {
-        const button = document.querySelector('[data-calculate-button]') as HTMLButtonElement;
-        if (button) button.click();
-      }, 1000);
+      // Do not auto-calculate; we'll try cache-first and let user recalc if quiser
     }
   }, []);
   
@@ -123,6 +119,41 @@ export default function IntrinsicValue() {
     enabled: !!selectedStock?.symbol,
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
+
+  // Cache-first Intrinsic Value
+  const { data: cachedIV } = useQuery({
+    queryKey: [`/api/cache/intrinsic-values/${selectedStock?.symbol}`],
+    enabled: !!selectedStock?.symbol,
+    staleTime: 24 * 60 * 60 * 1000,
+  });
+  
+  // Hydrate calculation from cached IV when available
+  useEffect(() => {
+    if (!cachedIV || !selectedStock) return;
+    try {
+      const payload: any = cachedIV;
+      const data = payload?.data ?? payload;
+      if (!data || !data.intrinsicValue) return;
+      const currentPrice = parseFloat(data.currentPrice || '0');
+      const intrinsic = parseFloat(data.intrinsicValue || '0');
+      if (!intrinsic || !currentPrice) return;
+      const discount = ((currentPrice - intrinsic) / intrinsic) * 100;
+      setCalculation({
+        currentPrice,
+        intrinsicValue: intrinsic,
+        discount,
+        isUndervalued: (String(data.valuation || '')).toLowerCase() === 'undervalued' || discount < 0,
+        methods: [
+          {
+            method: 'Cached IV',
+            value: intrinsic,
+            description: 'Last calculated intrinsic value from cache',
+            confidence: 85,
+          },
+        ],
+      });
+    } catch {}
+  }, [cachedIV, selectedStock?.symbol]);
   
   const { data: searchResults, error: searchError, isLoading: searchLoading } = useQuery<Stock[]>({
     queryKey: [`/api/stocks/search?q=${encodeURIComponent(searchQuery)}`],
@@ -161,8 +192,8 @@ export default function IntrinsicValue() {
     
     // Simulate calculation delay
     setTimeout(() => {
-      // Use realtime price if available
-      const currentPrice = realtimeQuote?.price || (typeof stock.price === 'number' ? stock.price : parseFloat(stock.price || '0'));
+      // Use realtime price if available; fallback para cached quote
+      const currentPrice = realtimeQuote?.price || (typeof stock.price === 'number' ? stock.price : parseFloat((stock as any).price || '0'));
       const epsValue = typeof stock.eps === 'number' ? stock.eps : parseFloat(stock.eps || eps);
       
       // Different valuation methods
@@ -306,9 +337,10 @@ export default function IntrinsicValue() {
           <div className="max-w-2xl">
             <UniversalSearch
               onSelect={(stock) => {
+                // Cache-first: select and hydrate from cached IV
                 setSelectedStock(stock);
                 setSearchQuery(stock.symbol);
-                calculateIntrinsicValue(stock);
+                setCalculation(null);
               }}
               placeholder="Search for a stock to analyze..."
               showRecentSearches={true}

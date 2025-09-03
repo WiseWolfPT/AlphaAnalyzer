@@ -15,7 +15,7 @@ const ALPHA_VANTAGE_API_KEY = process.env.ALPHA_VANTAGE_API_KEY;
 
 // Tier 3 stocks - Atualizados a cada 2 horas
 const TIER_3_STOCKS = [
-  'BRK.B', 'LLY', 'TMO', 'AVGO', 'WFC',
+  'BRK-B', 'LLY', 'TMO', 'AVGO', 'WFC',
   'MRK', 'CVX', 'COST', 'AXP', 'LOW',
   'QCOM', 'TXN', 'MDT', 'AMT', 'BLK',
   'SPGI', 'NEE', 'IBM', 'GS', 'CAT'

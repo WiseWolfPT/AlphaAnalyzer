@@ -60,10 +60,12 @@ export class CronManager {
       enabled: this.isProduction
     });
     
-    // Warm cache with popular stocks - Every 15 minutes during market hours
+    // Warm cache during market windows (ET):
+    // Pre-market 04:00–09:30, Regular 09:30–16:00, After-hours 16:00–20:00
+    // Simplified: run every minute 04:00–20:59 ET, Mon–Fri
     this.scheduleJob({
       name: 'cache-warmer',
-      schedule: '*/15 9-16 * * 1-5', // Monday-Friday, 9AM-4PM ET
+      schedule: '*/1 4-20 * * 1-5',
       task: this.warmPopularStocksCache.bind(this),
       enabled: true
     });
@@ -161,6 +163,8 @@ export class CronManager {
         
         logger.error(`[CRON] ❌ Error in job ${config.name} after ${duration}ms:`, error);
       }
+    }, {
+      timezone: process.env.CRON_TZ || 'America/New_York'
     });
 
     job.start();

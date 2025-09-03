@@ -25,8 +25,15 @@ export async function apiRequest(
   data?: unknown | undefined,
 ): Promise<Response> {
   try {
-    // Build full URL if needed
-    const fullURL = url.startsWith('http') ? url : `${apiConfig.baseURL}${url}`;
+    // Build full URL without duplicating /api prefix
+    let fullURL: string;
+    if (url.startsWith('http')) {
+      fullURL = url;
+    } else if (url.startsWith('/api')) {
+      fullURL = url; // already absolute API path
+    } else {
+      fullURL = `${apiConfig.baseURL}${url}`;
+    }
     
     const res = await fetch(fullURL, {
       method,
@@ -60,7 +67,9 @@ export const getQueryFn: <T>(options: {
       
       // Always try real backend API first
       try {
-        const fullURL = url.startsWith('/api') ? `${apiConfig.baseURL}${url}` : url;
+        const fullURL = url.startsWith('http')
+          ? url
+          : (url.startsWith('/api') ? url : `${apiConfig.baseURL}${url}`);
         const res = await fetch(fullURL, {
           credentials: "include",
           headers: {

@@ -20,15 +20,16 @@ interface RealtimeQuote {
 interface UseRealtimeQuotesOptions {
   symbols: string[];
   onUpdate?: (quote: RealtimeQuote) => void;
+  enabled?: boolean;
 }
 
-export function useRealtimeQuotes({ symbols, onUpdate }: UseRealtimeQuotesOptions) {
+export function useRealtimeQuotes({ symbols, onUpdate, enabled = true }: UseRealtimeQuotesOptions) {
   const [quotes, setQuotes] = useState<Record<string, RealtimeQuote>>({});
   const [isConnected, setIsConnected] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (symbols.length === 0) return;
+    if (!enabled || symbols.length === 0) return;
 
     console.log('🔌 Connecting to Supabase Realtime for symbols:', symbols);
 
@@ -62,7 +63,14 @@ export function useRealtimeQuotes({ symbols, onUpdate }: UseRealtimeQuotesOption
               [quote.symbol]: quote
             }));
 
-            onUpdate?.(quote);
+            // Only call onUpdate if it's a function
+            if (typeof onUpdate === 'function') {
+              try {
+                onUpdate(quote);
+              } catch (err) {
+                console.warn('onUpdate callback threw an error:', err);
+              }
+            }
           }
         }
       )
@@ -85,7 +93,7 @@ export function useRealtimeQuotes({ symbols, onUpdate }: UseRealtimeQuotesOption
       console.log('🔌 Disconnecting from Supabase Realtime');
       supabase.removeChannel(channel);
     };
-  }, [symbols.join(','), onUpdate]);
+  }, [symbols.join(','), enabled, onUpdate]);
 
   return {
     quotes,
@@ -95,10 +103,24 @@ export function useRealtimeQuotes({ symbols, onUpdate }: UseRealtimeQuotesOption
 }
 
 // Hook for single symbol
-export function useRealtimeQuote(symbol: string, onUpdate?: (quote: RealtimeQuote) => void) {
+type SingleQuoteOptions = {
+  enabled?: boolean;
+  onUpdate?: (quote: RealtimeQuote) => void;
+} | ((quote: RealtimeQuote) => void) | undefined;
+
+export function useRealtimeQuote(symbol: string, options?: SingleQuoteOptions) {
+  const enabled = typeof options === 'object' && options !== null && 'enabled' in options
+    ? Boolean(options.enabled)
+    : true;
+
+  const onUpdate = typeof options === 'function'
+    ? options
+    : (typeof options === 'object' && options?.onUpdate ? options.onUpdate : undefined);
+
   const { quotes, isConnected, error } = useRealtimeQuotes({
     symbols: [symbol],
-    onUpdate
+    onUpdate,
+    enabled
   });
 
   return {

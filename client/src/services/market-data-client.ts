@@ -152,7 +152,13 @@ class MarketDataClient {
       
       // Extract the single quote from batch response
       if (batchResponse.quotes && batchResponse.quotes.length > 0) {
-        const quote = batchResponse.quotes.find(q => q.symbol === symbol);
+        // Prefer exact match; fall back to requestedSymbol or common alias swap (dot↔hyphen)
+        const quote = batchResponse.quotes.find(q => 
+          q.symbol === symbol ||
+          (q as any).requestedSymbol === symbol ||
+          q.symbol?.replace('-', '.') === symbol ||
+          q.symbol?.replace('.', '-') === symbol
+        );
         if (quote) {
           console.log(`✅ Successfully extracted quote for ${symbol} from batch response`);
           return quote;

@@ -1,6 +1,7 @@
 import { Router, Request, Response } from 'express';
 import { getSupabaseClient } from '../lib/supabase-client';
 import { Logger } from '../services/structured-logger';
+import { storage } from '../storage';
 
 const router = Router();
 const logger = new Logger('CachedDataRoute');
@@ -12,42 +13,17 @@ router.get('/quotes/:symbol', async (req: Request, res: Response) => {
     const maxAge = parseInt(req.query.maxAge as string) || 60; // Default 60 seconds
 
     logger.info(`Fetching cached quote for ${symbol}`);
+    // PURE CACHE READ: return only what is cached (no upstream fetch)
+    const { redisCacheService } = await import('../cache/redis-cache-service');
+    const cacheKey = `quote:${symbol.toUpperCase()}`;
+    const cached = await redisCacheService.get(cacheKey);
 
-    const { data, error } = await getSupabaseClient()
-      .rpc('get_cached_quote', {
-        p_symbol: symbol.toUpperCase(),
-        p_max_age: maxAge
-      });
-
-    if (error) {
-      logger.error('Error fetching cached quote', error);
-      return res.status(500).json({ error: 'Failed to fetch quote' });
+    if (!cached) {
+      return res.json({ success: true, data: null, cached: false, message: 'Not in cache' });
     }
 
-    if (!data || data.length === 0) {
-      return res.status(404).json({ error: 'Symbol not found' });
-    }
-
-    const quote = data[0];
-    
-    // Add cache headers
-    res.set({
-      'Cache-Control': 'public, max-age=10', // Browser can cache for 10 seconds
-      'X-Cache-Age': quote.age_seconds.toString(),
-      'X-Cache-Status': quote.is_stale ? 'stale' : 'fresh'
-    });
-
-    res.json({
-      symbol: quote.symbol,
-      name: quote.name,
-      price: parseFloat(quote.price),
-      change: quote.change ? parseFloat(quote.change) : null,
-      changePercent: quote.change_percent ? parseFloat(quote.change_percent) : null,
-      volume: quote.volume,
-      marketCap: quote.market_cap,
-      lastUpdated: quote.last_updated,
-      isStale: quote.is_stale
-    });
+    res.set({ 'Cache-Control': 'public, max-age=10' });
+    res.json({ success: true, data: cached, cached: true });
   } catch (error) {
     logger.error('Error in /quotes/:symbol', error);
     res.status(500).json({ error: 'Internal server error' });
@@ -68,44 +44,23 @@ router.post('/quotes/batch', async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'Maximum 100 symbols per request' });
     }
 
-    logger.info(`Fetching cached quotes for ${symbols.length} symbols`);
+    logger.info(`Fetching cached quotes (pure read) for ${symbols.length} symbols`);
 
-    const upperSymbols = symbols.map(s => s.toUpperCase());
-    
-    const { data, error } = await getSupabaseClient()
-      .rpc('get_cached_quotes_batch', {
-        p_symbols: upperSymbols,
-        p_max_age: maxAge
-      });
+    const upperSymbols = symbols.map((s: string) => s.toUpperCase());
+    const { redisCacheService } = await import('../cache/redis-cache-service');
 
-    if (error) {
-      logger.error('Error fetching batch quotes', error);
-      return res.status(500).json({ error: 'Failed to fetch quotes' });
+    const quotes: any[] = [];
+    for (const s of upperSymbols) {
+      const cached = await redisCacheService.get(`quote:${s}`);
+      if (cached) quotes.push(cached);
     }
-
-    const quotes = (data || []).map((quote: any) => ({
-      symbol: quote.symbol,
-      name: quote.name,
-      price: parseFloat(quote.price),
-      change: quote.change ? parseFloat(quote.change) : null,
-      changePercent: quote.change_percent ? parseFloat(quote.change_percent) : null,
-      volume: quote.volume,
-      marketCap: quote.market_cap,
-      lastUpdated: quote.last_updated,
-      isStale: quote.is_stale
-    }));
 
     // Calculate cache statistics
     const freshCount = quotes.filter(q => !q.isStale).length;
     const staleCount = quotes.filter(q => q.isStale).length;
 
-    res.set({
-      'Cache-Control': 'public, max-age=10',
-      'X-Cache-Fresh': freshCount.toString(),
-      'X-Cache-Stale': staleCount.toString()
-    });
-
-    res.json({ quotes });
+    res.set({ 'Cache-Control': 'public, max-age=10' });
+    res.json({ success: true, data: quotes, cached: true, stats: { fresh: freshCount, stale: staleCount } });
   } catch (error) {
     logger.error('Error in /quotes/batch', error);
     res.status(500).json({ error: 'Internal server error' });
@@ -266,6 +221,33 @@ router.post('/refresh/:symbol', async (req: Request, res: Response) => {
     });
   } catch (error) {
     logger.error('Error in /refresh/:symbol', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Intrinsic Values (cache-first, read-only)
+router.get('/intrinsic-values/:symbol', async (req: Request, res: Response) => {
+  try {
+    const symbol = (req.params.symbol || '').toUpperCase();
+    if (!symbol) return res.status(400).json({ error: 'Invalid symbol' });
+
+    const { redisCacheService } = await import('../cache/redis-cache-service');
+    const cacheKey = `iv:${symbol}`;
+    const cached = await redisCacheService.get(cacheKey);
+
+    if (cached) {
+      return res.json({ success: true, data: cached, cached: true });
+    }
+
+    // Fallback to last DB value (optional) without triggering recalculation
+    const dbValue = await storage.getIntrinsicValue(symbol).catch(() => undefined);
+    if (dbValue) {
+      return res.json({ success: true, data: dbValue, cached: false, source: 'db' });
+    }
+
+    return res.json({ success: true, data: null, cached: false });
+  } catch (error) {
+    logger.error('Error in /intrinsic-values/:symbol', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });

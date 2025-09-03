@@ -32,7 +32,7 @@ class ProactiveWorker {
     'AAPL', 'MSFT', 'GOOGL', 'AMZN', 'NVDA', 'META', 'TSLA',
     
     // Top S&P 500 by market cap
-    'BRK.B', 'JPM', 'JNJ', 'V', 'PG', 'UNH', 'HD', 'MA',
+    'BRK-B', 'JPM', 'JNJ', 'V', 'PG', 'UNH', 'HD', 'MA',
     'DIS', 'BAC', 'ADBE', 'NFLX', 'CRM', 'CMCSA', 'XOM', 'CVX',
     'PFE', 'ABBV', 'KO', 'TMO', 'CSCO', 'PEP', 'WMT', 'MRK',
     'AVGO', 'LLY', 'VZ', 'INTC', 'DHR', 'ABT', 'ACN', 'NKE',
@@ -113,7 +113,7 @@ class ProactiveWorker {
     'SIVB', 'PACW', 'WAL', 'ZION', 'KEY', 'RF', 'CFG', 'HBAN',
     
     // Insurance
-    'BRK.B', 'UNH', 'AIG', 'PRU', 'MET', 'ALL', 'TRV', 'CB',
+    'BRK-B', 'UNH', 'AIG', 'PRU', 'MET', 'ALL', 'TRV', 'CB',
     
     // Utilities
     'NEE', 'DUK', 'SO', 'D', 'AEP', 'EXC', 'SRE', 'XEL'

@@ -273,7 +273,7 @@ export class JobQueue {
    */
   async scheduleStockUpdates(): Promise<void> {
     // Tier 1: Popular stocks (every 15 minutes)
-    const tier1Symbols = ['AAPL', 'GOOGL', 'MSFT', 'TSLA', 'AMZN', 'META', 'NVDA', 'BRK.B'];
+    const tier1Symbols = ['AAPL', 'GOOGL', 'MSFT', 'TSLA', 'AMZN', 'META', 'NVDA', 'BRK-B'];
     const tier1Jobs = tier1Symbols.map(symbol => ({
       type: 'update_stock_data',
       payload: { symbol, tier: 1 },

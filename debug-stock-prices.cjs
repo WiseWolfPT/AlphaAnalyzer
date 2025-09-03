@@ -3,7 +3,7 @@
 const https = require('https');
 
 // Símbolos problemáticos
-const problemSymbols = ['BAC', 'WFC', 'BRK.B', 'PFE'];
+const problemSymbols = ['BAC', 'WFC', 'BRK-B', 'PFE'];
 
 // Função para buscar dados da API
 function fetchBatchQuotes(symbols) {
@@ -103,16 +103,16 @@ async function testStockPrices() {
     // Test 5: Check specific symbol issues
     console.log('📊 Test 5: Check symbol-specific issues:');
     
-    // Check BRK.B specifically
-    const brkb = transformed.find(s => s.symbol === 'BRK.B');
+    // Check BRK-B specifically
+    const brkb = transformed.find(s => s.symbol === 'BRK-B');
     if (brkb) {
-      console.log(`BRK.B details:`);
+      console.log(`BRK-B details:`);
       console.log(`  - Raw price: ${brkb._raw.price}`);
       console.log(`  - Transformed price: ${brkb.price}`);
       console.log(`  - Provider: ${brkb._provider}`);
       console.log(`  - Is synthetic: ${brkb._provider === 'synthetic'}`);
     } else {
-      console.log('❌ BRK.B not found in results!');
+      console.log('❌ BRK-B not found in results!');
     }
     
     // Summary

@@ -85,7 +85,7 @@ const mockStocks = [
     logo: "https://logo.clearbit.com/meta.com" 
   },
   { 
-    symbol: "BRK.B", 
+    symbol: "BRK-B", 
     name: "Berkshire Hathaway Inc.", 
     price: "432.18", 
     change: "3.58", 
