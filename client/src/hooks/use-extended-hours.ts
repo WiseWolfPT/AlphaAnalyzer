@@ -22,7 +22,7 @@ export function useExtendedHours(symbol: string) {
     queryKey: ['extended-hours', symbol],
     queryFn: async () => {
       const api = getApiUrl();
-      const res = await fetch(`${api}/api/stocks/${encodeURIComponent(symbol)}/extended-hours`);
+      const res = await fetch(`${api}/api/market-data/extended-hours/${encodeURIComponent(symbol)}`);
       if (!res.ok) throw new Error(`Extended hours fetch failed: ${res.status}`);
       return res.json();
     },
@@ -31,4 +31,3 @@ export function useExtendedHours(symbol: string) {
     retry: 2,
   });
 }
-

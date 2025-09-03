@@ -1930,92 +1930,190 @@ router.get('/fmp/quote-short/:symbol',
 
 export default router;
 /**
- * GET /api/stocks/:symbol/extended-hours
- * Returns pre-market and after-hours quotes/trades summary
+ * GET /api/market-data/extended-hours/:symbol
+ * Prefer FMP stable endpoints; fallback to v4 if needed (pre-market)
  */
-router.get('/../stocks/:symbol/extended-hours' as any, async (req: Request, res: Response) => {
+router.get('/extended-hours/:symbol', async (req: Request, res: Response) => {
   try {
     const raw = String(req.params.symbol || '').toUpperCase().trim();
-    const symbol = raw;
-
-    if (!process.env.FMP_API_KEY || process.env.FMP_API_KEY === 'demo') {
-      return res.status(503).json({ error: 'FMP_NOT_CONFIGURED' });
-    }
+    if (!raw) return res.status(400).json({ error: 'INVALID_SYMBOL' });
+    const apiKey = process.env.FMP_API_KEY;
+    if (!apiKey || apiKey === 'demo') return res.status(503).json({ error: 'FMP_NOT_CONFIGURED' });
 
     const { redisCacheService } = await import('../cache/redis-cache-service');
-    const cacheKey = `ext:${symbol}`;
-    const cached = await redisCacheService.get(cacheKey);
-    if (cached) {
-      return res.json(cached);
+    const { simpleCacheService } = await import('../services/simple-cache-service');
+
+    // Resolve canonical symbol once and cache alias
+    const aliasKey = `alias:${raw}`;
+    let canonical = await redisCacheService.get<string>(aliasKey);
+    if (!canonical) {
+      const searchUrl = `https://financialmodelingprep.com/stable/search-symbol?query=${encodeURIComponent(raw)}&limit=1&apikey=${apiKey}`;
+      try {
+        const s = await fetch(searchUrl);
+        if (s.ok) {
+          const arr = await s.json().catch(() => []);
+          const sym = Array.isArray(arr) && arr[0]?.symbol ? String(arr[0].symbol).toUpperCase() : raw;
+          canonical = sym;
+          await redisCacheService.set(aliasKey, canonical, 86400); // 24h
+        } else {
+          canonical = raw;
+        }
+      } catch {
+        canonical = raw;
+      }
     }
 
-    const apiKey = process.env.FMP_API_KEY;
-    const preUrl = `https://financialmodelingprep.com/api/v4/pre-market-quote/${encodeURIComponent(symbol)}?apikey=${apiKey}`;
-    const aftUrl = `https://financialmodelingprep.com/api/v4/aftermarket-quote/${encodeURIComponent(symbol)}?apikey=${apiKey}`;
-    const preTradesUrl = `https://financialmodelingprep.com/api/v4/pre-market-trade/${encodeURIComponent(symbol)}?apikey=${apiKey}`;
-    const aftTradesUrl = `https://financialmodelingprep.com/api/v4/aftermarket-trade/${encodeURIComponent(symbol)}?apikey=${apiKey}`;
+    const cacheKey = `ext:${raw}`;
+    const cached = await redisCacheService.get(cacheKey);
+    if (cached) return res.json(cached);
 
-    const [preRes, aftRes, preTradesRes, aftTradesRes] = await Promise.all([
-      fetch(preUrl),
+    // Stable after-hours quote
+    const aftUrl = `https://financialmodelingprep.com/stable/aftermarket-quote?symbol=${encodeURIComponent(canonical)}&apikey=${apiKey}`;
+    // v4 pre-market quote (stable variant not documented no batch):
+    const preUrl = `https://financialmodelingprep.com/api/v4/pre-market-quote/${encodeURIComponent(canonical)}?apikey=${apiKey}`;
+    
+    const [aftRes, preRes] = await Promise.all([
       fetch(aftUrl),
-      fetch(preTradesUrl),
-      fetch(aftTradesUrl)
+      fetch(preUrl)
     ]);
 
-    const [preData, aftData, preTrades, aftTrades] = await Promise.all([
-      preRes.ok ? preRes.json() : Promise.resolve([]),
+    const [aftData, preData] = await Promise.all([
       aftRes.ok ? aftRes.json() : Promise.resolve([]),
-      preTradesRes.ok ? preTradesRes.json() : Promise.resolve([]),
-      aftTradesRes.ok ? aftTradesRes.json() : Promise.resolve([])
+      preRes.ok ? preRes.json() : Promise.resolve([])
     ]);
 
-    const normalize = (d: any) => {
+    // Get previous close via our cache/quote
+    const baseQuote = await simpleCacheService.getQuote(raw) || undefined;
+    const prevClose = Number((baseQuote as any)?.previousClose || 0);
+
+    const normAft = (() => {
+      const d = Array.isArray(aftData) ? aftData[0] : undefined;
       if (!d) return null;
-      const ask = Number(d.ask || d.price || 0);
-      const bid = Number(d.bid || 0);
-      const price = isFinite(ask) && ask > 0 ? ask : bid;
-      const prevClose = Number(d.previousClose || 0);
-      const change = isFinite(prevClose) && prevClose > 0 ? (price - prevClose) : 0;
-      const changePercent = isFinite(prevClose) && prevClose > 0 ? (change / prevClose) * 100 : 0;
+      const bid = Number(d.bidPrice || d.bid || 0);
+      const ask = Number(d.askPrice || d.ask || 0);
+      const price = ask > 0 ? ask : (bid > 0 ? bid : 0);
+      const ch = prevClose > 0 && price > 0 ? price - prevClose : 0;
+      const chp = prevClose > 0 && price > 0 ? (ch / prevClose) * 100 : 0;
       return {
         price,
-        change,
-        changePercent,
-        volume: 0,
+        change: ch,
+        changePercent: chp,
+        volume: Number(d.volume || 0),
         timestamp: d.timestamp ? new Date(d.timestamp).toISOString() : new Date().toISOString()
       };
-    };
+    })();
 
-    const sumVolume = (trades: any[]) => trades?.reduce((acc, t) => acc + (Number(t.size || 0)), 0) || 0;
+    const normPre = (() => {
+      const d = Array.isArray(preData) ? preData[0] : undefined;
+      if (!d) return null;
+      const bid = Number(d.bid || 0);
+      const ask = Number(d.ask || 0);
+      const price = ask > 0 ? ask : (bid > 0 ? bid : 0);
+      const ch = prevClose > 0 && price > 0 ? price - prevClose : 0;
+      const chp = prevClose > 0 && price > 0 ? (ch / prevClose) * 100 : 0;
+      return {
+        price,
+        change: ch,
+        changePercent: chp,
+        volume: Number(d.volume || 0),
+        timestamp: d.timestamp ? new Date(d.timestamp).toISOString() : new Date().toISOString()
+      };
+    })();
 
-    const pre = Array.isArray(preData) ? preData[0] : preData?.[0];
-    const aft = Array.isArray(aftData) ? aftData[0] : aftData?.[0];
-    const out = {
-      preMarket: pre ? { ...normalize(pre), volume: sumVolume(Array.isArray(preTrades) ? preTrades : []) } : null,
-      afterHours: aft ? { ...normalize(aft), volume: sumVolume(Array.isArray(aftTrades) ? aftTrades : []) } : null,
-      isExtendedHours: false,
-      currentSession: 'closed' as 'pre-market' | 'regular' | 'after-hours' | 'closed'
-    };
-
-    // Determine session (approximate using UTC hour to ET)
+    // Session calculation (aprox ET)
     const now = new Date();
     const hourUTC = now.getUTCHours();
     const day = now.getUTCDay();
     const isWeekday = day >= 1 && day <= 5;
-    // Rough ET mapping: ET ~ UTC-4/5; we only need session buckets
-    const isPre = isWeekday && hourUTC >= 8 && hourUTC < 13; // ~4:00-9:00 ET
-    const isReg = isWeekday && hourUTC >= 13 && hourUTC < 20; // ~9:00-16:00 ET
-    const isAft = isWeekday && hourUTC >= 20 && hourUTC < 24; // ~16:00-20:00 ET
-    if (isPre) out.currentSession = 'pre-market';
-    else if (isReg) out.currentSession = 'regular';
-    else if (isAft) out.currentSession = 'after-hours';
-    out.isExtendedHours = out.currentSession === 'pre-market' || out.currentSession === 'after-hours';
+    const isPre = isWeekday && hourUTC >= 8 && hourUTC < 13; // ~4–9 ET
+    const isReg = isWeekday && hourUTC >= 13 && hourUTC < 20; // ~9–16 ET
+    const isAft = isWeekday && hourUTC >= 20 && hourUTC < 24; // ~16–20 ET
 
-    // Cache TTL: 30s during extended hours, 300s otherwise
+    const out = {
+      preMarket: normPre,
+      afterHours: normAft,
+      isExtendedHours: isPre || isAft,
+      currentSession: (isPre ? 'pre-market' : isReg ? 'regular' : isAft ? 'after-hours' : 'closed') as 'pre-market' | 'regular' | 'after-hours' | 'closed'
+    };
+
     const ttl = out.isExtendedHours ? 30 : 300;
     await redisCacheService.set(cacheKey, out as any, ttl);
     res.json(out);
   } catch (error) {
     res.status(500).json({ error: 'EXTENDED_HOURS_ERROR' });
+  }
+});
+
+/**
+ * POST /api/market-data/extended-hours/batch
+ * Returns aftermarket quotes for multiple symbols (stable batch), with alias resolution
+ */
+router.post('/extended-hours/batch', async (req: Request, res: Response) => {
+  try {
+    const apiKey = process.env.FMP_API_KEY;
+    if (!apiKey || apiKey === 'demo') return res.status(503).json({ error: 'FMP_NOT_CONFIGURED' });
+    const symbols: string[] = Array.isArray(req.body?.symbols) ? req.body.symbols : [];
+    if (!symbols.length) return res.status(400).json({ error: 'INVALID_REQUEST', message: 'symbols required' });
+
+    const { redisCacheService } = await import('../cache/redis-cache-service');
+
+    // Resolve aliases
+    const aliases: Record<string, string> = {};
+    await Promise.all(symbols.map(async (s) => {
+      const raw = String(s || '').toUpperCase().trim();
+      const aliasKey = `alias:${raw}`;
+      let can = await redisCacheService.get<string>(aliasKey);
+      if (!can) {
+        const url = `https://financialmodelingprep.com/stable/search-symbol?query=${encodeURIComponent(raw)}&limit=1&apikey=${apiKey}`;
+        try {
+          const r = await fetch(url);
+          if (r.ok) {
+            const arr = await r.json().catch(() => []);
+            can = Array.isArray(arr) && arr[0]?.symbol ? String(arr[0].symbol).toUpperCase() : raw;
+            await redisCacheService.set(aliasKey, can, 86400);
+          } else {
+            can = raw;
+          }
+        } catch {
+          can = raw;
+        }
+      }
+      aliases[raw] = can || raw;
+    }));
+
+    const canSymbols = [...new Set(Object.values(aliases))];
+    const batchUrl = `https://financialmodelingprep.com/stable/batch-aftermarket-quote?symbols=${encodeURIComponent(canSymbols.join(','))}&apikey=${apiKey}`;
+    const r = await fetch(batchUrl);
+    const arr = r.ok ? await r.json().catch(() => []) : [];
+
+    // Build map back to original symbols
+    const map: Record<string, any> = {};
+    const byCan: Record<string, any> = {};
+    if (Array.isArray(arr)) {
+      for (const it of arr) {
+        const sym = String(it.symbol || '').toUpperCase();
+        byCan[sym] = it;
+      }
+    }
+    // previousClose not provided here; UI can just show price/volume
+    for (const raw of symbols.map(s => String(s).toUpperCase())) {
+      const can = aliases[raw] || raw;
+      const it = byCan[can];
+      if (it) {
+        map[raw] = {
+          symbol: raw,
+          bidPrice: Number(it.bidPrice || it.bid || 0),
+          askPrice: Number(it.askPrice || it.ask || 0),
+          volume: Number(it.volume || 0),
+          timestamp: it.timestamp ? new Date(it.timestamp).toISOString() : new Date().toISOString()
+        };
+      } else {
+        map[raw] = null;
+      }
+    }
+
+    res.json({ quotes: map, _source: 'stable_aftermarket' });
+  } catch (error) {
+    res.status(500).json({ error: 'EXTENDED_HOURS_BATCH_ERROR' });
   }
 });
