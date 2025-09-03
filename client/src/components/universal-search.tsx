@@ -70,51 +70,52 @@ export const UniversalSearch: React.FC<UniversalSearchProps> = ({
     localStorage.setItem('alfalyzer_recent_searches', JSON.stringify(newRecent));
   }, [recentSearches]);
 
-  // Search logic with relevance scoring
+  // Search logic: backend provider search when query >= 2; fallback to local list
   useEffect(() => {
-    if (!debouncedQuery || debouncedQuery.length < 1) {
-      setSuggestions([]);
-      setSelectedIndex(-1);
-      return;
-    }
+    let cancelled = false;
+    const run = async () => {
+      if (!debouncedQuery || debouncedQuery.length < 2) {
+        setSuggestions([]);
+        setSelectedIndex(-1);
+        return;
+      }
 
-    const searchTerm = debouncedQuery.toUpperCase();
-    
-    const filtered = ALL_STOCKS
-      .map(stock => {
-        let score = 0;
-        const upperSymbol = stock.symbol.toUpperCase();
-        const upperName = stock.name.toUpperCase();
-        
-        // Exact symbol match (highest priority)
-        if (upperSymbol === searchTerm) {
-          score = 1000;
+      const q = debouncedQuery.trim();
+      try {
+        const res = await fetch(`/api/market-data/search?query=${encodeURIComponent(q)}`);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        if (cancelled) return;
+        const results = Array.isArray(data?.results) ? data.results : [];
+        const mapped = results.map((r: any) => ({ symbol: r.symbol, name: r.name }));
+        setSuggestions(mapped);
+        setSelectedIndex(-1);
+      } catch (e) {
+        // Fallback to local ALL_STOCKS filtering if backend search unavailable
+        const searchTerm = q.toUpperCase();
+        const filtered = ALL_STOCKS
+          .map(stock => {
+            let score = 0;
+            const upperSymbol = stock.symbol.toUpperCase();
+            const upperName = stock.name.toUpperCase();
+            if (upperSymbol === searchTerm) score = 1000;
+            else if (upperSymbol.startsWith(searchTerm)) score = 100 - (upperSymbol.length - searchTerm.length);
+            else if (upperName.startsWith(searchTerm)) score = 80;
+            else if (upperSymbol.includes(searchTerm)) score = 50;
+            else if (upperName.includes(searchTerm)) score = 10;
+            return { ...stock, score };
+          })
+          .filter(stock => stock.score > 0)
+          .sort((a, b) => b.score - a.score)
+          .slice(0, 10);
+        if (!cancelled) {
+          setSuggestions(filtered);
+          setSelectedIndex(-1);
         }
-        // Symbol starts with search term (high priority)
-        else if (upperSymbol.startsWith(searchTerm)) {
-          score = 100 - (upperSymbol.length - searchTerm.length);
-        }
-        // Symbol contains search term
-        else if (upperSymbol.includes(searchTerm)) {
-          score = 50;
-        }
-        // Name starts with search term
-        else if (upperName.startsWith(searchTerm)) {
-          score = 30;
-        }
-        // Name contains search term
-        else if (upperName.includes(searchTerm)) {
-          score = 10;
-        }
-        
-        return { ...stock, score };
-      })
-      .filter(stock => stock.score > 0)
-      .sort((a, b) => b.score - a.score)
-      .slice(0, 10);
-    
-    setSuggestions(filtered);
-    setSelectedIndex(-1);
+      }
+    };
+    run();
+    return () => { cancelled = true; };
   }, [debouncedQuery]);
 
   // Handle keyboard navigation

@@ -135,7 +135,13 @@ router.get('/search', async (req: Request, res: Response) => {
       return res.status(500).json({ error: 'Search failed' });
     }
 
-    res.json({ results: data || [] });
+    // Canonicalize symbols (e.g., BRK.B -> BRK-B) so UI navigates to canónico
+    const canonicalized = (data || []).map((it: any) => {
+      const sym = String(it.symbol || '').toUpperCase();
+      const can = sym.includes('.') ? sym.replace(/\./g, '-') : sym;
+      return { ...it, symbol: can };
+    });
+    res.json({ results: canonicalized });
   } catch (error) {
     logger.error('Error in /search', error);
     res.status(500).json({ error: 'Internal server error' });

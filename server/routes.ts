@@ -301,7 +301,13 @@ export async function registerRoutes(app: Express): Promise<void> {
       }
       
       const stocks = await storage.searchStocks(query, limit);
-      res.json(stocks);
+      // Canonicalize symbols in search results (e.g., BRK.B -> BRK-B)
+      const canonicalized = stocks.map((s) => {
+        const symbol = String(s.symbol || '').toUpperCase();
+        const can = symbol.includes('.') ? symbol.replace(/\./g, '-') : symbol;
+        return { ...s, symbol: can };
+      });
+      res.json(canonicalized);
     } catch (error) {
       console.error("Search error:", error);
       res.status(500).json({ message: "Failed to search stocks" });
@@ -315,7 +321,16 @@ export async function registerRoutes(app: Express): Promise<void> {
     try {
       const validatedParams = routeValidationSchemas.getStock.parse(req.params);
       const { symbol } = validatedParams;
-      const stock = await storage.getStock(symbol);
+      const upper = String(symbol).toUpperCase();
+      let stock = await storage.getStock(upper);
+      // Alias fallback: try dot variant if hyphen was provided
+      if (!stock && upper.includes('-')) {
+        stock = await storage.getStock(upper.replace(/-/g, '.'));
+      }
+      // If we found a dot-variant in DB, canonicalize symbol in response
+      if (stock && /\./.test(stock.symbol)) {
+        stock = { ...stock, symbol: stock.symbol.replace(/\./g, '-') } as any;
+      }
       
       if (!stock) {
         return res.status(404).json({ message: "Stock not found" });

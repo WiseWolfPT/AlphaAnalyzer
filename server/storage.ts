@@ -89,7 +89,7 @@ export class DatabaseStorage implements IStorage {
       { symbol: "TSLA", name: "Tesla Inc.", price: "248.79", change: "-5.67", changePercent: "-2.23", marketCap: "$792B", sector: "Automotive", eps: "4.73", peRatio: "52.6", logo: "https://logo.clearbit.com/tesla.com" },
       { symbol: "NVDA", name: "NVIDIA Corporation", price: "875.28", change: "12.34", changePercent: "1.43", marketCap: "$2.2T", sector: "Technology", eps: "12.96", peRatio: "67.5", logo: "https://logo.clearbit.com/nvidia.com" },
       { symbol: "META", name: "Meta Platforms Inc.", price: "494.32", change: "10.42", changePercent: "2.15", marketCap: "$1.3T", sector: "Technology", eps: "14.87", peRatio: "33.2", logo: "https://logo.clearbit.com/meta.com" },
-      { symbol: "BRK.B", name: "Berkshire Hathaway Inc.", price: "432.18", change: "3.58", changePercent: "0.84", marketCap: "$954B", sector: "Financial Services", eps: "22.55", peRatio: "19.2", logo: "https://logo.clearbit.com/berkshirehathaway.com" },
+      { symbol: "BRK-B", name: "Berkshire Hathaway Inc.", price: "432.18", change: "3.58", changePercent: "0.84", marketCap: "$954B", sector: "Financial Services", eps: "22.55", peRatio: "19.2", logo: "https://logo.clearbit.com/berkshirehathaway.com" },
     ];
 
     // Insert stocks

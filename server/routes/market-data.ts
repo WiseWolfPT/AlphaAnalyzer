@@ -27,6 +27,7 @@ import {
 import { CacheService } from '../services/cache/cache-service';
 import { simpleCacheService } from '../services/simple-cache-service';
 import { threeTierCache } from '../cache/three-tier-cache';
+import { optionalMarketDataApiKey } from '../middleware/market-data-api-key';
 
 const router = Router();
 
@@ -78,6 +79,76 @@ const stockSymbolSchema = z.object({
 });
 
 // Validação para batch de símbolos
+
+/**
+ * GET /api/market-data/search
+ * Provider-wide symbol search (FMP stable search-symbol) with Redis cache
+ * Returns up to 10 canonicalized symbols (e.g., BRK-B) and names
+ */
+router.get('/search',
+  optionalMarketDataApiKey,
+  marketDataRateLimit,
+  async (req: Request, res: Response) => {
+    try {
+      const q = (req.query.query || req.query.q || '').toString().trim();
+      if (!q || q.length < 2) {
+        return res.json({ results: [] });
+      }
+
+      const apiKey = process.env.FMP_API_KEY;
+      if (!apiKey || apiKey === 'demo') {
+        return res.status(503).json({ error: 'FMP_NOT_CONFIGURED' });
+      }
+
+      const { redisCacheService } = await import('../cache/redis-cache-service');
+      const cacheKey = `search:${q.toUpperCase()}`;
+      const cached = await redisCacheService.get(cacheKey);
+      if (cached) {
+        return res.json({ results: cached });
+      }
+
+      const url = `https://financialmodelingprep.com/stable/search-symbol?query=${encodeURIComponent(q)}&limit=10&apikey=${apiKey}`;
+      let results: Array<{ symbol: string; name: string; exchange?: string }> = [];
+      try {
+        const r = await fetch(url);
+        if (r.ok) {
+          const arr = await r.json().catch(() => []);
+          if (Array.isArray(arr)) {
+            results = arr.map((it: any) => {
+              const raw = String(it.symbol || '').toUpperCase();
+              const symbol = raw.includes('.') ? raw.replace(/\./g, '-') : raw; // canonicalize
+              return {
+                symbol,
+                name: String(it.name || it.companyName || symbol),
+                exchange: it.exchange || it.exchangeShortName || undefined,
+              };
+            });
+          }
+        }
+      } catch (e) {
+        // ignore and return empty results
+      }
+
+      // Basic relevance ordering: exact > startsWith > contains
+      const term = q.toUpperCase();
+      const scored = results.map(r => {
+        let score = 0;
+        if (r.symbol === term) score = 1000;
+        else if (r.symbol.startsWith(term)) score = 200;
+        else if ((r.name || '').toUpperCase().startsWith(term)) score = 100;
+        else if (r.symbol.includes(term)) score = 50;
+        else if ((r.name || '').toUpperCase().includes(term)) score = 10;
+        return { ...r, _score: score };
+      }).sort((a, b) => b._score - a._score).slice(0, 10);
+
+      await redisCacheService.set(cacheKey, scored.map(({ _score, ...rest }) => rest), 86400);
+
+      res.json({ results: scored.map(({ _score, ...rest }) => rest) });
+    } catch (error) {
+      res.status(500).json({ error: 'SEARCH_ERROR' });
+    }
+  }
+);
 const batchSymbolsSchema = z.object({
   symbols: z.array(z.string()
     .min(1)
