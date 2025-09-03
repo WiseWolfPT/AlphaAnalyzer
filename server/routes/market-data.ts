@@ -1113,28 +1113,59 @@ router.get('/quotes/batch',
       }
 
       console.log(`📊 Batch quotes request for: ${symbols.join(', ')}`);
-      
+
       const results: any[] = [];
       const errors: Record<string, string> = {};
 
-      // Use simple cache service with 60s TTL
-      const quotes = await simpleCacheService.getBatchQuotes(symbols);
-      
-      // Transform to API response format
-      for (const [symbol, quote] of Object.entries(quotes)) {
+      // Resolve aliases using FMP stable search-symbol and cache mapping for 24h
+      const { redisCacheService } = await import('../cache/redis-cache-service');
+      const aliases: Record<string, string> = {};
+      const apiKey = process.env.FMP_API_KEY as string;
+      await Promise.all(symbols.map(async (raw) => {
+        const upper = raw.toUpperCase();
+        const aliasKey = `alias:${upper}`;
+        let canonical = await redisCacheService.get<string>(aliasKey);
+        if (!canonical) {
+          try {
+            const searchUrl = `https://financialmodelingprep.com/stable/search-symbol?query=${encodeURIComponent(upper)}&limit=1&apikey=${apiKey}`;
+            const r = await fetch(searchUrl);
+            if (r.ok) {
+              const arr = await r.json().catch(() => []);
+              canonical = Array.isArray(arr) && arr[0]?.symbol ? String(arr[0].symbol).toUpperCase() : upper;
+            } else {
+              canonical = upper;
+            }
+          } catch {
+            canonical = upper;
+          }
+          await redisCacheService.set(aliasKey, canonical, 86400);
+        }
+        aliases[upper] = canonical;
+      }));
+
+      // Deduplicate and fetch batch via cache service
+      const canonicalList = [...new Set(symbols.map(s => aliases[s.toUpperCase()]))];
+      const quotesByCan = await simpleCacheService.getBatchQuotes(canonicalList);
+
+      // Build result respecting original order and mapping back to raw symbol
+      for (const raw of symbols) {
+        const upper = raw.toUpperCase();
+        const can = aliases[upper] || upper;
+        const quote = quotesByCan[can];
         if (quote) {
           results.push({
             ...quote,
+            symbol: upper, // map back to requested symbol (e.g., BRK.B)
             _timestamp: Date.now(),
             _cached: true,
             _source: 'simple_cache',
           });
         } else {
-          errors[symbol] = 'Failed to fetch quote';
+          errors[upper] = 'Failed to fetch quote';
         }
       }
 
-      console.log(`✅ Batch quotes: ${results.length} success, ${Object.keys(errors).length} failed`);
+      console.log(`✅ Batch quotes: ${results.length} success, ${Object.keys(errors).length} failed (aliases applied)`);
 
       res.json({
         quotes: results,
