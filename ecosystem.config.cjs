@@ -2,7 +2,7 @@ module.exports = {
   apps: [
     {
       name: 'alfalyzer',
-      script: 'server/index.js',
+      script: 'dist/server/index.js',
       interpreter: 'node',
       instances: 1,
       exec_mode: 'fork',
@@ -24,7 +24,7 @@ module.exports = {
     },
     {
       name: 'price-worker',
-      script: 'server/workers/price-worker.js',
+      script: 'dist/server/workers/price-worker.js',
       interpreter: 'node',
       instances: 1,
       exec_mode: 'fork',
