@@ -1,6 +1,7 @@
 // CRITICAL: Load environment variables FIRST before any other imports
 import dotenv from 'dotenv';
-dotenv.config();
+// Load .env.production in production; fallback to .env in other environments
+dotenv.config({ path: process.env.NODE_ENV === 'production' ? '.env.production' : '.env' });
 
 // Initialize Sentry BEFORE other imports
 import { initializeSentry, setupSentryMiddleware, setupSentryErrorHandler } from './lib/sentry';
