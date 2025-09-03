@@ -169,12 +169,21 @@ class SimpleCacheService {
       // FMP supports batch requests
       if (fmpProvider) {
         const quotes = await fmpProvider.getBatchQuotes(symbols);
-        
-        // Normalize all quotes
+
+        // FMP returns an array; build a symbol-keyed map safely
         const normalized: Record<string, StockQuote> = {};
-        for (const [symbol, quote] of Object.entries(quotes)) {
-          if (quote) {
-            normalized[symbol] = this.normalizeQuote(quote, symbol);
+        if (Array.isArray(quotes)) {
+          for (const q of quotes) {
+            const sym = String((q as any).symbol || '').toUpperCase().trim();
+            if (!sym) continue;
+            normalized[sym] = this.normalizeQuote(q, sym);
+          }
+        } else if (quotes && typeof quotes === 'object') {
+          // Defensive: handle unexpected object shape
+          for (const [symRaw, q] of Object.entries(quotes as any)) {
+            const sym = String(symRaw).toUpperCase().trim();
+            if (!q) continue;
+            normalized[sym] = this.normalizeQuote(q, sym);
           }
         }
 
@@ -204,18 +213,30 @@ class SimpleCacheService {
    * Normalize quote data to ensure consistent format
    */
   private normalizeQuote(quote: any, symbol: string): StockQuote {
+    const price = Number(quote.price || quote.latestPrice || quote.c || 0);
+    const prevClose = Number(quote.previousClose || quote.prevClose || quote.pc || 0);
+    // Prefer provider change; fallback to price - prevClose
+    let change = Number(quote.change || quote.priceChange || quote.d || 0);
+    if (!isFinite(change) || (change === 0 && prevClose > 0 && price > 0)) {
+      change = prevClose > 0 ? price - prevClose : change;
+    }
+    // Prefer provider changePercent; fallback to computed based on previousClose
+    let changePercent = Number(quote.changePercent || quote.changePercentage || quote.dp || 0);
+    if (!isFinite(changePercent) && prevClose > 0) {
+      changePercent = ((price - prevClose) / prevClose) * 100;
+    }
     return {
       symbol: symbol.toUpperCase(),
-      price: Number(quote.price || quote.latestPrice || 0),
-      change: Number(quote.change || quote.priceChange || 0),
-      changePercent: Number(quote.changePercent || quote.changePercentage || 0),
+      price,
+      change,
+      changePercent,
       volume: Number(quote.volume || 0),
       marketCap: Number(quote.marketCap || 0),
       peRatio: Number(quote.peRatio || quote.pe || 0),
       high: Number(quote.high || quote.dayHigh || 0),
       low: Number(quote.low || quote.dayLow || 0),
       open: Number(quote.open || 0),
-      previousClose: Number(quote.previousClose || quote.prevClose || 0),
+      previousClose: prevClose,
       updatedAt: new Date().toISOString()
     };
   }

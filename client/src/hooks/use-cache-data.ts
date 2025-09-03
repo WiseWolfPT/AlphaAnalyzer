@@ -20,38 +20,45 @@ export function useCachedBatchQuotes(symbols: string[], options: any = {}) {
   return useQuery({
     queryKey: ['market-data', 'quotes', 'batch', unique],
     queryFn: async () => {
-      const chunks = chunk(unique, 20);
+      const chunks = chunk(unique, 50);
       const allQuotes: any[] = [];
 
       for (const c of chunks) {
-        // GET request with proper encoding
-        const qs = c.map((s) => encodeURIComponent(s)).join(',');
-        const url = `/api/market-data/quotes/batch?symbols=${qs}`;
-        
+        const url = `/api/cache/quotes/batch`;
         try {
-          const r = await fetch(url, { 
-            method: 'GET', 
-            headers: { Accept: 'application/json' } 
+          const r = await fetch(url, {
+            method: 'POST',
+            headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({ symbols: c }),
           });
-          
           if (r.ok) {
             const b = await r.json();
-            const quotes = b?.quotes ?? b?.data ?? (Array.isArray(b) ? b : []);
-            allQuotes.push(...quotes);
+            // Normalize response shape: server may return { data: Record<symbol, Quote> } or { quotes: Quote[] }
+            let quotes: any[] = [];
+            if (Array.isArray(b?.quotes)) {
+              quotes = b.quotes;
+            } else if (Array.isArray(b?.data)) {
+              quotes = b.data;
+            } else if (b?.data && typeof b.data === 'object') {
+              quotes = Object.values(b.data);
+            }
+            if (quotes.length) {
+              allQuotes.push(...quotes);
+            }
           } else {
-            console.warn(`Failed to fetch quotes for ${c.join(',')}: ${r.status} ${r.statusText}`);
-            // Continue without fallback since /api/cache/quotes/batch doesn't exist
+            console.warn(`Failed to fetch cached quotes for ${c.join(',')}: ${r.status} ${r.statusText}`);
           }
         } catch (error) {
-          console.error('Error fetching quotes:', error);
+          console.error('Error fetching cached quotes:', error);
         }
-
-        await sleep(300); // rate limit protection
+        await sleep(250);
       }
 
       return {
         quotes: allQuotes.filter((q) => q && (q.price ?? q.close ?? q.last) != null),
-        _source: 'normalized',
+        _source: 'cache',
+        _cached: true,
       };
     },
     staleTime: 60_000, // 60 seconds to match backend cache TTL
