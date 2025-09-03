@@ -31,6 +31,7 @@ import { cn } from "@/lib/utils";
 import { useRealtimeQuote } from "@/hooks/use-realtime-quotes";
 import { useCompanyData } from "@/hooks/use-company-profile";
 import { useCachedQuote } from "@/hooks/use-cache-data";
+import { useExtendedHours } from "@/hooks/use-extended-hours";
 import { useStockDetails } from "@/hooks/use-stock-details";
 
 // Mock company data
@@ -123,6 +124,8 @@ export default function StockDetail() {
   
   // Get cached quote data
   const { data: cachedQuote, isLoading: isLoadingQuote } = useCachedQuote(symbol);
+  // Extended hours
+  const { data: extendedHours } = useExtendedHours(symbol);
   
   // Debug: Log the cached quote data
   useEffect(() => {
@@ -279,6 +282,31 @@ export default function StockDetail() {
                   {Math.abs(realtimeQuote?.change_percent || company.changePercent).toFixed(2)}%)
                 </p>
               </div>
+              {/* Extended hours block */}
+              {extendedHours && (extendedHours.afterHours || extendedHours.preMarket) && (
+                <div className="col-span-2 md:col-span-2 lg:col-span-2">
+                  <div className="flex items-center gap-2 mb-1">
+                    <p className="text-sm text-muted-foreground">Extended Hours</p>
+                    <Badge variant="outline">
+                      {extendedHours.currentSession === 'pre-market' ? 'Pre-Market' : extendedHours.currentSession === 'after-hours' ? 'After-Hours' : 'Closed'}
+                    </Badge>
+                  </div>
+                  {(() => {
+                    const sess = extendedHours.currentSession === 'pre-market' ? extendedHours.preMarket : extendedHours.afterHours || extendedHours.preMarket;
+                    if (!sess) return <p className="text-sm text-muted-foreground">No extended trading data</p>;
+                    const pos = (sess.change || 0) >= 0;
+                    return (
+                      <div className="flex items-baseline gap-3">
+                        <p className="text-2xl font-bold">${(sess.price ?? 0).toFixed(2)}</p>
+                        <p className={cn("text-sm font-medium", pos ? "text-green-500" : "text-red-500")}
+                        >{pos ? '+' : ''}{Math.abs(sess.change ?? 0).toFixed(2)} ({pos ? '+' : ''}{Math.abs(sess.changePercent ?? 0).toFixed(2)}%)</p>
+                        <p className="text-xs text-muted-foreground">Vol: {Intl.NumberFormat().format(sess.volume || 0)}</p>
+                      </div>
+                    );
+                  })()}
+                  <p className="text-xs text-muted-foreground mt-1">Last update: {extendedHours.afterHours?.timestamp || extendedHours.preMarket?.timestamp}</p>
+                </div>
+              )}
               <div>
                 <p className="text-sm text-muted-foreground mb-1">Market Cap</p>
                 <p className="text-xl font-bold">{company.marketCap}</p>

@@ -1607,4 +1607,415 @@ router.get('/news/:symbol',
   }
 );
 
+/**
+ * FMP PROXY ENDPOINTS FOR COMPARE PAGE
+ * These endpoints are used by the frontend FMPService
+ */
+
+/**
+ * GET /api/market-data/fmp/key-metrics/:symbol
+ * Proxy endpoint for FMP key metrics
+ */
+router.get('/fmp/key-metrics/:symbol',
+  authService,
+  marketDataRateLimit,
+  async (req: Request, res: Response) => {
+    try {
+      const validation = stockSymbolSchema.safeParse({ symbol: req.params.symbol });
+      if (!validation.success) {
+        return res.status(400).json({
+          error: 'INVALID_SYMBOL',
+          message: 'Invalid stock symbol',
+        });
+      }
+
+      const symbol = validation.data.symbol;
+      const period = req.query.period === 'annual' ? 'annual' : 'quarter';
+      const limit = req.query.limit || '10';
+      
+      console.log(`📊 [FMP Proxy] Fetching key metrics for ${symbol}`);
+
+      if (!process.env.FMP_API_KEY || process.env.FMP_API_KEY === 'demo') {
+        return res.status(503).json({
+          error: 'FMP_NOT_CONFIGURED',
+          message: 'FMP API key not configured',
+        });
+      }
+
+      const response = await axios.get(
+        `https://financialmodelingprep.com/api/v3/key-metrics/${symbol}`,
+        {
+          params: { 
+            period, 
+            limit, 
+            apikey: process.env.FMP_API_KEY 
+          },
+          timeout: 10000
+        }
+      );
+      
+      res.json(response.data);
+
+    } catch (error) {
+      console.error('FMP key metrics proxy error:', error);
+      res.status(503).json({
+        error: 'FMP_PROXY_ERROR',
+        message: 'Failed to fetch key metrics from FMP',
+      });
+    }
+  }
+);
+
+/**
+ * GET /api/market-data/fmp/income-statement/:symbol
+ * Proxy endpoint for FMP income statement
+ */
+router.get('/fmp/income-statement/:symbol',
+  authService,
+  marketDataRateLimit,
+  async (req: Request, res: Response) => {
+    try {
+      const validation = stockSymbolSchema.safeParse({ symbol: req.params.symbol });
+      if (!validation.success) {
+        return res.status(400).json({
+          error: 'INVALID_SYMBOL',
+          message: 'Invalid stock symbol',
+        });
+      }
+
+      const symbol = validation.data.symbol;
+      const period = req.query.period === 'annual' ? 'annual' : 'quarter';
+      const limit = req.query.limit || '10';
+      
+      console.log(`💵 [FMP Proxy] Fetching income statement for ${symbol}`);
+
+      if (!process.env.FMP_API_KEY || process.env.FMP_API_KEY === 'demo') {
+        return res.status(503).json({
+          error: 'FMP_NOT_CONFIGURED',
+          message: 'FMP API key not configured',
+        });
+      }
+
+      const response = await axios.get(
+        `https://financialmodelingprep.com/api/v3/income-statement/${symbol}`,
+        {
+          params: { 
+            period, 
+            limit, 
+            apikey: process.env.FMP_API_KEY 
+          },
+          timeout: 10000
+        }
+      );
+      
+      res.json(response.data);
+
+    } catch (error) {
+      console.error('FMP income statement proxy error:', error);
+      res.status(503).json({
+        error: 'FMP_PROXY_ERROR',
+        message: 'Failed to fetch income statement from FMP',
+      });
+    }
+  }
+);
+
+/**
+ * GET /api/market-data/fmp/balance-sheet-statement/:symbol
+ * Proxy endpoint for FMP balance sheet
+ */
+router.get('/fmp/balance-sheet-statement/:symbol',
+  authService,
+  marketDataRateLimit,
+  async (req: Request, res: Response) => {
+    try {
+      const validation = stockSymbolSchema.safeParse({ symbol: req.params.symbol });
+      if (!validation.success) {
+        return res.status(400).json({
+          error: 'INVALID_SYMBOL',
+          message: 'Invalid stock symbol',
+        });
+      }
+
+      const symbol = validation.data.symbol;
+      const period = req.query.period === 'annual' ? 'annual' : 'quarter';
+      const limit = req.query.limit || '10';
+      
+      console.log(`💰 [FMP Proxy] Fetching balance sheet for ${symbol}`);
+
+      if (!process.env.FMP_API_KEY || process.env.FMP_API_KEY === 'demo') {
+        return res.status(503).json({
+          error: 'FMP_NOT_CONFIGURED',
+          message: 'FMP API key not configured',
+        });
+      }
+
+      const response = await axios.get(
+        `https://financialmodelingprep.com/api/v3/balance-sheet-statement/${symbol}`,
+        {
+          params: { 
+            period, 
+            limit, 
+            apikey: process.env.FMP_API_KEY 
+          },
+          timeout: 10000
+        }
+      );
+      
+      res.json(response.data);
+
+    } catch (error) {
+      console.error('FMP balance sheet proxy error:', error);
+      res.status(503).json({
+        error: 'FMP_PROXY_ERROR',
+        message: 'Failed to fetch balance sheet from FMP',
+      });
+    }
+  }
+);
+
+/**
+ * GET /api/market-data/fmp/cash-flow-statement/:symbol
+ * Proxy endpoint for FMP cash flow statement
+ */
+router.get('/fmp/cash-flow-statement/:symbol',
+  authService,
+  marketDataRateLimit,
+  async (req: Request, res: Response) => {
+    try {
+      const validation = stockSymbolSchema.safeParse({ symbol: req.params.symbol });
+      if (!validation.success) {
+        return res.status(400).json({
+          error: 'INVALID_SYMBOL',
+          message: 'Invalid stock symbol',
+        });
+      }
+
+      const symbol = validation.data.symbol;
+      const period = req.query.period === 'annual' ? 'annual' : 'quarter';
+      const limit = req.query.limit || '10';
+      
+      console.log(`💸 [FMP Proxy] Fetching cash flow for ${symbol}`);
+
+      if (!process.env.FMP_API_KEY || process.env.FMP_API_KEY === 'demo') {
+        return res.status(503).json({
+          error: 'FMP_NOT_CONFIGURED',
+          message: 'FMP API key not configured',
+        });
+      }
+
+      const response = await axios.get(
+        `https://financialmodelingprep.com/api/v3/cash-flow-statement/${symbol}`,
+        {
+          params: { 
+            period, 
+            limit, 
+            apikey: process.env.FMP_API_KEY 
+          },
+          timeout: 10000
+        }
+      );
+      
+      res.json(response.data);
+
+    } catch (error) {
+      console.error('FMP cash flow proxy error:', error);
+      res.status(503).json({
+        error: 'FMP_PROXY_ERROR',
+        message: 'Failed to fetch cash flow from FMP',
+      });
+    }
+  }
+);
+
+/**
+ * GET /api/market-data/fmp/profile/:symbol
+ * Proxy endpoint for FMP company profile
+ */
+router.get('/fmp/profile/:symbol',
+  authService,
+  marketDataRateLimit,
+  async (req: Request, res: Response) => {
+    try {
+      const validation = stockSymbolSchema.safeParse({ symbol: req.params.symbol });
+      if (!validation.success) {
+        return res.status(400).json({
+          error: 'INVALID_SYMBOL',
+          message: 'Invalid stock symbol',
+        });
+      }
+
+      const symbol = validation.data.symbol;
+      
+      console.log(`🏢 [FMP Proxy] Fetching profile for ${symbol}`);
+
+      if (!process.env.FMP_API_KEY || process.env.FMP_API_KEY === 'demo') {
+        return res.status(503).json({
+          error: 'FMP_NOT_CONFIGURED',
+          message: 'FMP API key not configured',
+        });
+      }
+
+      const response = await axios.get(
+        `https://financialmodelingprep.com/api/v3/profile/${symbol}`,
+        {
+          params: { 
+            apikey: process.env.FMP_API_KEY 
+          },
+          timeout: 10000
+        }
+      );
+      
+      res.json(response.data);
+
+    } catch (error) {
+      console.error('FMP profile proxy error:', error);
+      res.status(503).json({
+        error: 'FMP_PROXY_ERROR',
+        message: 'Failed to fetch profile from FMP',
+      });
+    }
+  }
+);
+
+/**
+ * GET /api/market-data/fmp/quote-short/:symbol
+ * Proxy endpoint for FMP short quote
+ */
+router.get('/fmp/quote-short/:symbol',
+  authService,
+  marketDataRateLimit,
+  async (req: Request, res: Response) => {
+    try {
+      const validation = stockSymbolSchema.safeParse({ symbol: req.params.symbol });
+      if (!validation.success) {
+        return res.status(400).json({
+          error: 'INVALID_SYMBOL',
+          message: 'Invalid stock symbol',
+        });
+      }
+
+      const symbol = validation.data.symbol;
+      
+      console.log(`📈 [FMP Proxy] Fetching short quote for ${symbol}`);
+
+      if (!process.env.FMP_API_KEY || process.env.FMP_API_KEY === 'demo') {
+        return res.status(503).json({
+          error: 'FMP_NOT_CONFIGURED',
+          message: 'FMP API key not configured',
+        });
+      }
+
+      const response = await axios.get(
+        `https://financialmodelingprep.com/api/v3/quote-short/${symbol}`,
+        {
+          params: { 
+            apikey: process.env.FMP_API_KEY 
+          },
+          timeout: 10000
+        }
+      );
+      
+      res.json(response.data);
+
+    } catch (error) {
+      console.error('FMP quote-short proxy error:', error);
+      res.status(503).json({
+        error: 'FMP_PROXY_ERROR',
+        message: 'Failed to fetch quote from FMP',
+      });
+    }
+  }
+);
+
 export default router;
+/**
+ * GET /api/stocks/:symbol/extended-hours
+ * Returns pre-market and after-hours quotes/trades summary
+ */
+router.get('/../stocks/:symbol/extended-hours' as any, async (req: Request, res: Response) => {
+  try {
+    const raw = String(req.params.symbol || '').toUpperCase().trim();
+    const symbol = raw;
+
+    if (!process.env.FMP_API_KEY || process.env.FMP_API_KEY === 'demo') {
+      return res.status(503).json({ error: 'FMP_NOT_CONFIGURED' });
+    }
+
+    const { redisCacheService } = await import('../cache/redis-cache-service');
+    const cacheKey = `ext:${symbol}`;
+    const cached = await redisCacheService.get(cacheKey);
+    if (cached) {
+      return res.json(cached);
+    }
+
+    const apiKey = process.env.FMP_API_KEY;
+    const preUrl = `https://financialmodelingprep.com/api/v4/pre-market-quote/${encodeURIComponent(symbol)}?apikey=${apiKey}`;
+    const aftUrl = `https://financialmodelingprep.com/api/v4/aftermarket-quote/${encodeURIComponent(symbol)}?apikey=${apiKey}`;
+    const preTradesUrl = `https://financialmodelingprep.com/api/v4/pre-market-trade/${encodeURIComponent(symbol)}?apikey=${apiKey}`;
+    const aftTradesUrl = `https://financialmodelingprep.com/api/v4/aftermarket-trade/${encodeURIComponent(symbol)}?apikey=${apiKey}`;
+
+    const [preRes, aftRes, preTradesRes, aftTradesRes] = await Promise.all([
+      fetch(preUrl),
+      fetch(aftUrl),
+      fetch(preTradesUrl),
+      fetch(aftTradesUrl)
+    ]);
+
+    const [preData, aftData, preTrades, aftTrades] = await Promise.all([
+      preRes.ok ? preRes.json() : Promise.resolve([]),
+      aftRes.ok ? aftRes.json() : Promise.resolve([]),
+      preTradesRes.ok ? preTradesRes.json() : Promise.resolve([]),
+      aftTradesRes.ok ? aftTradesRes.json() : Promise.resolve([])
+    ]);
+
+    const normalize = (d: any) => {
+      if (!d) return null;
+      const ask = Number(d.ask || d.price || 0);
+      const bid = Number(d.bid || 0);
+      const price = isFinite(ask) && ask > 0 ? ask : bid;
+      const prevClose = Number(d.previousClose || 0);
+      const change = isFinite(prevClose) && prevClose > 0 ? (price - prevClose) : 0;
+      const changePercent = isFinite(prevClose) && prevClose > 0 ? (change / prevClose) * 100 : 0;
+      return {
+        price,
+        change,
+        changePercent,
+        volume: 0,
+        timestamp: d.timestamp ? new Date(d.timestamp).toISOString() : new Date().toISOString()
+      };
+    };
+
+    const sumVolume = (trades: any[]) => trades?.reduce((acc, t) => acc + (Number(t.size || 0)), 0) || 0;
+
+    const pre = Array.isArray(preData) ? preData[0] : preData?.[0];
+    const aft = Array.isArray(aftData) ? aftData[0] : aftData?.[0];
+    const out = {
+      preMarket: pre ? { ...normalize(pre), volume: sumVolume(Array.isArray(preTrades) ? preTrades : []) } : null,
+      afterHours: aft ? { ...normalize(aft), volume: sumVolume(Array.isArray(aftTrades) ? aftTrades : []) } : null,
+      isExtendedHours: false,
+      currentSession: 'closed' as 'pre-market' | 'regular' | 'after-hours' | 'closed'
+    };
+
+    // Determine session (approximate using UTC hour to ET)
+    const now = new Date();
+    const hourUTC = now.getUTCHours();
+    const day = now.getUTCDay();
+    const isWeekday = day >= 1 && day <= 5;
+    // Rough ET mapping: ET ~ UTC-4/5; we only need session buckets
+    const isPre = isWeekday && hourUTC >= 8 && hourUTC < 13; // ~4:00-9:00 ET
+    const isReg = isWeekday && hourUTC >= 13 && hourUTC < 20; // ~9:00-16:00 ET
+    const isAft = isWeekday && hourUTC >= 20 && hourUTC < 24; // ~16:00-20:00 ET
+    if (isPre) out.currentSession = 'pre-market';
+    else if (isReg) out.currentSession = 'regular';
+    else if (isAft) out.currentSession = 'after-hours';
+    out.isExtendedHours = out.currentSession === 'pre-market' || out.currentSession === 'after-hours';
+
+    // Cache TTL: 30s during extended hours, 300s otherwise
+    const ttl = out.isExtendedHours ? 30 : 300;
+    await redisCacheService.set(cacheKey, out as any, ttl);
+    res.json(out);
+  } catch (error) {
+    res.status(500).json({ error: 'EXTENDED_HOURS_ERROR' });
+  }
+});
