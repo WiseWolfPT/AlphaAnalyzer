@@ -142,6 +142,19 @@ class SimpleCacheService {
         if (fmpQuote) {
           return this.normalizeQuote(fmpQuote, symbol);
         }
+        // Edge case: dot-class tickers like BRK.B – try hyphen variant for provider quirks
+        if (symbol.includes('.')) {
+          try {
+            const altSymbol = symbol.replace('.', '-');
+            const altQuote = await fmpProvider.getQuote(altSymbol);
+            if (altQuote) {
+              // Map back to original symbol to keep UI consistent
+              return this.normalizeQuote(altQuote, symbol);
+            }
+          } catch {
+            // ignore and continue to fallback provider
+          }
+        }
       }
 
       // Fallback to Alpha Vantage
@@ -172,6 +185,7 @@ class SimpleCacheService {
 
         // FMP returns an array; build a symbol-keyed map safely
         const normalized: Record<string, StockQuote> = {};
+        const requested = new Set(symbols.map(s => s.toUpperCase()));
         if (Array.isArray(quotes)) {
           for (const q of quotes) {
             const sym = String((q as any).symbol || '').toUpperCase().trim();
@@ -185,6 +199,17 @@ class SimpleCacheService {
             if (!q) continue;
             normalized[sym] = this.normalizeQuote(q, sym);
           }
+        }
+
+        // Backfill any requested symbols missing from the batch response
+        const missing = [...requested].filter(sym => !normalized[sym]);
+        if (missing.length > 0) {
+          await Promise.all(
+            missing.map(async (sym) => {
+              const q = await this.fetchQuoteFromAPI(sym);
+              if (q) normalized[sym] = q;
+            })
+          );
         }
 
         if (Object.keys(normalized).length > 0) {
