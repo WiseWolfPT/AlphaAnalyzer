@@ -8,8 +8,8 @@
 import dotenv from 'dotenv';
 import { z } from 'zod';
 
-// Carregar variáveis de ambiente do ficheiro .env
-dotenv.config();
+// Carregar variáveis de ambiente do ficheiro adequado ao ambiente
+dotenv.config({ path: process.env.NODE_ENV === 'production' ? '.env.production' : '.env' });
 
 /**
  * Schema de validação para as variáveis de ambiente
