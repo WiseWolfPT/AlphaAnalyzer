@@ -2,9 +2,8 @@ module.exports = {
   apps: [
     {
       name: 'alfalyzer',
-      script: 'server/index.ts',
-      interpreter: 'npx',
-      interpreter_args: 'tsx',
+      script: 'dist/server/index.js',
+      interpreter: 'node',
       instances: 1,
       exec_mode: 'fork',
       error_file: './logs/err.log',
@@ -20,14 +19,14 @@ module.exports = {
       env_file: './.env.production',
       env: {
         NODE_ENV: 'production',
-        PORT: 3001
+        PORT: 3001,
+        SERVE_STATIC: 'true'
       }
     },
     {
       name: 'price-worker',
-      script: 'server/workers/price-worker.ts',
-      interpreter: 'npx',
-      interpreter_args: 'tsx',
+      script: 'dist/server/workers/price-worker.js',
+      interpreter: 'node',
       instances: 1,
       exec_mode: 'fork',
       error_file: './logs/worker-err.log',
