@@ -25,12 +25,15 @@ export interface HealthStatus {
 
 export class HealthCheckService {
   async getHealth(): Promise<HealthStatus> {
+    const dbConfigured = !!supabase; // Supabase optional in current architecture
+
     const health: HealthStatus = {
       status: 'healthy',
       timestamp: Date.now(),
       services: {
         server: true,
-        database: false,
+        // If DB is not configured, treat as non-critical and mark as true
+        database: dbConfigured ? false : true,
         redis: false,
         apis: {
           alphaVantage: false,
@@ -42,11 +45,13 @@ export class HealthCheckService {
     };
 
     // Check database (Supabase)
-    try {
-      const { error } = await supabase.from('cache_quotes').select('symbol').limit(1);
-      health.services.database = !error;
-    } catch {
-      health.services.database = false;
+    if (dbConfigured) {
+      try {
+        const { error } = await supabase!.from('cache_quotes').select('symbol').limit(1);
+        health.services.database = !error;
+      } catch {
+        health.services.database = false;
+      }
     }
 
     // Check Redis
@@ -73,10 +78,10 @@ export class HealthCheckService {
     health.services.apis.twelveData = !!env.TWELVE_DATA_API_KEY;
 
     // Determine overall status
-    const criticalServices = [
-      health.services.server,
-      health.services.database
-    ];
+    // Database is only critical if configured
+    const criticalServices = dbConfigured
+      ? [health.services.server, health.services.database]
+      : [health.services.server];
     
     const importantServices = [
       health.services.redis,

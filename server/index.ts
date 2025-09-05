@@ -360,8 +360,9 @@ app.get('/api/health', async (req, res) => {
     const { healthCheckService } = await import('./services/health-check');
     const health = await healthCheckService.getDetailedHealth();
     
+    // Treat 'degraded' as 200 to avoid false downtime in monitors when DB is disabled
     const statusCode = health.status === 'healthy' ? 200 : 
-                       health.status === 'degraded' ? 206 : 503;
+                       health.status === 'degraded' ? 200 : 503;
     
     res.status(statusCode).json(health);
   } catch (error) {
