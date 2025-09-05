@@ -79,9 +79,8 @@ export class HealthCheckService {
 
     // Determine overall status
     // Database is only critical if configured
-    const criticalServices = dbConfigured
-      ? [health.services.server, health.services.database]
-      : [health.services.server];
+    // Treat database as non-critical for uptime (API + Redis are primary runtime deps)
+    const criticalServices = [health.services.server];
     
     const importantServices = [
       health.services.redis,
