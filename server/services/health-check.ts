@@ -44,10 +44,10 @@ export class HealthCheckService {
       }
     };
 
-    // Check database (Supabase)
+    // Check database (Supabase) – use profiles (user data), not market cache
     if (dbConfigured) {
       try {
-        const { error } = await supabase!.from('cache_quotes').select('symbol').limit(1);
+        const { error } = await supabase!.from('profiles').select('id').limit(1);
         health.services.database = !error;
       } catch {
         health.services.database = false;
