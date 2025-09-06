@@ -49,8 +49,14 @@ export class HealthCheckService {
       try {
         const { error } = await supabase!.from('profiles').select('id').limit(1);
         health.services.database = !error;
-      } catch {
+        if (error) {
+          (health as any).details = { ...(health as any).details, dbError: error.message };
+          console.warn('DB health check error:', error.message);
+        }
+      } catch (e: any) {
         health.services.database = false;
+        (health as any).details = { ...(health as any).details, dbError: e?.message || String(e) };
+        console.warn('DB health check exception:', e?.message || e);
       }
     }
 
