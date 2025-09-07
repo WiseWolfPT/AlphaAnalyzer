@@ -89,7 +89,7 @@ import { AuditLogger } from "./security/compliance-audit";
 // import { WebSocketServer } from 'ws';  // BROKEN: ws package removed
 import jwt from 'jsonwebtoken';
 import { parse } from 'url';
-import { validateJWTForWebSocket, extractTokenFromHeaders } from './utils/jwt-validator';
+import { validateJWTForWebSocket, extractTokenFromHeaders, validateAPIToken } from './utils/jwt-validator';
 // SECURITY FIX: CSRF protection disabled after package removal
 // import csrf from 'csurf';  // BROKEN: csurf package removed
 // SECURITY FIX: Import crypto for request IDs
@@ -413,24 +413,17 @@ if (process.env.NODE_ENV === 'production' && csrfProtection) {
       return next();
     }
     
-    // SECURITY FIX: Use centralized JWT validation for CSRF bypass
+    // SECURITY FIX: Allow CSRF bypass for valid API tokens (type=api_access)
     if (req.headers.authorization?.startsWith('Bearer ')) {
       const token = req.headers.authorization.replace('Bearer ', '');
-      
       try {
-        const validation = validateJWTForWebSocket(token); // Use WebSocket validator for API tokens
-        
+        const validation = validateAPIToken(token);
         if (validation.success && validation.payload?.type === 'api_access') {
-          // Valid API token - can bypass CSRF for machine-to-machine communication
           return next();
-        } else {
-          // Invalid token or wrong type - apply CSRF protection
-          csrfProtection(req, res, next);
         }
-      } catch (error) {
-        // Invalid JWT - apply CSRF protection
-        csrfProtection(req, res, next);
-      }
+      } catch {}
+      // Fallback to CSRF if not a valid API token
+      csrfProtection(req, res, next);
     } else {
       // No Bearer token - apply CSRF protection for cookie-based sessions
       csrfProtection(req, res, next);
