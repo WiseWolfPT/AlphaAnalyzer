@@ -173,7 +173,7 @@ export const originValidationMiddleware = (
   
   // COOLIFY FIX: Check for dynamic Coolify subdomains
   if (process.env.NODE_ENV === 'production' && origin) {
-    const coolifyPattern = /^http:\/\/[a-z0-9]+\.128\.140\.45\.28\.sslip\.io$/;
+    const coolifyPattern = /^https?:\/\/[a-z0-9]*\.?128\.140\.45\.28\.sslip\.io$/;
     if (coolifyPattern.test(origin)) {
       console.log(`✅ Origin validation: Allowing Coolify subdomain: ${origin}`);
       return next();
