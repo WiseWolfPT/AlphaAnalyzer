@@ -42,14 +42,10 @@ export const db = {
       } as UserProfile;
     }
 
+    // Simplified: fetch profile without roles join to avoid dependency on optional tables
     const { data, error } = await supabase
       .from('profiles')
-      .select(`
-        *,
-        roles:user_roles(
-          role:roles(*)
-        )
-      `)
+      .select('*')
       .eq('id', userId)
       .single();
     
