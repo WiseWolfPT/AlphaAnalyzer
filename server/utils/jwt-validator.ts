@@ -312,3 +312,9 @@ export function extractTokenFromHeaders(headers: Record<string, any>, query?: Re
   const validator = createJWTValidator();
   return validator.extractTokenFromRequest(headers, query);
 }
+
+// Validate API token (type=api_access) helper
+export function validateAPIToken(token: string): JWTValidationResult {
+  const validator = createJWTValidator();
+  return validator.validateAPIToken(token);
+}
