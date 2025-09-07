@@ -53,10 +53,12 @@ class SocketIOService {
       return;
     }
     
-    const url = API_CONFIG.baseURL || 'http://localhost:3001';
-    console.log('🔌 Connecting to Socket.IO at:', url);
-    
-    this.socket = io(url, {
+    // Use same-origin; Vite proxy (dev) e Nginx (prod) tratam do encaminhamento
+    const url = '';
+    console.log('🔌 Connecting to Socket.IO at:', url || 'same-origin');
+
+    this.socket = io(url || '/', {
+      path: '/socket.io/',
       transports: ['websocket', 'polling'],
       reconnection: true,
       reconnectionDelay: 1000,

@@ -72,6 +72,7 @@ export default function IntrinsicValue() {
   const [discountRate, setDiscountRate] = useState(10);
   const [terminalGrowth, setTerminalGrowth] = useState(3);
   const [years, setYears] = useState(10);
+  const [presetKey, setPresetKey] = useState<'conservative' | 'base' | 'optimistic' | null>(null);
 
   // Read symbol from URL on page load
   useEffect(() => {
@@ -99,39 +100,56 @@ export default function IntrinsicValue() {
     }
   }, []);
   
+  // Normalize symbol for API/provider (dot->hyphen for class shares like BRK.B)
+  const normalizedSymbol = (selectedStock?.symbol || '').replace('.', '-');
+
   // Get realtime quote if enabled and stock is selected
   const { quote: realtimeQuote, isConnected } = useRealtimeQuote(selectedStock?.symbol || '', {
     enabled: useRealtime && !!selectedStock?.symbol
   });
 
   // Use cached fundamentals and financials for valuation
-  const { data: fundamentals } = useCachedFundamentals(selectedStock?.symbol || '', {
+  const { data: fundamentals } = useCachedFundamentals(normalizedSymbol || '', {
     enabled: !!selectedStock?.symbol
   });
   
-  const { data: financials } = useCachedFinancials(selectedStock?.symbol || '', {
+  const { data: financials } = useCachedFinancials(normalizedSymbol || '', {
     enabled: !!selectedStock?.symbol
   });
+
+  // Cache-first quote fallback (if realtime not available)
+  const { data: cachedQuoteResp } = useCachedQuote(normalizedSymbol || '', {
+    enabled: !!selectedStock?.symbol
+  });
+  // Normalize cache response shape
+  const cachedQuote: any = (cachedQuoteResp && (cachedQuoteResp as any).data) ? (cachedQuoteResp as any).data : cachedQuoteResp;
   
   // Fetch DCF data for the new calculator
   const { data: dcfData } = useQuery({
-    queryKey: [`/api/market-data/dcf/${selectedStock?.symbol}`],
+    queryKey: [`/api/market-data/dcf/${normalizedSymbol}`],
     enabled: !!selectedStock?.symbol,
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
-  // Cache-first Intrinsic Value
+  // Official Intrinsic Value (backend computed)
+  const { data: officialIV } = useQuery({
+    queryKey: [`/api/valuation/intrinsic/${normalizedSymbol}`],
+    enabled: !!selectedStock?.symbol,
+    staleTime: 24 * 60 * 60 * 1000,
+  });
+
+  // Cache-first Intrinsic Value (fallback)
   const { data: cachedIV } = useQuery({
-    queryKey: [`/api/cache/intrinsic-values/${selectedStock?.symbol}`],
+    queryKey: [`/api/cache/intrinsic-values/${normalizedSymbol}`],
     enabled: !!selectedStock?.symbol,
     staleTime: 24 * 60 * 60 * 1000,
   });
   
   // Hydrate calculation from cached IV when available
   useEffect(() => {
-    if (!cachedIV || !selectedStock) return;
+    if (!selectedStock) return;
     try {
-      const payload: any = cachedIV;
+      const payload: any = officialIV || cachedIV;
       const data = payload?.data ?? payload;
       if (!data || !data.intrinsicValue) return;
       const currentPrice = parseFloat(data.currentPrice || '0');
@@ -153,7 +171,48 @@ export default function IntrinsicValue() {
         ],
       });
     } catch {}
-  }, [cachedIV, selectedStock?.symbol]);
+  }, [officialIV, cachedIV, selectedStock?.symbol]);
+
+  // Auto-calculate Scenario model when presets change
+  useEffect(() => {
+    if (!selectedStock || !presetKey) return;
+    try {
+      // Try get EPS from official IV payload or fundamentals
+      const payload: any = officialIV || cachedIV;
+      const data = payload?.data ?? payload ?? {};
+      const epsFromOfficial = parseFloat(String(data?.eps ?? ''));
+      const epsFromFund = parseFloat(String((fundamentals as any)?.eps ?? (fundamentals as any)?.EPS ?? ''));
+      const epsValue = Number.isFinite(epsFromOfficial) && epsFromOfficial > 0 ? epsFromOfficial : (Number.isFinite(epsFromFund) && epsFromFund > 0 ? epsFromFund : parseFloat(eps));
+
+      const px = Number(realtimeQuote?.price ?? cachedQuote?.price ?? cachedQuote?.close ?? cachedQuote?.last ?? selectedStock.price ?? 0);
+
+      const preset = presetKey === 'conservative'
+        ? { growthRate: 5, discountRate: 11, terminalGrowth: 2, peTerminal: 18, marginOfSafety: 30, projectionYears: 10 }
+        : presetKey === 'base'
+        ? { growthRate: 8, discountRate: 10, terminalGrowth: 2, peTerminal: 22, marginOfSafety: 25, projectionYears: 10 }
+        : { growthRate: 12, discountRate: 9, terminalGrowth: 2.5, peTerminal: 25, marginOfSafety: 20, projectionYears: 10 };
+
+      // Simple blended model: DCF (70%) + PE terminal (30%), then apply MOS
+      const dcfVal = calculateDCF(epsValue, preset.growthRate, preset.discountRate, preset.terminalGrowth, preset.projectionYears);
+      const peVal = calculatePE(epsValue, preset.peTerminal);
+      const blended = 0.7 * dcfVal + 0.3 * peVal;
+      const withMOS = blended * (1 - preset.marginOfSafety / 100);
+      const discountPct = withMOS > 0 ? ((px - withMOS) / withMOS) * 100 : 0;
+
+      setCalculation({
+        currentPrice: px,
+        intrinsicValue: withMOS,
+        discount: discountPct,
+        isUndervalued: discountPct < 0,
+        methods: [
+          { method: 'DCF (preset)', value: dcfVal, description: 'DCF based on preset inputs', confidence: 80 },
+          { method: 'P/E Terminal', value: peVal, description: 'EPS × P/E terminal', confidence: 60 },
+        ],
+      });
+    } catch {
+      // ignore
+    }
+  }, [presetKey, officialIV, cachedIV, fundamentals, realtimeQuote, cachedQuote, selectedStock?.symbol]);
   
   const { data: searchResults, error: searchError, isLoading: searchLoading } = useQuery<Stock[]>({
     queryKey: [`/api/stocks/search?q=${encodeURIComponent(searchQuery)}`],
@@ -305,6 +364,13 @@ export default function IntrinsicValue() {
     current: calculation.currentPrice
   })) || [];
 
+  // Current preset configuration (for UI hints if needed)
+  const presetConfig = presetKey ? (
+    presetKey === 'conservative' ? { growthRate: 5, discountRate: 11, terminalGrowth: 2, marginOfSafety: 30, projectionYears: 10 } :
+    presetKey === 'base' ? { growthRate: 8, discountRate: 10, terminalGrowth: 2, marginOfSafety: 25, projectionYears: 10 } :
+    { growthRate: 12, discountRate: 9, terminalGrowth: 2.5, marginOfSafety: 20, projectionYears: 10 }
+  ) : null;
+
   return (
     <MainLayout>
       <div className="container mx-auto px-6 py-8 max-w-7xl">
@@ -341,6 +407,7 @@ export default function IntrinsicValue() {
                 setSelectedStock(stock);
                 setSearchQuery(stock.symbol);
                 setCalculation(null);
+                setPresetKey('base');
               }}
               placeholder="Search for a stock to analyze..."
               showRecentSearches={true}
@@ -379,24 +446,102 @@ export default function IntrinsicValue() {
                     )}
                     
                     <div className="text-3xl font-bold">
-                      {formatCurrency(realtimeQuote?.price || parseFloat(selectedStock.price))}
+                      {formatCurrency(
+                        (realtimeQuote?.price ?? cachedQuote?.price ?? cachedQuote?.close ?? cachedQuote?.last ?? 0) ||
+                        parseFloat(String(selectedStock.price || 0))
+                      )}
                     </div>
                     <div className={`flex items-center gap-1 ${
-                      (realtimeQuote ? realtimeQuote.change >= 0 : parseFloat(selectedStock.changePercent) >= 0) ? 'text-green-600' : 'text-red-600'
+                      ((realtimeQuote?.change ?? cachedQuote?.change ?? parseFloat(String(selectedStock.changePercent || 0))) >= 0)
+                        ? 'text-green-600' : 'text-red-600'
                     }`}>
-                      {(realtimeQuote ? realtimeQuote.change >= 0 : parseFloat(selectedStock.changePercent) >= 0) ? 
+                      {((realtimeQuote?.change ?? cachedQuote?.change ?? parseFloat(String(selectedStock.changePercent || 0))) >= 0) ? 
                         <ArrowUp className="h-4 w-4" /> : 
                         <ArrowDown className="h-4 w-4" />
                       }
                       <span>
-                        {realtimeQuote ? 
-                          `${realtimeQuote.change >= 0 ? '+' : ''}${realtimeQuote.change_percent.toFixed(2)}%` : 
-                          `${selectedStock.changePercent}%`
-                        }
+                        {`${((realtimeQuote?.change_percent ?? cachedQuote?.changePercent ?? cachedQuote?.change_percent ?? parseFloat(String(selectedStock.changePercent || 0))) >= 0 ? '+' : '')}${
+                          (realtimeQuote?.change_percent ?? cachedQuote?.changePercent ?? cachedQuote?.change_percent ?? parseFloat(String(selectedStock.changePercent || 0))).toFixed(2)
+                        }%`}
                       </span>
                     </div>
                   </div>
                 </div>
+              </CardContent>
+            </Card>
+
+            {/* Official Intrinsic Value reference + Scenario */}
+            <Card>
+              <CardContent className="p-6">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-6 items-center">
+                  <div>
+                    <div className="text-sm text-muted-foreground">Valor Intrínseco Oficial</div>
+                    <div className="text-2xl font-bold text-primary">
+                      {(() => {
+                        const payload: any = officialIV || cachedIV;
+                        const data = payload?.data ?? payload;
+                        const iv = data?.intrinsicValue ? parseFloat(data.intrinsicValue) : null;
+                        return iv ? formatCurrency(iv) : 'N/A';
+                      })()}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-sm text-muted-foreground">Preço Atual</div>
+                    <div className="text-2xl font-bold">
+                      {formatCurrency(
+                        (realtimeQuote?.price ?? cachedQuote?.price ?? cachedQuote?.close ?? cachedQuote?.last ?? 0) ||
+                        parseFloat(String(selectedStock.price || 0))
+                      )}
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-sm text-muted-foreground">Upside vs. VI</div>
+                    <div className={`text-2xl font-bold ${(() => {
+                      const payload: any = officialIV || cachedIV;
+                      const data = payload?.data ?? payload;
+                      const iv = data?.intrinsicValue ? parseFloat(data.intrinsicValue) : null;
+                      const px = Number(realtimeQuote?.price ?? cachedQuote?.price ?? cachedQuote?.close ?? cachedQuote?.last ?? 0);
+                      const diff = iv && px ? ((iv - px) / px) * 100 : null;
+                      return diff !== null && diff > 0 ? 'text-green-600' : 'text-red-600';
+                    })()}`}>
+                      {(() => {
+                        const payload: any = officialIV || cachedIV;
+                        const data = payload?.data ?? payload;
+                        const iv = data?.intrinsicValue ? parseFloat(data.intrinsicValue) : null;
+                        const px = Number(realtimeQuote?.price ?? cachedQuote?.price ?? cachedQuote?.close ?? cachedQuote?.last ?? 0);
+                        const diff = iv && px ? ((iv - px) / px) * 100 : null;
+                        return diff === null ? '—' : `${diff.toFixed(1)}%`;
+                      })()}
+                    </div>
+                    {(() => {
+                      const payload: any = officialIV || cachedIV;
+                      const data = payload?.data ?? payload;
+                      const updated = data?.calculatedAt || data?.lastUpdated;
+                      return updated ? <div className="text-xs text-muted-foreground">Atualizado: {new Date(updated).toLocaleString()}</div> : null;
+                    })()}
+                  </div>
+                  <div>
+                    <div className="text-sm text-muted-foreground">VI (Cenário)</div>
+                    <div className="text-2xl font-bold">
+                      {calculation?.intrinsicValue ? formatCurrency(calculation.intrinsicValue) : '—'}
+                    </div>
+                    <div className={`text-sm ${calculation ? (calculation.isUndervalued ? 'text-green-600' : 'text-red-600') : 'text-muted-foreground'}`}>
+                      {calculation ? `${formatPercentage(-calculation.discount)} vs. Preço` : 'Selecione um preset'}
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Presets (simple) */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Presets de Cenário</CardTitle>
+              </CardHeader>
+              <CardContent className="flex flex-wrap gap-3">
+                <Button variant={presetKey === 'conservative' ? 'default' : 'outline'} onClick={() => setPresetKey('conservative')}>Conservador</Button>
+                <Button variant={presetKey === 'base' ? 'default' : 'outline'} onClick={() => setPresetKey('base')}>Base</Button>
+                <Button variant={presetKey === 'optimistic' ? 'default' : 'outline'} onClick={() => setPresetKey('optimistic')}>Otimista</Button>
               </CardContent>
             </Card>
 
@@ -564,40 +709,49 @@ export default function IntrinsicValue() {
               </div>
             )}
 
-            {/* Advanced DCF Calculator with Real Data */}
-            <DCFCalculatorCard 
-              symbol={selectedStock.symbol}
-              currentPrice={realtimeQuote?.price || parseFloat(selectedStock.price)}
-              onCalculate={(result) => {
-                // Update the main calculation result
-                setCalculation({
-                  currentPrice: realtimeQuote?.price || parseFloat(selectedStock.price),
-                  intrinsicValue: result.intrinsicValuePerShare,
-                  discount: result.upside,
-                  isUndervalued: result.upside > 0,
-                  methods: [
-                    {
-                      method: "DCF (Free Cash Flow)",
-                      value: result.intrinsicValuePerShare,
-                      description: "Discounted Cash Flow with FCF",
-                      confidence: 90
-                    },
-                    {
-                      method: "Enterprise Value",
-                      value: result.enterpriseValue / (dcfData?.sharesOutstanding || 1000000000),
-                      description: "Enterprise value per share",
-                      confidence: 85
-                    },
-                    {
-                      method: "With Margin of Safety",
-                      value: result.intrinsicValuePerShare * 0.75,
-                      description: "25% margin of safety applied",
-                      confidence: 95
-                    }
-                  ]
-                });
-              }}
-            />
+            {/* Advanced DCF Calculator with Real Data (collapsed by default) */}
+            <details>
+              <summary className="cursor-pointer px-2 py-1 text-sm text-muted-foreground">Avançado (opcional)</summary>
+              <div className="mt-4">
+                <DCFCalculatorCard 
+                  symbol={normalizedSymbol}
+                  currentPrice={
+                    (realtimeQuote?.price ?? cachedQuote?.price ?? cachedQuote?.close ?? cachedQuote?.last ?? 0) ||
+                    parseFloat(String(selectedStock.price || 0))
+                  }
+                  preset={presetConfig}
+                  onCalculate={(result) => {
+                    // Update the main calculation result
+                    setCalculation({
+                      currentPrice: realtimeQuote?.price || parseFloat(selectedStock.price),
+                      intrinsicValue: result.intrinsicValuePerShare,
+                      discount: result.upside,
+                      isUndervalued: result.upside > 0,
+                      methods: [
+                        {
+                          method: "DCF (Free Cash Flow)",
+                          value: result.intrinsicValuePerShare,
+                          description: "Discounted Cash Flow with FCF",
+                          confidence: 90
+                        },
+                        {
+                          method: "Enterprise Value",
+                          value: result.enterpriseValue / (dcfData?.sharesOutstanding || 1000000000),
+                          description: "Enterprise value per share",
+                          confidence: 85
+                        },
+                        {
+                          method: "With Margin of Safety",
+                          value: result.intrinsicValuePerShare * 0.75,
+                          description: "25% margin of safety applied",
+                          confidence: 95
+                        }
+                      ]
+                    });
+                  }}
+                />
+              </div>
+            </details>
 
             {/* Legacy Manual Calculator - Hidden but kept for backward compatibility */}
             {false && (

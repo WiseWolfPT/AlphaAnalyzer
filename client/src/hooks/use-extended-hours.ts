@@ -15,7 +15,7 @@ export interface ExtendedHoursResponse {
   currentSession: 'pre-market' | 'regular' | 'after-hours' | 'closed';
 }
 
-const getApiUrl = () => (import.meta.env.DEV ? 'http://localhost:3001' : '');
+const getApiUrl = () => '';
 
 export function useExtendedHours(symbol: string) {
   return useQuery<ExtendedHoursResponse>({

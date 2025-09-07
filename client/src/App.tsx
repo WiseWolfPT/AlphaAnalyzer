@@ -521,30 +521,32 @@ function App() {
 
   return (
     <DebugErrorBoundary>
-      <CurrencyProvider>
-        <PortfolioManagerProvider>
-          <FinancialWidgetErrorBoundary>
-            <EnhancedErrorBoundary context="Root Application">
-              <QueryClientProvider client={queryClient}>
-                <QueryDebugWrapper queryClient={queryClient}>
-                  <ThemeProvider defaultTheme="dark" storageKey="alfalyzer-theme">
-                    <NotificationToast />
-                    <Toaster />
-                    <DebugModeToggle />
-                    <Router />
-                    <CookieConsentBanner />
-                    <ReactQueryDevtools 
-                      initialIsOpen={false} 
-                      buttonPosition="bottom-right"
-                      position="bottom"
-                    />
-                  </ThemeProvider>
-                </QueryDebugWrapper>
-              </QueryClientProvider>
-            </EnhancedErrorBoundary>
-          </FinancialWidgetErrorBoundary>
-        </PortfolioManagerProvider>
-      </CurrencyProvider>
+      <SupabaseAuthProvider>
+        <CurrencyProvider>
+          <PortfolioManagerProvider>
+            <FinancialWidgetErrorBoundary>
+              <EnhancedErrorBoundary context="Root Application">
+                <QueryClientProvider client={queryClient}>
+                  <QueryDebugWrapper queryClient={queryClient}>
+                    <ThemeProvider defaultTheme="dark" storageKey="alfalyzer-theme">
+                      <NotificationToast />
+                      <Toaster />
+                      <DebugModeToggle />
+                      <Router />
+                      <CookieConsentBanner />
+                      <ReactQueryDevtools 
+                        initialIsOpen={false} 
+                        buttonPosition="bottom-right"
+                        position="bottom"
+                      />
+                    </ThemeProvider>
+                  </QueryDebugWrapper>
+                </QueryClientProvider>
+              </EnhancedErrorBoundary>
+            </FinancialWidgetErrorBoundary>
+          </PortfolioManagerProvider>
+        </CurrencyProvider>
+      </SupabaseAuthProvider>
     </DebugErrorBoundary>
   );
 }

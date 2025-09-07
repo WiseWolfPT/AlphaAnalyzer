@@ -3,13 +3,17 @@ import { apiConfig } from "./api-config";
 
 // Get authentication headers
 function getAuthHeaders(): Record<string, string> {
+  const headers: Record<string, string> = {};
   const token = localStorage.getItem('alfalyzer-token') || localStorage.getItem('auth-token');
   if (token) {
-    return {
-      'Authorization': `Bearer ${token}`
-    };
+    headers['Authorization'] = `Bearer ${token}`;
   }
-  return {};
+  // Ensure market data requests include API key from build env
+  const apiKey = import.meta.env.VITE_MARKET_DATA_API_KEY;
+  if (apiKey) {
+    headers['X-API-Key'] = apiKey;
+  }
+  return headers;
 }
 
 async function throwIfResNotOk(res: Response) {

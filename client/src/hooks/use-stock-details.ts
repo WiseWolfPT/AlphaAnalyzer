@@ -80,7 +80,7 @@ export function useStockDetails(symbol: string) {
         setData(prev => ({ ...prev, isLoading: true, error: null }));
 
         // Fetch all data in parallel
-        const baseURL = import.meta.env.DEV ? 'http://localhost:3001' : '';
+        const baseURL = '';
         const [
           profileRes,
           metricsRes,

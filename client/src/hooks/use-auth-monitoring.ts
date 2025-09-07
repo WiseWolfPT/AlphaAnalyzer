@@ -6,7 +6,30 @@ import { analytics, userContext } from '@/lib/monitoring';
 
 // Custom hook that integrates authentication with monitoring
 export const useAuthMonitoring = () => {
-  const auth = useSupabaseAuth();
+  // Handle case where provider isn't available yet
+  let auth;
+  try {
+    auth = useSupabaseAuth();
+  } catch (error) {
+    console.warn('SupabaseAuthProvider not available yet, using fallback');
+    // Return fallback auth object with default values
+    return {
+      user: null,
+      session: null,
+      loading: true,
+      userProfile: null,
+      isAuthenticated: false,
+      signUp: async () => ({ user: null, error: { message: 'Auth not ready' } }),
+      signIn: async () => ({ user: null, error: { message: 'Auth not ready' } }),
+      signInWithGoogle: async () => ({ user: null, error: { message: 'Auth not ready' } }),
+      signOut: async () => ({ error: { message: 'Auth not ready' } }),
+      resetPassword: async () => ({ error: { message: 'Auth not ready' } }),
+      updateProfile: async () => ({ user: null, error: { message: 'Auth not ready' } }),
+      refreshUser: async () => {},
+      trackUserAction: () => {},
+      trackPageVisit: () => {}
+    };
+  }
 
   // Update monitoring context when auth state changes
   useEffect(() => {

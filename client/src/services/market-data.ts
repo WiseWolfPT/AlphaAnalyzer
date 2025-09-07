@@ -75,14 +75,16 @@ export class MarketDataService {
   async getQuote(symbol: string): Promise<StockQuote> {
     try {
       console.log(`📊 Fetching quote for ${symbol}...`);
+      // Normalize common alias: providers/backend use hyphen for class shares (e.g., BRK-B)
+      const apiSymbol = symbol.replace('.', '-');
       
       // Use v1 API for symbols in feature flag
       let endpoint: string;
-      if (API_FEATURE_FLAGS.useRealApi(symbol)) {
+      if (API_FEATURE_FLAGS.useRealApi(apiSymbol)) {
         console.log(`🔥 Using real API (v1) for ${symbol}`);
-        endpoint = API_ENDPOINTS.v1.stock.quote(symbol);
+        endpoint = API_ENDPOINTS.v1.stock.quote(apiSymbol);
       } else {
-        endpoint = API_ENDPOINTS.quotes.single(symbol);
+        endpoint = API_ENDPOINTS.quotes.single(apiSymbol);
       }
       
       const response = await apiClient.get<any>(endpoint);
@@ -118,13 +120,15 @@ export class MarketDataService {
   async getBatchQuotes(symbols: string[]): Promise<BatchQuotesResponse> {
     try {
       console.log(`📊 Fetching batch quotes for ${symbols.length} symbols...`);
+      // Normalize symbols to backend/provider format (dot to hyphen)
+      const normalizedSymbols = symbols.map(s => s.replace('.', '-'));
       
       // Chunk symbols to avoid timeout on large requests
       const CHUNK_SIZE = 20;
       const chunks: string[][] = [];
       
-      for (let i = 0; i < symbols.length; i += CHUNK_SIZE) {
-        chunks.push(symbols.slice(i, i + CHUNK_SIZE));
+      for (let i = 0; i < normalizedSymbols.length; i += CHUNK_SIZE) {
+        chunks.push(normalizedSymbols.slice(i, i + CHUNK_SIZE));
       }
       
       console.log(`📦 Splitting into ${chunks.length} chunks of max ${CHUNK_SIZE} symbols`);

@@ -88,9 +88,28 @@ export default defineConfig({
       ignored: ['**/node_modules/**', '**/.git/**', '**/dist/**'],
     },
     
-    // TEMPORARILY DISABLED: Proxy causing 426 errors
-    // Frontend will call backend directly at http://localhost:3001
-    proxy: {},
+    // Dev proxy: keep client code using relative paths
+    proxy: {
+      '/api': {
+        target: 'http://localhost:3001',
+        changeOrigin: true,
+        secure: false,
+      },
+      // Socket.IO default path
+      '/socket.io': {
+        target: 'http://localhost:3001',
+        ws: true,
+        changeOrigin: true,
+        secure: false,
+      },
+      // Explicit WS endpoints used by code
+      '/api/ws': {
+        target: 'ws://localhost:3001',
+        ws: true,
+        changeOrigin: true,
+        secure: false,
+      },
+    },
     
     // Performance optimizations for development
     middlewareMode: false,
@@ -125,9 +144,9 @@ export default defineConfig({
     // Global constants for development
     __DEV__: process.env.NODE_ENV === 'development',
     __PROD__: process.env.NODE_ENV === 'production',
-    // API configuration
-    'process.env.VITE_API_URL': JSON.stringify(process.env.VITE_API_URL || 'http://localhost:3001'),
-    'process.env.VITE_WS_URL': JSON.stringify(process.env.VITE_WS_URL || 'ws://localhost:3001'),
+    // API configuration (prefer relative paths; VITE_API_URL deprecated)
+    'process.env.VITE_API_URL': JSON.stringify(process.env.VITE_API_URL || ''),
+    'process.env.VITE_WS_URL': JSON.stringify(process.env.VITE_WS_URL || ''),
   },
   
   // Enhanced CSS configuration

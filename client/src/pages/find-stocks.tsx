@@ -403,8 +403,12 @@ export default function FindStocks() {
   const stocks = React.useMemo(() => {
     // For now, create stock cards for all displayed symbols, even if we don't have quote data
     return displayedSymbols.map((symbol, index) => {
-      // Try to find quote data for this symbol
-      const quote = quotesData?.quotes?.find(q => q?.symbol === symbol);
+      // Try to find quote data for this symbol (handle dot↔hyphen aliases, e.g., BRK.B ↔ BRK-B)
+      const quote = quotesData?.quotes?.find(q => 
+        q?.symbol === symbol ||
+        q?.symbol?.replace('-', '.') === symbol ||
+        symbol.replace('.', '-') === q?.symbol
+      );
       
       // Use quote data if available, otherwise use default values
       const price = quote?.price || quote?.close || quote?.last || 0;

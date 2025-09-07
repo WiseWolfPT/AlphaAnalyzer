@@ -6,7 +6,8 @@
 export const API_CONFIG = {
   // Use empty baseURL to work with Vercel proxy in production
   // In development, use localhost:3001
-  baseURL: import.meta.env.DEV ? 'http://localhost:3001' : '',
+  // Relative base: Vite proxy em dev e Nginx em prod
+  baseURL: '',
   
   // Request timeout - 30 seconds to handle cold starts
   timeout: 30000,

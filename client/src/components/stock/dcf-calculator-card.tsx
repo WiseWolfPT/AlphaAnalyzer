@@ -56,9 +56,16 @@ interface DCFCalculatorCardProps {
   symbol: string;
   currentPrice: number;
   onCalculate?: (result: DCFResult) => void;
+  preset?: {
+    growthRate?: number;
+    terminalGrowth?: number;
+    discountRate?: number;
+    marginOfSafety?: number;
+    projectionYears?: number;
+  } | null;
 }
 
-export function DCFCalculatorCard({ symbol, currentPrice, onCalculate }: DCFCalculatorCardProps) {
+export function DCFCalculatorCard({ symbol, currentPrice, onCalculate, preset }: DCFCalculatorCardProps) {
   // State for DCF inputs
   const [growthRate, setGrowthRate] = useState(10);
   const [terminalGrowth, setTerminalGrowth] = useState(3);
@@ -86,6 +93,20 @@ export function DCFCalculatorCard({ symbol, currentPrice, onCalculate }: DCFCalc
       if (dcfData.suggestedDiscountRate) setDiscountRate(dcfData.suggestedDiscountRate);
     }
   }, [dcfData]);
+
+  // Apply external preset from parent (presets Conservador/Base/Otimista)
+  useEffect(() => {
+    if (!preset) return;
+    if (typeof preset.growthRate === 'number') setGrowthRate(preset.growthRate);
+    if (typeof preset.terminalGrowth === 'number') setTerminalGrowth(preset.terminalGrowth);
+    if (typeof preset.discountRate === 'number') setDiscountRate(preset.discountRate);
+    if (typeof preset.marginOfSafety === 'number') setMarginOfSafety(preset.marginOfSafety);
+    if (typeof preset.projectionYears === 'number') setProjectionYears(preset.projectionYears);
+    // Recalculate with new preset
+    // Slight delay to ensure state updates apply
+    const t = setTimeout(() => handleCalculate(), 0);
+    return () => clearTimeout(t);
+  }, [preset]);
 
   // Calculate DCF when inputs change
   const handleCalculate = () => {
@@ -117,6 +138,14 @@ export function DCFCalculatorCard({ symbol, currentPrice, onCalculate }: DCFCalc
       onCalculate(result);
     }
   };
+
+  // Auto-calculate when symbol/DCf data/current price are ready
+  useEffect(() => {
+    if (dcfData && symbol) {
+      handleCalculate();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [symbol, !!dcfData, currentPrice]);
 
   // Format currency
   const formatCurrency = (value: number) => {

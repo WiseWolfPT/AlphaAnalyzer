@@ -1,14 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 
 // Helper to get API URL
-const getApiUrl = () => {
-  // In development, use localhost:3001
-  // In production, use relative URLs (proxy handles it)
-  if (import.meta.env.DEV) {
-    return 'http://localhost:3001';
-  }
-  return '';
-};
+const getApiUrl = () => '';
 
 // Hook for batch quotes - GET with chunking, delay and fallback
 export function useCachedBatchQuotes(symbols: string[], options: any = {}) {

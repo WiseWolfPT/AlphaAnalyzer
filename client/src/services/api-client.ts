@@ -28,9 +28,9 @@ class ApiClient {
 
   constructor() {
     // Use appropriate baseURL for each environment
-    const baseURL = import.meta.env.DEV 
-      ? 'http://localhost:3001' 
-      : ''; // In production, use relative URLs (same origin)
+    // Use relative URLs em todos os ambientes; Vite proxy (dev) e Nginx (prod)
+    // encaminham /api para o backend corretamente.
+    const baseURL = '';
     
     this.client = axios.create({
       baseURL,
@@ -40,10 +40,7 @@ class ApiClient {
     });
 
     this.setupInterceptors();
-    // Fetch CSRF token on initialization in production
-    if (!import.meta.env.DEV) {
-      this.fetchCsrfToken();
-    }
+    // Do not eagerly fetch CSRF on init; fetch lazily only when needed
   }
 
   private async fetchCsrfToken(): Promise<string> {
@@ -83,9 +80,12 @@ class ApiClient {
           config.headers.Authorization = `Bearer ${token}`;
         }
 
-        // Add API key for market data endpoints
+        // Add API key for market data endpoints (from build-time env)
         if (config.url?.includes('/market-data/')) {
-          config.headers['X-API-Key'] = 'alfalyzer-mkt-2025-secure-key';
+          const apiKey = import.meta.env.VITE_MARKET_DATA_API_KEY;
+          if (apiKey) {
+            config.headers['X-API-Key'] = apiKey;
+          }
         }
 
         // Add CSRF token for state-changing requests in production

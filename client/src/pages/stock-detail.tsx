@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { useParams, useLocation } from "wouter";
 import { MainLayout } from "@/components/layout/main-layout";
 import { AdvancedTradingChart } from "@/components/charts/advanced-trading-chart";
@@ -33,6 +34,7 @@ import { useCompanyData } from "@/hooks/use-company-profile";
 import { useCachedQuote } from "@/hooks/use-cache-data";
 import { useExtendedHours } from "@/hooks/use-extended-hours";
 import { useStockDetails } from "@/hooks/use-stock-details";
+import { ClientOnly } from "@/components/shared/client-only";
 
 // Mock company data
 const getCompanyData = (symbol: string) => {
@@ -181,6 +183,43 @@ export default function StockDetail() {
   } : mockData;
   
   const isPositive = company.change >= 0;
+
+  // Fetch official Intrinsic Value (cache-first, read-only)
+  const { data: officialIvResp } = useQuery({
+    queryKey: ["officialIV", symbol],
+    queryFn: async () => {
+      try {
+        // Try exact symbol first
+        const r1 = await import("@/lib/api").then(m => m.intrinsicValueApi.getBySymbol(symbol));
+        if (r1 && (r1 as any).data && (r1 as any).data.intrinsicValue) return r1;
+        // Fallback: canonicalize dot->hyphen (e.g., BRK.B -> BRK-B)
+        const normalized = symbol.includes('.') ? symbol.replace(/\./g, '-') : symbol;
+        if (normalized !== symbol) {
+          const r2 = await import("@/lib/api").then(m => m.intrinsicValueApi.getBySymbol(normalized));
+          return r2;
+        }
+        return r1;
+      } catch {
+        return null as any;
+      }
+    },
+    staleTime: 24 * 60 * 60 * 1000,
+  });
+
+  const officialIVData: any = officialIvResp && (officialIvResp as any).data ? (officialIvResp as any).data : null;
+  const officialIntrinsicValue = officialIVData?.intrinsicValue ? Number(officialIVData.intrinsicValue) : null;
+  const latestPrice = Number(realtimeQuote?.price ?? company.price ?? 0);
+  const valuationDiff = officialIntrinsicValue && latestPrice
+    ? ((latestPrice - officialIntrinsicValue) / officialIntrinsicValue) * 100
+    : null;
+  const isUndervalued = valuationDiff !== null ? valuationDiff < 0 : null;
+
+  // Simple sensitivity band (client-side only, based on official IV if available)
+  const baseIV = officialIntrinsicValue ?? null;
+  const conservativeIV = baseIV ? baseIV * 0.9 : null; // -10%
+  const optimisticIV = baseIV ? baseIV * 1.1 : null;   // +10%
+
+  const formatCurrency = (value: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(value || 0);
 
   const handleAddToWatchlist = () => {
     setIsInWatchlist(!isInWatchlist);
@@ -369,39 +408,56 @@ export default function StockDetail() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="bg-gradient-to-r from-teya-green/10 to-teya-green/5 border border-teya-green/20 rounded-lg p-6 space-y-4">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h3 className="text-2xl font-bold text-teya-green">$185.50</h3>
-                        <p className="text-sm text-muted-foreground">Valor Intrínseco (DCF)</p>
+                  <ClientOnly
+                    fallback={
+                      <div className="bg-gradient-to-r from-teya-green/10 to-teya-green/5 border border-teya-green/20 rounded-lg p-6 space-y-4">
+                        <div className="h-6 w-40 bg-teya-green/20 rounded" />
+                        <div className="h-5 w-24 bg-muted rounded" />
                       </div>
-                      <div className="text-right">
-                        <h3 className="text-2xl font-bold">${company.price}</h3>
-                        <p className="text-sm text-muted-foreground">Preço Atual</p>
+                    }
+                  >
+                    <div className="bg-gradient-to-r from-teya-green/10 to-teya-green/5 border border-teya-green/20 rounded-lg p-6 space-y-4">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h3 className="text-2xl font-bold text-teya-green">
+                            {baseIV ? formatCurrency(baseIV) : 'N/A'}
+                          </h3>
+                          <p className="text-sm text-muted-foreground">Valor Intrínseco (Oficial)</p>
+                        </div>
+                        <div className="text-right">
+                          <h3 className="text-2xl font-bold">{formatCurrency(latestPrice)}</h3>
+                          <p className="text-sm text-muted-foreground">Preço Atual</p>
+                        </div>
                       </div>
-                    </div>
-                    
-                    <div className="flex items-center justify-between p-3 bg-background/60 rounded-lg">
-                      <div className="flex items-center gap-2">
-                        <div className="w-3 h-3 rounded-full bg-green-500" />
-                        <Badge className="bg-green-500/10 text-green-700 border-green-200">
-                          <TrendingUp className="h-3 w-3 mr-1" />
-                          Subvalorizada
-                        </Badge>
+                      
+                      <div className="flex items-center justify-between p-3 bg-background/60 rounded-lg">
+                        <div className="flex items-center gap-2">
+                          <div className={`w-3 h-3 rounded-full ${isUndervalued === null ? 'bg-gray-400' : isUndervalued ? 'bg-green-500' : 'bg-red-500'}`} />
+                          <Badge className={`${isUndervalued ? 'bg-green-500/10 text-green-700 border-green-200' : 'bg-red-500/10 text-red-700 border-red-200'}`}>
+                            {isUndervalued ? (
+                              <TrendingUp className="h-3 w-3 mr-1" />
+                            ) : (
+                              <TrendingDown className="h-3 w-3 mr-1" />
+                            )}
+                            {isUndervalued === null ? '—' : isUndervalued ? 'Subvalorizada' : 'Sobrevalorizada'}
+                          </Badge>
+                        </div>
+                        <div className="text-right">
+                          <span className={`text-lg font-bold ${valuationDiff !== null && valuationDiff < 0 ? 'text-green-600' : 'text-red-600'}`}>
+                            {valuationDiff === null ? '—' : `${valuationDiff.toFixed(1)}%`}
+                          </span>
+                          <p className="text-xs text-muted-foreground">vs. Valor Intrínseco</p>
+                        </div>
                       </div>
-                      <div className="text-right">
-                        <span className="text-lg font-bold text-green-600">-9.1%</span>
-                        <p className="text-xs text-muted-foreground">vs. Mercado</p>
-                      </div>
-                    </div>
 
-                    <div className="text-sm text-muted-foreground">
-                      <span className="flex items-center gap-1">
-                        <Calculator className="h-3 w-3" />
-                        Baseado em DCF com crescimento conservador de 8% e WACC de 10.5%
-                      </span>
+                      <div className="text-sm text-muted-foreground">
+                        <span className="flex items-center gap-1">
+                          <Calculator className="h-3 w-3" />
+                          Baseado em DCF com crescimento conservador e WACC estimado
+                        </span>
+                      </div>
                     </div>
-                  </div>
+                  </ClientOnly>
                 </CardContent>
               </Card>
 
@@ -469,8 +525,8 @@ export default function StockDetail() {
                 <CardContent className="space-y-4">
                   <div className="bg-teya-green/5 border border-teya-green/20 rounded-lg p-4">
                     <div className="text-center mb-4">
-                      <h3 className="text-3xl font-bold text-teya-green">$185.50</h3>
-                      <p className="text-sm text-muted-foreground">Valor Intrínseco por Ação</p>
+                      <h3 className="text-3xl font-bold text-teya-green">{baseIV ? formatCurrency(baseIV) : 'N/A'}</h3>
+                      <p className="text-sm text-muted-foreground">Valor Intrínseco (Oficial)</p>
                     </div>
                     
                     <div className="space-y-3 text-sm">
@@ -562,7 +618,7 @@ export default function StockDetail() {
                     <div className="text-center">
                       <h4 className="font-medium mb-2">Cenário Conservador</h4>
                       <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-3">
-                        <p className="text-2xl font-bold text-red-600">$165.20</p>
+                        <p className="text-2xl font-bold text-red-600">{conservativeIV ? formatCurrency(conservativeIV) : 'N/A'}</p>
                         <p className="text-sm text-muted-foreground">Crescimento: 5%</p>
                         <p className="text-sm text-muted-foreground">WACC: 12%</p>
                       </div>
@@ -570,7 +626,7 @@ export default function StockDetail() {
                     <div className="text-center">
                       <h4 className="font-medium mb-2">Cenário Base</h4>
                       <div className="bg-teya-green/10 border border-teya-green/20 rounded-lg p-3">
-                        <p className="text-2xl font-bold text-teya-green">$185.50</p>
+                        <p className="text-2xl font-bold text-teya-green">{baseIV ? formatCurrency(baseIV) : 'N/A'}</p>
                         <p className="text-sm text-muted-foreground">Crescimento: 8%</p>
                         <p className="text-sm text-muted-foreground">WACC: 10.5%</p>
                       </div>
@@ -578,7 +634,7 @@ export default function StockDetail() {
                     <div className="text-center">
                       <h4 className="font-medium mb-2">Cenário Otimista</h4>
                       <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-3">
-                        <p className="text-2xl font-bold text-green-600">$215.80</p>
+                        <p className="text-2xl font-bold text-green-600">{optimisticIV ? formatCurrency(optimisticIV) : 'N/A'}</p>
                         <p className="text-sm text-muted-foreground">Crescimento: 12%</p>
                         <p className="text-sm text-muted-foreground">WACC: 9%</p>
                       </div>
@@ -587,9 +643,9 @@ export default function StockDetail() {
 
                   <div className="bg-gray-50 dark:bg-gray-900/20 border rounded-lg p-3">
                     <p className="text-sm text-muted-foreground">
-                      <strong>Preço Atual:</strong> ${company.price} | 
-                      <strong> Range de Fair Value:</strong> $165.20 - $215.80 | 
-                      <strong> Margem de Segurança:</strong> ~9%
+                      <strong>Preço Atual:</strong> {formatCurrency(latestPrice)} |
+                      <strong> Range de Fair Value:</strong> {conservativeIV && optimisticIV ? `${formatCurrency(conservativeIV)} - ${formatCurrency(optimisticIV)}` : '—'} |
+                      <strong> Margem de Segurança:</strong> {baseIV ? `${Math.max(0, ((baseIV - latestPrice) / baseIV) * 100).toFixed(0)}%` : '—'}
                     </p>
                   </div>
                 </CardContent>

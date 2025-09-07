@@ -255,6 +255,132 @@ export async function registerRoutes(app: Express): Promise<void> {
     }
   });
 
+  // Friendly alias for official valuation endpoint
+  app.get("/api/valuation/intrinsic/:symbol", async (req, res) => {
+    try {
+      const symbol = String(req.params.symbol || '').toUpperCase().trim();
+      if (!symbol) return res.status(400).json({ error: 'INVALID_SYMBOL', message: 'Symbol required' });
+      const { redisCacheService } = await import('./cache/redis-cache-service');
+      const forceRefresh = String(req.query.refresh || '').toLowerCase() === '1' || String(req.query.refresh || '').toLowerCase() === 'true';
+      const data = forceRefresh ? null : await redisCacheService.get(`iv:${symbol}`);
+      if (data && !forceRefresh) return res.json({ success: true, data, cached: true });
+      const { storage } = await import('./storage');
+      const dbVal = forceRefresh ? undefined : await storage.getIntrinsicValue(symbol).catch(() => undefined);
+      if (dbVal && !forceRefresh) return res.json({ success: true, data: dbVal, cached: false, source: 'db' });
+
+      // On cache+DB miss: compute official intrinsic value from fundamentals and persist
+      try {
+        const upper = symbol;
+        // Providers / helpers
+        const { default: fetchFn } = await import('node-fetch');
+        const { simpleCacheService } = await import('./services/simple-cache-service');
+        const { EnhancedValuationService } = await import('./services/enhanced-valuation-service');
+        const valuation = new EnhancedValuationService();
+
+        // Get current price (cached)
+        const quote = await simpleCacheService.getQuote(upper).catch(() => null);
+        const currentPrice = Number(quote?.price ?? 0);
+
+        // Fetch fundamentals from FMP directly (stable endpoints)
+        const apiKey = process.env.FMP_API_KEY || '';
+        const params = `?period=annual&limit=1&apikey=${apiKey}`;
+        const [incomeRes, keyRes, profileRes, growthRes] = await Promise.all([
+          fetchFn(`https://financialmodelingprep.com/api/v3/income-statement/${upper}${params}`),
+          fetchFn(`https://financialmodelingprep.com/api/v3/key-metrics/${upper}${params}`),
+          fetchFn(`https://financialmodelingprep.com/api/v3/profile/${upper}?apikey=${apiKey}`),
+          fetchFn(`https://financialmodelingprep.com/api/v3/financial-growth/${upper}${params}`)
+        ]);
+
+        const [incomeArr, keyArr, profileArr, growthArr] = await Promise.all([
+          incomeRes.json(), keyRes.json(), profileRes.json(), growthRes.json()
+        ]);
+
+        const income = Array.isArray(incomeArr) && incomeArr[0] ? incomeArr[0] : {};
+        const key = Array.isArray(keyArr) && keyArr[0] ? keyArr[0] : {};
+        const profile = Array.isArray(profileArr) && profileArr[0] ? profileArr[0] : {};
+        const growth = Array.isArray(growthArr) && growthArr[0] ? growthArr[0] : {};
+
+        // Derive inputs (defensive defaults + clamps)
+        const epsRaw = Number(income?.eps ?? key?.eps ?? 0);
+        const eps = isFinite(epsRaw) && epsRaw > 0 ? epsRaw : (currentPrice && key?.peRatio ? Number(currentPrice) / Number(key.peRatio) : 0);
+        // growthRate in %: prefer EPS growth, fallback to revenue growth, else 8%
+        const grCandidates = [
+          Number(growth?.epsgrowth ?? growth?.epsGrowth ?? 0) * 100,
+          Number(growth?.revenueGrowth ?? growth?.revenuegrowth ?? 0) * 100,
+          8
+        ];
+        let growthRate = grCandidates.find(v => isFinite(v) && Math.abs(v) > 0) ?? 8;
+        growthRate = Math.max(0, Math.min(20, growthRate));
+
+        // Required return via CAPM aproximado: 4% RF + beta*5.5% ERP (clamp 7–14)
+        const beta = Number(profile?.beta ?? key?.beta ?? 1);
+        let requiredReturn = 4 + (isFinite(beta) ? beta : 1) * 5.5;
+        requiredReturn = Math.max(7, Math.min(14, requiredReturn));
+
+        // PE terminal conservador: usar min(peRatio, 20) com piso 10
+        let peMultiple = Number(key?.peRatio ?? 15);
+        if (!isFinite(peMultiple) || peMultiple <= 0) peMultiple = 15;
+        peMultiple = Math.max(10, Math.min(25, peMultiple));
+
+        // Outros parâmetros
+        const marginOfSafety = 20; // %
+        const horizon = 10; // anos
+        const terminalGrowthRate = 2.5; // %
+
+        // Se preço ainda 0, tenta de novo via provider
+        const px = currentPrice > 0 ? currentPrice : Number(key?.price ?? profile?.price ?? 0);
+
+        // Se ainda não há inputs mínimos, devolver null
+        if (!eps || !isFinite(px) || px <= 0) {
+          return res.json({ success: true, data: null, cached: false, reason: 'INSUFFICIENT_DATA' });
+        }
+
+        // Calcular via EnhancedValuationService (modelo EPS-based com terminal PE)
+        const model = valuation.calculateDCF({
+          eps,
+          growthRate, // %
+          terminalGrowthRate, // %
+          horizon,
+          requiredReturn, // %
+          marginOfSafety, // %
+          peMultiple
+        } as any, px);
+
+        // Preparar payload compatível com schema/DB
+        const deltaPercent = ((Number(model.intrinsicValue) / px) - 1) * 100;
+        const record = {
+          stockSymbol: upper,
+          intrinsicValue: Number(model.intrinsicValue).toFixed(2),
+          currentPrice: Number(px).toFixed(2),
+          valuation: deltaPercent <= -3 ? 'undervalued' : (deltaPercent >= 3 ? 'overvalued' : 'fair'),
+          deltaPercent: deltaPercent.toFixed(2),
+          eps: Number(eps).toFixed(2),
+          growthRate: Number(growthRate).toFixed(2),
+          peMultiple: Number(peMultiple).toFixed(2),
+          requiredReturn: Number(requiredReturn).toFixed(2),
+          marginOfSafety: Number(marginOfSafety).toFixed(2)
+        } as any;
+
+        // Persistir (DB + Redis 24h)
+        try {
+          await storage.createIntrinsicValue(record);
+        } catch (e) {
+          // Se já existir, tenta update
+          try { await storage.updateIntrinsicValue(upper, record); } catch {}
+        }
+        await redisCacheService.set(`iv:${upper}`, record, 24 * 60 * 60);
+
+        return res.json({ success: true, data: record, cached: false, source: 'computed' });
+      } catch (computeError) {
+        console.error('IV compute error:', computeError);
+        return res.json({ success: true, data: null, cached: false, error: 'COMPUTE_FAILED' });
+      }
+    } catch (error) {
+      console.error('IV valuation fetch error:', error);
+      res.status(500).json({ error: 'CACHE_ERROR', message: 'Failed to fetch intrinsic value' });
+    }
+  });
+
   // Alias: /api/cache/iv/:symbol
   app.get("/api/cache/iv/:symbol", async (req, res) => {
     try {

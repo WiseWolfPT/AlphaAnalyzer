@@ -147,13 +147,18 @@ export async function checkAPIHealth(): Promise<{
  * Get authentication headers
  */
 function getAuthHeaders(): Record<string, string> {
+  const headers: Record<string, string> = {};
   const token = localStorage.getItem('alfalyzer-token') || localStorage.getItem('auth-token');
   if (token) {
-    return {
-      'Authorization': `Bearer ${token}`
-    };
+    headers['Authorization'] = `Bearer ${token}`;
   }
-  return {};
+  // Inject market data API key for all frontend requests (safe header)
+  // This ensures batch quotes and related endpoints include the required X-API-Key
+  const apiKey = import.meta.env.VITE_MARKET_DATA_API_KEY;
+  if (apiKey) {
+    headers['X-API-Key'] = apiKey;
+  }
+  return headers;
 }
 
 /**
