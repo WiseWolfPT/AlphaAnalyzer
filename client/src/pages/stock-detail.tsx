@@ -312,13 +312,13 @@ export default function StockDetail() {
             <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6">
               <div>
                 <p className="text-sm text-muted-foreground mb-1">Current Price</p>
-                <p className="text-3xl font-bold">${(realtimeQuote?.price || company.price).toFixed(2)}</p>
+                <p className="text-3xl font-bold">${((realtimeQuote?.price || company.price) || 0).toFixed(2)}</p>
                 <p className={cn("text-sm font-medium", 
                   (realtimeQuote ? realtimeQuote.change >= 0 : isPositive) ? "text-green-500" : "text-red-500")}>
                   {(realtimeQuote ? realtimeQuote.change >= 0 : isPositive) ? "+" : ""}
-                  {Math.abs(realtimeQuote?.change || company.change).toFixed(2)} 
+                  {Math.abs((realtimeQuote?.change || company.change) || 0).toFixed(2)} 
                   ({(realtimeQuote ? realtimeQuote.change >= 0 : isPositive) ? "+" : ""}
-                  {Math.abs(realtimeQuote?.change_percent || company.changePercent).toFixed(2)}%)
+                  {Math.abs((realtimeQuote?.change_percent || company.changePercent) || 0).toFixed(2)}%)
                 </p>
               </div>
               {/* Extended hours block */}

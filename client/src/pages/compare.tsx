@@ -12,18 +12,20 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { 
-  Plus, 
-  X, 
-  GitCompare, 
-  TrendingUp, 
+import {
+  Plus,
+  X,
+  GitCompare,
+  TrendingUp,
   TrendingDown,
   Calculator,
   DollarSign,
   BarChart3,
   Target,
   Search,
-  Wifi
+  Wifi,
+  Download,
+  FileText
 } from "lucide-react";
 import { useCachedQuote } from "@/hooks/use-cache-data";
 import { getStockChangePercent, isStockPositive } from "@/lib/stock-data-normalizer";
@@ -60,6 +62,179 @@ export default function ComparePage() {
     setComparisonStocks(comparisonStocks.filter(s => s.symbol !== symbolToRemove));
   };
 
+  // Export functions for CSV and PDF
+  const exportToCSV = () => {
+    if (comparisonStocks.length === 0) return;
+
+    const headers = ['Symbol', 'Current Price', 'Change %', 'Intrinsic Value', 'Valuation', 'Upside/Downside %'];
+    const csvContent = [
+      headers.join(','),
+      ...comparisonStocks.map(stock => {
+        const symbol = stock.symbol;
+        // Extract data from DOM elements or use cached quote data
+        const cardElement = document.querySelector(`[data-stock-symbol="${symbol}"]`);
+        const priceElement = cardElement?.querySelector('[data-price]');
+        const changeElement = cardElement?.querySelector('[data-change]');
+        const ivElement = cardElement?.querySelector('[data-intrinsic-value]');
+        const valuationElement = cardElement?.querySelector('[data-valuation]');
+        const diffElement = cardElement?.querySelector('[data-difference]');
+
+        const price = priceElement?.textContent || 'N/A';
+        const changePercent = changeElement?.textContent || 'N/A';
+        const intrinsicValue = ivElement?.textContent || 'N/A';
+        const valuation = valuationElement?.textContent || 'N/A';
+        const difference = diffElement?.textContent || 'N/A';
+
+        // Escape commas in values for CSV
+        const escapeCSV = (value: string) => value.includes(',') ? `"${value}"` : value;
+
+        return [
+          escapeCSV(symbol),
+          escapeCSV(price),
+          escapeCSV(changePercent),
+          escapeCSV(intrinsicValue),
+          escapeCSV(valuation),
+          escapeCSV(difference)
+        ].join(',');
+      })
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `stock-comparison-${new Date().toISOString().split('T')[0]}.csv`;
+    link.click();
+  };
+
+  const exportToPDF = () => {
+    // Basic PDF export - uses browser's print functionality
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) return;
+
+    // Generate PDF table rows with actual data
+    const tableRows = comparisonStocks.map(stock => {
+      const symbol = stock.symbol;
+      const cardElement = document.querySelector(`[data-stock-symbol="${symbol}"]`);
+      const priceElement = cardElement?.querySelector('[data-price]');
+      const changeElement = cardElement?.querySelector('[data-change]');
+      const ivElement = cardElement?.querySelector('[data-intrinsic-value]');
+      const valuationElement = cardElement?.querySelector('[data-valuation]');
+      const diffElement = cardElement?.querySelector('[data-difference]');
+
+      const price = priceElement?.textContent || 'N/A';
+      const changePercent = changeElement?.textContent || 'N/A';
+      const intrinsicValue = ivElement?.textContent || 'N/A';
+      const valuation = valuationElement?.textContent || 'N/A';
+      const difference = diffElement?.textContent || 'N/A';
+
+      return `
+        <tr>
+          <td><strong>${symbol}</strong></td>
+          <td>${price}</td>
+          <td>${changePercent}</td>
+          <td>${intrinsicValue}</td>
+          <td>${valuation}</td>
+          <td>${difference}</td>
+        </tr>
+      `;
+    }).join('');
+
+    const htmlContent = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Stock Comparison Report</title>
+        <style>
+          body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 20px;
+            line-height: 1.6;
+          }
+          h1 {
+            color: #059669;
+            border-bottom: 3px solid #059669;
+            padding-bottom: 10px;
+          }
+          .header-info {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+          }
+          table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+          }
+          th {
+            background-color: #059669;
+            color: white;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+          }
+          td {
+            border: 1px solid #e0e0e0;
+            padding: 12px;
+            text-align: left;
+          }
+          tr:nth-child(even) {
+            background-color: #f9f9f9;
+          }
+          tr:hover {
+            background-color: #f0f9f5;
+          }
+          .generated {
+            margin-top: 30px;
+            font-size: 12px;
+            color: #666;
+            text-align: center;
+            border-top: 1px solid #e0e0e0;
+            padding-top: 20px;
+          }
+          @media print {
+            body { margin: 0; }
+            .no-print { display: none; }
+          }
+        </style>
+      </head>
+      <body>
+        <h1>📊 Stock Comparison Report</h1>
+        <div class="header-info">
+          <p><strong>Generated:</strong> ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}</p>
+          <p><strong>Symbols Compared:</strong> ${comparisonStocks.map(s => s.symbol).join(', ')}</p>
+          <p><strong>Total Stocks:</strong> ${comparisonStocks.length}</p>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Symbol</th>
+              <th>Current Price</th>
+              <th>Change %</th>
+              <th>Intrinsic Value</th>
+              <th>Valuation</th>
+              <th>Upside/Downside %</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${tableRows}
+          </tbody>
+        </table>
+        <div class="generated">
+          <strong>Generated by Alfalyzer</strong><br>
+          Professional Stock Analysis Platform<br>
+          <em>Data sourced from real-time market feeds</em>
+        </div>
+      </body>
+      </html>
+    `;
+
+    printWindow.document.write(htmlContent);
+    printWindow.document.close();
+    printWindow.print();
+  };
+
   return (
     <div className="container mx-auto p-6 space-y-6">
       {/* Header */}
@@ -76,8 +251,32 @@ export default function ComparePage() {
           </div>
         </div>
 
-        {/* Add Stock Input */}
+        {/* Export and Add Stock Controls */}
         <div className="flex items-center gap-2">
+          {/* Export Buttons */}
+          {comparisonStocks.length > 0 && (
+            <>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={exportToCSV}
+                title="Export comparison to CSV"
+              >
+                <Download className="w-4 h-4" />
+                <span className="ml-1 hidden sm:inline">CSV</span>
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={exportToPDF}
+                title="Export comparison to PDF"
+              >
+                <FileText className="w-4 h-4" />
+                <span className="ml-1 hidden sm:inline">PDF</span>
+              </Button>
+            </>
+          )}
+
           <Button
             variant={useRealtime ? 'default' : 'outline'}
             size="sm"
@@ -88,7 +287,7 @@ export default function ComparePage() {
             <Wifi className="w-4 h-4" />
             <span className="ml-1 hidden sm:inline">Tempo Real</span>
           </Button>
-          
+
           <Input
             placeholder="Símbolo (ex: TSLA)"
             value={searchSymbol}
@@ -97,7 +296,7 @@ export default function ComparePage() {
             className="w-40"
             disabled={comparisonStocks.length >= 4}
           />
-          <Button 
+          <Button
             onClick={addStock}
             disabled={!searchSymbol.trim() || comparisonStocks.length >= 4}
             className="bg-teya-green text-teya-dark hover:bg-teya-green/90"
@@ -217,7 +416,7 @@ function ComparisonCard({
   }
 
   return (
-    <Card className="h-[400px] relative group">
+    <Card className="h-[400px] relative group" data-stock-symbol={symbol}>
       {/* Realtime indicator */}
       {useRealtime && isConnected && realtimeQuote && (
         <div className="absolute top-2 left-2 z-10">
@@ -254,14 +453,17 @@ function ComparisonCard({
         {/* Current Price */}
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <span className="text-2xl font-bold">${calculations.currentPrice?.toFixed(2) || '0.00'}</span>
-            <Badge 
+            <span className="text-2xl font-bold" data-price>
+              ${calculations.currentPrice?.toFixed(2) || '0.00'}
+            </span>
+            <Badge
               variant={calculations.isPositive ? "default" : "secondary"}
               className={cn(
-                calculations.isPositive 
-                  ? "bg-green-500/10 text-green-600" 
+                calculations.isPositive
+                  ? "bg-green-500/10 text-green-600"
                   : "bg-red-500/10 text-red-600"
               )}
+              data-change
             >
               {calculations.isPositive ? '+' : ''}{calculations.changePercent?.toFixed(1) || '0.0'}%
             </Badge>
@@ -278,24 +480,25 @@ function ComparisonCard({
             {ivLoading ? (
               <div className="w-4 h-4 border border-teya-green border-t-transparent rounded-full animate-spin" />
             ) : intrinsicValue !== null && intrinsicValue !== undefined && typeof intrinsicValue === 'number' ? (
-              <span className="text-sm font-bold text-teya-green">
+              <span className="text-sm font-bold text-teya-green" data-intrinsic-value>
                 ${intrinsicValue.toFixed(2)}
               </span>
             ) : (
-              <span className="text-xs text-muted-foreground">N/A</span>
+              <span className="text-xs text-muted-foreground" data-intrinsic-value>N/A</span>
             )}
           </div>
           
           {calculations.intrinsicValue && calculations.valuationDiff !== null && (
             <div className="flex items-center justify-between">
-              <Badge 
+              <Badge
                 variant={calculations.isUndervalued ? "default" : "secondary"}
                 className={cn(
                   "text-xs",
-                  calculations.isUndervalued 
-                    ? "bg-green-500/10 text-green-600" 
+                  calculations.isUndervalued
+                    ? "bg-green-500/10 text-green-600"
                     : "bg-red-500/10 text-red-600"
                 )}
+                data-valuation
               >
                 {calculations.isUndervalued ? (
                   <>
@@ -309,10 +512,13 @@ function ComparisonCard({
                   </>
                 )}
               </Badge>
-              <span className={cn(
-                "text-xs font-medium",
-                calculations.isUndervalued ? "text-green-600" : "text-red-600"
-              )}>
+              <span
+                className={cn(
+                  "text-xs font-medium",
+                  calculations.isUndervalued ? "text-green-600" : "text-red-600"
+                )}
+                data-difference
+              >
                 {calculations.valuationDiff > 0 ? '+' : ''}{calculations.valuationDiff?.toFixed(1) || '0.0'}%
               </span>
             </div>

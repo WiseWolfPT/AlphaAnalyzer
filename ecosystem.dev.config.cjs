@@ -46,6 +46,31 @@ module.exports = {
         WORKER_HEALTH_PORT: 3002
       },
       cron_restart: '0 */6 * * *' // Restart every 6 hours to clear any memory leaks
+    },
+    {
+      name: 'transcripts-worker-dev',
+      script: 'server/workers/transcripts-worker.ts',
+      interpreter: 'npx',
+      interpreter_args: 'tsx',
+      instances: 1,
+      exec_mode: 'fork',
+      error_file: './logs/transcripts-worker-err.log',
+      out_file: './logs/transcripts-worker-out.log',
+      log_file: './logs/transcripts-worker-combined.log',
+      time: true,
+      autorestart: true,
+      max_restarts: 10,
+      min_uptime: '10s',
+      watch: false,
+      ignore_watch: ['node_modules', 'logs', 'dist/public', '.env*'],
+      max_memory_restart: '500M',
+      env_file: './.env',
+      env: {
+        NODE_ENV: 'development',
+        TRANSCRIPTS_SOURCE: 'local:mock',
+        TRANSCRIPTS_INTERVAL_MS: '600000'
+      },
+      cron_restart: '0 */12 * * *'
     }
   ]
 };

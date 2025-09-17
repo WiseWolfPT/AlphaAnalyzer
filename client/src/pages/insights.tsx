@@ -110,8 +110,8 @@ export default function Insights() {
               onSearch={setSearchQuery}
               searchResults={searchResults || []}
               onStockSelect={(stock) => {
-                // Navigate directly to advanced charts
-                window.location.href = `/stock/${stock.symbol}/charts`;
+                // Navigate to stock detail; charts remain accessible via deep-link
+                window.location.href = `/stock/${stock.symbol}`;
               }}
             />
           </div>

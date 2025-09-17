@@ -8,6 +8,7 @@ import { Router, Request, Response } from 'express';
 import { z } from 'zod';
 import { TranscriptService } from '../services/transcript-service';
 import { authMiddleware } from '../middleware/auth-middleware';
+import { marketDataApiKey } from '../middleware/market-data-api-key';
 
 const router = Router();
 const transcriptService = TranscriptService.getInstance();
@@ -231,7 +232,7 @@ router.get('/search', authService.optionalAuth(), async (req: Request, res: Resp
 router.get('/stats/public', authService.optionalAuth(), async (req: Request, res: Response) => {
   try {
     const stats = await transcriptService.getTranscriptStats();
-    
+
     // Return only public-friendly stats
     const publicStats = {
       totalPublished: stats.byStatus.published || 0,
@@ -241,7 +242,7 @@ router.get('/stats/public', authService.optionalAuth(), async (req: Request, res
         .map(([year, count]) => ({ year: parseInt(year), count }))
         .sort((a, b) => b.year - a.year)
     };
-    
+
     res.json({
       success: true,
       data: publicStats,
@@ -252,6 +253,35 @@ router.get('/stats/public', authService.optionalAuth(), async (req: Request, res
     res.status(500).json({
       success: false,
       error: 'Failed to fetch transcript statistics',
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
+/**
+ * POST /api/transcripts/admin/auto-publish
+ * Auto-publish all reviewed transcripts (API key protected)
+ */
+router.post('/admin/auto-publish', marketDataApiKey, async (req: Request, res: Response) => {
+  try {
+    console.log('🚀 Starting auto-publish workflow for reviewed transcripts...');
+
+    const publishedCount = await transcriptService.autoPublishReviewedTranscripts();
+
+    console.log(`✅ Auto-published ${publishedCount} transcripts from review to published status`);
+
+    res.json({
+      success: true,
+      publishedCount,
+      message: `Successfully auto-published ${publishedCount} transcripts from review status`,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('Error during auto-publish workflow:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to auto-publish transcripts',
+      details: error instanceof Error ? error.message : 'Unknown error',
       timestamp: new Date().toISOString()
     });
   }

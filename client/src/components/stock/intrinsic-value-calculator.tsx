@@ -255,7 +255,7 @@ Margin of Safety: ${params.marginOfSafety}%`;
                   className="font-mono"
                 />
                 <div className="text-xs text-muted-foreground">
-                  Current P/E: {currentPE.toFixed(1)}x
+                  Current P/E: {currentPE ? currentPE.toFixed(1) : 'N/A'}x
                 </div>
               </div>
 

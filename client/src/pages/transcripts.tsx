@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { MainLayout } from "@/components/layout/main-layout";
@@ -14,80 +14,27 @@ import { TranscriptCardSkeleton } from "@/components/ui/transcript-card-skeleton
 import { useColdStartHandler } from "@/hooks/use-market-data";
 // Removed date-fns import - using native Date methods
 
-// Mock transcripts data - in real app, this would come from API
-const mockTranscripts = [
-  {
-    id: 1,
-    symbol: "AAPL",
-    companyName: "Apple Inc.",
-    quarter: "Q1",
-    year: 2025,
-    callDate: "2025-01-25",
-    title: "Q1 2025 Earnings Call",
-    summary: "Apple reported strong iPhone sales and growth in services revenue. The company highlighted progress in AI integration and sustainable product initiatives.",
-    keyHighlights: [
-      "iPhone revenue up 5% year-over-year",
-      "Services revenue reached record high",
-      "Strong growth in emerging markets",
-      "AI features driving user engagement"
-    ],
-    sentiment: "positive",
-    published: true,
-    duration: "45 min",
-    rating: 4.8
-  },
-  {
-    id: 2,
-    symbol: "MSFT",
-    companyName: "Microsoft Corporation",
-    quarter: "Q1",
-    year: 2025,
-    callDate: "2025-01-24",
-    title: "Q1 2025 Earnings Call",
-    summary: "Microsoft showcased continued cloud growth with Azure revenue acceleration. Strong performance in productivity and business processes segments.",
-    keyHighlights: [
-      "Azure revenue growth of 35%",
-      "Microsoft 365 subscriber growth",
-      "AI-powered productivity gains",
-      "Strong enterprise demand"
-    ],
-    sentiment: "positive",
-    published: true,
-    duration: "52 min",
-    rating: 4.9
-  },
-  {
-    id: 3,
-    symbol: "GOOGL",
-    companyName: "Alphabet Inc.",
-    quarter: "Q4",
-    year: 2024,
-    callDate: "2025-01-23",
-    title: "Q4 2024 Earnings Call",
-    summary: "Google parent Alphabet reported mixed results with advertising revenue showing some pressure while cloud division continued strong growth trajectory.",
-    keyHighlights: [
-      "Search advertising revenue decline",
-      "YouTube growth momentum",
-      "Google Cloud competitive positioning",
-      "AI integration across products"
-    ],
-    sentiment: "neutral",
-    published: true,
-    duration: "48 min",
-    rating: 4.2
-  }
-];
+// Helper to get API URL (consistent com hooks)
+const getApiUrl = () => (import.meta && import.meta.env && import.meta.env.DEV ? 'http://localhost:3001' : '');
 
-interface TranscriptCardProps {
-  transcript: typeof mockTranscripts[0];
-}
+type ApiTranscript = {
+  id: number;
+  ticker: string;
+  company_name: string;
+  quarter: string;
+  year: number;
+  call_date: string | null;
+  ai_summary: string | null;
+  published_at?: string | null;
+  view_count?: number;
+};
+
+interface TranscriptCardProps { transcript: ApiTranscript; }
 
 function TranscriptCard({ transcript }: TranscriptCardProps) {
   const [, setLocation] = useLocation();
 
-  const handleStockClick = () => {
-    setLocation(`/stock/${symbol}`);
-  };
+  const handleStockClick = () => setLocation(`/stock/${transcript.ticker}`);
 
   const handleViewTranscript = () => {
     // Navigate to transcript detail view
@@ -111,50 +58,53 @@ function TranscriptCard({ transcript }: TranscriptCardProps) {
       <CardHeader>
         <div className="flex items-start justify-between">
           <div className="flex items-center space-x-3">
-            <div 
+            <div
               className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center cursor-pointer hover:bg-primary/20 transition-colors"
               onClick={handleStockClick}
             >
-              <span className="text-lg font-bold text-primary">{transcript.symbol.charAt(0)}</span>
+              <span className="text-lg font-bold text-primary">{transcript.ticker.charAt(0)}</span>
             </div>
             <div>
               <div className="flex items-center space-x-2">
-                <h3 className="font-semibold text-lg">{transcript.symbol}</h3>
+                <h3 className="font-semibold text-lg">{transcript.ticker}</h3>
                 <Badge variant="outline">{transcript.quarter} {transcript.year}</Badge>
               </div>
-              <p className="text-sm text-muted-foreground">{transcript.companyName}</p>
+              <p className="text-sm text-muted-foreground">{transcript.company_name}</p>
             </div>
           </div>
-          <div className="flex items-center space-x-2">
-            <Badge className={cn("text-xs", sentimentBg[transcript.sentiment])}>
-              <TrendingUp className="h-3 w-3 mr-1" />
-              {transcript.sentiment}
-            </Badge>
-            <div className="flex items-center space-x-1">
-              <Star className="h-4 w-4 text-yellow-500 fill-current" />
-              <span className="text-sm font-medium">{transcript.rating}</span>
-            </div>
-          </div>
+          <div className="flex items-center space-x-2"></div>
         </div>
       </CardHeader>
       
       <CardContent className="space-y-4">
         <div>
-          <h4 className="font-medium mb-2">{transcript.title}</h4>
+          <h4 className="font-medium mb-2">{`${transcript.ticker} ${transcript.quarter} ${transcript.year} Earnings Call`}</h4>
           <p className="text-sm text-muted-foreground leading-relaxed">
-            {transcript.summary}
+            {useMemo(() => {
+              try {
+                const parsed = transcript.ai_summary ? JSON.parse(transcript.ai_summary) : null;
+                const summary = parsed?.summary as string | undefined;
+                return summary ? summary.substring(0, 500) + (summary.length > 500 ? '…' : '') : 'Summary not available yet.';
+              } catch { return 'Summary not available yet.'; }
+            }, [transcript.ai_summary])}
           </p>
         </div>
 
         <div>
           <h5 className="text-sm font-medium mb-2">Key Highlights</h5>
           <ul className="space-y-1">
-            {transcript.keyHighlights.map((highlight, index) => (
-              <li key={index} className="text-xs text-muted-foreground flex items-start space-x-2">
-                <span className="w-1 h-1 bg-primary rounded-full mt-2 flex-shrink-0"></span>
-                <span>{highlight}</span>
-              </li>
-            ))}
+            {useMemo(() => {
+              try {
+                const parsed = transcript.ai_summary ? JSON.parse(transcript.ai_summary) : null;
+                const highlights: string[] = parsed?.keyInsights || parsed?.financialHighlights || [];
+                return (highlights.slice(0, 4)).map((h, idx) => (
+                  <li key={idx} className="text-xs text-muted-foreground flex items-start space-x-2">
+                    <span className="w-1 h-1 bg-primary rounded-full mt-2 flex-shrink-0"></span>
+                    <span>{h}</span>
+                  </li>
+                ));
+              } catch { return null; }
+            }, [transcript.ai_summary])}
           </ul>
         </div>
 
@@ -162,12 +112,9 @@ function TranscriptCard({ transcript }: TranscriptCardProps) {
           <div className="flex items-center space-x-4 text-xs text-muted-foreground">
             <div className="flex items-center space-x-1">
               <Calendar className="h-3 w-3" />
-              <span>{new Date(transcript.callDate).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: '2-digit' })}</span>
+              <span>{transcript.call_date ? new Date(transcript.call_date).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: '2-digit' }) : '-'}</span>
             </div>
-            <div className="flex items-center space-x-1">
-              <Clock className="h-3 w-3" />
-              <span>{transcript.duration}</span>
-            </div>
+            <div className="flex items-center space-x-1"></div>
           </div>
           
           <div className="flex items-center space-x-2">
@@ -204,34 +151,41 @@ export default function Transcripts() {
   const { isColdStart, coldStartMessage } = useColdStartHandler();
 
   // In real app, this would be a proper API call
-  const { data: transcripts, isLoading } = useQuery({
-    queryKey: ["/api/transcripts", searchQuery, selectedQuarter, selectedSentiment],
-    // Mock implementation
-    queryFn: () => Promise.resolve(mockTranscripts),
+  const { data: apiData, isLoading } = useQuery({
+    queryKey: ["/api/transcripts", searchQuery, selectedQuarter, selectedSentiment, selectedSort],
+    queryFn: async () => {
+      const api = getApiUrl();
+      const params = new URLSearchParams();
+      params.set('limit', '20');
+      if (searchQuery) params.set('ticker', searchQuery.toUpperCase());
+      if (selectedQuarter !== 'all') params.set('quarter', selectedQuarter);
+      const res = await fetch(`${api}/api/transcripts?${params.toString()}`);
+      if (!res.ok) throw new Error('Failed to fetch transcripts');
+      return (await res.json()) as { success: boolean; data: ApiTranscript[]; pagination: any };
+    },
     staleTime: 5 * 60 * 1000,
+    retry: 1
   });
 
-  const filteredTranscripts = transcripts?.filter(transcript => {
-    const matchesSearch = transcript.symbol.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         transcript.companyName.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesQuarter = selectedQuarter === "all" || transcript.quarter === selectedQuarter;
-    const matchesSentiment = selectedSentiment === "all" || transcript.sentiment === selectedSentiment;
-    
-    return matchesSearch && matchesQuarter && matchesSentiment;
-  }) || [];
-
-  const sortedTranscripts = [...filteredTranscripts].sort((a, b) => {
+  const sortedTranscripts = useMemo(() => {
+    const list = apiData?.data || [];
+    const bySearch = list.filter(t => {
+      if (!searchQuery) return true;
+      const s = searchQuery.toLowerCase();
+      return t.ticker.toLowerCase().includes(s) || (t.company_name || '').toLowerCase().includes(s);
+    });
+    const byQuarter = selectedQuarter === 'all' ? bySearch : bySearch.filter(t => t.quarter === selectedQuarter);
+    // sentiment/ratings não existem na API — ignorar estes filtros em dev
+    const arr = [...byQuarter];
     switch (selectedSort) {
-      case "recent":
-        return new Date(b.callDate).getTime() - new Date(a.callDate).getTime();
-      case "rating":
-        return b.rating - a.rating;
-      case "symbol":
-        return a.symbol.localeCompare(b.symbol);
+      case 'recent':
+        return arr.sort((a, b) => new Date(b.published_at || b.call_date || '').getTime() - new Date(a.published_at || a.call_date || '').getTime());
+      case 'symbol':
+        return arr.sort((a, b) => a.ticker.localeCompare(b.ticker));
       default:
-        return 0;
+        return arr;
     }
-  });
+  }, [apiData, searchQuery, selectedQuarter, selectedSort]);
 
   return (
     <MainLayout>
@@ -321,8 +275,8 @@ export default function Transcripts() {
               </div>
             ) : sortedTranscripts.length > 0 ? (
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {sortedTranscripts.map((transcript) => (
-                  <TranscriptCard key={transcript.id} transcript={transcript} />
+                {sortedTranscripts.map((t) => (
+                  <TranscriptCard key={t.id} transcript={t} />
                 ))}
               </div>
             ) : (

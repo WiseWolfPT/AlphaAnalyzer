@@ -9,11 +9,25 @@
 
 import { redisCacheService } from '../cache/redis-cache-service';
 import { FMPProvider } from './providers/fmp-provider';
-import { AlphaVantageProvider } from './providers/alpha-vantage-provider';
+import { FinnhubProvider } from './providers/finnhub-provider';
 import type { StockQuote } from '@/types/market-data';
 
 // Track in-flight requests to prevent thundering herd
 const inFlightRequests = new Map<string, Promise<StockQuote | null>>();
+
+// Hit/Miss counters
+const hitCounters = {
+  total: 0,
+  bySymbol: new Map<string, number>(),
+};
+const missCounters = {
+  total: 0,
+  bySymbol: new Map<string, number>(),
+};
+
+function inc(map: Map<string, number>, key: string) {
+  map.set(key, (map.get(key) || 0) + 1);
+}
 
 // Cache configuration
 const CACHE_TTL = 60; // 60 seconds
@@ -21,7 +35,7 @@ const MAX_BATCH_SIZE = 50; // FMP supports up to 50 symbols per batch
 
 // Initialize providers
 const fmpProvider = process.env.FMP_API_KEY ? new FMPProvider(process.env.FMP_API_KEY) : null;
-const alphaVantageProvider = process.env.ALPHA_VANTAGE_API_KEY ? new AlphaVantageProvider(process.env.ALPHA_VANTAGE_API_KEY) : null;
+const finnhubProvider = process.env.FINNHUB_API_KEY ? new FinnhubProvider(process.env.FINNHUB_API_KEY) : null;
 
 class SimpleCacheService {
   /**
@@ -36,6 +50,8 @@ class SimpleCacheService {
       const cached = await redisCacheService.get<StockQuote>(cacheKey);
       if (cached) {
         console.log(`✅ Cache hit for ${upperSymbol}`);
+        hitCounters.total++;
+        inc(hitCounters.bySymbol, upperSymbol);
         return cached;
       }
 
@@ -58,6 +74,10 @@ class SimpleCacheService {
         if (quote) {
           await redisCacheService.set(cacheKey, quote, CACHE_TTL);
           console.log(`💾 Cached ${upperSymbol} for ${CACHE_TTL}s`);
+        } else {
+          // count a miss only when we truly couldn't fetch
+          missCounters.total++;
+          inc(missCounters.bySymbol, upperSymbol);
         }
 
         return quote;
@@ -67,6 +87,8 @@ class SimpleCacheService {
       }
     } catch (error) {
       console.error(`❌ Error getting quote for ${symbol}:`, error);
+      missCounters.total++;
+      inc(missCounters.bySymbol, symbol.toUpperCase());
       return null;
     }
   }
@@ -90,6 +112,8 @@ class SimpleCacheService {
           if (cached) {
             results[symbol] = cached;
             console.log(`✅ Batch cache hit for ${symbol}`);
+            hitCounters.total++;
+            inc(hitCounters.bySymbol, symbol);
           } else {
             missingSymbols.push(symbol);
           }
@@ -116,8 +140,11 @@ class SimpleCacheService {
               Object.entries(batchQuotes).map(async ([symbol, quote]) => {
                 const cacheKey = `quote:${symbol}`;
                 await redisCacheService.set(cacheKey, quote, CACHE_TTL);
-                results[symbol] = quote;
+                results[symbol] = quote as StockQuote;
                 console.log(`💾 Batch cached ${symbol} for ${CACHE_TTL}s`);
+                // Consider this a miss that we filled
+                missCounters.total++;
+                inc(missCounters.bySymbol, symbol);
               })
             );
           })
@@ -132,7 +159,7 @@ class SimpleCacheService {
   }
 
   /**
-   * Fetch single quote from API (FMP with Alpha Vantage fallback)
+   * Fetch single quote from API (FMP with Finnhub fallback)
    */
   private async fetchQuoteFromAPI(symbol: string): Promise<StockQuote | null> {
     try {
@@ -157,12 +184,13 @@ class SimpleCacheService {
         }
       }
 
-      // Fallback to Alpha Vantage
-      if (alphaVantageProvider) {
-        console.log(`⚠️ FMP failed for ${symbol}, trying Alpha Vantage`);
-        const avQuote = await alphaVantageProvider.getQuote(symbol);
-        if (avQuote) {
-          return this.normalizeQuote(avQuote, symbol);
+      // Fallback to Finnhub
+      if (finnhubProvider) {
+        console.log(`⚠️ FMP failed for ${symbol}, trying Finnhub`);
+        const finnhubSymbol = symbol.includes('-') ? symbol.replace('-', '.') : symbol;
+        const fhQuote = await finnhubProvider.getQuote(finnhubSymbol);
+        if (fhQuote) {
+          return this.normalizeQuote(fhQuote, symbol);
         }
       }
 
@@ -179,7 +207,6 @@ class SimpleCacheService {
    */
   private async fetchBatchQuotesFromAPI(symbols: string[]): Promise<Record<string, StockQuote>> {
     try {
-      // FMP supports batch requests
       if (fmpProvider) {
         const quotes = await fmpProvider.getBatchQuotes(symbols);
 
@@ -220,7 +247,7 @@ class SimpleCacheService {
       console.error('❌ Error fetching batch quotes:', error);
     }
     
-    // Fallback: fetch individually
+    // Fallback: fetch individually (using Finnhub if available)
     const results: Record<string, StockQuote> = {};
     await Promise.all(
       symbols.map(async (symbol) => {
@@ -291,14 +318,28 @@ class SimpleCacheService {
     cacheSize: number;
     memoryUsage: string;
     ttl: number;
+    hit: number;
+    miss: number;
+    bySymbol: { [symbol: string]: { hit: number; miss: number } };
   }> {
     const keys = await redisCacheService.keys('quote:*');
     const health = await redisCacheService.healthCheck();
+    const bySymbol: { [k: string]: { hit: number; miss: number } } = {};
+    for (const [sym, count] of hitCounters.bySymbol.entries()) {
+      bySymbol[sym] = { hit: count, miss: 0 };
+    }
+    for (const [sym, count] of missCounters.bySymbol.entries()) {
+      if (!bySymbol[sym]) bySymbol[sym] = { hit: 0, miss: count };
+      else bySymbol[sym].miss = count;
+    }
     
     return {
       cacheSize: keys.length,
       memoryUsage: health.memoryUsage ? `${(health.memoryUsage / 1024 / 1024).toFixed(2)}MB` : 'N/A',
-      ttl: CACHE_TTL
+      ttl: CACHE_TTL,
+      hit: hitCounters.total,
+      miss: missCounters.total,
+      bySymbol,
     };
   }
 }

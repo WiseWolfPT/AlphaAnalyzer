@@ -17,19 +17,17 @@ import {
 import { ServerMarketDataService } from '../services/market-data-service';
 import { 
   ProviderManager, 
-  PolygonProvider, 
-  AlphaVantageProvider, 
-  FinnhubProvider, 
-  TwelveDataProvider,
   FMPProvider,
-  FiscalAIProvider
+  FinnhubProvider
 } from '../services/providers';
 import { CacheService } from '../services/cache/cache-service';
 import { simpleCacheService } from '../services/simple-cache-service';
-import { threeTierCache } from '../cache/three-tier-cache';
+// Legacy threeTierCache removed from market-data routes per Phase 1
 import { optionalMarketDataApiKey } from '../middleware/market-data-api-key';
 
 const router = Router();
+
+const MARKET_MOVERS_TTL_SECONDS = 120;
 
 // Use optional authentication for market data endpoints (public access allowed)
 const isDevelopment = process.env.NODE_ENV !== 'production';
@@ -42,25 +40,52 @@ const marketDataService = new ServerMarketDataService();
 // Initialize the new provider manager
 const providerManager = new ProviderManager();
 
-// SIMPLIFIED PROVIDERS - Phase 2 Backend Integration
-// Only FMP (primary) + Alpha Vantage (backup) for cost/reliability optimization
+// Provider configuration: FMP as primary with Finnhub fallback
 if (process.env.FMP_API_KEY && process.env.FMP_API_KEY !== 'demo') {
   providerManager.addProvider(new FMPProvider(process.env.FMP_API_KEY));
   console.log('✅ FMP Provider configured (PRIMARY: $14.99/month, 300 calls/min)');
 }
-if (process.env.ALPHA_VANTAGE_API_KEY && process.env.ALPHA_VANTAGE_API_KEY !== 'demo') {
-  providerManager.addProvider(new AlphaVantageProvider(process.env.ALPHA_VANTAGE_API_KEY));
-  console.log('✅ Alpha Vantage Provider configured (BACKUP: Free tier, 5 calls/min)');
+if (process.env.FINNHUB_API_KEY && process.env.FINNHUB_API_KEY !== 'demo') {
+  providerManager.addProvider(new FinnhubProvider(process.env.FINNHUB_API_KEY));
+  console.log('✅ Finnhub Provider configured (FALLBACK: real-time backup)');
 }
 
-// REMOVED: Polygon, Finnhub, TwelveData, FiscalAI for cost optimization
-console.log('📊 Provider optimization: Using only FMP + Alpha Vantage for cost/reliability');
+console.log('📊 Provider optimization: Using FMP primary with Finnhub fallback');
 
 // Initialize cache service
 const cacheService = new CacheService();
 
 // SECURITY FIX: Replace simple Map with secure LRU cache to prevent memory exhaustion
 const searchCache = createSearchCache();
+
+// Helper: canonicalize symbols (e.g., BRK.B -> BRK-B) using FMP stable search and cache result for 24h
+async function canonicalizeSymbol(raw: string): Promise<string> {
+  const upper = raw.toUpperCase();
+  try {
+    const { redisCacheService } = await import('../cache/redis-cache-service');
+    const aliasKey = `alias:${upper}`;
+    let canonical = await redisCacheService.get<string>(aliasKey);
+    if (canonical) return canonical;
+    const apiKey = process.env.FMP_API_KEY as string;
+    if (!apiKey) return upper;
+    try {
+      const searchUrl = `https://financialmodelingprep.com/stable/search-symbol?query=${encodeURIComponent(upper)}&limit=1&apikey=${apiKey}`;
+      const r = await fetch(searchUrl);
+      if (r.ok) {
+        const arr = await r.json().catch(() => []);
+        canonical = Array.isArray(arr) && arr[0]?.symbol ? String(arr[0].symbol).toUpperCase() : upper;
+      } else {
+        canonical = upper;
+      }
+    } catch {
+      canonical = upper;
+    }
+    await redisCacheService.set(aliasKey, canonical, 86400);
+    return canonical;
+  } catch {
+    return upper;
+  }
+}
 
 // Rate limiting específico para market data - TEMPORARILY INCREASED FOR TESTING
 const marketDataRateLimit = rateLimitMiddleware.endpointRateLimit('/api/market-data', {
@@ -176,16 +201,18 @@ router.get('/quote/:symbol',
       }
 
       const { symbol } = validation.data;
-      console.log(`🔍 API request for quote: ${symbol}`);
+      const requestedSymbol = symbol;
+      const canonical = await canonicalizeSymbol(symbol);
+      console.log(`🔍 API request for quote: ${requestedSymbol} (canonical: ${canonical})`);
 
       // Use simple cache service with 60s TTL
-      const quote = await simpleCacheService.getQuote(symbol);
+      const quote = await simpleCacheService.getQuote(canonical);
       
       if (!quote) {
         return res.status(404).json({
           error: 'QUOTE_NOT_FOUND',
-          message: `Unable to fetch quote for ${symbol}`,
-          symbol,
+          message: `Unable to fetch quote for ${requestedSymbol}`,
+          symbol: requestedSymbol,
           timestamp: new Date().toISOString(),
         });
       }
@@ -193,6 +220,8 @@ router.get('/quote/:symbol',
       // Add cache information to response
       const quoteResponse = {
         ...quote,
+        symbol: canonical,
+        requestedSymbol,
         _timestamp: Date.now(),
         _cached: true,
         _source: 'simple_cache',
@@ -266,29 +295,49 @@ router.get('/chart/:symbol/:period',
 
       console.log(`📊 Chart data request for ${symbol} (${period})`);
 
-      // ✅ REDDIT STRATEGY - Try ThreeTierCache for chart data
-      const chartData = await threeTierCache.get(`historical:${symbol}:${period}`, 'historical');
-      
-      if (!chartData || !chartData.data || chartData.data.length === 0) {
-        // Queue for update if not available
-        console.log(`📊 Chart data not cached for ${symbol} (${period}) - will be updated by cron`);
-        return res.status(202).json({
-          message: `Chart data for ${symbol} is being fetched. Please try again in a few minutes.`,
-          symbol,
-          period,
-          timestamp: new Date().toISOString(),
-          status: 'pending'
+      const { redisCacheService } = await import('../cache/redis-cache-service');
+      const cacheKey = `historical:${symbol}:${period}`;
+      const cached = await redisCacheService.get(cacheKey);
+      if (cached && cached.data && Array.isArray(cached.data) && cached.data.length > 0) {
+        return res.json({
+          ...cached,
+          _timestamp: Date.now(),
+          _cached: true,
+          _source: 'redis',
         });
       }
 
-      console.log(`✅ Reddit Strategy: Chart data for ${symbol} served from cache (${period})`);
+      // Miss: fetch from FMP and cache for 2h
+      const ttlSeconds = 2 * 60 * 60; // 2 hours
+      try {
+        const fmp = new FMPProvider(process.env.FMP_API_KEY || '');
+        // Use provider helper when possible; fall back to direct API shape
+        const historical = await fmp.getHistorical(symbol, '1y').catch(async () => {
+          const r = await fetch(`https://financialmodelingprep.com/api/v3/historical-price-full/${symbol}?apikey=${process.env.FMP_API_KEY}` as any);
+          if (r.ok) return await r.json();
+          throw new Error(`FMP error ${r.status}`);
+        });
 
-      res.json({
-        ...chartData,
-        _timestamp: Date.now(),
-        _cached: true,
-        _source: 'simple_cache',
-      });
+        const payload = {
+          data: (historical as any)?.historical || (historical as any)?.data || [],
+          symbol,
+          period,
+        };
+        await redisCacheService.set(cacheKey, payload, ttlSeconds);
+        return res.json({
+          ...payload,
+          _timestamp: Date.now(),
+          _cached: false,
+          _source: 'fmp_direct',
+        });
+      } catch (err) {
+        console.error('Chart data error (FMP):', err);
+        return res.status(503).json({
+          error: 'CHART_DATA_ERROR',
+          message: 'Unable to fetch chart data',
+          timestamp: new Date().toISOString(),
+        });
+      }
     } catch (error) {
       console.error('Chart data error:', error);
       res.status(500).json({
@@ -311,54 +360,47 @@ router.get('/market-status',
       const market = (req.query.market as string) || 'US';
       console.log(`🏛️ Market status request for ${market}`);
 
-      // ✅ REDDIT STRATEGY - Use ThreeTierCache for market status
-      const status = await threeTierCache.get(`market_status:${market}`, 'market_status');
-      
-      if (!status) {
-        // Fallback to calculated status
-        const now = new Date();
-        const hour = now.getUTCHours();
-        const day = now.getUTCDay();
-        
-        const isWeekday = day >= 1 && day <= 5;
-        const isMarketHours = hour >= 14 && hour < 21;
-        
-        const calculatedStatus = {
-          market,
-          isOpen: isWeekday && isMarketHours,
-          timezone: 'America/New_York',
-          provider: 'calculated',
-        };
-
-        console.log(`📊 Market status calculated: ${calculatedStatus.isOpen ? 'OPEN' : 'CLOSED'}`);
-        
+      const { redisCacheService } = await import('../cache/redis-cache-service');
+      const cacheKey = `market_status:${market}`;
+      const cached = await redisCacheService.get(cacheKey);
+      if (cached) {
+        console.log(`✅ Market status: ${cached.isOpen ? 'OPEN' : 'CLOSED'} via cache`);
         return res.json({
-          ...calculatedStatus,
+          ...cached,
           _timestamp: Date.now(),
-          _cached: false,
-          _source: 'calculated'
+          _cached: true,
+          _source: 'redis',
         });
       }
-      
-      console.log(`✅ Market status: ${status.isOpen ? 'OPEN' : 'CLOSED'} via cache`);
 
-      res.json({
-        ...status,
-        _timestamp: Date.now(),
-        _cached: true,
-        _source: 'simple_cache',
-      });
-    } catch (error) {
-      console.error('Market status error:', error);
-      
-      // Return calculated status as fallback
+      // Fallback to calculated status and cache it for 2-5 minutes
       const now = new Date();
       const hour = now.getUTCHours();
       const day = now.getUTCDay();
-      
       const isWeekday = day >= 1 && day <= 5;
       const isMarketHours = hour >= 14 && hour < 21;
-      
+      const calculatedStatus = {
+        market,
+        isOpen: isWeekday && isMarketHours,
+        timezone: 'America/New_York',
+        provider: 'calculated',
+      };
+      await redisCacheService.set(cacheKey, calculatedStatus, 180); // 3 minutes
+
+      return res.json({
+        ...calculatedStatus,
+        _timestamp: Date.now(),
+        _cached: false,
+        _source: 'calculated',
+      });
+    } catch (error) {
+      console.error('Market status error:', error);
+      // Return calculated status as fallback without cache
+      const now = new Date();
+      const hour = now.getUTCHours();
+      const day = now.getUTCDay();
+      const isWeekday = day >= 1 && day <= 5;
+      const isMarketHours = hour >= 14 && hour < 21;
       res.json({
         market: 'US',
         isOpen: isWeekday && isMarketHours,
@@ -587,41 +629,28 @@ router.post('/cache/invalidate',
   async (req: Request, res: Response) => {
     try {
       const { symbols } = req.body;
-      
       if (!symbols || !Array.isArray(symbols)) {
-        return res.status(400).json({
-          error: 'INVALID_REQUEST',
-          message: 'Symbols array is required',
-        });
+        return res.status(400).json({ error: 'INVALID_REQUEST', message: 'Symbols array is required' });
       }
 
+      const { redisCacheService } = await import('../cache/redis-cache-service');
       const results: Record<string, boolean> = {};
-      
-      for (const symbol of symbols) {
+      for (const raw of symbols) {
+        const symbol = String(raw).toUpperCase();
         try {
-          await threeTierCache.invalidate(`quote:${symbol}`);
-          await threeTierCache.invalidate(`fundamentals:${symbol}`);
-          await threeTierCache.invalidate(`historical:${symbol}`);
+          await redisCacheService.del(`quote:${symbol}`);
+          await redisCacheService.del(`fundamentals:${symbol}`);
+          await redisCacheService.delPattern(`historical:${symbol}:*`);
           results[symbol] = true;
-        } catch (error) {
+        } catch {
           results[symbol] = false;
         }
       }
-
       console.log(`🗑️ Cache invalidated for: ${Object.keys(results).filter(k => results[k]).join(', ')}`);
-
-      res.json({
-        message: 'Cache invalidation completed',
-        results,
-        timestamp: new Date().toISOString(),
-      });
+      res.json({ message: 'Cache invalidation completed', results, timestamp: new Date().toISOString() });
     } catch (error) {
       console.error('Cache invalidation error:', error);
-      res.status(500).json({
-        error: 'INVALIDATION_FAILED',
-        message: 'Failed to invalidate cache',
-        timestamp: new Date().toISOString(),
-      });
+      res.status(500).json({ error: 'INVALIDATION_FAILED', message: 'Failed to invalidate cache', timestamp: new Date().toISOString() });
     }
   }
 );
@@ -634,20 +663,16 @@ router.get('/cache/stats',
   authService,
   async (req: Request, res: Response) => {
     try {
-      const stats = await threeTierCache.getStats();
-      const health = await threeTierCache.healthCheck();
-      
+      const stats = await simpleCacheService.getCacheStats();
+      const { redisCacheService } = await import('../cache/redis-cache-service');
+      const redis = await redisCacheService.healthCheck();
       res.json({
-        stats,
+        cache: { stats, redis },
         timestamp: new Date().toISOString(),
       });
     } catch (error) {
       console.error('Cache stats error:', error);
-      res.status(500).json({
-        error: 'STATS_ERROR',
-        message: 'Failed to get cache statistics',
-        timestamp: new Date().toISOString(),
-      });
+      res.status(500).json({ error: 'STATS_ERROR', message: 'Failed to get cache statistics', timestamp: new Date().toISOString() });
     }
   }
 );
@@ -803,7 +828,7 @@ router.get('/direct/quote/:symbol',
  * PHASE 2: Direct FMP batch quotes without cache
  */
 router.post('/direct/batch',
-  authService,
+  marketDataApiKey,
   marketDataRateLimit,
   async (req: Request, res: Response) => {
     try {
@@ -925,7 +950,7 @@ router.post('/direct/batch',
  * PHASE 2.5: Now with Redis caching for fast response times
  */
 router.get('/market/movers',
-  authService,
+  optionalMarketDataApiKey, // allow public access; key optional for higher limits
   marketDataRateLimit,
   async (req: Request, res: Response) => {
     try {
@@ -934,9 +959,14 @@ router.get('/market/movers',
       // Import our Redis cache service
       const { cacheService: redisCache } = await import('../services/cache-service');
 
-      // Try cache first (5 minute TTL for market movers)
+      // Try cache first (120s TTL for market movers)
       const cached = await redisCache.getMarketMovers();
       if (cached) {
+        // Serve with cache-friendly headers (2 minutes)
+        res.removeHeader('Cache-Control');
+        res.removeHeader('Pragma');
+        res.removeHeader('Expires');
+        res.header('Cache-Control', `public, max-age=${MARKET_MOVERS_TTL_SECONDS}`);
         console.log('✅ Market movers served from Redis cache');
         return res.json({
           ...cached,
@@ -1000,11 +1030,16 @@ router.get('/market/movers',
         _source: 'fmp_market_movers'
       };
 
-      // Cache the response for 5 minutes (300 seconds)
-      await redisCache.setMarketMovers(moversResponse, 300);
+      // Cache the response for 2 minutes (120 seconds)
+      await redisCache.setMarketMovers(moversResponse, MARKET_MOVERS_TTL_SECONDS);
 
       console.log(`✅ Market movers fetched and cached: ${moversResponse.gainers.length} gainers, ${moversResponse.losers.length} losers, ${moversResponse.mostActive.length} active`);
       
+      // Add cache headers (2 minutes)
+      res.removeHeader('Cache-Control');
+      res.removeHeader('Pragma');
+      res.removeHeader('Expires');
+      res.header('Cache-Control', `public, max-age=${MARKET_MOVERS_TTL_SECONDS}`);
       res.json(moversResponse);
     } catch (error) {
       console.error('Market movers fetch error:', error);
@@ -1581,14 +1616,18 @@ router.get('/income-statement/:symbol',
         });
       }
 
-      const symbol = validation.data.symbol;
+      const requested = validation.data.symbol;
+      const symbol = await canonicalizeSymbol(requested);
       const period = req.query.period === 'annual' ? 'annual' : 'quarter';
       const limit = req.query.limit || '12';
       
       console.log(`💵 Fetching income statement for ${symbol} (${period})`);
-
-      // TODO: Add caching once generic cache methods are available
-
+      const { redisCacheService } = await import('../cache/redis-cache-service');
+      const cacheKey = `financials:income:${symbol}:${period}:lim${limit}`;
+      const cached = await redisCacheService.get(cacheKey);
+      if (cached) {
+        return res.json({ ...cached, _cached: true, _source: 'redis', _timestamp: Date.now(), symbol, requestedSymbol: requested });
+      }
       // Fetch from FMP using axios
       const response = await axios.get(
         `https://financialmodelingprep.com/api/v3/income-statement/${symbol}`,
@@ -1603,14 +1642,9 @@ router.get('/income-statement/:symbol',
       );
       
       const data = response.data;
-
-      // TODO: Cache for 1 hour
-
-      res.json({
-        data,
-        _cached: false,
-        _timestamp: Date.now(),
-      });
+      const payload = { data, symbol, requestedSymbol: requested };
+      await redisCacheService.set(cacheKey, payload, 3600);
+      res.json({ ...payload, _cached: false, _source: 'fmp_direct', _timestamp: Date.now() });
 
     } catch (error) {
       console.error('Income statement fetch error:', error);
@@ -1639,14 +1673,18 @@ router.get('/key-metrics/:symbol',
         });
       }
 
-      const symbol = validation.data.symbol;
+      const requested = validation.data.symbol;
+      const symbol = await canonicalizeSymbol(requested);
       const period = req.query.period === 'annual' ? 'annual' : 'quarter';
       const limit = req.query.limit || '10';
       
       console.log(`📊 Fetching key metrics for ${symbol} (${period})`);
-
-      // TODO: Add caching once generic cache methods are available
-
+      const { redisCacheService } = await import('../cache/redis-cache-service');
+      const cacheKey = `financials:key-metrics:${symbol}:${period}:lim${limit}`;
+      const cached = await redisCacheService.get(cacheKey);
+      if (cached) {
+        return res.json({ ...cached, _cached: true, _source: 'redis', _timestamp: Date.now(), symbol, requestedSymbol: requested });
+      }
       // Fetch from FMP using axios
       const response = await axios.get(
         `https://financialmodelingprep.com/api/v3/key-metrics/${symbol}`,
@@ -1661,14 +1699,9 @@ router.get('/key-metrics/:symbol',
       );
       
       const data = response.data;
-
-      // TODO: Cache for 1 hour
-
-      res.json({
-        data,
-        _cached: false,
-        _timestamp: Date.now(),
-      });
+      const payload = { data, symbol, requestedSymbol: requested };
+      await redisCacheService.set(cacheKey, payload, 3600);
+      res.json({ ...payload, _cached: false, _source: 'fmp_direct', _timestamp: Date.now() });
 
     } catch (error) {
       console.error('Key metrics fetch error:', error);
@@ -1984,7 +2017,8 @@ router.get('/fmp/profile/:symbol',
         });
       }
 
-      const symbol = validation.data.symbol;
+      const requested = validation.data.symbol;
+      const symbol = await canonicalizeSymbol(requested);
       
       console.log(`🏢 [FMP Proxy] Fetching profile for ${symbol}`);
 
@@ -1994,7 +2028,12 @@ router.get('/fmp/profile/:symbol',
           message: 'FMP API key not configured',
         });
       }
-
+      const { redisCacheService } = await import('../cache/redis-cache-service');
+      const cacheKey = `company:profile:${symbol}`;
+      const cached = await redisCacheService.get(cacheKey);
+      if (cached) {
+        return res.json({ data: cached, symbol, requestedSymbol: requested, _cached: true, _source: 'redis', _timestamp: Date.now() });
+      }
       const response = await axios.get(
         `https://financialmodelingprep.com/api/v3/profile/${symbol}`,
         {
@@ -2004,8 +2043,9 @@ router.get('/fmp/profile/:symbol',
           timeout: 10000
         }
       );
-      
-      res.json(response.data);
+      const data = response.data;
+      await redisCacheService.set(cacheKey, data, 86400);
+      res.json({ data, symbol, requestedSymbol: requested, _cached: false, _source: 'fmp_direct', _timestamp: Date.now() });
 
     } catch (error) {
       console.error('FMP profile proxy error:', error);

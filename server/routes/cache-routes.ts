@@ -1,8 +1,8 @@
 /**
- * CACHE ROUTES - Reddit Strategy Implementation
- * 
- * These routes implement the Reddit Strategy where users NEVER trigger API calls
- * All data comes from cache, stale data is queued for background update
+ * CACHE ROUTES - Cache-first with auto-fill on miss
+ *
+ * These routes prioritize Redis cache and will auto-fill from
+ * providers on cache miss via simple-cache-service.
  */
 
 import { Router, Request, Response } from 'express';
@@ -48,12 +48,11 @@ router.get('/quotes/:symbol', async (req: Request, res: Response) => {
     
     // Use simple cache service with 60s TTL
     const quote = await simpleCacheService.getQuote(symbol);
-    
     res.json({
-      success: true,
-      data: quote,
-      cached: true,
-      strategy: 'reddit'
+      data: quote || null,
+      _cached: true,
+      _source: 'cache-first',
+      _timestamp: Date.now(),
     });
     
   } catch (error) {
@@ -82,14 +81,13 @@ router.post('/quotes/batch', async (req: Request, res: Response) => {
     const { symbols } = validation.data;
     
     // Use Reddit Strategy for batch
-    const quotes = await simpleCacheService.getBatchQuotes(symbols);
-    
+    const quotesBySymbol = await simpleCacheService.getBatchQuotes(symbols);
+    const quotes = Object.values(quotesBySymbol);
     res.json({
-      success: true,
-      data: quotes,
-      cached: true,
-      strategy: 'reddit',
-      count: quotes.length
+      quotes,
+      _cached: true,
+      _source: 'cache-first',
+      _timestamp: Date.now(),
     });
     
   } catch (error) {

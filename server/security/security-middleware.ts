@@ -393,14 +393,20 @@ export const financialDataSecurity = (req: express.Request, res: express.Respons
   res.setHeader('X-Permitted-Cross-Domain-Policies', 'none');
   res.setHeader('X-Frame-Options', 'DENY');
   
-  // Validate that financial data requests have proper authorization
-  // In a production environment, this would check JWT tokens, API keys, etc.
-  const hasAuth = req.headers.authorization || req.query.apikey;
-  if (!hasAuth) {
-    return res.status(401).json({
-      error: 'Authentication required for financial data access',
-      timestamp: new Date().toISOString(),
-    });
+  // Only enforce authentication for state-changing operations; GET/HEAD/OPTIONS stay public
+  const methodAllowsAnonymous = ['GET', 'HEAD', 'OPTIONS'].includes(req.method.toUpperCase());
+  if (!methodAllowsAnonymous) {
+    const authHeader = typeof req.headers.authorization === 'string' ? req.headers.authorization.trim() : '';
+    const queryApiKey = (req.query.apikey || req.query.apiKey) as string | undefined;
+    const headerApiKey = typeof req.headers['x-api-key'] === 'string' ? (req.headers['x-api-key'] as string).trim() : '';
+
+    const hasAuth = Boolean(authHeader) || Boolean(queryApiKey) || Boolean(headerApiKey);
+    if (!hasAuth) {
+      return res.status(401).json({
+        error: 'Authentication required for financial data access',
+        timestamp: new Date().toISOString(),
+      });
+    }
   }
   
   next();

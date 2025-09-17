@@ -177,6 +177,22 @@ export class RedisCacheService {
   }
 
   /**
+   * List keys matching a pattern
+   */
+  async keys(pattern: string): Promise<string[]> {
+    if (!this.connected) {
+      return [];
+    }
+    try {
+      return await this.redis.keys(pattern);
+    } catch (error) {
+      console.error(`❌ Redis keys error for ${pattern}:`, error);
+      this.stats.errors++;
+      return [];
+    }
+  }
+
+  /**
    * Check if key exists
    */
   async exists(key: string): Promise<boolean> {

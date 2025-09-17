@@ -15,11 +15,8 @@ import {
 import { ServerMarketDataService } from '../services/market-data-service';
 import { 
   ProviderManager, 
-  PolygonProvider, 
-  AlphaVantageProvider, 
-  FinnhubProvider, 
-  TwelveDataProvider,
-  FMPProvider
+  FMPProvider,
+  FinnhubProvider
 } from '../services/providers';
 import { CacheService } from '../services/cache-service';
 
@@ -40,20 +37,11 @@ const marketDataService = new ServerMarketDataService();
 const providerManager = new ProviderManager();
 
 // Initialize providers in priority order
-if (process.env.POLYGON_API_KEY && process.env.POLYGON_API_KEY !== 'demo') {
-  providerManager.addProvider(new PolygonProvider(process.env.POLYGON_API_KEY));
-}
-if (process.env.ALPHA_VANTAGE_API_KEY && process.env.ALPHA_VANTAGE_API_KEY !== 'demo') {
-  providerManager.addProvider(new AlphaVantageProvider(process.env.ALPHA_VANTAGE_API_KEY));
+if (process.env.FMP_API_KEY && process.env.FMP_API_KEY !== 'demo') {
+  providerManager.addProvider(new FMPProvider(process.env.FMP_API_KEY));
 }
 if (process.env.FINNHUB_API_KEY && process.env.FINNHUB_API_KEY !== 'demo') {
   providerManager.addProvider(new FinnhubProvider(process.env.FINNHUB_API_KEY));
-}
-if (process.env.TWELVE_DATA_API_KEY && process.env.TWELVE_DATA_API_KEY !== 'demo') {
-  providerManager.addProvider(new TwelveDataProvider(process.env.TWELVE_DATA_API_KEY));
-}
-if (process.env.FMP_API_KEY && process.env.FMP_API_KEY !== 'demo') {
-  providerManager.addProvider(new FMPProvider(process.env.FMP_API_KEY));
 }
 
 // Initialize cache service (Agent 2's implementation)

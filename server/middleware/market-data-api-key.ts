@@ -12,7 +12,9 @@ export function marketDataApiKey(req: Request, res: Response, next: NextFunction
     return next();
   }
 
-  const apiKey = req.headers['x-api-key'] as string;
+  const apiKeyHeader = req.headers['x-api-key'] as string;
+  const apiKeyQuery = (req.query['api_key'] || req.query['apikey']) as string | undefined;
+  const apiKey = apiKeyHeader || apiKeyQuery;
   const expectedKey = process.env.MARKET_DATA_API_KEY;
 
   if (!expectedKey) {

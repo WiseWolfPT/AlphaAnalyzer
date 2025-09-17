@@ -339,7 +339,7 @@ router.delete('/:id', async (req: Request, res: Response) => {
 router.post('/:id/publish', async (req: Request, res: Response) => {
   try {
     const id = parseInt(req.params.id);
-    
+
     if (isNaN(id)) {
       return res.status(400).json({
         success: false,
@@ -347,11 +347,11 @@ router.post('/:id/publish', async (req: Request, res: Response) => {
         timestamp: new Date().toISOString()
       });
     }
-    
+
     const transcript = await transcriptService.updateTranscript(id, {
       status: 'published'
     });
-    
+
     if (!transcript) {
       return res.status(404).json({
         success: false,
@@ -359,7 +359,7 @@ router.post('/:id/publish', async (req: Request, res: Response) => {
         timestamp: new Date().toISOString()
       });
     }
-    
+
     res.json({
       success: true,
       data: transcript,
@@ -371,6 +371,85 @@ router.post('/:id/publish', async (req: Request, res: Response) => {
     res.status(500).json({
       success: false,
       error: 'Failed to publish transcript',
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
+/**
+ * POST /api/admin/transcripts/bulk/publish
+ * Auto-publish all transcripts in review status that have complete data
+ */
+router.post('/bulk/publish', async (req: Request, res: Response) => {
+  try {
+    console.log('🚀 Starting bulk auto-publish of reviewed transcripts...');
+
+    const publishedCount = await transcriptService.autoPublishReviewedTranscripts();
+
+    console.log(`✅ Auto-published ${publishedCount} transcripts`);
+
+    res.json({
+      success: true,
+      publishedCount,
+      message: `Successfully auto-published ${publishedCount} transcripts from review to published status`,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('Error during bulk auto-publish:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to auto-publish transcripts',
+      details: error instanceof Error ? error.message : 'Unknown error',
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
+/**
+ * POST /api/admin/transcripts/bulk/status
+ * Bulk update transcript status
+ */
+router.post('/bulk/status', async (req: Request, res: Response) => {
+  try {
+    const { fromStatus, toStatus } = req.body;
+
+    if (!fromStatus || !toStatus) {
+      return res.status(400).json({
+        success: false,
+        error: 'Both fromStatus and toStatus are required',
+        timestamp: new Date().toISOString()
+      });
+    }
+
+    const validStatuses = ['pending', 'review', 'published', 'archived'];
+    if (!validStatuses.includes(fromStatus) || !validStatuses.includes(toStatus)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid status. Must be one of: pending, review, published, archived',
+        timestamp: new Date().toISOString()
+      });
+    }
+
+    console.log(`🔄 Bulk updating transcripts from ${fromStatus} to ${toStatus}...`);
+
+    const updatedCount = await transcriptService.bulkUpdateStatus(fromStatus, toStatus);
+
+    console.log(`✅ Updated ${updatedCount} transcripts from ${fromStatus} to ${toStatus}`);
+
+    res.json({
+      success: true,
+      updatedCount,
+      fromStatus,
+      toStatus,
+      message: `Successfully updated ${updatedCount} transcripts from ${fromStatus} to ${toStatus}`,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('Error during bulk status update:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to update transcript statuses',
+      details: error instanceof Error ? error.message : 'Unknown error',
       timestamp: new Date().toISOString()
     });
   }

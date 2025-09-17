@@ -1,7 +1,12 @@
 import { useQuery } from '@tanstack/react-query';
 
 // Helper to get API URL
-const getApiUrl = () => '';
+const getApiUrl = () => {
+  if (import.meta && import.meta.env && import.meta.env.DEV) {
+    return 'http://localhost:3001';
+  }
+  return '';
+};
 
 // Hook for batch quotes - GET with chunking, delay and fallback
 export function useCachedBatchQuotes(symbols: string[], options: any = {}) {
@@ -17,7 +22,8 @@ export function useCachedBatchQuotes(symbols: string[], options: any = {}) {
       const allQuotes: any[] = [];
 
       for (const c of chunks) {
-        const url = `/api/cache/quotes/batch`;
+        const apiUrl = getApiUrl();
+        const url = `${apiUrl}/api/cache/quotes/batch`;
         try {
           const r = await fetch(url, {
             method: 'POST',
@@ -74,8 +80,27 @@ export function useCachedQuote(symbol: string, options = {}) {
         throw new Error(`Failed to fetch cached quote: ${response.statusText}`);
       }
       
-      return response.json();
+      const b = await response.json();
+      // Normalize to a stable shape { data, _cached, _source }
+      let quote: any = null;
+      if (Array.isArray(b?.quotes)) {
+        quote = b.quotes[0] ?? null;
+      } else if (b && typeof b === 'object' && 'data' in b) {
+        quote = (b as any).data;
+      } else if (b && typeof b === 'object' && ('price' in b || 'symbol' in b)) {
+        // Defensive: server returned the quote directly
+        quote = b;
+      }
+      return {
+        data: quote,
+        _cached: b?._cached ?? true,
+        _source: b?._source ?? 'cache',
+        _timestamp: b?._timestamp ?? Date.now(),
+      };
     },
+    // Gentle retry/backoff to smooth out cold starts or brief hiccups
+    retry: (count, error) => count < 2,
+    retryDelay: (attempt) => Math.min(500 * attempt, 1000),
     staleTime: 60 * 1000, // 60 seconds to match backend cache TTL
     gcTime: 120 * 1000, // 2 minutes garbage collection
     refetchOnWindowFocus: true, // Refetch when window regains focus

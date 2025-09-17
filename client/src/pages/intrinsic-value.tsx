@@ -461,7 +461,7 @@ export default function IntrinsicValue() {
                       }
                       <span>
                         {`${((realtimeQuote?.change_percent ?? cachedQuote?.changePercent ?? cachedQuote?.change_percent ?? parseFloat(String(selectedStock.changePercent || 0))) >= 0 ? '+' : '')}${
-                          (realtimeQuote?.change_percent ?? cachedQuote?.changePercent ?? cachedQuote?.change_percent ?? parseFloat(String(selectedStock.changePercent || 0))).toFixed(2)
+                          ((realtimeQuote?.change_percent ?? cachedQuote?.changePercent ?? cachedQuote?.change_percent ?? parseFloat(String(selectedStock.changePercent || 0))) || 0).toFixed(2)
                         }%`}
                       </span>
                     </div>

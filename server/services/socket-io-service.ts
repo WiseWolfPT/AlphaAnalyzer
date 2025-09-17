@@ -6,7 +6,7 @@
 import { Server } from 'http';
 import { Server as SocketIOServer } from 'socket.io';
 import { logger } from '../lib/logger';
-import { simpleCacheService } from './simple-cache-service';
+// Removed legacy Reddit Strategy wiring; events can be added later from cache updates
 
 export class SocketIOService {
   private io: SocketIOServer | null = null;
@@ -44,19 +44,10 @@ export class SocketIOService {
   }
   
   /**
-   * Setup event listeners for Reddit Strategy updates
+   * Setup event listeners (placeholder for future cache update hooks)
    */
   private setupEventListeners(): void {
-    // Listen for batch quote updates from Reddit Strategy
-    redditStrategy.on('batch-quotes-updated', (data: any) => {
-      logger.info(`🔔 Received batch-quotes-updated event with ${data.quotes?.length || 0} quotes`);
-      this.broadcastBatchUpdate(data.quotes);
-    });
-    
-    // Listen for individual quote updates (if needed)
-    redditStrategy.on('quote-updated', (data: any) => {
-      this.broadcastQuoteUpdate(data);
-    });
+    // Intentionally left blank in Phase 1: legacy Reddit Strategy removed
   }
   
   /**

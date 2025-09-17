@@ -138,8 +138,8 @@ export class ProviderManager {
     const errors: Error[] = [];
     const triedProviders: string[] = [];
 
-    // Try providers in order: FMP first (300 calls/min), then fallbacks
-    const providerOrder = ['fmp', 'polygon', 'alpha_vantage', 'finnhub', 'twelve_data'];
+    // Try providers in order: FMP primary, Finnhub fallback
+    const providerOrder = ['fmp', 'finnhub'];
     
     for (const providerName of providerOrder) {
       const provider = this.providers.find(p => p.getName() === providerName);
@@ -172,9 +172,7 @@ export class ProviderManager {
     const errors: Error[] = [];
 
     // Try providers that support batch requests first
-    const batchProviders = this.providers.filter(p => 
-      ['polygon', 'finnhub', 'twelve_data'].includes(p.getName())
-    );
+    const batchProviders = this.providers.filter(p => ['fmp'].includes(p.getName()));
 
     for (const provider of batchProviders) {
       if (!this.isProviderHealthy(provider) || !provider.checkQuota()) {
