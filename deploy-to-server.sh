@@ -30,7 +30,7 @@ npm run build
 # Copy frontend files to correct location
 echo "📁 Copying frontend files..."
 mkdir -p dist/public
-cp -r client/dist/public/* dist/public/
+cp -r dist/public/* dist/public/
 
 # Note: Environment variables should already be configured on server
 # This script does not overwrite .env.production to preserve secrets

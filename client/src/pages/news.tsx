@@ -25,6 +25,8 @@ import {
   BarChart3
 } from "lucide-react";
 import { motion } from "framer-motion";
+import { formatDistanceToNow } from 'date-fns';
+import { pt } from 'date-fns/locale';
 
 import { cn } from "@/lib/utils";
 
@@ -348,7 +350,7 @@ export default function News() {
                               <div className="flex items-center gap-4 text-xs text-muted-foreground">
                                 <div className="flex items-center gap-1">
                                   <Clock className="h-3 w-3" />
-                                  {formatDistanceToNow(article.publishedAt, { addSuffix: true })}
+                                  {formatDistanceToNow(article.publishedAt, { addSuffix: true, locale: pt })}
                                 </div>
                                 <div className="flex items-center gap-1">
                                   <Eye className="h-3 w-3" />
@@ -414,7 +416,7 @@ export default function News() {
                           <div className="flex items-center gap-2 text-xs text-muted-foreground">
                             <span>{story.source}</span>
                             <span>•</span>
-                            <span>{formatDistanceToNow(story.publishedAt, { addSuffix: true })}</span>
+                            <span>{formatDistanceToNow(story.publishedAt, { addSuffix: true, locale: pt })}</span>
                           </div>
                         </div>
                       </div>
@@ -483,7 +485,7 @@ export default function News() {
                     </p>
                     <div className="flex items-center justify-between text-xs text-muted-foreground">
                       <span>{story.source}</span>
-                      <span>{formatDistanceToNow(story.publishedAt, { addSuffix: true })}</span>
+                      <span>{formatDistanceToNow(story.publishedAt, { addSuffix: true, locale: pt })}</span>
                     </div>
                   </CardContent>
                 </Card>
@@ -518,7 +520,7 @@ export default function News() {
                         <p className="text-muted-foreground text-sm mb-3">{article.summary}</p>
                         <div className="flex items-center gap-4 text-xs text-muted-foreground">
                           <span>{article.source}</span>
-                          <span>{formatDistanceToNow(article.publishedAt, { addSuffix: true })}</span>
+                          <span>{formatDistanceToNow(article.publishedAt, { addSuffix: true, locale: pt })}</span>
                         </div>
                       </div>
                     </div>

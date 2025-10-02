@@ -51,12 +51,26 @@ export default function LoginPage() {
 
     try {
       const result = await auth.signIn(data.email, data.password);
-      
+
       if (result.error) {
         setError(result.error.message);
-      } else {
-        // Redirect to dashboard on success
-        setLocation('/dashboard');
+      } else if (result.user) {
+        // Debug: log user metadata
+        console.log('User metadata:', result.user.user_metadata);
+        console.log('User role:', result.user.user_metadata?.role);
+
+        // Check if user is admin and redirect accordingly
+        const isAdmin = result.user.user_metadata?.role === 'admin' ||
+                       result.user.email === 'alfalyzer@gmail.com';
+
+        if (isAdmin) {
+          console.log('Redirecting admin to /admin');
+          setLocation('/admin');
+        } else {
+          console.log('Redirecting regular user to /find-stocks');
+          // Redirect to main page on success
+          setLocation('/find-stocks');
+        }
       }
     } catch (error: any) {
       setError('Erro inesperado. Tente novamente.');
@@ -221,7 +235,7 @@ export default function LoginPage() {
 
                 <div className="flex items-center justify-between">
                   <Link href="/auth/forgot-password">
-                    <Button variant="link" className="px-0 font-normal">
+                    <Button type="button" variant="link" className="px-0 font-normal">
                       Esqueceu a password?
                     </Button>
                   </Link>

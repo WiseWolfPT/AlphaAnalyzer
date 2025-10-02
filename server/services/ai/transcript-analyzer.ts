@@ -5,7 +5,8 @@
  */
 
 import { openaiService, AIAnalysisRequest, OpenAIModel } from './openai-service';
-import { supabaseAdmin } from '../../lib/supabase-admin';
+import { transcriptsPgRepo } from '../../repositories/transcripts-pg';
+import { aiAnalysesPgRepo } from '../../repositories/ai-analyses-pg';
 import { structuredLogger } from '../structured-logger';
 
 export interface TranscriptAnalysis {
@@ -181,55 +182,58 @@ class TranscriptAnalyzer {
   }
 
   /**
-   * Get transcript content from database
+   * Get transcript content from PostgreSQL database
    */
   private async getTranscriptContent(transcriptId: string): Promise<{ id: string; content: string; } | null> {
-    const { data, error } = await supabaseAdmin
-      .from('transcripts')
-      .select('id, content')
-      .eq('id', transcriptId)
-      .single();
+    try {
+      const transcript = await transcriptsPgRepo.getById(parseInt(transcriptId));
 
-    if (error) {
-      structuredLogger.error('Failed to fetch transcript', { transcriptId, error: error.message });
+      if (!transcript) {
+        structuredLogger.error('Transcript not found', { transcriptId });
+        return null;
+      }
+
+      return {
+        id: transcript.id.toString(),
+        content: transcript.raw_transcript || ''
+      };
+    } catch (error) {
+      structuredLogger.error('Failed to fetch transcript', {
+        transcriptId,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
       return null;
     }
-
-    return data;
   }
 
   /**
-   * Get existing analyses for a transcript
+   * Get existing analyses for a transcript from PostgreSQL
    */
   private async getExistingAnalyses(
-    transcriptId: string, 
+    transcriptId: string,
     types: string[]
   ): Promise<TranscriptAnalysis[]> {
-    const { data, error } = await supabaseAdmin
-      .from('ai_analyses')
-      .select('*')
-      .eq('transcript_id', transcriptId)
-      .in('analysis_type', types);
+    try {
+      const analyses = await aiAnalysesPgRepo.getByTranscriptIdAndTypes(transcriptId, types);
 
-    if (error) {
-      structuredLogger.error('Failed to fetch existing analyses', { 
-        transcriptId, 
-        error: error.message 
+      return analyses.map(row => ({
+        id: row.id,
+        transcriptId: row.transcript_id,
+        analysisType: row.analysis_type as any,
+        content: row.content,
+        model: row.model_used as OpenAIModel,
+        confidenceScore: row.confidence_score,
+        tokensUsed: row.tokens_used,
+        costUSD: row.cost_usd,
+        createdAt: new Date(row.created_at)
+      }));
+    } catch (error) {
+      structuredLogger.error('Failed to fetch existing analyses', {
+        transcriptId,
+        error: error instanceof Error ? error.message : 'Unknown error'
       });
       return [];
     }
-
-    return data?.map(row => ({
-      id: row.id,
-      transcriptId: row.transcript_id,
-      analysisType: row.analysis_type,
-      content: row.content,
-      model: row.model_used,
-      confidenceScore: row.confidence_score,
-      tokensUsed: row.tokens_used,
-      costUSD: row.cost_usd,
-      createdAt: new Date(row.created_at)
-    })) || [];
   }
 
   /**
@@ -270,27 +274,23 @@ class TranscriptAnalyzer {
       parsedContent = { text: aiResponse.content };
     }
 
-    // Save to database
-    const { data, error } = await supabaseAdmin
-      .from('ai_analyses')
-      .insert({
-        transcript_id: transcriptId,
-        model_used: aiResponse.model,
-        analysis_type: analysisType,
-        content: parsedContent,
-        confidence_score: aiResponse.confidenceScore,
-        tokens_used: aiResponse.tokensUsed.total,
-        cost_usd: aiResponse.costUSD
-      })
-      .select()
-      .single();
+    // Save to PostgreSQL database
+    const analysisData = await aiAnalysesPgRepo.create({
+      transcript_id: transcriptId,
+      model_used: aiResponse.model as any,
+      analysis_type: analysisType,
+      content: parsedContent,
+      confidence_score: aiResponse.confidenceScore,
+      tokens_used: aiResponse.tokensUsed.total,
+      cost_usd: aiResponse.costUSD
+    });
 
-    if (error) {
-      throw new Error(`Failed to save analysis: ${error.message}`);
+    if (!analysisData) {
+      throw new Error('Failed to save analysis - no data returned');
     }
 
     return {
-      id: data.id,
+      id: analysisData.id,
       transcriptId,
       analysisType,
       content: parsedContent,
@@ -298,7 +298,7 @@ class TranscriptAnalyzer {
       confidenceScore: aiResponse.confidenceScore,
       tokensUsed: aiResponse.tokensUsed.total,
       costUSD: aiResponse.costUSD,
-      createdAt: new Date(data.created_at)
+      createdAt: new Date(analysisData.created_at)
     };
   }
 
@@ -310,7 +310,7 @@ class TranscriptAnalyzer {
   }
 
   /**
-   * Get analysis statistics for admin dashboard
+   * Get analysis statistics for admin dashboard from PostgreSQL
    */
   async getAnalysisStats(): Promise<{
     totalAnalyses: number;
@@ -324,12 +324,13 @@ class TranscriptAnalyzer {
       cost: number;
     }>;
   }> {
-    // Get overall stats
-    const { data: stats } = await supabaseAdmin
-      .from('ai_analyses')
-      .select('analysis_type, model_used, cost_usd, tokens_used, created_at');
+    try {
+      return await aiAnalysesPgRepo.getStats();
+    } catch (error) {
+      structuredLogger.error('Failed to get analysis stats', {
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
 
-    if (!stats) {
       return {
         totalAnalyses: 0,
         totalCost: 0,
@@ -339,58 +340,8 @@ class TranscriptAnalyzer {
         recentActivity: []
       };
     }
-
-    const totalAnalyses = stats.length;
-    const totalCost = stats.reduce((sum, row) => sum + (row.cost_usd || 0), 0);
-    const totalTokens = stats.reduce((sum, row) => sum + (row.tokens_used || 0), 0);
-
-    // Group by type
-    const analysesByType = stats.reduce((acc, row) => {
-      acc[row.analysis_type] = (acc[row.analysis_type] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
-
-    // Group by model
-    const analysesByModel = stats.reduce((acc, row) => {
-      acc[row.model_used] = (acc[row.model_used] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
-
-    // Recent activity (last 7 days)
-    const recentActivity = this.calculateRecentActivity(stats);
-
-    return {
-      totalAnalyses,
-      totalCost,
-      totalTokens,
-      analysesByType,
-      analysesByModel,
-      recentActivity
-    };
   }
 
-  /**
-   * Calculate recent activity stats
-   */
-  private calculateRecentActivity(stats: any[]): Array<{ date: string; count: number; cost: number; }> {
-    const last7Days = Array.from({ length: 7 }, (_, i) => {
-      const date = new Date();
-      date.setDate(date.getDate() - i);
-      return date.toISOString().split('T')[0];
-    }).reverse();
-
-    return last7Days.map(date => {
-      const dayStats = stats.filter(stat => 
-        stat.created_at && stat.created_at.startsWith(date)
-      );
-      
-      return {
-        date,
-        count: dayStats.length,
-        cost: dayStats.reduce((sum, stat) => sum + (stat.cost_usd || 0), 0)
-      };
-    });
-  }
 }
 
 export const transcriptAnalyzer = new TranscriptAnalyzer();

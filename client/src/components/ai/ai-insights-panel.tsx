@@ -128,15 +128,9 @@ export function AIInsightsPanel({
     }
   };
 
-  const handleGenerateMissing = () => {
-    if (onGenerateAnalysis && missingTypes.length > 0) {
-      onGenerateAnalysis(missingTypes);
-    }
-  };
-
-  const handleRegenerateAll = () => {
-    if (onRegenerateAnalysis) {
-      onRegenerateAnalysis(Object.keys(analysisTypeConfig));
+  const handleGenerateAll = () => {
+    if (onGenerateAnalysis) {
+      onGenerateAnalysis(Object.keys(analysisTypeConfig));
     }
   };
 
@@ -261,28 +255,19 @@ export function AIInsightsPanel({
               AI-powered analysis of earnings transcript
             </CardDescription>
           </div>
-          <div className="flex items-center gap-2">
-            {missingTypes.length > 0 && (
+          {analyses.length > 0 && (
+            <div className="flex items-center gap-2">
               <Button
                 variant="outline"
                 size="sm"
-                onClick={handleGenerateMissing}
+                onClick={handleGenerateAll}
                 disabled={isLoading}
               >
-                <Zap className="h-4 w-4 mr-1" />
-                Generate Missing
+                <RefreshCw className={cn("h-4 w-4 mr-1", { "animate-spin": isLoading })} />
+                Regenerate All
               </Button>
-            )}
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleRegenerateAll}
-              disabled={isLoading}
-            >
-              <RefreshCw className={cn("h-4 w-4 mr-1", { "animate-spin": isLoading })} />
-              Regenerate All
-            </Button>
-          </div>
+            </div>
+          )}
         </div>
       </CardHeader>
       
@@ -294,7 +279,7 @@ export function AIInsightsPanel({
             <p className="text-muted-foreground mb-4">
               Generate AI-powered insights for this earnings transcript.
             </p>
-            <Button onClick={handleGenerateMissing} disabled={isLoading}>
+            <Button onClick={handleGenerateAll} disabled={isLoading}>
               <Brain className="h-4 w-4 mr-2" />
               Generate AI Analysis
             </Button>

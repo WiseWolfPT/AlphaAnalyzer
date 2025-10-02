@@ -218,16 +218,64 @@ Be objective and evidence-based in your assessment.`;
       case 'metrics':
         return `${basePrompt}
 
-Extract key financial metrics from this transcript and return as JSON with these fields:
+Extract comprehensive financial metrics from this earnings transcript. Return as JSON with these fields:
 {
-  "revenue": {"current": number, "yoy_growth": number, "guidance": string},
-  "earnings": {"eps": number, "yoy_growth": number, "beat_estimates": boolean},
-  "margins": {"gross": number, "operating": number, "net": number},
-  "guidance": {"updated": boolean, "direction": "raised"|"lowered"|"maintained", "details": string},
-  "key_metrics": [{"name": string, "value": string, "change": string}]
+  "revenue": {
+    "current_quarter": number,
+    "prior_year_quarter": number,
+    "yoy_growth_percent": number,
+    "sequential_growth_percent": number,
+    "by_segment": [{"name": string, "value": number, "growth": number}],
+    "guidance_next_quarter": string,
+    "guidance_full_year": string
+  },
+  "earnings": {
+    "gaap_eps": number,
+    "non_gaap_eps": number,
+    "consensus_estimate": number,
+    "beat_miss_amount": number,
+    "yoy_growth_percent": number,
+    "net_income": number,
+    "adjusted_ebitda": number
+  },
+  "margins": {
+    "gross_margin": number,
+    "gross_margin_yoy_change": number,
+    "operating_margin": number,
+    "operating_margin_yoy_change": number,
+    "net_margin": number,
+    "ebitda_margin": number
+  },
+  "cash_flow": {
+    "operating_cash_flow": number,
+    "free_cash_flow": number,
+    "capex": number,
+    "cash_position": number,
+    "debt_position": number
+  },
+  "guidance": {
+    "updated": boolean,
+    "direction": "raised"|"lowered"|"maintained"|"initiated",
+    "revenue_guidance": {"q_next": string, "fy": string},
+    "eps_guidance": {"q_next": string, "fy": string},
+    "key_assumptions": [string],
+    "confidence_level": "high"|"moderate"|"cautious"
+  },
+  "operational_metrics": {
+    "customer_metrics": [{"name": string, "value": string, "change": string}],
+    "product_metrics": [{"name": string, "value": string, "change": string}],
+    "efficiency_metrics": [{"name": string, "value": string, "change": string}]
+  },
+  "stock_specific_kpis": [
+    {"name": string, "value": string, "yoy_change": string, "context": string}
+  ],
+  "management_highlights": [string],
+  "notable_comparisons": [
+    {"metric": string, "vs_consensus": string, "vs_prior_year": string}
+  ]
 }
 
-Only include metrics explicitly mentioned in the transcript.`;
+Extract ALL financial metrics mentioned. For missing values use null. Be precise with numbers.`;
 
       case 'insights':
         return `${basePrompt}
@@ -288,6 +336,69 @@ Focus on actionable intelligence for investment decisions.`;
         available: (this.requestCount.get(`gpt-3.5-turbo-${currentTime}`) || 0) < RATE_LIMITS['gpt-3.5-turbo'].rpm * 0.9
       }
     };
+  }
+
+  /**
+   * Generate structured transcript summary with specific format for UI
+   */
+  async generateTranscriptSummary(params: {
+    transcript: string;
+    ticker: string;
+    quarter: string;
+    year: number;
+  }): Promise<any> {
+    const prompt = `
+      Analyze this ${params.quarter} ${params.year} earnings call transcript for ${params.ticker}.
+
+      Provide a JSON response with:
+      {
+        "summary": "Executive summary in 3-4 sentences focusing on key performance and strategic updates",
+        "keyInsights": [
+          "Most important strategic or operational development",
+          "Key performance driver or trend",
+          "Critical forward-looking statement or guidance change"
+        ],
+        "financialHighlights": [
+          "Revenue: $X.X billion (±X% YoY, ±X% QoQ) - beat/miss by X%",
+          "EPS: $X.XX GAAP / $X.XX non-GAAP (±X% YoY) - beat/miss consensus by $X.XX",
+          "Margins: Gross X% (±Xbps YoY), Operating X% (±Xbps YoY)",
+          "Free Cash Flow: $X.X billion (±X% YoY)",
+          "Guidance: [Raised/Lowered/Maintained] - Q[X] Revenue $X-X billion, EPS $X.XX-X.XX"
+        ],
+        "risks": [
+          "Primary risk factor or concern mentioned",
+          "Secondary challenge or headwind",
+          "Market or operational uncertainty"
+        ],
+        "outlook": "Management's tone and specific guidance for next quarter and full year",
+        "sentiment": "positive|neutral|negative",
+        "stockSpecificMetrics": [
+          "For tech: ARR, CAC, churn rate, cloud growth",
+          "For retail: same-store sales, e-commerce %, inventory turnover",
+          "For finance: NIM, loan growth, credit quality",
+          "Include actual numbers and YoY changes"
+        ]
+      }
+
+      Transcript excerpt:
+      ${params.transcript.substring(0, 8000)}
+    `;
+
+    const response = await this.client.chat.completions.create({
+      model: 'gpt-4o-mini',
+      messages: [{
+        role: 'system',
+        content: 'You are a financial analyst. Respond only with valid JSON.'
+      }, {
+        role: 'user',
+        content: prompt
+      }],
+      temperature: 0.3,
+      max_tokens: 800,
+      response_format: { type: "json_object" }
+    });
+
+    return JSON.parse(response.choices[0].message.content || '{}');
   }
 }
 

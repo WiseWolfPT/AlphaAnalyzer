@@ -31,6 +31,8 @@ import { useCachedQuote } from "@/hooks/use-cache-data";
 import { getStockChangePercent, isStockPositive } from "@/lib/stock-data-normalizer";
 import { MiniChart } from "@/components/stock/mini-charts";
 import { useRealtimeQuote } from "@/hooks/use-realtime-quotes";
+import { useQuery } from '@tanstack/react-query';
+import { fetchIntrinsicValueData, normalizeIntrinsicValue } from '@/lib/intrinsic-value';
 
 interface ComparisonStock {
   symbol: string;
@@ -357,9 +359,13 @@ function ComparisonCard({
 }) {
   // Cache-first quote to avoid exhausting external API quotas
   const { data: cachedQuote, isLoading: stockLoading } = useCachedQuote(symbol);
-  // Public compare view: skip intrinsic value API (auth-required)
-  const intrinsicValue: number | null = null;
-  const ivLoading = false;
+  const { data: intrinsicData, isLoading: ivLoading } = useQuery({
+    queryKey: ['intrinsicValue', symbol],
+    queryFn: () => fetchIntrinsicValueData(symbol),
+    staleTime: 24 * 60 * 60 * 1000,
+    enabled: Boolean(symbol),
+  });
+  const intrinsicValue = normalizeIntrinsicValue(intrinsicData);
   const { quote: realtimeQuote, isConnected } = useRealtimeQuote(symbol, {
     enabled: useRealtime
   });
@@ -372,11 +378,12 @@ function ComparisonCard({
     const changePercent = realtimeQuote?.change_percent ?? (cachedQuote?.data?.changePercent ?? 0);
     const isPositive = realtimeQuote ? (realtimeQuote.change >= 0) : ((cachedQuote?.data?.changePercent ?? 0) >= 0);
     
-    const valuationDiff = intrinsicValue ? 
-      ((currentPrice - intrinsicValue) / intrinsicValue) * 100 : 
-      null;
+    const hasIntrinsicValue = typeof intrinsicValue === 'number' && intrinsicValue !== 0;
+    const valuationDiff = hasIntrinsicValue
+      ? ((currentPrice - intrinsicValue) / intrinsicValue) * 100
+      : null;
     
-    const isUndervalued = valuationDiff ? valuationDiff < 0 : false;
+    const isUndervalued = valuationDiff !== null ? valuationDiff < 0 : false;
     
     return {
       currentPrice,
@@ -479,7 +486,7 @@ function ComparisonCard({
             </div>
             {ivLoading ? (
               <div className="w-4 h-4 border border-teya-green border-t-transparent rounded-full animate-spin" />
-            ) : intrinsicValue !== null && intrinsicValue !== undefined && typeof intrinsicValue === 'number' ? (
+            ) : typeof intrinsicValue === 'number' ? (
               <span className="text-sm font-bold text-teya-green" data-intrinsic-value>
                 ${intrinsicValue.toFixed(2)}
               </span>
@@ -488,7 +495,7 @@ function ComparisonCard({
             )}
           </div>
           
-          {calculations.intrinsicValue && calculations.valuationDiff !== null && (
+          {typeof calculations.intrinsicValue === 'number' && calculations.valuationDiff !== null && (
             <div className="flex items-center justify-between">
               <Badge
                 variant={calculations.isUndervalued ? "default" : "secondary"}
@@ -594,11 +601,19 @@ function ComparisonCharts({ stocks }: { stocks: ComparisonStock[] }) {
 
 function PriceVsIVRow({ symbol }: { symbol: string }) {
   const { data: cachedQuote } = useCachedQuote(symbol);
-  const intrinsicValue: number | null = null; // Public compare – IV not fetched
+  const { data: intrinsicData } = useQuery({
+    queryKey: ['intrinsicValue', symbol],
+    queryFn: () => fetchIntrinsicValueData(symbol),
+    staleTime: 24 * 60 * 60 * 1000,
+    enabled: Boolean(symbol),
+  });
+  const intrinsicValue = normalizeIntrinsicValue(intrinsicData);
   
   const currentPrice = cachedQuote?.data?.price ?? 0;
-  const valuationDiff = intrinsicValue ? 
-    ((currentPrice - intrinsicValue) / intrinsicValue) * 100 : null;
+  const hasIntrinsicValue = typeof intrinsicValue === 'number' && intrinsicValue !== 0;
+  const valuationDiff = hasIntrinsicValue
+    ? ((currentPrice - intrinsicValue) / intrinsicValue) * 100
+    : null;
   
   return (
     <div className="flex items-center justify-between p-3 bg-secondary/20 rounded-lg">
@@ -607,7 +622,7 @@ function PriceVsIVRow({ symbol }: { symbol: string }) {
         <div className="text-sm space-x-4">
           <span>Preço: <span className="font-medium">${(currentPrice ?? 0).toFixed(2)}</span></span>
           <span>IV: <span className="font-medium text-teya-green">
-            {intrinsicValue && typeof intrinsicValue === 'number' ? `$${intrinsicValue.toFixed(2)}` : "N/A"}
+            {typeof intrinsicValue === 'number' ? `$${intrinsicValue.toFixed(2)}` : "N/A"}
           </span></span>
         </div>
       </div>

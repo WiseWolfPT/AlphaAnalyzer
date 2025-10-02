@@ -46,6 +46,8 @@ export class RedisCacheService {
 
     this.redis.on('ready', () => {
       console.log('🚀 Redis ready for commands');
+      // Ensure connected flag reflects full readiness (auth/SELECT done)
+      this.connected = true;
       this.logRedisInfo();
     });
 
@@ -297,26 +299,33 @@ export class RedisCacheService {
    * Health check
    */
   async healthCheck(): Promise<{ status: 'healthy' | 'unhealthy'; message: string; memoryUsage?: number }> {
-    if (!this.connected) {
-      return { status: 'unhealthy', message: 'Redis not connected' };
-    }
-
     try {
+      // If we think we're disconnected, attempt a lightweight probe
+      if (!this.connected) {
+        try {
+          const probe = await this.redis.ping();
+          if (probe === 'PONG') {
+            this.connected = true;
+          } else {
+            // Attempt reconnect if ping did not succeed
+            await this.connect();
+          }
+        } catch {
+          // Try a reconnect path
+          await this.connect();
+        }
+      }
+
       const result = await this.redis.ping();
       if (result === 'PONG') {
         const info = await this.redis.info('memory');
         const memoryUsage = this.parseMemoryUsage(info);
-        
-        return { 
-          status: 'healthy', 
-          message: 'Redis is operational',
-          memoryUsage 
-        };
-      } else {
-        return { status: 'unhealthy', message: 'Redis ping failed' };
+        return { status: 'healthy', message: 'Redis is operational', memoryUsage };
       }
-    } catch (error) {
-      return { status: 'unhealthy', message: `Redis error: ${error.message}` };
+
+      return { status: 'unhealthy', message: 'Redis ping failed' };
+    } catch (error: any) {
+      return { status: 'unhealthy', message: `Redis error: ${error?.message || String(error)}` };
     }
   }
 

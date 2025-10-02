@@ -17,8 +17,7 @@ import {
 import { ServerMarketDataService } from '../services/market-data-service';
 import { 
   ProviderManager, 
-  FMPProvider,
-  FinnhubProvider
+  FMPProvider
 } from '../services/providers';
 import { CacheService } from '../services/cache/cache-service';
 import { simpleCacheService } from '../services/simple-cache-service';
@@ -40,17 +39,13 @@ const marketDataService = new ServerMarketDataService();
 // Initialize the new provider manager
 const providerManager = new ProviderManager();
 
-// Provider configuration: FMP as primary with Finnhub fallback
+// Provider configuration: FMP as primary (no external fallback here)
 if (process.env.FMP_API_KEY && process.env.FMP_API_KEY !== 'demo') {
   providerManager.addProvider(new FMPProvider(process.env.FMP_API_KEY));
   console.log('✅ FMP Provider configured (PRIMARY: $14.99/month, 300 calls/min)');
 }
-if (process.env.FINNHUB_API_KEY && process.env.FINNHUB_API_KEY !== 'demo') {
-  providerManager.addProvider(new FinnhubProvider(process.env.FINNHUB_API_KEY));
-  console.log('✅ Finnhub Provider configured (FALLBACK: real-time backup)');
-}
 
-console.log('📊 Provider optimization: Using FMP primary with Finnhub fallback');
+console.log('📊 Provider selection: Using FMP as primary provider');
 
 // Initialize cache service
 const cacheService = new CacheService();
@@ -87,11 +82,11 @@ async function canonicalizeSymbol(raw: string): Promise<string> {
   }
 }
 
-// Rate limiting específico para market data - TEMPORARILY INCREASED FOR TESTING
+// Rate limiting específico para market data (valores normais por tier)
 const marketDataRateLimit = rateLimitMiddleware.endpointRateLimit('/api/market-data', {
-  'free': 10000,     // TEMPORARILY INCREASED: 10000 requests per hour
-  'pro': 10000,      // TEMPORARILY INCREASED: 10000 requests per hour  
-  'premium': 10000,  // TEMPORARILY INCREASED: 10000 requests per hour
+  free: 100,     // 100 requests/hora (free)
+  pro: 1000,     // 1000 requests/hora (pro)
+  premium: 5000, // 5000 requests/hora (premium)
 });
 
 // Validação de símbolo de ação
@@ -542,12 +537,9 @@ router.get('/config',
   async (req: Request, res: Response) => {
     try {
       const hasKeys = {
-        finnhub: !!process.env.FINNHUB_API_KEY && process.env.FINNHUB_API_KEY !== 'demo' && process.env.FINNHUB_API_KEY.length > 10,
         alphaVantage: !!process.env.ALPHA_VANTAGE_API_KEY && process.env.ALPHA_VANTAGE_API_KEY !== 'demo' && process.env.ALPHA_VANTAGE_API_KEY.length > 10,
         fmp: !!process.env.FMP_API_KEY && process.env.FMP_API_KEY !== 'demo' && process.env.FMP_API_KEY.length > 10,
-        twelveData: !!process.env.TWELVE_DATA_API_KEY && process.env.TWELVE_DATA_API_KEY !== 'demo' && process.env.TWELVE_DATA_API_KEY.length > 10,
-        polygon: !!process.env.POLYGON_API_KEY && process.env.POLYGON_API_KEY !== 'demo' && process.env.POLYGON_API_KEY.length > 10,
-      };
+      } as const;
 
       const configuredCount = Object.values(hasKeys).filter(Boolean).length;
       const providerStatus = providerManager.getProviderStatus();
@@ -560,7 +552,7 @@ router.get('/config',
         activeProviders: providerStatus,
         cache: {
           enabled: true,
-          provider: 'supabase'
+          provider: 'redis-simple-cache'
         },
         message: configuredCount > 0 ? 
           `${configuredCount} API provider(s) configured with cache` : 
@@ -597,7 +589,15 @@ router.get('/health',
           list: providerStatus
         },
         cache: {
+          provider: 'redis-simple-cache',
           enabled: true,
+          ttl: {
+            quotes: 60,
+            historical: 7200,
+            financials: 3600,
+            profile: 86400,
+            market_status: 300
+          },
           stats: cacheStats
         },
         timestamp: new Date().toISOString()
@@ -1257,6 +1257,14 @@ router.get('/quotes/batch',
   marketDataApiKey,  // Use API key instead of user auth
   marketDataRateLimit,
   async (req: Request, res: Response) => {
+    // Defense-in-depth: explicit API-key enforcement (in addition to middleware)
+    try {
+      const expected = process.env.MARKET_DATA_API_KEY;
+      const provided = (req.headers['x-api-key'] as string) || (req.query['api_key'] as string) || (req.query['apikey'] as string);
+      if (!expected || !provided || provided !== expected) {
+        return res.status(401).json({ error: 'MISSING_OR_INVALID_API_KEY' });
+      }
+    } catch {/* noop */}
     console.log('📊 GET /api/market-data/quotes/batch endpoint hit');
     
     // Set Cache-Control headers (5 minutes)
@@ -1304,6 +1312,14 @@ router.post('/quotes/batch',
   marketDataApiKey,
   marketDataRateLimit,
   async (req: Request, res: Response) => {
+    // Defense-in-depth: explicit API-key enforcement (in addition to middleware)
+    try {
+      const expected = process.env.MARKET_DATA_API_KEY;
+      const provided = (req.headers['x-api-key'] as string) || (req.query['api_key'] as string) || (req.query['apikey'] as string);
+      if (!expected || !provided || provided !== expected) {
+        return res.status(401).json({ error: 'MISSING_OR_INVALID_API_KEY' });
+      }
+    } catch {/* noop */}
     console.log('📊 POST /api/market-data/quotes/batch endpoint hit');
     res.header('Cache-Control', 'public, max-age=300');
     res.header('Content-Type', 'application/json; charset=utf-8');

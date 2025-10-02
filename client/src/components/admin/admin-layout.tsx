@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useLocation } from 'wouter';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -15,6 +15,7 @@ import {
   Menu,
   X
 } from 'lucide-react';
+import { useAdminAccess } from './AdminRoute';
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -68,9 +69,42 @@ const adminNavItems = [
 export function AdminLayout({ children }: AdminLayoutProps) {
   const [location, setLocation] = useLocation();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const { permissions, isSuperAdmin, isLoadingPermissions } = useAdminAccess();
+
+  const allowedNavItems = useMemo(() => {
+    if (isSuperAdmin) {
+      return adminNavItems;
+    }
+
+    if (!permissions) {
+      return [];
+    }
+
+    const canAccess = (id: string) => {
+      switch (id) {
+        case 'dashboard':
+          return permissions.canViewDashboard;
+        case 'api-monitoring':
+        case 'cache-management':
+          return permissions.canViewApiMonitoring;
+        case 'transcripts':
+          return permissions.canManageTranscripts;
+        case 'users':
+          return permissions.canManageUsers;
+        case 'settings':
+          return permissions.canManageSettings;
+        default:
+          return true;
+      }
+    };
+
+    return adminNavItems.filter(item => canAccess(item.id));
+  }, [permissions, isSuperAdmin]);
+
+  const navItemsToRender = allowedNavItems.length > 0 ? allowedNavItems : adminNavItems;
 
   const currentPath = location;
-  const currentNavItem = adminNavItems.find(item => item.path === currentPath) || adminNavItems[0];
+  const currentNavItem = navItemsToRender.find(item => item.path === currentPath) || navItemsToRender[0] || adminNavItems[0];
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -118,12 +152,19 @@ export function AdminLayout({ children }: AdminLayoutProps) {
           "md:relative absolute z-10 h-[calc(100vh-64px)]"
         )}>
           <nav className="p-4 space-y-2">
-            {adminNavItems.map((item) => {
-              const Icon = item.icon;
-              const isActive = currentPath === item.path;
-              
-              return (
-                <Button
+            {isLoadingPermissions && !isSuperAdmin ? (
+              <div className="space-y-2">
+                <div className="h-10 bg-muted animate-pulse rounded" />
+                <div className="h-10 bg-muted animate-pulse rounded" />
+                <div className="h-10 bg-muted animate-pulse rounded" />
+              </div>
+            ) : (
+              navItemsToRender.map((item) => {
+                const Icon = item.icon;
+                const isActive = currentPath === item.path;
+                
+                return (
+                  <Button
                   key={item.id}
                   variant={isActive ? "default" : "ghost"}
                   className={cn(
@@ -140,9 +181,10 @@ export function AdminLayout({ children }: AdminLayoutProps) {
                       <div className="text-xs opacity-75">{item.description}</div>
                     </div>
                   )}
-                </Button>
-              );
-            })}
+                  </Button>
+                );
+              })
+            )}
           </nav>
         </aside>
 
@@ -164,7 +206,13 @@ export function AdminLayout({ children }: AdminLayoutProps) {
 
           {/* Page Content */}
           <div className="bg-white rounded-lg shadow-sm border">
-            {children}
+            {!isSuperAdmin && !permissions && !isLoadingPermissions ? (
+              <div className="p-8 text-center text-sm text-muted-foreground">
+                Sem permissões suficientes para visualizar este módulo. Solicite acesso a um super administrador.
+              </div>
+            ) : (
+              children
+            )}
           </div>
         </main>
       </div>

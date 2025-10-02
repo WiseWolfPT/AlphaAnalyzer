@@ -3,7 +3,7 @@
  * Ensures only admin users can access admin pages
  */
 
-import React, { useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import { useLocation } from 'wouter';
 import { AdminLayout } from './admin-layout';
 import { Card, CardContent } from '@/components/ui/card';
@@ -22,38 +22,159 @@ interface AdminCheck {
   error: string | null;
 }
 
+interface AdminPermissionFlags {
+  canViewDashboard: boolean;
+  canManageUsers: boolean;
+  canManageTranscripts: boolean;
+  canViewApiMonitoring: boolean;
+  canManageSettings: boolean;
+  canManageAdmins: boolean;
+  canViewSystemLogs: boolean;
+  canManageBilling: boolean;
+}
+
+interface AdminAccessContextValue {
+  isAdmin: boolean;
+  isSuperAdmin: boolean;
+  permissions: AdminPermissionFlags | null;
+  isLoadingPermissions: boolean;
+  refreshPermissions: () => Promise<void>;
+}
+
+export const AdminAccessContext = createContext<AdminAccessContextValue | undefined>(undefined);
+
+export function useAdminAccess(): AdminAccessContextValue {
+  const context = useContext(AdminAccessContext);
+  if (!context) {
+    throw new Error('useAdminAccess must be used within an AdminRoute context');
+  }
+  return context;
+}
+
+function getStoredAccessToken(): string | null {
+  if (typeof window === 'undefined') {
+    return null;
+  }
+
+  try {
+    const directToken = window.localStorage.getItem('auth_token');
+    if (directToken) {
+      return directToken;
+    }
+
+    // Fallback: Supabase stores sessions under keys like sb-<project>-auth-token
+    let supabaseAuthKey: string | null = null;
+    for (let index = 0; index < window.localStorage.length; index += 1) {
+      const key = window.localStorage.key(index);
+      if (key && key.startsWith('sb-') && key.includes('-auth-token')) {
+        supabaseAuthKey = key;
+        break;
+      }
+    }
+
+    if (!supabaseAuthKey) {
+      return null;
+    }
+
+    const rawValue = window.localStorage.getItem(supabaseAuthKey);
+    if (!rawValue) {
+      return null;
+    }
+
+    try {
+      const parsed = JSON.parse(rawValue);
+      if (typeof parsed === 'string') {
+        return parsed;
+      }
+
+      if (parsed?.access_token) {
+        return parsed.access_token;
+      }
+
+      if (parsed?.currentSession?.access_token) {
+        return parsed.currentSession.access_token;
+      }
+    } catch {
+      // Value might already be the raw token string
+      if (rawValue.startsWith('ey')) {
+        return rawValue;
+      }
+    }
+  } catch (error) {
+    console.warn('Failed to read auth token from storage', error);
+  }
+
+  return null;
+}
+
+function buildAuthHeaders() {
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+  };
+
+  const token = getStoredAccessToken();
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+  }
+
+  return headers;
+}
+
 export function AdminRoute({ children, requireSuperAdmin = false }: AdminRouteProps) {
   const [, setLocation] = useLocation();
   const [adminCheck, setAdminCheck] = useState<AdminCheck>({
     isAdmin: false,
     isSuperAdmin: false,
     loading: true,
-    error: null
+    error: null,
   });
+  const [permissions, setPermissions] = useState<AdminPermissionFlags | null>(null);
+  const [permissionsLoading, setPermissionsLoading] = useState(false);
 
   useEffect(() => {
     checkAdminStatus();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const loadPermissions = async () => {
+    setPermissionsLoading(true);
+    try {
+      const response = await fetch('/api/admin/auth/permissions', {
+        headers: buildAuthHeaders(),
+        credentials: 'include', // Include cookies for authentication
+      });
+
+      if (!response.ok) {
+        setPermissions(null);
+        return;
+      }
+
+      const data = await response.json();
+      setPermissions(data.permissions as AdminPermissionFlags);
+    } catch (error) {
+      console.error('Failed to load admin permissions:', error);
+      setPermissions(null);
+    } finally {
+      setPermissionsLoading(false);
+    }
+  };
 
   const checkAdminStatus = async () => {
     try {
-      // Check if user has admin access by calling admin endpoint
       const response = await fetch('/api/admin/auth/check', {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
-          'Content-Type': 'application/json'
-        }
+        headers: buildAuthHeaders(),
+        credentials: 'include', // Include cookies for authentication
       });
 
       if (response.status === 401) {
-        // Not authenticated
         setAdminCheck({ isAdmin: false, isSuperAdmin: false, loading: false, error: 'Not authenticated' });
+        setPermissions(null);
         return;
       }
 
       if (response.status === 403) {
-        // Authenticated but not admin
         setAdminCheck({ isAdmin: false, isSuperAdmin: false, loading: false, error: 'Admin access required' });
+        setPermissions(null);
         return;
       }
 
@@ -63,8 +184,14 @@ export function AdminRoute({ children, requireSuperAdmin = false }: AdminRoutePr
           isAdmin: data.isAdmin,
           isSuperAdmin: data.isSuperAdmin,
           loading: false,
-          error: null
+          error: null,
         });
+
+        if (data.isAdmin) {
+          await loadPermissions();
+        } else {
+          setPermissions(null);
+        }
       } else {
         throw new Error('Failed to check admin status');
       }
@@ -74,13 +201,14 @@ export function AdminRoute({ children, requireSuperAdmin = false }: AdminRoutePr
         isAdmin: false,
         isSuperAdmin: false,
         loading: false,
-        error: 'Failed to verify admin status'
+        error: 'Failed to verify admin status',
       });
+      setPermissions(null);
     }
   };
 
   // Loading state
-  if (adminCheck.loading) {
+  if (adminCheck.loading || (adminCheck.isAdmin && permissionsLoading)) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <Card className="w-96">
@@ -123,7 +251,7 @@ export function AdminRoute({ children, requireSuperAdmin = false }: AdminRoutePr
             <AlertTriangle className="w-12 h-12 mx-auto mb-4 text-red-600" />
             <h2 className="text-xl font-semibold mb-2">Acesso Negado</h2>
             <p className="text-gray-600 mb-6">
-              {requireSuperAdmin 
+              {requireSuperAdmin
                 ? 'Você precisa de permissões de super administrador para acessar esta área.'
                 : 'Você precisa de permissões de administrador para acessar esta área.'
               }
@@ -132,9 +260,9 @@ export function AdminRoute({ children, requireSuperAdmin = false }: AdminRoutePr
               <Button onClick={() => setLocation('/dashboard')} className="w-full">
                 Voltar ao Dashboard
               </Button>
-              <Button 
-                variant="outline" 
-                onClick={checkAdminStatus} 
+              <Button
+                variant="outline"
+                onClick={checkAdminStatus}
                 className="w-full"
               >
                 Verificar Novamente
@@ -146,10 +274,20 @@ export function AdminRoute({ children, requireSuperAdmin = false }: AdminRoutePr
     );
   }
 
+  const contextValue = useMemo<AdminAccessContextValue>(() => ({
+    isAdmin: adminCheck.isAdmin,
+    isSuperAdmin: adminCheck.isSuperAdmin,
+    permissions,
+    isLoadingPermissions: permissionsLoading,
+    refreshPermissions: loadPermissions,
+  }), [adminCheck.isAdmin, adminCheck.isSuperAdmin, permissions, permissionsLoading]);
+
   // Admin access granted
   return (
-    <AdminLayout>
-      {children}
-    </AdminLayout>
+    <AdminAccessContext.Provider value={contextValue}>
+      <AdminLayout>
+        {children}
+      </AdminLayout>
+    </AdminAccessContext.Provider>
   );
 }

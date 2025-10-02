@@ -6,16 +6,19 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { BarChart3, Mail, Lock, Eye, EyeOff, ArrowLeft } from "lucide-react";
-import { useAuth } from "@/contexts/temp-auth";
+import { useSupabaseAuth } from "@/contexts/supabase-auth-context";
+import { supabase } from "@/lib/supabase";
+import { useLocation } from "wouter";
 
 export default function Login() {
+  const [, setLocation] = useLocation();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [resetEmailSent, setResetEmailSent] = useState(false);
-  const { signIn } = useAuth();
+  const { signIn } = useSupabaseAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -23,19 +26,42 @@ export default function Login() {
     setError("");
 
     const result = await signIn(email, password);
-    
+
     if (result.error) {
-      setError(result.error);
-    } else {
-      // Redirect to dashboard (find-stocks) on success
-      window.location.href = "/find-stocks";
+      setError(result.error.message || "Erro no login");
+      setLoading(false);
+    } else if (result.user) {
+      // Check if user is admin
+      const { data: userData } = await supabase
+        .from('users')
+        .select('role')
+        .eq('auth_id', result.user.id)
+        .single();
+
+      // Redirect based on role
+      if (userData?.role === 'admin' || email === 'alfalyzer@gmail.com') {
+        setLocation("/admin");
+      } else {
+        setLocation("/find-stocks");
+      }
     }
-    
+
     setLoading(false);
   };
 
   const handleGoogleSignIn = async () => {
-    setError("Google Sign-In não disponível em modo demo");
+    const { signInWithGoogle } = useSupabaseAuth();
+    setLoading(true);
+    setError("");
+
+    const result = await signInWithGoogle();
+
+    if (result.error) {
+      setError(result.error.message || "Erro no login com Google");
+    }
+    // Google OAuth will handle the redirection
+
+    setLoading(false);
   };
 
   const handleResetPassword = async () => {
@@ -43,8 +69,21 @@ export default function Login() {
       setError("Por favor, insira o seu email primeiro");
       return;
     }
-    
-    setError("Recuperação de password não disponível em modo demo. Use beta@alfalyzer.com / 123demo");
+
+    const { resetPassword } = useSupabaseAuth();
+    setLoading(true);
+    setError("");
+
+    const result = await resetPassword(email);
+
+    if (result.error) {
+      setError(result.error.message || "Erro ao enviar email de recuperação");
+    } else {
+      setResetEmailSent(true);
+      setError("");
+    }
+
+    setLoading(false);
   };
 
   return (
@@ -206,7 +245,7 @@ export default function Login() {
         >
           <Button
             variant="ghost"
-            onClick={() => window.location.href = "/"}
+            onClick={() => setLocation("/")}
             className="text-muted-foreground hover:text-foreground"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />

@@ -1,7 +1,7 @@
 /**
  * API PROXY ROUTES - WAVE 4 Implementation
  * 
- * Secure proxy endpoints for Finnhub and AlphaVantage APIs
+ * Secure proxy endpoints for Alpha Vantage APIs
  * Centralizes API key management and implements rate limiting
  */
 
@@ -27,21 +27,11 @@ const apiProxyLimiter = rateLimit({
 router.use(apiProxyLimiter);
 
 // Environment variables for API keys
-const FINNHUB_API_KEY = process.env.FINNHUB_API_KEY;
 const ALPHA_VANTAGE_API_KEY = process.env.ALPHA_VANTAGE_API_KEY;
 
 // Validation middleware
-const validateApiKeys = (req: express.Request, res: express.Response, next: express.NextFunction) => {
-  const { provider } = req.params;
-  
-  if (provider === 'finnhub' && !FINNHUB_API_KEY) {
-    return res.status(500).json({
-      error: 'Finnhub API key not configured',
-      provider: 'finnhub'
-    });
-  }
-  
-  if (provider === 'alphavantage' && !ALPHA_VANTAGE_API_KEY) {
+const validateApiKeys = (_req: express.Request, res: express.Response, next: express.NextFunction) => {
+  if (!ALPHA_VANTAGE_API_KEY) {
     return res.status(500).json({
       error: 'Alpha Vantage API key not configured',
       provider: 'alphavantage'
@@ -50,104 +40,6 @@ const validateApiKeys = (req: express.Request, res: express.Response, next: expr
   
   next();
 };
-
-/**
- * FINNHUB PROXY ENDPOINTS
- */
-
-// Finnhub stock quote proxy
-router.get('/finnhub/quote/:symbol', validateApiKeys, async (req, res) => {
-  try {
-    const { symbol } = req.params;
-    
-    const response = await axios.get('https://finnhub.io/api/v1/quote', {
-      params: {
-        symbol: symbol.toUpperCase(),
-        token: FINNHUB_API_KEY
-      },
-      timeout: 10000
-    });
-
-    res.json({
-      success: true,
-      data: response.data,
-      provider: 'finnhub',
-      symbol,
-      timestamp: new Date().toISOString()
-    });
-
-  } catch (error: any) {
-    console.error('Finnhub proxy error:', error.message);
-    res.status(error.response?.status || 500).json({
-      error: 'Finnhub API request failed',
-      message: error.message,
-      provider: 'finnhub'
-    });
-  }
-});
-
-// Finnhub company profile proxy
-router.get('/finnhub/profile/:symbol', validateApiKeys, async (req, res) => {
-  try {
-    const { symbol } = req.params;
-    
-    const response = await axios.get('https://finnhub.io/api/v1/stock/profile2', {
-      params: {
-        symbol: symbol.toUpperCase(),
-        token: FINNHUB_API_KEY
-      },
-      timeout: 10000
-    });
-
-    res.json({
-      success: true,
-      data: response.data,
-      provider: 'finnhub',
-      symbol,
-      timestamp: new Date().toISOString()
-    });
-
-  } catch (error: any) {
-    console.error('Finnhub profile proxy error:', error.message);
-    res.status(error.response?.status || 500).json({
-      error: 'Finnhub profile request failed',
-      message: error.message,
-      provider: 'finnhub'
-    });
-  }
-});
-
-// Finnhub basic financials proxy
-router.get('/finnhub/financials/:symbol', validateApiKeys, async (req, res) => {
-  try {
-    const { symbol } = req.params;
-    
-    const response = await axios.get('https://finnhub.io/api/v1/stock/metric', {
-      params: {
-        symbol: symbol.toUpperCase(),
-        metric: 'all',
-        token: FINNHUB_API_KEY
-      },
-      timeout: 15000
-    });
-
-    res.json({
-      success: true,
-      data: response.data,
-      provider: 'finnhub',
-      symbol,
-      timestamp: new Date().toISOString()
-    });
-
-  } catch (error: any) {
-    console.error('Finnhub financials proxy error:', error.message);
-    res.status(error.response?.status || 500).json({
-      error: 'Finnhub financials request failed',
-      message: error.message,
-      provider: 'finnhub'
-    });
-  }
-});
 
 /**
  * ALPHA VANTAGE PROXY ENDPOINTS
@@ -287,10 +179,6 @@ router.get('/health', async (req, res) => {
     status: 'healthy',
     timestamp: new Date().toISOString(),
     providers: {
-      finnhub: {
-        configured: !!FINNHUB_API_KEY,
-        status: FINNHUB_API_KEY ? 'ready' : 'missing_key'
-      },
       alphavantage: {
         configured: !!ALPHA_VANTAGE_API_KEY,
         status: ALPHA_VANTAGE_API_KEY ? 'ready' : 'missing_key'

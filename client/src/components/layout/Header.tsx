@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { BarChart3, Menu, X, Moon, Sun, User, LogOut } from "lucide-react";
-import { useAuth } from "@/contexts/temp-auth";
+import { useSupabaseAuth } from "@/contexts/supabase-auth-context";
 import { useTheme } from "@/hooks/use-theme";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLocation } from "wouter";
@@ -10,9 +10,26 @@ export function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [activeSection, setActiveSection] = useState('hero');
-  const { user, signOut, signIn } = useAuth();
+  const { user, userProfile, signOut } = useSupabaseAuth();
   const { theme, setTheme } = useTheme();
   const [, setLocation] = useLocation();
+
+  const displayName =
+    userProfile?.name ||
+    (typeof user?.user_metadata?.name === 'string' ? user.user_metadata.name : undefined) ||
+    (user?.email ? user.email.split('@')[0] : null) ||
+    'Utilizador';
+  const emailAddress = user?.email || '';
+  const plan = userProfile?.subscription_tier || 'free';
+
+  const handleSignOut = async () => {
+    const { error } = await signOut();
+    if (error) {
+      console.error('Erro no logout:', error.message);
+      return;
+    }
+    setLocation('/');
+  };
 
   useEffect(() => {
     const handleScroll = () => {
@@ -119,12 +136,12 @@ export function Header() {
 
             {user ? (
               <div className="flex items-center gap-3">
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <div className="w-8 h-8 bg-teya-green-dark dark:bg-teya-green rounded-full flex items-center justify-center text-deep-black font-semibold text-xs">
-                    {user.avatar || user.name?.charAt(0) || 'U'}
-                  </div>
-                  <span className="hidden lg:inline">{user.name}</span>
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <div className="w-8 h-8 bg-teya-green-dark dark:bg-teya-green rounded-full flex items-center justify-center text-deep-black font-semibold text-xs">
+                  {displayName.charAt(0).toUpperCase()}
                 </div>
+                <span className="hidden lg:inline">{displayName}</span>
+              </div>
                 <Button 
                   onClick={() => setLocation('/find-stocks')}
                   className="bg-teya-green-dark dark:bg-teya-green hover:bg-teya-green-dark/90 dark:hover:bg-teya-green/90 text-deep-black dark:text-rich-black"
@@ -134,7 +151,7 @@ export function Header() {
                 <Button 
                   variant="ghost" 
                   size="sm"
-                  onClick={signOut}
+                  onClick={handleSignOut}
                   className="h-9 w-9 p-0"
                 >
                   <LogOut className="h-4 w-4" />
@@ -224,9 +241,9 @@ export function Header() {
                     <>
                       <div className="flex items-center gap-2 px-4 py-2 text-sm text-muted-foreground">
                         <div className="w-8 h-8 bg-teya-green-dark dark:bg-teya-green rounded-full flex items-center justify-center text-deep-black font-semibold text-xs">
-                          {user.avatar || user.name?.charAt(0) || 'U'}
+                          {displayName.charAt(0).toUpperCase()}
                         </div>
-                        <span>{user.name}</span>
+                        <span>{displayName}</span>
                       </div>
                       <Button 
                         onClick={() => setLocation('/find-stocks')}
@@ -237,7 +254,7 @@ export function Header() {
                       </Button>
                       <Button 
                         variant="ghost" 
-                        onClick={signOut}
+                        onClick={handleSignOut}
                         className="text-foreground justify-start"
                       >
                         <LogOut className="h-4 w-4 mr-2" />

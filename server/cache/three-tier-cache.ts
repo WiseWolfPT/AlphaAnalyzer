@@ -5,10 +5,10 @@ import { redisCacheService } from './redis-cache-service.js';
  * Three-Tier Cache System - ALFALYZER PRODUCTION PLAN Day 3
  * Implements: Memory → Redis → Supabase fallback strategy
  * 
- * This implements the Reddit Strategy:
- * - Users NEVER trigger API calls
- * - All data comes from cache layers
- * - Cron jobs update cache in background
+ * This implements cache-first strategy with auto-fill:
+ * - Users get data from cache when available
+ * - Cache misses trigger API calls and cache updates
+ * - Background workers keep hot data fresh
  */
 export class ThreeTierCache {
   // Layer 1: In-memory cache (fastest, smallest capacity)
@@ -80,7 +80,7 @@ export class ThreeTierCache {
 
   /**
    * Get data from cache (Layer 1 → Layer 2 → Layer 3)
-   * Implements the Reddit Strategy: NEVER call external APIs
+   * Returns cached data when available, null on miss
    */
   async get(key: string, dataType: keyof typeof this.TTL_CONFIG = 'default'): Promise<any> {
     try {

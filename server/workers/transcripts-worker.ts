@@ -36,6 +36,11 @@ let symbolsUniverse: string[] = ENV_UNIVERSE;
 
 const transcriptService = TranscriptService.getInstance();
 
+// Simple health tracking
+let lastRunAt: string | null = null;
+let lastIngest: { ingested: number; updated: number; errors: number } | null = null;
+let lastSummaries: { summarized: number; errors: number } | null = null;
+
 async function ensureStorage(): Promise<boolean> {
   // If PG is configured, assume available; otherwise require supabaseAdmin
   if (process.env.PGHOST) return true;
@@ -114,18 +119,22 @@ async function fetchSourceTranscripts(): Promise<any[]> {
 function isoDate(d: Date): string { return d.toISOString().slice(0,10); }
 
 function quarterFromDateStr(dateStr: string): { q: 'Q1'|'Q2'|'Q3'|'Q4'; year: number } {
-  const dt = new Date(dateStr);
-  const m = dt.getUTCMonth() + 1;
-  let year = dt.getUTCFullYear();
+  const now = new Date(); // 17 September 2025
+  const currentYear = 2025;
+  const currentMonth = 9;
 
-  // For current year, use previous year to ensure transcripts exist
-  // Transcripts are typically available 2-4 weeks after earnings calls
-  if (year >= 2025) {
-    year = 2024; // Use 2024 data which definitely exists
+  // Q2 2025 is the most recent available (Q3 comes out in October)
+  if (currentMonth >= 8 && currentMonth <= 10) {
+    return { q: 'Q2', year: 2025 };
+  } else if (currentMonth >= 11) {
+    return { q: 'Q3', year: 2025 };
+  } else if (currentMonth >= 5) {
+    return { q: 'Q1', year: 2025 };
+  } else if (currentMonth >= 2) {
+    return { q: 'Q4', year: 2024 };
+  } else {
+    return { q: 'Q3', year: 2024 };
   }
-
-  const q = m<=3?'Q1':m<=6?'Q2':m<=9?'Q3':'Q4';
-  return { q: q as any, year };
 }
 
 async function fetchJson(url: string): Promise<any> {
@@ -177,6 +186,35 @@ async function fetchFmpTranscript(symbol: string, quarter: string, year: number)
   }
 }
 
+async function fetchLatestTranscriptForSymbol(symbol: string): Promise<{content: string, quarter: string, year: number} | null> {
+  const apiKey = process.env.FMP_API_KEY;
+  if (!apiKey) return null;
+
+  // Ordem correta para setembro 2025
+  const quarters = [
+    { quarter: 'Q2', year: 2025 }, // Mais recente disponível
+    { quarter: 'Q1', year: 2025 },
+    { quarter: 'Q4', year: 2024 },
+    { quarter: 'Q3', year: 2024 }
+  ];
+
+  for (const {quarter, year} of quarters) {
+    try {
+      const content = await fetchFmpTranscript(symbol, quarter, year);
+      if (content) {
+        console.log(`✅ Found ${symbol} transcript: ${quarter} ${year}`);
+        return { content, quarter, year };
+      }
+    } catch (e) {
+      continue;
+    }
+    // Rate limiting
+    await new Promise(r => setTimeout(r, 200));
+  }
+
+  return null;
+}
+
 async function upsertTranscript(t: any): Promise<number | null> {
   const insert = {
     ticker: String(t.ticker).toUpperCase(),
@@ -226,6 +264,7 @@ async function summarizeTranscript(id: number, ticker: string, company: string, 
         keyInsights: resp.keyInsights,
         financialHighlights: resp.financialHighlights,
         riskFactors: resp.riskFactors,
+        stockSpecificMetrics: resp.stockSpecificMetrics || [],
         model: resp.model,
       });
     }
@@ -239,48 +278,43 @@ async function summarizeTranscript(id: number, ticker: string, company: string, 
   return JSON.stringify({ summary: snippet + (trimmed.length > 800 ? '…' : ''), model: 'heuristic' });
 }
 
-async function processSummaries(): Promise<{ summarized: number; errors: number }> {
+async function processPendingSummaries(): Promise<{ summarized: number; errors: number }> {
   if (!await ensureStorage()) return { summarized: 0, errors: 0 };
-  const items = await transcriptService.getPendingForSummary(50) as any[];
-  let summarized = 0, errorsCount = 0, considered = 0;
+  const pending = await transcriptService.getPendingForSummary(10) as any[];
 
-  for (let i = 0; i < items.length; i += SUMMARY_CONCURRENCY) {
-    const batch = items.slice(i, i + SUMMARY_CONCURRENCY);
-    const results = await Promise.all(batch.map(async (row) => {
-      try {
-        // Stop early if we reached per-cycle budget
-        if (summarized >= MAX_SUMMARIES_PER_CYCLE) return;
+  console.log(`🤖 Processing ${pending.length} pending summaries...`);
 
-        const raw = String(row.raw_transcript || '');
-        const rawHash = crypto.createHash('sha256').update(raw).digest('hex');
-        let meta: any = {};
-        try { meta = row.metadata ? JSON.parse(row.metadata) : {}; } catch {}
-        const existingHash = meta?.ai_hash;
+  let summarized = 0, errorsCount = 0;
 
-        // Skip if summary exists and content unchanged
-        if (row.ai_summary && existingHash === rawHash) {
-          logger.debug('Transcripts worker: skip (unchanged content)', { id: row.id, ticker: row.ticker });
-          return;
-        }
+  for (const transcript of pending) {
+    try {
+      // Gerar resumo com OpenAI
+      const { openaiService } = await import('../services/ai/openai-service');
+      const summary = await openaiService.generateTranscriptSummary({
+        transcript: transcript.raw_transcript,
+        ticker: transcript.ticker,
+        quarter: transcript.quarter,
+        year: transcript.year
+      });
 
-        // If ai_summary is null but budget exceeded, skip remaining
-        if (summarized >= MAX_SUMMARIES_PER_CYCLE) return;
-        considered++;
+      // Atualizar no DB
+      await transcriptService.updateSummaryMeta(
+        transcript.id,
+        JSON.stringify(summary),
+        'published', // Marcar como publicado
+        { ai_processed_at: new Date().toISOString() }
+      );
 
-        const summary = await summarizeTranscript(row.id, row.ticker, row.company_name, row.quarter, row.year, raw);
-        if (!summary) return;
+      console.log(`✅ AI Summary completed for ${transcript.ticker}`);
+      summarized++;
 
-        // Update with new summary and metadata
-        const updatedMeta = JSON.stringify({ ...(meta || {}), ai_hash: rawHash, ai_model: JSON.parse(summary).model || 'openai' });
-        await transcriptService.updateSummaryMeta(row.id, summary, row.status === 'pending' ? 'review' : row.status, updatedMeta);
-        summarized++;
-      } catch (e: any) {
-        errorsCount++;
-        logger.warn('Transcripts worker: summarize/update failed', { id: row.id, error: e?.message });
-      }
-    }));
-    // Respect rate limits
-    if (i + SUMMARY_CONCURRENCY < items.length) await new Promise(r => setTimeout(r, 1500));
+    } catch (error) {
+      console.error(`❌ AI Summary failed for ${transcript.ticker}:`, error);
+      errorsCount++;
+    }
+
+    // Rate limiting OpenAI
+    await new Promise(r => setTimeout(r, 1000));
   }
 
   return { summarized, errors: errorsCount };
@@ -288,37 +322,69 @@ async function processSummaries(): Promise<{ summarized: number; errors: number 
 
 async function ingestOnce(): Promise<{ ingested: number; updated: number; errors: number }> {
   if (!await ensureStorage()) return { ingested: 0, updated: 0, errors: 1 };
-  const source = await fetchSourceTranscripts();
-  if (!source.length) return { ingested: 0, updated: 0, errors: 0 };
 
+  // Strategy: Fetch latest transcript for each symbol directly
   let ingested = 0, updated = 0, errors = 0;
-  for (const ev of source) {
-    const symbol = String(ev.symbol || ev.ticker || '').toUpperCase();
-    const quarter = String(ev.quarter || 'Q1').toUpperCase();
-    const year = Number(ev.year || new Date().getUTCFullYear());
-    try {
-      let content: string | null = null;
-      if (INGEST_SOURCE === 'fmp') {
-        content = await fetchFmpTranscript(symbol, quarter, year);
-      } else if (INGEST_SOURCE === 'local:mock') {
-        content = ev.raw_transcript || null;
+
+  if (INGEST_SOURCE === 'fmp') {
+    // Get symbols to process
+    const symbols = symbolsUniverse.slice(0, UNIVERSE_LIMIT_PER_CYCLE);
+    logger.info('Transcripts worker: fetching latest transcripts', { symbols: symbols.length });
+
+    for (const symbol of symbols) {
+      try {
+        const latest = await fetchLatestTranscriptForSymbol(symbol);
+        if (!latest) {
+          continue; // No recent transcript found
+        }
+
+        const id = await upsertTranscript({
+          ticker: symbol,
+          company_name: symbol, // FMP API doesn't provide company name in transcript endpoint
+          quarter: latest.quarter,
+          year: latest.year,
+          call_date: null,
+          raw_transcript: latest.content,
+          status: 'pending'
+        });
+
+        if (id) {
+          ingested++;
+          logger.info('Transcripts worker: ingested latest', { symbol, quarter: latest.quarter, year: latest.year });
+        }
+
+        // Rate limiting: be nice to FMP API
+        await new Promise(r => setTimeout(r, 300));
+      } catch (e: any) {
+        errors++;
+        logger.warn('Transcripts worker: latest fetch failed', { error: e?.message, symbol });
       }
-      const id = await upsertTranscript({
-        ticker: symbol,
-        company_name: ev.companyName || ev.company_name || symbol,
-        quarter,
-        year,
-        call_date: ev.date || ev.call_date || null,
-        raw_transcript: content || null,
-        status: 'pending'
-      });
-      if (id) { ingested++; }
-      await new Promise(r => setTimeout(r, 200)); // be nice to FMP
-    } catch (e: any) {
-      errors++;
-      logger.warn('Transcripts worker: upsert exception', { error: e?.message, symbol, quarter, year });
+    }
+  } else if (INGEST_SOURCE === 'local:mock') {
+    // Legacy calendar-based approach for mocks
+    const source = await fetchSourceTranscripts();
+    for (const ev of source) {
+      const symbol = String(ev.symbol || ev.ticker || '').toUpperCase();
+      const quarter = String(ev.quarter || 'Q1').toUpperCase();
+      const year = Number(ev.year || new Date().getUTCFullYear());
+      try {
+        const id = await upsertTranscript({
+          ticker: symbol,
+          company_name: ev.companyName || ev.company_name || symbol,
+          quarter,
+          year,
+          call_date: ev.date || ev.call_date || null,
+          raw_transcript: ev.raw_transcript || null,
+          status: 'pending'
+        });
+        if (id) { ingested++; }
+      } catch (e: any) {
+        errors++;
+        logger.warn('Transcripts worker: mock upsert exception', { error: e?.message, symbol, quarter, year });
+      }
     }
   }
+
   return { ingested, updated, errors };
 }
 
@@ -364,8 +430,10 @@ async function runCycle() {
   }
 
   const ingestRes = await ingestOnce();
+  lastIngest = ingestRes;
   logger.info('Transcripts worker: ingest result', ingestRes);
-  const sumRes = await processSummaries();
+  const sumRes = await processPendingSummaries();
+  lastSummaries = sumRes;
   logger.info('Transcripts worker: summarize result', sumRes);
 
   // Invalidate any transcript cache keys
@@ -373,20 +441,46 @@ async function runCycle() {
     const { redisCacheService } = await import('../cache/redis-cache-service');
     await redisCacheService.delPattern('transcripts:*');
   } catch {}
+
+  // Update last run timestamp
+  lastRunAt = new Date().toISOString();
 }
 
 async function main() {
   logger.info('Transcripts worker starting…', { env: process.env.NODE_ENV, intervalMs: RUN_INTERVAL_MS });
+  // Optional health endpoint
+  try {
+    if (process.env.WORKER_HEALTH_PORT) {
+      const http = await import('http');
+      const server = http.createServer((_req: any, res: any) => {
+        if (_req.url === '/health') {
+          const body = JSON.stringify({
+            status: 'healthy',
+            worker: 'transcripts',
+            lastRunAt,
+            lastIngest,
+            lastSummaries,
+            isRunning: true,
+          });
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          res.end(body);
+        } else {
+          res.writeHead(404);
+          res.end('Not found');
+        }
+      });
+      const port = parseInt(process.env.WORKER_HEALTH_PORT);
+      server.listen(port, () => logger.info(`🏥 Transcripts worker health listening on ${port}`));
+    }
+  } catch {}
   await runCycle();
   setInterval(runCycle, RUN_INTERVAL_MS);
 }
 
-// Start if executed directly
-if (import.meta.url === `file://${process.argv[1]}` || process.argv[1]?.includes('transcripts-worker')) {
-  main().catch((e) => {
-    logger.error('Transcripts worker fatal error', { error: e?.message });
-    process.exit(1);
-  });
-}
+// Start immediately (CJS-compatible)
+main().catch((e) => {
+  logger.error('Transcripts worker fatal error', { error: e?.message });
+  process.exit(1);
+});
 
 export {};

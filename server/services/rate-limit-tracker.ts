@@ -272,7 +272,8 @@ export class RateLimitTracker {
         return [];
       }
 
-      return (data || []).map((row: any) => ({
+      const rows: any[] = Array.isArray(data) ? data : [];
+      return rows.map((row: any) => ({
         provider: row.provider,
         endpoint: row.endpoint,
         used: row.used,

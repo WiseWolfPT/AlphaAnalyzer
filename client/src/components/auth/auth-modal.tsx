@@ -7,7 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Eye, EyeOff, Mail, Lock, User, AlertCircle } from 'lucide-react';
-import { useAuth } from '@/contexts/temp-auth';
+import { useAuthMonitoring } from '@/hooks/use-auth-monitoring';
 import { cn } from '@/lib/utils';
 
 interface AuthModalProps {
@@ -29,7 +29,7 @@ export function AuthModal({ isOpen, onClose, defaultTab = 'login' }: AuthModalPr
   const [confirmPassword, setConfirmPassword] = useState('');
   const [fullName, setFullName] = useState('');
 
-  const { user, signIn, register } = useAuth();
+  const { signIn, signUp, signInWithGoogle, resetPassword } = useAuthMonitoring();
 
   const resetForm = () => {
     setEmail('');
@@ -52,10 +52,10 @@ export function AuthModal({ isOpen, onClose, defaultTab = 'login' }: AuthModalPr
     setError(null);
 
     try {
-      const { error } = await signIn(email, password);
+      const result = await signIn(email, password);
       
-      if (error) {
-        setError(error);
+      if (result.error) {
+        setError(result.error.message || 'Erro no login');
       } else {
         handleClose();
       }
@@ -84,10 +84,10 @@ export function AuthModal({ isOpen, onClose, defaultTab = 'login' }: AuthModalPr
     }
 
     try {
-      const { error } = await register(fullName, email, password);
+      const result = await signUp(email, password, { name: fullName });
       
-      if (error) {
-        setError(error);
+      if (result.error) {
+        setError(result.error.message || 'Erro no registo');
       } else {
         setSuccess('Verifique o seu email para confirmar a conta!');
         setTimeout(() => {
@@ -107,11 +107,10 @@ export function AuthModal({ isOpen, onClose, defaultTab = 'login' }: AuthModalPr
 
     try {
       // Import the Google login function from supabase
-      const { auth } = await import('@/lib/supabase');
-      const { error } = await auth.signInWithGoogle();
+      const result = await signInWithGoogle();
       
-      if (error) {
-        setError(error.message);
+      if (result.error) {
+        setError(result.error.message || 'Erro no login com Google');
       }
       // Google login redirects, so we don't close the modal here
     } catch (err) {
@@ -132,11 +131,10 @@ export function AuthModal({ isOpen, onClose, defaultTab = 'login' }: AuthModalPr
 
     try {
       // Import the reset password function from supabase
-      const { auth } = await import('@/lib/supabase');
-      const { error } = await auth.resetPassword(email);
+      const { error } = await resetPassword(email);
       
       if (error) {
-        setError(error.message);
+        setError(error.message || 'Erro ao solicitar reset');
       } else {
         setSuccess('Password reset email sent! Check your inbox.');
       }
@@ -374,13 +372,13 @@ export function AuthModal({ isOpen, onClose, defaultTab = 'login' }: AuthModalPr
               </Button>
 
               <p className="text-xs text-center text-muted-foreground">
-                By creating an account, you agree to our{' '}
-                <a href="/terms" className="underline hover:text-primary">
-                  Terms of Service
+                Ao criar uma conta, aceita os{' '}
+                <a href="/terms-of-service" className="underline hover:text-primary">
+                  Termos e Condições
                 </a>{' '}
-                and{' '}
-                <a href="/privacy" className="underline hover:text-primary">
-                  Privacy Policy
+                e a{' '}
+                <a href="/privacy-policy" className="underline hover:text-primary">
+                  Política de Privacidade
                 </a>
               </p>
             </form>

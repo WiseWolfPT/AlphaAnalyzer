@@ -28,6 +28,10 @@
     "restart": "pm2 restart alfalyzer",
     "stop": "pm2 stop alfalyzer",
     "deploy": "npm run build && npm run deploy:assets && npm run deploy:restart",
+    "deploy:server": "rsync -avz --delete 'dist/server/' root@128.140.45.28:/home/teste\\ 1/dist/server/",
+    "deploy:full": "npm run build:full && npm run deploy:assets && npm run deploy:server && npm run deploy:restart && npm run smoke:prod:quick",
+    "smoke:quick": "bash scripts/monitoring/smoke-quick.sh",
+    "smoke:prod:quick": "TARGET_URL=https://128.140.45.28.sslip.io bash scripts/monitoring/smoke-quick.sh",
     "deploy:assets": "rsync -avz --delete 'client/dist/public/' root@128.140.45.28:/home/teste\\ 1/dist/public/",
     "deploy:ecosystem": "scp ecosystem.config.cjs root@128.140.45.28:/home/teste\\ 1/ecosystem.config.cjs",
     "deploy:restart": "ssh root@128.140.45.28 \"cd '/home/teste 1' && pm2 restart alfalyzer || pm2 start ecosystem.config.cjs --env production\"",
@@ -44,8 +48,15 @@
     "smoke:local:find": "BROWSER=chromium TARGET_URL=http://localhost:3000/find-stocks WAIT_FOR='h1:has-text(\"Find Stocks\")' node scripts/verify-compare-playwright.mjs",
     "smoke:local:stock": "BROWSER=chromium TARGET_URL=http://localhost:3000/stock/AAPL WAIT_FOR='h1:has-text(\"AAPL\")' node scripts/verify-compare-playwright.mjs",
     "smoke:local:iv": "BROWSER=chromium TARGET_URL='http://localhost:3000/intrinsic-value?symbol=AAPL' WAIT_FOR='h1:has-text(\"Intrinsic Value Calculator\")' node scripts/verify-compare-playwright.mjs",
-    "smoke:local": "npm run -s smoke:local:compare && npm run -s smoke:local:find && npm run -s smoke:local:stock && npm run -s smoke:local:iv"
+    "smoke:local": "npm run -s smoke:local:compare && npm run -s smoke:local:find && npm run -s smoke:local:stock && npm run -s smoke:local:iv",
+    "populate-transcripts": "tsx scripts/populate-latest-transcripts.ts",
+    "process-summaries": "tsx scripts/process-ai-summaries.ts",
+    "update-calendar": "tsx scripts/update-earnings-calendar.ts",
+    "start-cron": "tsx server/services/cron/cron-manager.ts",
+    "init-transcripts": "bash scripts/init-transcripts-system.sh",
+    "security:check-rls": "tsx scripts/security/check-rls.ts"
   },
+  
   "dependencies": {
     "@anthropic-ai/sdk": "^0.56.0",
     "@dnd-kit/core": "^6.3.1",
@@ -207,6 +218,7 @@
     "vite-bundle-analyzer": "^1.0.0",
     "vitest": "^3.2.4"
   },
+  
   "optionalDependencies": {
     "bufferutil": "^4.0.8"
   },

@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Checkbox } from "@/components/ui/checkbox";
 import { BarChart3, Mail, Lock, Eye, EyeOff, User, ArrowLeft, Check } from "lucide-react";
-import { useAuth } from "@/contexts/temp-auth";
+import { useSupabaseAuth } from "@/contexts/supabase-auth-context";
 
 export default function Register() {
   const [formData, setFormData] = useState({
@@ -22,7 +22,7 @@ export default function Register() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
-  const { register } = useAuth();
+  const { signUp, signInWithGoogle } = useSupabaseAuth();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -63,10 +63,10 @@ export default function Register() {
     setLoading(true);
     setError("");
 
-    const result = await register(formData.name, formData.email, formData.password);
-    
+    const result = await signUp(formData.email, formData.password, { name: formData.name });
+
     if (result.error) {
-      setError(result.error);
+      setError(result.error.message || 'Ocorreu um erro no registo');
     } else {
       setSuccess(true);
     }
@@ -75,7 +75,7 @@ export default function Register() {
   };
 
   const handleGoogleSignUp = async () => {
-    const { error } = await auth.signInWithGoogle();
+    const { error } = await signInWithGoogle();
     if (error) {
       setError(error.message);
     }
@@ -287,9 +287,9 @@ export default function Register() {
                   />
                   <Label htmlFor="terms" className="text-sm">
                     Aceito os{" "}
-                    <a href="/terms" className="text-teya-green hover:text-teya-green-dark underline">
-                      termos e condições
-                    </a>
+                  <a href="/terms-of-service" className="text-teya-green hover:text-teya-green-dark underline">
+                    termos e condições
+                  </a>
                   </Label>
                 </div>
 

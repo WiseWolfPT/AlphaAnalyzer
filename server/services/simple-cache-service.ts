@@ -29,8 +29,16 @@ function inc(map: Map<string, number>, key: string) {
   map.set(key, (map.get(key) || 0) + 1);
 }
 
-// Cache configuration
-const CACHE_TTL = 60; // 60 seconds
+// Cache configuration with differentiated TTLs (parametrizable via ENV)
+const TTL_QUOTES = parseInt(process.env.TTL_QUOTE_SECONDS || '60', 10);          // 60 seconds for real-time quotes
+const TTL_HISTORICAL = parseInt(process.env.TTL_HISTORICAL_SECONDS || '7200', 10);  // 2 hours for historical data
+const TTL_FINANCIALS = parseInt(process.env.TTL_FUNDAMENTALS_SECONDS || '3600', 10);  // 1 hour for financial statements
+const TTL_PROFILE = parseInt(process.env.TTL_PROFILE_SECONDS || '86400', 10);        // 24 hours for company profiles
+const TTL_MARKET_STATUS = parseInt(process.env.TTL_MARKET_STATUS_SECONDS || '300', 10); // 5 minutes for market status
+const TTL_DEFAULT = parseInt(process.env.TTL_DEFAULT_SECONDS || '3600', 10);          // 1 hour default
+
+// Legacy constant for backward compatibility (used for quotes caching)
+const CACHE_TTL = TTL_QUOTES;
 const MAX_BATCH_SIZE = 50; // FMP supports up to 50 symbols per batch
 
 // Initialize providers
@@ -299,13 +307,13 @@ class SimpleCacheService {
   async clearCache(symbol?: string): Promise<void> {
     if (symbol) {
       const cacheKey = `quote:${symbol.toUpperCase()}`;
-      await redisCacheService.delete(cacheKey);
+      await redisCacheService.del(cacheKey);
       console.log(`🗑️ Cleared cache for ${symbol}`);
     } else {
       // Clear all quote cache keys
       const keys = await redisCacheService.keys('quote:*');
       if (keys.length > 0) {
-        await Promise.all(keys.map(key => redisCacheService.delete(key)));
+        await Promise.all(keys.map(key => redisCacheService.del(key)));
         console.log(`🗑️ Cleared ${keys.length} cached quotes`);
       }
     }
@@ -314,6 +322,38 @@ class SimpleCacheService {
   /**
    * Get cache statistics
    */
+  /**
+   * Cache historical data with 2-hour TTL
+   */
+  async cacheHistorical(symbol: string, data: any): Promise<void> {
+    const key = `historical:${symbol.toUpperCase()}`;
+    await redisCacheService.set(key, data, TTL_HISTORICAL);
+  }
+
+  /**
+   * Cache financial data with 1-hour TTL
+   */
+  async cacheFinancials(symbol: string, data: any): Promise<void> {
+    const key = `financials:${symbol.toUpperCase()}`;
+    await redisCacheService.set(key, data, TTL_FINANCIALS);
+  }
+
+  /**
+   * Cache company profile with 24-hour TTL
+   */
+  async cacheProfile(symbol: string, data: any): Promise<void> {
+    const key = `profile:${symbol.toUpperCase()}`;
+    await redisCacheService.set(key, data, TTL_PROFILE);
+  }
+
+  /**
+   * Cache market status with 5-minute TTL
+   */
+  async cacheMarketStatus(data: any): Promise<void> {
+    const key = 'market:status';
+    await redisCacheService.set(key, data, TTL_MARKET_STATUS);
+  }
+
   async getCacheStats(): Promise<{
     cacheSize: number;
     memoryUsage: string;
@@ -346,3 +386,13 @@ class SimpleCacheService {
 
 // Export singleton instance
 export const simpleCacheService = new SimpleCacheService();
+
+// Export TTL constants for use in other modules
+export const CacheTTL = {
+  QUOTES: TTL_QUOTES,
+  HISTORICAL: TTL_HISTORICAL,
+  FINANCIALS: TTL_FINANCIALS,
+  PROFILE: TTL_PROFILE,
+  MARKET_STATUS: TTL_MARKET_STATUS,
+  DEFAULT: TTL_DEFAULT
+};

@@ -1,36 +1,23 @@
-import { createContext, useContext, ReactNode } from 'react';
+import type { ReactNode } from 'react';
+import { SupabaseAuthProvider, useSupabaseAuth } from '@/contexts/supabase-auth-context';
 
-interface AuthContextType {
-  user: null;
-  isLoading: boolean;
-  isAuthenticated: boolean;
-  signIn: () => Promise<void>;
-  signOut: () => Promise<void>;
-  signUp: () => Promise<void>;
-}
+/**
+ * @deprecated Utilize `useSupabaseAuth` diretamente.
+ * Este wrapper existe apenas para garantir compatibilidade temporária.
+ */
+export const useAuth = () => {
+  if (process.env.NODE_ENV !== 'production') {
+    console.warn('[Deprecated] useAuth de "@/contexts/temp-auth" foi substituído por useSupabaseAuth. Atualize os imports.');
+  }
+  return useSupabaseAuth();
+};
 
-const AuthContext = createContext<AuthContextType>({
-  user: null,
-  isLoading: false,
-  isAuthenticated: false,
-  signIn: async () => {},
-  signOut: async () => {},
-  signUp: async () => {}
-});
-
-export const useAuth = () => useContext(AuthContext);
-
+/**
+ * @deprecated Utilize `SupabaseAuthProvider` diretamente.
+ */
 export function AuthProvider({ children }: { children: ReactNode }) {
-  return (
-    <AuthContext.Provider value={{
-      user: null,
-      isLoading: false,
-      isAuthenticated: false,
-      signIn: async () => {},
-      signOut: async () => {},
-      signUp: async () => {}
-    }}>
-      {children}
-    </AuthContext.Provider>
-  );
+  if (process.env.NODE_ENV !== 'production') {
+    console.warn('[Deprecated] AuthProvider de "temp-auth" reexporta SupabaseAuthProvider. Atualize os providers.');
+  }
+  return <SupabaseAuthProvider>{children}</SupabaseAuthProvider>;
 }

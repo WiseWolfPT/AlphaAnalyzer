@@ -1,12 +1,12 @@
 /**
  * Socket.IO Service for Real-time Broadcasting
- * Broadcasts price updates from Reddit Strategy cache updates
+ * Broadcasts price updates from cache updates
  */
 
 import { Server } from 'http';
 import { Server as SocketIOServer } from 'socket.io';
 import { logger } from '../lib/logger';
-// Removed legacy Reddit Strategy wiring; events can be added later from cache updates
+// Events can be added from cache updates when needed
 
 export class SocketIOService {
   private io: SocketIOServer | null = null;
@@ -47,7 +47,7 @@ export class SocketIOService {
    * Setup event listeners (placeholder for future cache update hooks)
    */
   private setupEventListeners(): void {
-    // Intentionally left blank in Phase 1: legacy Reddit Strategy removed
+    // Placeholder for future cache update hooks
   }
   
   /**

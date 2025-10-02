@@ -1,0 +1,14 @@
+DAX.csv
+SAP,SAP SE,XETRA,Technology,Software
+BMW,Bayerische Motoren Werke AG,XETRA,Consumer Discretionary,Automotive
+SIEMENS,Siemens AG,XETRA,Industrials,Industrial Conglomerates
+
+CAC40.csv
+OR,Pernod Ricard,EURONEXT,Consumer Staples,Beverages
+AIR,Airbus SE,EURONEXT,Industrials,Aerospace & Defense
+MC,LVMH,EURONEXT,Consumer Discretionary,Luxury Goods
+
+FTSE100.csv
+BP.,BP plc,LSE,Energy,Oil & Gas
+HSBA,HSBC Holdings plc,LSE,Financials,Banking
+AZN,AstraZeneca plc,LSE,Health Care,Pharmaceuticals

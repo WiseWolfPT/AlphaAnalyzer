@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { useTheme } from "@/hooks/use-theme";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { useAuth } from "@/contexts/temp-auth";
+import { useSupabaseAuth } from "@/contexts/supabase-auth-context";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
@@ -28,7 +28,7 @@ export function TopBar({ onMobileMenuToggle }: TopBarProps) {
   const { theme, setTheme } = useTheme();
   const isMobile = useIsMobile();
   const [, setLocation] = useLocation();
-  const { user, signOut } = useAuth();
+  const { user, userProfile, signOut } = useSupabaseAuth();
   
   // i18n and Currency hooks
   const { t, i18n } = useTranslation(['common', 'markets', 'currencies']);
@@ -41,12 +41,42 @@ export function TopBar({ onMobileMenuToggle }: TopBarProps) {
     nasdaq: { value: 15996.82, change: 0.17 }
   };
 
-  // Updated formatting function using currency context
-  const formatIndexValue = (num: number) => {
-    // Convert from USD base currency to current display currency
-    const convertedValue = convertCurrency(num, 'USD', currentCurrency);
-    return formatCurrency(convertedValue);
-  };
+  // Convert index values asynchronously to avoid $NaN
+  const [convertedIndices, setConvertedIndices] = useState<{ dow: number | null; sp500: number | null; nasdaq: number | null }>({
+    dow: null,
+    sp500: null,
+    nasdaq: null,
+  });
+
+  useEffect(() => {
+    let cancelled = false;
+    const run = async () => {
+      try {
+        const [dow, sp, nasdaq] = await Promise.all([
+          convertCurrency(indices.dow.value, 'USD', currentCurrency),
+          convertCurrency(indices.sp500.value, 'USD', currentCurrency),
+          convertCurrency(indices.nasdaq.value, 'USD', currentCurrency),
+        ]);
+        if (!cancelled) {
+          setConvertedIndices({ dow, sp500: sp, nasdaq });
+        }
+      } catch (e) {
+        // Fallback para valores originais em caso de falha de conversão
+        if (!cancelled) {
+          setConvertedIndices({
+            dow: indices.dow.value,
+            sp500: indices.sp500.value,
+            nasdaq: indices.nasdaq.value,
+          });
+        }
+      }
+    };
+    run();
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentCurrency]);
 
   const handleLanguageChange = (lng: string) => {
     i18n.changeLanguage(lng);
@@ -63,6 +93,22 @@ export function TopBar({ onMobileMenuToggle }: TopBarProps) {
   const formatChange = (change: number) => {
     const sign = change >= 0 ? '+' : '';
     return `${sign}${change.toFixed(2)}%`;
+  };
+
+  const displayName =
+    userProfile?.name ||
+    (typeof user?.user_metadata?.name === 'string' ? user.user_metadata.name : undefined) ||
+    (user?.email ? user.email.split('@')[0] : null) ||
+    'Investidor';
+  const avatarInitial = displayName.trim().charAt(0).toUpperCase() || 'A';
+
+  const handleSignOut = async () => {
+    const { error } = await signOut();
+    if (error) {
+      console.error('Erro ao terminar sessão:', error.message);
+      return;
+    }
+    setLocation('/');
   };
 
   return (
@@ -83,7 +129,7 @@ export function TopBar({ onMobileMenuToggle }: TopBarProps) {
         <div className="hidden lg:flex items-center space-x-6">
           <div className="flex items-center space-x-3 bg-secondary/30 px-3 py-2 rounded-lg">
             <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{t('indices.dow', { ns: 'markets' })}</span>
-            <span className="font-bold text-sm">{formatIndexValue(indices.dow.value)}</span>
+            <span className="font-bold text-sm">{convertedIndices.dow !== null ? formatCurrency(convertedIndices.dow) : '—'}</span>
             <span className={`text-xs font-medium px-2 py-1 rounded-full ${
               indices.dow.change >= 0 
                 ? 'bg-emerald-500/10 text-emerald-500' 
@@ -94,7 +140,7 @@ export function TopBar({ onMobileMenuToggle }: TopBarProps) {
           </div>
           <div className="flex items-center space-x-3 bg-secondary/30 px-3 py-2 rounded-lg">
             <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{t('indices.sp500', { ns: 'markets' })}</span>
-            <span className="font-bold text-sm">{formatIndexValue(indices.sp500.value)}</span>
+            <span className="font-bold text-sm">{convertedIndices.sp500 !== null ? formatCurrency(convertedIndices.sp500) : '—'}</span>
             <span className={`text-xs font-medium px-2 py-1 rounded-full ${
               indices.sp500.change >= 0 
                 ? 'bg-emerald-500/10 text-emerald-500' 
@@ -105,7 +151,7 @@ export function TopBar({ onMobileMenuToggle }: TopBarProps) {
           </div>
           <div className="flex items-center space-x-3 bg-secondary/30 px-3 py-2 rounded-lg">
             <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{t('indices.nasdaq', { ns: 'markets' })}</span>
-            <span className="font-bold text-sm">{formatIndexValue(indices.nasdaq.value)}</span>
+            <span className="font-bold text-sm">{convertedIndices.nasdaq !== null ? formatCurrency(convertedIndices.nasdaq) : '—'}</span>
             <span className={`text-xs font-medium px-2 py-1 rounded-full ${
               indices.nasdaq.change >= 0 
                 ? 'bg-emerald-500/10 text-emerald-500' 
@@ -192,7 +238,7 @@ export function TopBar({ onMobileMenuToggle }: TopBarProps) {
               className="h-11 w-11 p-0 bg-secondary/50 hover:bg-secondary border border-border/50 rounded-full flex items-center justify-center"
             >
               <div className="h-9 w-9 rounded-full bg-teya-green/20 flex items-center justify-center text-teya-green font-medium text-sm">
-                {user?.name?.charAt(0).toUpperCase() || 'A'}
+                {avatarInitial}
               </div>
             </Button>
           </DropdownMenuTrigger>
@@ -202,7 +248,7 @@ export function TopBar({ onMobileMenuToggle }: TopBarProps) {
           >
             <DropdownMenuLabel className="font-normal">
               <div className="flex flex-col space-y-1">
-                <p className="text-sm font-medium">{user?.name || 'António Francisco'}</p>
+                <p className="text-sm font-medium">{displayName}</p>
                 <p className="text-xs text-zinc-500">{t('general.account_management')}</p>
               </div>
             </DropdownMenuLabel>
@@ -223,10 +269,7 @@ export function TopBar({ onMobileMenuToggle }: TopBarProps) {
             </DropdownMenuItem>
             <DropdownMenuSeparator className="bg-zinc-800" />
             <DropdownMenuItem 
-              onClick={async () => {
-                await signOut();
-                setLocation('/');
-              }}
+              onClick={handleSignOut}
               className="hover:bg-red-500/10 hover:text-red-500 cursor-pointer text-red-500"
             >
               <LogOut className="mr-2 h-4 w-4" />

@@ -90,8 +90,17 @@ export const AuthComponent = () => {
       if (response.ok) {
         const data = await response.json();
         setSuccess('Login successful! Redirecting...');
+
+        // Check if user is admin and redirect accordingly
+        const isAdmin = data.data?.user?.roles?.includes('admin') ||
+                       data.data?.user?.email?.includes('admin');
+
         setTimeout(() => {
-          setLocation('/dashboard');
+          if (isAdmin) {
+            setLocation('/admin');
+          } else {
+            setLocation('/home');
+          }
         }, 1000);
       } else {
         const error = await response.json();
@@ -402,13 +411,13 @@ export const AuthComponent = () => {
                 </Button>
                 
                 <p className="text-xs text-gray-400 text-center">
-                  By signing up, you agree to our{' '}
-                  <a href="/terms" className="text-blue-400 hover:text-blue-300">
-                    Terms of Service
+                  Ao registar, aceita os{' '}
+                  <a href="/terms-of-service" className="text-blue-400 hover:text-blue-300">
+                    Termos e Condições
                   </a>{' '}
-                  and{' '}
-                  <a href="/privacy" className="text-blue-400 hover:text-blue-300">
-                    Privacy Policy
+                  e a{' '}
+                  <a href="/privacy-policy" className="text-blue-400 hover:text-blue-300">
+                    Política de Privacidade
                   </a>
                 </p>
               </form>

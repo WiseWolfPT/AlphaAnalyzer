@@ -20,6 +20,7 @@ import earningsCalendarRouter from "./routes/earnings-calendar";
 import diagnosticRouter from "./routes/diagnostic";
 import cachedDataRouter from "./routes/cached-data";
 import logsRouter from "./routes/logs";
+import usageMetricsRouter from "./routes/usage-metrics";
 // REMOVED: Cache imports due to startup issues
 // import cacheAdminRouter from "./routes/cache-admin";
 import { alertsRouter } from "./routes/alerts";
@@ -116,6 +117,10 @@ export async function registerRoutes(app: Express): Promise<void> {
   
   // Logs management routes (protected by admin auth in production)
   app.use("/api/logs", process.env.NODE_ENV === 'production' ? adminSecurityMiddleware : (req: any, res: any, next: any) => next(), logsRouter);
+  
+  // Local usage metrics for monitoring scripts (local-only guard inside router)
+  app.use('/api/monitoring/usage', usageMetricsRouter);
+  app.use('/monitoring/usage', usageMetricsRouter);
 
   // Basic API info endpoint
   app.get("/api", (req, res) => {
@@ -150,6 +155,9 @@ export async function registerRoutes(app: Express): Promise<void> {
 
   // SECURITY FIX: Register all route modules with proper authentication
   app.use("/api/auth", authRouter);
+  // Back-compat alias: some clients call /api/user/* (without /auth prefix)
+  // Mount auth routes also at /api to serve /api/user/profile and /api/user/stats
+  app.use("/api", authRouter);
   app.use("/api/admin", adminSecurityMiddleware, adminRouter);
   app.use("/api/cron", cronRouter);
   app.use("/api/cron-manager", cronManagerRouter);
@@ -183,7 +191,7 @@ export async function registerRoutes(app: Express): Promise<void> {
   // Cached data routes (eliminates CORS/Auth issues)
   app.use("/api/cached", cachedDataRouter);
   
-  // Reddit Strategy cache routes (users NEVER trigger API calls)
+  // Cache-first routes with auto-fill on miss
   app.use("/api/cache", cacheRoutes);
   
   // Alert system routes
@@ -212,7 +220,7 @@ export async function registerRoutes(app: Express): Promise<void> {
   // TEMPORARILY: Remove apiSecurityMiddleware for development
   app.use("/api/market-data", marketDataRouter);
   
-  // Stock data routes
+  // Stock data routes (keep after auth alias so /api/user/* resolves first)
   app.use("/api", stocksRouter);
 
   // Backward-compat alias: some bundles still call /api/api/intrinsic-values/:symbol

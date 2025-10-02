@@ -22,6 +22,7 @@ import {
   Trash2,
   Eye
 } from 'lucide-react';
+import { useAdminAccess } from '@/components/admin/AdminRoute';
 
 interface User {
   id: string;
@@ -49,6 +50,8 @@ export default function AdminUsers() {
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const { permissions, isSuperAdmin, isLoadingPermissions } = useAdminAccess();
+  const canManageUsers = isSuperAdmin || permissions?.canManageUsers;
 
   useEffect(() => {
     fetchUsers();
@@ -123,6 +126,11 @@ export default function AdminUsers() {
   };
 
   const toggleUserStatus = async (userId: string, newStatus: 'active' | 'banned') => {
+    if (!canManageUsers) {
+      console.warn('Attempted to toggle user status without permission');
+      return;
+    }
+
     try {
       await fetch(`/api/admin/users/${userId}/status`, {
         method: 'PATCH',
@@ -139,6 +147,11 @@ export default function AdminUsers() {
   };
 
   const deleteUser = async (userId: string) => {
+    if (!canManageUsers) {
+      console.warn('Attempted to delete user without permission');
+      return;
+    }
+
     if (!confirm('Tem certeza que deseja excluir este usuário? Esta ação não pode ser revertida.')) {
       return;
     }
@@ -208,6 +221,14 @@ export default function AdminUsers() {
 
   if (loading) {
     return <div className="flex items-center justify-center h-64">Carregando usuários...</div>;
+  }
+
+  if (!canManageUsers && !isLoadingPermissions) {
+    return (
+      <div className="p-8 text-center text-sm text-muted-foreground">
+        Você não tem permissões para gerir usuários. Contacte um super administrador para obter acesso.
+      </div>
+    );
   }
 
   return (
@@ -373,6 +394,7 @@ export default function AdminUsers() {
                     <Button
                       variant="destructive"
                       onClick={() => toggleUserStatus(selectedUser.id, 'banned')}
+                      disabled={!canManageUsers}
                     >
                       <UserX className="w-4 h-4 mr-2" />
                       Banir Usuário
@@ -380,6 +402,7 @@ export default function AdminUsers() {
                   ) : selectedUser.status === 'banned' ? (
                     <Button
                       onClick={() => toggleUserStatus(selectedUser.id, 'active')}
+                      disabled={!canManageUsers}
                     >
                       <UserCheck className="w-4 h-4 mr-2" />
                       Reativar Usuário
@@ -389,6 +412,7 @@ export default function AdminUsers() {
                   <Button
                     variant="destructive"
                     onClick={() => deleteUser(selectedUser.id)}
+                    disabled={!canManageUsers}
                   >
                     <Trash2 className="w-4 h-4 mr-2" />
                     Excluir Usuário

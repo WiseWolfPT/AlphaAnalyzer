@@ -21,7 +21,7 @@ function EarningsItem({ earning }: { earning: EarningsEvent }) {
   const { data: stock, isLoading } = useStock(earning.symbol);
 
   const handleClick = () => {
-    setLocation(`/stock/${symbol}`);
+    setLocation(`/stock/${earning.symbol}`);
   };
 
   if (isLoading) {
@@ -167,7 +167,7 @@ export default function EarningsCalendar() {
                 
                 {earningsData && (
                   <span className="text-xs text-muted-foreground">
-                    {earningsData.events.length} events
+                    {(earningsData?.events?.length || 0)} events
                   </span>
                 )}
               </div>

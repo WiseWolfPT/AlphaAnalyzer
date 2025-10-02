@@ -5,6 +5,7 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useToast } from './use-toast';
+import { useCSRFToken, addCSRFToken } from './use-csrf-token';
 
 // Types
 export interface AIAnalysis {
@@ -62,14 +63,17 @@ export interface RateLimitStatus {
 }
 
 // API Functions
-const analyzeTranscript = async (request: AnalysisRequest): Promise<BatchAnalysisResult> => {
-  const response = await fetch('/api/ai/analyze-transcript', {
+const analyzeTranscript = async (request: AnalysisRequest, csrfToken?: string | null): Promise<BatchAnalysisResult> => {
+  const fetchOptions = addCSRFToken(csrfToken, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify(request),
+    credentials: 'include' // Include cookies for session
   });
+
+  const response = await fetch('/api/ai/analyze-transcript', fetchOptions);
 
   if (!response.ok) {
     const error = await response.json();
@@ -80,14 +84,17 @@ const analyzeTranscript = async (request: AnalysisRequest): Promise<BatchAnalysi
   return data.data.result;
 };
 
-const batchAnalyzeTranscripts = async (requests: AnalysisRequest[]): Promise<BatchAnalysisResult[]> => {
-  const response = await fetch('/api/ai/batch-analyze', {
+const batchAnalyzeTranscripts = async (requests: AnalysisRequest[], csrfToken?: string | null): Promise<BatchAnalysisResult[]> => {
+  const fetchOptions = addCSRFToken(csrfToken, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({ requests }),
+    credentials: 'include' // Include cookies for session
   });
+
+  const response = await fetch('/api/ai/batch-analyze', fetchOptions);
 
   if (!response.ok) {
     const error = await response.json();
@@ -146,10 +153,13 @@ const getAIHealth = async () => {
   return data.data;
 };
 
-const deleteAnalysis = async (analysisId: string): Promise<void> => {
-  const response = await fetch(`/api/ai/analyses/${analysisId}`, {
+const deleteAnalysis = async (analysisId: string, csrfToken?: string | null): Promise<void> => {
+  const fetchOptions = addCSRFToken(csrfToken, {
     method: 'DELETE',
+    credentials: 'include' // Include cookies for session
   });
+
+  const response = await fetch(`/api/ai/analyses/${analysisId}`, fetchOptions);
 
   if (!response.ok) {
     const error = await response.json();
@@ -181,9 +191,10 @@ export function useTranscriptAnalyses(transcriptId: string) {
 export function useAnalyzeTranscript() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  const { token: csrfToken, refreshToken } = useCSRFToken();
 
   return useMutation({
-    mutationFn: analyzeTranscript,
+    mutationFn: (request: AnalysisRequest) => analyzeTranscript(request, csrfToken),
     onSuccess: (data, variables) => {
       // Update the transcript analyses cache
       queryClient.setQueryData(
@@ -216,12 +227,31 @@ export function useAnalyzeTranscript() {
         description: `Generated ${data.analyses.length} analyses. Cost: $${data.totalCost.toFixed(3)}`,
       });
     },
-    onError: (error: Error) => {
-      toast({
-        title: "Analysis Failed",
-        description: error.message,
-        variant: "destructive",
-      });
+    onError: async (error: Error, variables) => {
+      // If CSRF error, try to refresh token and retry once
+      if (error.message.includes('CSRF') || error.message.includes('403')) {
+        try {
+          await refreshToken();
+          // The mutation will need to be called again manually by the user
+          toast({
+            title: "Session Expired",
+            description: "Please try your request again.",
+            variant: "destructive",
+          });
+        } catch (refreshError) {
+          toast({
+            title: "Analysis Failed",
+            description: "Session error. Please refresh the page and try again.",
+            variant: "destructive",
+          });
+        }
+      } else {
+        toast({
+          title: "Analysis Failed",
+          description: error.message,
+          variant: "destructive",
+        });
+      }
     },
   });
 }
@@ -229,9 +259,10 @@ export function useAnalyzeTranscript() {
 export function useBatchAnalyzeTranscripts() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  const { token: csrfToken, refreshToken } = useCSRFToken();
 
   return useMutation({
-    mutationFn: batchAnalyzeTranscripts,
+    mutationFn: (requests: AnalysisRequest[]) => batchAnalyzeTranscripts(requests, csrfToken),
     onSuccess: (data) => {
       // Update caches for all processed transcripts
       data.forEach(result => {
@@ -252,12 +283,30 @@ export function useBatchAnalyzeTranscripts() {
         description: `Generated ${totalAnalyses} analyses for ${data.length} transcripts. Total cost: $${totalCost.toFixed(3)}`,
       });
     },
-    onError: (error: Error) => {
-      toast({
-        title: "Batch Analysis Failed",
-        description: error.message,
-        variant: "destructive",
-      });
+    onError: async (error: Error, variables) => {
+      // If CSRF error, try to refresh token and retry once
+      if (error.message.includes('CSRF') || error.message.includes('403')) {
+        try {
+          await refreshToken();
+          toast({
+            title: "Session Expired",
+            description: "Please try your batch analysis again.",
+            variant: "destructive",
+          });
+        } catch (refreshError) {
+          toast({
+            title: "Batch Analysis Failed",
+            description: "Session error. Please refresh the page and try again.",
+            variant: "destructive",
+          });
+        }
+      } else {
+        toast({
+          title: "Batch Analysis Failed",
+          description: error.message,
+          variant: "destructive",
+        });
+      }
     },
   });
 }
@@ -294,9 +343,10 @@ export function useAIHealth() {
 export function useDeleteAnalysis() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  const { token: csrfToken, refreshToken } = useCSRFToken();
 
   return useMutation({
-    mutationFn: deleteAnalysis,
+    mutationFn: (analysisId: string) => deleteAnalysis(analysisId, csrfToken),
     onSuccess: (_, analysisId) => {
       // Invalidate all transcript analyses since we don't know which transcript it belonged to
       queryClient.invalidateQueries({ queryKey: aiQueryKeys.analyses() });
@@ -307,12 +357,30 @@ export function useDeleteAnalysis() {
         description: "The AI analysis has been removed.",
       });
     },
-    onError: (error: Error) => {
-      toast({
-        title: "Delete Failed",
-        description: error.message,
-        variant: "destructive",
-      });
+    onError: async (error: Error, analysisId) => {
+      // If CSRF error, try to refresh token and retry once
+      if (error.message.includes('CSRF') || error.message.includes('403')) {
+        try {
+          await refreshToken();
+          toast({
+            title: "Session Expired",
+            description: "Please try to delete the analysis again.",
+            variant: "destructive",
+          });
+        } catch (refreshError) {
+          toast({
+            title: "Delete Failed",
+            description: "Session error. Please refresh the page and try again.",
+            variant: "destructive",
+          });
+        }
+      } else {
+        toast({
+          title: "Delete Failed",
+          description: error.message,
+          variant: "destructive",
+        });
+      }
     },
   });
 }

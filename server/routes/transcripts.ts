@@ -7,6 +7,7 @@
 import { Router, Request, Response } from 'express';
 import { z } from 'zod';
 import { TranscriptService } from '../services/transcript-service';
+import { transcriptCacheService } from '../services/transcript-cache-service';
 import { authMiddleware } from '../middleware/auth-middleware';
 import { marketDataApiKey } from '../middleware/market-data-api-key';
 
@@ -32,15 +33,22 @@ const publicFilterSchema = z.object({
 router.get('/', authService.optionalAuth(), async (req: Request, res: Response) => {
   try {
     const filter = publicFilterSchema.parse(req.query);
-    
-    // Only show published transcripts to public
+
+    // 1. Verificar cache primeiro
+    const cached = await transcriptCacheService.getCachedList();
+    if (cached) {
+      console.log('✅ Serving transcripts from cache');
+      return res.json({ success: true, data: cached });
+    }
+
+    // 2. Query DB se cache miss
     const publicFilter = {
       ...filter,
       status: 'published'
     };
-    
+
     const result = await transcriptService.getTranscripts(publicFilter);
-    
+
     // Remove sensitive fields for public consumption
     const publicData = result.data.map(transcript => ({
       id: transcript.id,
@@ -54,7 +62,10 @@ router.get('/', authService.optionalAuth(), async (req: Request, res: Response) 
       view_count: transcript.view_count
       // Exclude raw_transcript, status, created_at, metadata
     }));
-    
+
+    // 3. Cachear resultado
+    await transcriptCacheService.cacheList(publicData);
+
     res.json({
       success: true,
       data: publicData,
@@ -111,6 +122,33 @@ router.get('/recent', authService.optionalAuth(), async (req: Request, res: Resp
     res.status(500).json({
       success: false,
       error: 'Failed to fetch recent transcripts',
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
+/**
+ * GET /api/transcripts/auto-publish
+ * TEMPORARY: Auto-publish reviewed transcripts (no auth for testing)
+ */
+router.get('/auto-publish', async (req: Request, res: Response) => {
+  try {
+    console.log('🚀 Running auto-publish workflow for reviewed transcripts...');
+
+    const publishedCount = await transcriptService.autoPublishReviewedTranscripts();
+
+    res.json({
+      success: true,
+      message: `Auto-published ${publishedCount} transcripts`,
+      publishedCount,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('Error in auto-publish workflow:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to auto-publish transcripts',
+      details: error instanceof Error ? error.message : 'Unknown error',
       timestamp: new Date().toISOString()
     });
   }

@@ -24,7 +24,7 @@ type ApiTranscript = {
   quarter: string;
   year: number;
   call_date: string | null;
-  ai_summary: string | null;
+  ai_summary: string | object | null;
   published_at?: string | null;
   view_count?: number;
 };
@@ -82,10 +82,32 @@ function TranscriptCard({ transcript }: TranscriptCardProps) {
           <p className="text-sm text-muted-foreground leading-relaxed">
             {useMemo(() => {
               try {
-                const parsed = transcript.ai_summary ? JSON.parse(transcript.ai_summary) : null;
-                const summary = parsed?.summary as string | undefined;
+                let parsed: any = null;
+
+                // Handle both object and string inputs
+                if (typeof transcript.ai_summary === 'object' && transcript.ai_summary !== null) {
+                  parsed = transcript.ai_summary;
+                } else if (typeof transcript.ai_summary === 'string') {
+                  parsed = JSON.parse(transcript.ai_summary);
+                }
+
+                // Handle new OpenAI structure with nested summary
+                let summary: string | undefined;
+                if (parsed?.summary && typeof parsed.summary === 'string') {
+                  // New structure: { model: "openai", tokens: {...}, summary: "text" }
+                  summary = parsed.summary;
+                } else if (typeof parsed === 'string') {
+                  // Legacy structure: direct string
+                  summary = parsed;
+                } else if (parsed?.text && typeof parsed.text === 'string') {
+                  // Alternative structure
+                  summary = parsed.text;
+                }
                 return summary ? summary.substring(0, 500) + (summary.length > 500 ? '…' : '') : 'Summary not available yet.';
-              } catch { return 'Summary not available yet.'; }
+              } catch (error) {
+                console.error('Error parsing transcript summary:', error);
+                return 'Summary not available yet.';
+              }
             }, [transcript.ai_summary])}
           </p>
         </div>
@@ -96,13 +118,27 @@ function TranscriptCard({ transcript }: TranscriptCardProps) {
             {useMemo(() => {
               try {
                 const parsed = transcript.ai_summary ? JSON.parse(transcript.ai_summary) : null;
-                const highlights: string[] = parsed?.keyInsights || parsed?.financialHighlights || [];
-                return (highlights.slice(0, 4)).map((h, idx) => (
+                // Handle new OpenAI structure - highlights might be in the summary object
+                let highlights: string[] = [];
+                if (parsed?.keyInsights) {
+                  highlights = parsed.keyInsights;
+                } else if (parsed?.financialHighlights) {
+                  highlights = parsed.financialHighlights;
+                } else if (parsed?.key_insights) {
+                  highlights = parsed.key_insights;
+                } else if (parsed?.financial_highlights) {
+                  highlights = parsed.financial_highlights;
+                }
+                return highlights.length > 0 ? (highlights.slice(0, 4)).map((h, idx) => (
                   <li key={idx} className="text-xs text-muted-foreground flex items-start space-x-2">
                     <span className="w-1 h-1 bg-primary rounded-full mt-2 flex-shrink-0"></span>
                     <span>{h}</span>
                   </li>
-                ));
+                )) : [
+                  <li key="no-highlights" className="text-xs text-muted-foreground">
+                    Key insights available in full transcript.
+                  </li>
+                ];
               } catch { return null; }
             }, [transcript.ai_summary])}
           </ul>
@@ -150,22 +186,47 @@ export default function Transcripts() {
   // Cold start handler
   const { isColdStart, coldStartMessage } = useColdStartHandler();
 
-  // In real app, this would be a proper API call
-  const { data: apiData, isLoading } = useQuery({
+  // Real API call to transcripts endpoint
+  const { data: apiData, isLoading, error } = useQuery({
     queryKey: ["/api/transcripts", searchQuery, selectedQuarter, selectedSentiment, selectedSort],
     queryFn: async () => {
       const api = getApiUrl();
       const params = new URLSearchParams();
-      params.set('limit', '20');
+      params.set('limit', '50'); // Increased to get more results
       if (searchQuery) params.set('ticker', searchQuery.toUpperCase());
       if (selectedQuarter !== 'all') params.set('quarter', selectedQuarter);
-      const res = await fetch(`${api}/api/transcripts?${params.toString()}`);
-      if (!res.ok) throw new Error('Failed to fetch transcripts');
-      return (await res.json()) as { success: boolean; data: ApiTranscript[]; pagination: any };
+
+      console.log('🔥 FETCHING TRANSCRIPTS:', `${api}/api/transcripts?${params.toString()}`);
+
+      const res = await fetch(`${api}/api/transcripts?${params.toString()}`, {
+        headers: {
+          'Cache-Control': 'no-cache',
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!res.ok) {
+        console.error('❌ API ERROR:', res.status, res.statusText);
+        throw new Error(`Failed to fetch transcripts: ${res.status}`);
+      }
+
+      const data = await res.json();
+      console.log('✅ API SUCCESS:', data);
+
+      if (!data.success) {
+        throw new Error('API returned success: false');
+      }
+
+      return data as { success: boolean; data: ApiTranscript[]; pagination: any };
     },
-    staleTime: 5 * 60 * 1000,
-    retry: 1
+    staleTime: 30 * 1000, // Reduced to 30 seconds for testing
+    retry: 3,
+    refetchOnMount: true,
+    refetchOnWindowFocus: true
   });
+
+  // Debug logging
+  console.log('🔍 QUERY STATE:', { isLoading, error: error?.message, dataCount: apiData?.data?.length });
 
   const sortedTranscripts = useMemo(() => {
     const list = apiData?.data || [];
@@ -272,6 +333,17 @@ export default function Transcripts() {
                     <TranscriptCardSkeleton key={i} />
                   ))}
                 </div>
+              </div>
+            ) : error ? (
+              <div className="text-center py-12">
+                <FileText className="h-12 w-12 text-red-500 mx-auto mb-4" />
+                <h3 className="text-lg font-medium mb-2 text-red-600">API Error</h3>
+                <p className="text-muted-foreground mb-4">
+                  {error.message}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  Check console logs for details
+                </p>
               </div>
             ) : sortedTranscripts.length > 0 ? (
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

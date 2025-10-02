@@ -65,6 +65,15 @@ router.get('/quick', async (req: Request, res: Response) => {
 });
 
 /**
+ * Ultra-light health check (no dependencies)
+ * GET /api/health/light
+ * Rationale: used by monitoring scripts to avoid heavy aggregation/jitter.
+ */
+router.get('/light', (_req: Request, res: Response) => {
+  res.status(200).json({ status: 'healthy', timestamp: Date.now() });
+});
+
+/**
  * Comprehensive health check
  * GET /api/health/detailed
  */

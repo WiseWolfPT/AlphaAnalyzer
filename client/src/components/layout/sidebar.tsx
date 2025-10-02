@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useLocation, useRoute } from "wouter";
 import { cn } from "@/lib/utils";
-import { useAuth } from "@/contexts/temp-auth";
+import { useSupabaseAuth } from "@/contexts/supabase-auth-context";
 import { Button } from "@/components/ui/button";
 import { AuthModal } from "@/components/auth/auth-modal";
 import { 
@@ -35,8 +35,16 @@ const navigation = [
 
 export function Sidebar() {
   const [location] = useLocation();
-  const { user } = useAuth();
+  const { user, userProfile } = useSupabaseAuth();
   const [showAuthModal, setShowAuthModal] = useState(false);
+
+  const displayName =
+    userProfile?.name ||
+    (typeof user?.user_metadata?.name === 'string' ? user.user_metadata.name : undefined) ||
+    (user?.email ? user.email.split('@')[0] : null) ||
+    'User';
+  const emailAddress = user?.email || 'utilizador@alfalyzer.com';
+  const activePlan = userProfile?.subscription_tier || 'free';
 
   return (
     <div className="w-72 bg-card flex-shrink-0 sticky top-0 h-screen shadow-lg shadow-black/5 dark:shadow-black/20">
@@ -97,8 +105,8 @@ export function Sidebar() {
                     <User className="h-5 w-5 text-teya-green" />
                   </div>
                   <div className="flex-1">
-                    <p className="font-semibold text-base text-foreground">{user.name || "User"}</p>
-                    <p className="text-sm text-muted-foreground/90">{user.email}</p>
+                    <p className="font-semibold text-base text-foreground">{displayName}</p>
+                    <p className="text-sm text-muted-foreground/90">{emailAddress}</p>
                   </div>
                 </div>
                 
@@ -109,10 +117,10 @@ export function Sidebar() {
                       <Crown className="h-3.5 w-3.5 text-amber-500" />
                     </div>
                     <span className="text-sm font-medium text-amber-600 dark:text-amber-400">
-                      {user.plan || "Free"} Plan
+                      {activePlan.charAt(0).toUpperCase() + activePlan.slice(1)} Plan
                     </span>
                   </div>
-                  {(!user.plan || user.plan === "Free") && (
+                  {(!userProfile?.subscription_tier || userProfile.subscription_tier === "free") && (
                     <Button
                       size="sm"
                       variant="outline"
@@ -144,4 +152,3 @@ export function Sidebar() {
     </div>
   );
 }
-

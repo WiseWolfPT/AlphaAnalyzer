@@ -14,7 +14,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Search, TrendingUp, TrendingDown, Activity, Target, RefreshCw, Zap, AlertCircle, Filter, Grid3X3, List, Wifi, WifiOff, ArrowUpIcon, ArrowDownIcon, Clock, BarChart3 } from "lucide-react";
-import { useAuth } from "@/contexts/temp-auth";
+import { useSupabaseAuth } from "@/contexts/supabase-auth-context";
 import { cn } from "@/lib/utils";
 import { useCachedBatchQuotes, useDirectFMPBatchQuotes } from "@/hooks/use-cache-data";
 import { useSocketQuotes } from "@/hooks/use-socket-quotes";
@@ -243,7 +243,7 @@ function getSector(symbol: string): string {
 
 export default function FindStocks() {
   const [, setLocation] = useLocation();
-  const { user } = useAuth();
+  const { user } = useSupabaseAuth();
   const [displayedSymbols, setDisplayedSymbols] = useState(() => {
     // Start with popular stocks to reduce initial load
     return POPULAR_SYMBOLS;

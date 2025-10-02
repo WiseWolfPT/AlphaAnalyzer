@@ -7,7 +7,8 @@ import { Router } from 'express';
 import { transcriptAnalyzer, AnalysisRequest } from '../services/ai/transcript-analyzer';
 import { openaiService } from '../services/ai/openai-service';
 import { structuredLogger } from '../services/structured-logger';
-import { supabaseAdmin } from '../lib/supabase-admin';
+import { transcriptsPgRepo } from '../repositories/transcripts-pg';
+import { aiAnalysesPgRepo } from '../repositories/ai-analyses-pg';
 
 const router = Router();
 
@@ -63,14 +64,10 @@ router.post('/analyze-transcript', async (req, res) => {
       });
     }
 
-    // Check if transcript exists
-    const { data: transcript, error: transcriptError } = await supabaseAdmin
-      .from('transcripts')
-      .select('id, ticker, company_name')
-      .eq('id', transcriptId)
-      .single();
+    // Check if transcript exists in PostgreSQL local
+    const transcript = await transcriptsPgRepo.getById(parseInt(transcriptId));
 
-    if (transcriptError || !transcript) {
+    if (!transcript) {
       return res.status(404).json({
         success: false,
         error: 'Transcript not found'
@@ -285,13 +282,10 @@ router.delete('/analyses/:analysisId', async (req, res) => {
   try {
     const { analysisId } = req.params;
 
-    const { error } = await supabaseAdmin
-      .from('ai_analyses')
-      .delete()
-      .eq('id', analysisId);
+    const deleted = await aiAnalysesPgRepo.deleteById(analysisId);
 
-    if (error) {
-      throw new Error(`Failed to delete analysis: ${error.message}`);
+    if (!deleted) {
+      throw new Error(`Analysis not found or already deleted`);
     }
 
     structuredLogger.info('AI analysis deleted', { analysisId });

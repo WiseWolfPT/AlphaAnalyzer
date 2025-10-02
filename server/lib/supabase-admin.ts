@@ -1,4 +1,12 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { config as loadEnv } from 'dotenv';
+import { resolve } from 'node:path';
+
+// Ensure environment variables are loaded before reading them, especially in compiled workers
+try {
+  const envPath = process.env.NODE_ENV === 'production' ? '.env.production' : '.env';
+  loadEnv({ path: resolve(process.cwd(), envPath) });
+} catch {}
 import type {
   Database,
   User,

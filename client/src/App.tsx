@@ -35,6 +35,13 @@ import { CookieConsentBanner } from '@/components/gdpr/cookie-consent-banner';
 // AGGRESSIVE DYNAMIC IMPORTS - Load everything lazily with micro-bundles
 
 // Admin pages
+const AdminDashboard = createLazyComponent(
+  () => import("@/pages/admin/admin-dashboard"),
+  {
+    name: 'AdminDashboard'
+  }
+);
+
 const AdminUsers = createLazyComponent(
   () => import("@/pages/admin/admin-users"),
   {
@@ -92,6 +99,21 @@ const Register = createLazyComponent(
       () => import("@/pages/trial"),
       () => import("@/components/ui/form")
     ]
+  }
+);
+
+// Password recovery
+const ForgotPassword = createLazyComponent(
+  () => import("@/pages/auth/forgot-password"),
+  {
+    name: 'ForgotPassword'
+  }
+);
+
+const ResetPassword = createLazyComponent(
+  () => import("@/pages/auth/reset-password"),
+  {
+    name: 'ResetPassword'
   }
 );
 
@@ -392,10 +414,18 @@ function Router() {
         <Route path="/metodologia" component={Metodologia} />
         <Route path="/login" component={Login} />
         <Route path="/auth/login" component={Login} />
+        {/* Alias to avoid /auth 404s */}
+        <Route path="/auth" component={Login} />
         <Route path="/register" component={Register} />
         <Route path="/auth/register" component={Register} />
+        {/* Password recovery routes */}
+        <Route path="/auth/forgot-password" component={ForgotPassword} />
+        <Route path="/auth/reset-password" component={ResetPassword} />
+        <Route path="/reset-password" component={ResetPassword} />
         <Route path="/trial" component={Trial} />
         <Route path="/home" component={FindStocks} />
+        {/* Alias para compatibilidade com botões antigos */}
+        <Route path="/find-stocks" component={FindStocks} />
         <Route path="/compare" component={Compare} />
         
         {/* Main routes */}
@@ -405,48 +435,37 @@ function Router() {
         <Route path="/test-error-handling" component={lazy(() => import('@/pages/test-error-handling'))} />
         
         {/* Admin Routes - Protected */}
-        <Route path="/admin">
-          {() => (
-            <AdminRoute>
-              <AdminUsers />
-            </AdminRoute>
-          )}
-        </Route>
-        <Route path="/admin/users">
-          {() => (
-            <AdminRoute>
-              <AdminUsers />
-            </AdminRoute>
-          )}
-        </Route>
-        <Route path="/admin/transcripts">
-          {() => (
-            <AdminRoute>
-              <AdminTranscripts />
-            </AdminRoute>
-          )}
-        </Route>
-        <Route path="/admin/api-monitoring">
-          {() => (
-            <AdminRoute>
-              <ApiMonitoring />
-            </AdminRoute>
-          )}
-        </Route>
-        <Route path="/admin/cache">
-          {() => (
-            <AdminRoute>
-              <CacheMonitor />
-            </AdminRoute>
-          )}
-        </Route>
+        <Route path="/admin" component={() => (
+          <AdminRoute>
+            <AdminDashboard />
+          </AdminRoute>
+        )} />
+        <Route path="/admin/users" component={() => (
+          <AdminRoute>
+            <AdminUsers />
+          </AdminRoute>
+        )} />
+        <Route path="/admin/transcripts" component={() => (
+          <AdminRoute>
+            <AdminTranscripts />
+          </AdminRoute>
+        )} />
+        <Route path="/admin/api-monitoring" component={() => (
+          <AdminRoute>
+            <ApiMonitoring />
+          </AdminRoute>
+        )} />
+        <Route path="/admin/cache" component={() => (
+          <AdminRoute>
+            <CacheMonitor />
+          </AdminRoute>
+        )} />
         
         {/* Valuation Route */}
         <Route path="/valuation" component={IntrinsicValue} />
         <Route path="/intrinsic-value" component={IntrinsicValue} />
         
-        {/* Other Routes */}
-        <Route path="/find-stocks" component={FindStocks} />
+        {/* Other Routes - find-stocks defined above */}
         <Route path="/stock/:symbol" component={StockDetail} />
         <Route path="/stock/:symbol/charts" component={AdvancedCharts} />
         <Route path="/portfolios" component={Portfolios} />
@@ -515,7 +534,31 @@ function App() {
       logger.enableRemoteLogging('/api/logs');
     }
   }, []);
-  
+
+  // Handle Supabase auth callback (e.g., password reset)
+  useEffect(() => {
+    // Check if we have hash fragments from Supabase auth
+    const hash = window.location.hash;
+    console.log('Hash detected:', hash);
+
+    if (hash && hash.includes('access_token')) {
+      // Extract the intended route from the hash
+      // Supabase sends: #access_token=...&type=recovery
+      const hashParams = new URLSearchParams(hash.substring(1));
+      const type = hashParams.get('type');
+      console.log('Auth type:', type);
+
+      if (type === 'recovery') {
+        // For password reset, redirect to reset-password page
+        console.log('Recovery token detected, redirecting to reset-password page...');
+        // Use setTimeout to ensure the redirect happens after React renders
+        setTimeout(() => {
+          window.location.href = '/auth/reset-password' + hash;
+        }, 100);
+      }
+    }
+  }, []);
+
   console.log('🚀 App component rendering');
   console.log('QueryClient instance at App render:', queryClient);
 

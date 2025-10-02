@@ -24,10 +24,8 @@ const getServerEnvVar = (key: string, fallbackKey?: string): string => {
 };
 
 const API_KEYS = {
-  FINNHUB: getServerEnvVar('FINNHUB_API_KEY', 'FINNHUB_API_KEY_DEMO'),
   ALPHA_VANTAGE: getServerEnvVar('ALPHA_VANTAGE_API_KEY', 'ALPHA_VANTAGE_API_KEY_DEMO'),
   FMP: getServerEnvVar('FMP_API_KEY', 'FMP_API_KEY_DEMO'),
-  TWELVE_DATA: getServerEnvVar('TWELVE_DATA_API_KEY', 'TWELVE_DATA_API_KEY_DEMO'),
 };
 
 // API Key validation
@@ -70,21 +68,7 @@ export class ServerMarketDataService {
       resetAt: this.getNextMidnight()
     });
 
-    this.quotaTracker.set('finnhub', {
-      provider: 'finnhub',
-      used: 0,
-      limit: 3600, // 60 per minute
-      remaining: 3600,
-      resetAt: this.getNextMidnight()
-    });
-
-    this.quotaTracker.set('twelvedata', {
-      provider: 'twelvedata',
-      used: 0,
-      limit: 800, // Free tier: 800/day
-      remaining: 800,
-      resetAt: this.getNextMidnight()
-    });
+    // Removed non-primary providers (Finnhub, TwelveData)
   }
 
   private getNextMidnight(): Date {
@@ -105,13 +89,11 @@ export class ServerMarketDataService {
     }
 
     console.log(`🔍 Fetching real-time quote for ${symbol}`);
-    console.log(`🔑 API Key Status: FH:${isRealApiKey(API_KEYS.FINNHUB)}, AV:${isRealApiKey(API_KEYS.ALPHA_VANTAGE)}, FMP:${isRealApiKey(API_KEYS.FMP)}, TD:${isRealApiKey(API_KEYS.TWELVE_DATA)}`);
+    console.log(`🔑 API Key Status: AV:${isRealApiKey(API_KEYS.ALPHA_VANTAGE)}, FMP:${isRealApiKey(API_KEYS.FMP)}`);
 
     const providers = [
       { name: 'fmp', fn: () => this.fetchFMPQuote(symbol), hasRealKey: isRealApiKey(API_KEYS.FMP) },
       { name: 'alphavantage', fn: () => this.fetchAlphaVantageQuote(symbol), hasRealKey: isRealApiKey(API_KEYS.ALPHA_VANTAGE) },
-      { name: 'finnhub', fn: () => this.fetchFinnhubQuote(symbol), hasRealKey: isRealApiKey(API_KEYS.FINNHUB) },
-      { name: 'twelvedata', fn: () => this.fetchTwelveDataQuote(symbol), hasRealKey: isRealApiKey(API_KEYS.TWELVE_DATA) }
     ];
 
     // Sort providers: real API keys first, then demo keys
@@ -196,6 +178,7 @@ export class ServerMarketDataService {
     return null;
   }
 
+  // Removed Twelve Data implementation from active path (kept here for reference if needed in the future)
   private async fetchTwelveDataQuote(symbol: string): Promise<Stock | null> {
     try {
       const controller = new AbortController();
@@ -244,6 +227,7 @@ export class ServerMarketDataService {
     }
   }
 
+  // Removed Finnhub implementation from active path (kept here for reference if needed in the future)
   private async fetchFinnhubQuote(symbol: string): Promise<Stock | null> {
     try {
       const controller = new AbortController();
@@ -428,13 +412,10 @@ export class ServerMarketDataService {
   }
 
   getApiStatus() {
-    const providers = ['finnhub', 'alphaVantage', 'fmp', 'twelveData'];
-    const availableProviders = [];
-    
-    if (isRealApiKey(API_KEYS.FINNHUB)) availableProviders.push('finnhub');
+    const providers = ['alphaVantage', 'fmp'] as const;
+    const availableProviders: string[] = [];
     if (isRealApiKey(API_KEYS.ALPHA_VANTAGE)) availableProviders.push('alphaVantage');
     if (isRealApiKey(API_KEYS.FMP)) availableProviders.push('fmp');
-    if (isRealApiKey(API_KEYS.TWELVE_DATA)) availableProviders.push('twelveData');
     
     // Always add Yahoo Finance as it doesn't require API key
     availableProviders.push('yahoo');
@@ -442,12 +423,6 @@ export class ServerMarketDataService {
     return {
       availableProviders,
       apiKeys: {
-        finnhub: { 
-          configured: API_KEYS.FINNHUB !== 'demo',
-          isReal: isRealApiKey(API_KEYS.FINNHUB),
-          masked: API_KEYS.FINNHUB.substring(0, 8) + '...',
-          keyLength: API_KEYS.FINNHUB.length
-        },
         alphaVantage: { 
           configured: API_KEYS.ALPHA_VANTAGE !== 'demo',
           isReal: isRealApiKey(API_KEYS.ALPHA_VANTAGE),
@@ -459,12 +434,6 @@ export class ServerMarketDataService {
           isReal: isRealApiKey(API_KEYS.FMP),
           masked: API_KEYS.FMP.substring(0, 8) + '...',
           keyLength: API_KEYS.FMP.length
-        },
-        twelveData: { 
-          configured: API_KEYS.TWELVE_DATA !== 'demo',
-          isReal: isRealApiKey(API_KEYS.TWELVE_DATA),
-          masked: API_KEYS.TWELVE_DATA.substring(0, 8) + '...',
-          keyLength: API_KEYS.TWELVE_DATA.length
         }
       },
       quotas: Object.fromEntries(this.quotaTracker),
@@ -476,11 +445,9 @@ export class ServerMarketDataService {
     const testSymbol = 'AAPL';
     const results = {
       yahoo: { status: 'testing', data: null, error: null },
-      twelvedata: { status: 'testing', data: null, error: null },
       fmp: { status: 'testing', data: null, error: null },
-      finnhub: { status: 'testing', data: null, error: null },
       alphavantage: { status: 'testing', data: null, error: null }
-    };
+    } as any;
 
     // Test Yahoo Finance
     try {
@@ -492,9 +459,7 @@ export class ServerMarketDataService {
 
     // Test other providers
     const tests = [
-      { name: 'twelvedata', fn: () => this.fetchTwelveDataQuote(testSymbol) },
       { name: 'fmp', fn: () => this.fetchFMPQuote(testSymbol) },
-      { name: 'finnhub', fn: () => this.fetchFinnhubQuote(testSymbol) },
       { name: 'alphavantage', fn: () => this.fetchAlphaVantageQuote(testSymbol) }
     ];
 

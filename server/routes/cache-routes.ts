@@ -80,7 +80,7 @@ router.post('/quotes/batch', async (req: Request, res: Response) => {
 
     const { symbols } = validation.data;
     
-    // Use Reddit Strategy for batch
+    // Use cache-first strategy for batch
     const quotesBySymbol = await simpleCacheService.getBatchQuotes(symbols);
     const quotes = Object.values(quotesBySymbol);
     res.json({
@@ -116,7 +116,7 @@ router.get('/fundamentals/:symbol', async (req: Request, res: Response) => {
     const { symbol } = validation.data;
     
     // For now, return from regular cache service
-    // TODO: Implement Reddit Strategy for fundamentals
+    // TODO: Implement cache-first strategy for fundamentals
     const { redisCacheService } = await import('../cache/redis-cache-service');
     const cacheKey = `fundamentals:${symbol}`;
     const data = await redisCacheService.get(cacheKey);

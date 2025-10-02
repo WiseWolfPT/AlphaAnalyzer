@@ -348,13 +348,13 @@ export default function RegisterPage() {
                       <div className="space-y-1 leading-none">
                         <FormLabel className="text-sm font-normal">
                           Aceito os{' '}
-                          <Link href="/terms">
+                          <Link href="/terms-of-service">
                             <Button variant="link" className="px-1 h-auto font-normal text-sm">
                               Termos e Condições
                             </Button>
                           </Link>{' '}
                           e{' '}
-                          <Link href="/privacy">
+                          <Link href="/privacy-policy">
                             <Button variant="link" className="px-1 h-auto font-normal text-sm">
                               Política de Privacidade
                             </Button>

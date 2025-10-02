@@ -3,7 +3,7 @@ import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { AuthModal } from "@/components/auth/auth-modal";
-import { useAuth } from "@/contexts/temp-auth";
+import { useSupabaseAuth } from "@/contexts/supabase-auth-context";
 import { 
   BarChart3, 
   Menu, 
@@ -18,7 +18,24 @@ import { cn } from "@/lib/utils";
 export function LandingHeader() {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const { user } = useAuth();
+  const { user, userProfile, signOut } = useSupabaseAuth();
+
+  const displayName =
+    userProfile?.name ||
+    (typeof user?.user_metadata?.name === 'string' ? user.user_metadata.name : undefined) ||
+    (user?.email ? user.email.split('@')[0] : null) ||
+    'Investidor';
+  const emailAddress = user?.email || 'investidor@alfalyzer.com';
+  const subscriptionTier = userProfile?.subscription_tier || 'free';
+  const subscriptionLabel = subscriptionTier.charAt(0).toUpperCase() + subscriptionTier.slice(1);
+
+  const handleSignOut = async () => {
+    const { error } = await signOut();
+    if (error) {
+      console.error('Erro ao terminar sessão:', error.message);
+    }
+    setMobileMenuOpen(false);
+  };
 
   const navigation = [
     { name: "Home", href: "/", current: true },
@@ -71,11 +88,11 @@ export function LandingHeader() {
                   <div className="flex items-center gap-2 px-3 py-2 bg-secondary/30 rounded-lg">
                     <div className="w-6 h-6 bg-primary rounded-full flex items-center justify-center">
                       <span className="text-xs font-medium text-primary-foreground">
-                        {user.name?.charAt(0) || user.email?.charAt(0) || 'U'}
+                        {displayName.charAt(0).toUpperCase()}
                       </span>
                     </div>
-                    <span className="text-sm font-medium">{user.name || user.email}</span>
-                    {user.subscription === 'premium' && (
+                    <span className="text-sm font-medium">{displayName}</span>
+                    {subscriptionTier === 'premium' && (
                       <Crown className="h-3 w-3 text-amber-500" />
                     )}
                   </div>
@@ -89,7 +106,7 @@ export function LandingHeader() {
                   <Button 
                     variant="ghost" 
                     size="sm"
-                    onClick={() => {/* signOut() - disabled for now */}}
+                    onClick={handleSignOut}
                   >
                     <LogOut className="h-4 w-4" />
                   </Button>
@@ -152,13 +169,13 @@ export function LandingHeader() {
                         <div className="flex items-center gap-2">
                           <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
                             <span className="text-sm font-medium text-primary-foreground">
-                              {user.name?.charAt(0) || user.email?.charAt(0) || 'U'}
+                              {displayName.charAt(0).toUpperCase()}
                             </span>
                           </div>
                           <div>
-                            <div className="text-sm font-medium">{user.name || user.email}</div>
+                            <div className="text-sm font-medium">{displayName}</div>
                             <div className="text-xs text-muted-foreground">
-                              {user.subscription || 'free'} plan
+                              {subscriptionLabel} plan
                             </div>
                           </div>
                         </div>
@@ -171,10 +188,7 @@ export function LandingHeader() {
                       <Button 
                         variant="ghost" 
                         className="w-full mx-3"
-                        onClick={() => {
-                          /* signOut() - disabled for now */
-                          setMobileMenuOpen(false);
-                        }}
+                        onClick={handleSignOut}
                       >
                         Sign Out
                       </Button>

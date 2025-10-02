@@ -7,7 +7,8 @@
 import { Router, Request, Response } from 'express';
 import { z } from 'zod';
 import { TranscriptService } from '../../services/transcript-service';
-import { authMiddleware } from '../../middleware/auth-middleware';
+import { logAdminAction } from '../../utils/admin-audit';
+import { EventCategory, AuditSeverity } from '../../security/compliance-audit';
 
 const router = Router();
 const transcriptService = TranscriptService.getInstance();
@@ -45,9 +46,33 @@ const transcriptFilterSchema = z.object({
   offset: z.coerce.number().min(0).default(0)
 });
 
-// Apply admin authentication to all routes
-router.use(authMiddleware.instance.authenticate());
-router.use(authMiddleware.instance.requirePermissions(['admin:transcripts']));
+// Require explicit admin permission for transcript management
+router.use(async (req, res, next) => {
+  const hasPermission = req.adminUser?.isSuperAdmin || req.adminUser?.permissions.includes('admin:transcripts');
+
+  if (!hasPermission) {
+    await logAdminAction({
+      req,
+      action: 'transcript_admin_access_denied',
+      resource: 'transcripts_admin',
+      success: false,
+      category: EventCategory.AUTHORIZATION,
+      severity: AuditSeverity.HIGH,
+      details: {
+        reason: 'missing_admin_transcripts_permission',
+      },
+    });
+
+    return res.status(403).json({
+      success: false,
+      error: 'ADMIN_TRANSCRIPTS_PERMISSION_REQUIRED',
+      message: 'You need admin transcripts permission to access this resource.',
+      timestamp: new Date().toISOString(),
+    });
+  }
+
+  next();
+});
 
 /**
  * GET /api/admin/transcripts
@@ -211,6 +236,18 @@ router.post('/', async (req: Request, res: Response) => {
   try {
     const data = transcriptCreateSchema.parse(req.body);
     const transcript = await transcriptService.createTranscript(data);
+    await logAdminAction({
+      req,
+      action: 'transcript_create',
+      resource: `transcript:${transcript?.id ?? 'unknown'}`,
+      success: true,
+      category: EventCategory.DATA_MODIFICATION,
+      severity: AuditSeverity.HIGH,
+      details: {
+        ticker: data.ticker,
+        status: transcript?.status,
+      },
+    });
     
     res.status(201).json({
       success: true,
@@ -220,7 +257,20 @@ router.post('/', async (req: Request, res: Response) => {
     });
   } catch (error) {
     console.error('Error creating transcript:', error);
-    
+
+    await logAdminAction({
+      req,
+      action: 'transcript_create',
+      resource: 'transcript',
+      success: false,
+      category: EventCategory.DATA_MODIFICATION,
+      severity: AuditSeverity.HIGH,
+      details: {
+        reason: error instanceof z.ZodError ? 'validation_error' : 'internal_error',
+        issues: error instanceof z.ZodError ? error.errors : undefined,
+      },
+    });
+
     if (error instanceof z.ZodError) {
       return res.status(400).json({
         success: false,
@@ -258,6 +308,15 @@ router.put('/:id', async (req: Request, res: Response) => {
     const transcript = await transcriptService.updateTranscript(id, data);
     
     if (!transcript) {
+      await logAdminAction({
+        req,
+        action: 'transcript_update',
+        resource: `transcript:${id}`,
+        success: false,
+        category: EventCategory.DATA_MODIFICATION,
+        severity: AuditSeverity.HIGH,
+        details: { reason: 'not_found' },
+      });
       return res.status(404).json({
         success: false,
         error: 'Transcript not found',
@@ -265,6 +324,19 @@ router.put('/:id', async (req: Request, res: Response) => {
       });
     }
     
+    await logAdminAction({
+      req,
+      action: 'transcript_update',
+      resource: `transcript:${id}`,
+      success: true,
+      category: EventCategory.DATA_MODIFICATION,
+      severity: AuditSeverity.MEDIUM,
+      details: {
+        ticker: transcript.ticker,
+        status: transcript.status,
+      },
+    });
+
     res.json({
       success: true,
       data: transcript,
@@ -273,6 +345,19 @@ router.put('/:id', async (req: Request, res: Response) => {
     });
   } catch (error) {
     console.error('Error updating transcript:', error);
+
+    await logAdminAction({
+      req,
+      action: 'transcript_update',
+      resource: `transcript:${req.params.id}`,
+      success: false,
+      category: EventCategory.DATA_MODIFICATION,
+      severity: AuditSeverity.HIGH,
+      details: {
+        reason: error instanceof z.ZodError ? 'validation_error' : 'internal_error',
+        issues: error instanceof z.ZodError ? error.errors : undefined,
+      },
+    });
     
     if (error instanceof z.ZodError) {
       return res.status(400).json({
@@ -310,6 +395,15 @@ router.delete('/:id', async (req: Request, res: Response) => {
     const success = await transcriptService.deleteTranscript(id);
     
     if (!success) {
+      await logAdminAction({
+        req,
+        action: 'transcript_delete',
+        resource: `transcript:${id}`,
+        success: false,
+        category: EventCategory.DATA_MODIFICATION,
+        severity: AuditSeverity.HIGH,
+        details: { reason: 'not_found' },
+      });
       return res.status(404).json({
         success: false,
         error: 'Transcript not found',
@@ -317,6 +411,15 @@ router.delete('/:id', async (req: Request, res: Response) => {
       });
     }
     
+    await logAdminAction({
+      req,
+      action: 'transcript_delete',
+      resource: `transcript:${id}`,
+      success: true,
+      category: EventCategory.DATA_MODIFICATION,
+      severity: AuditSeverity.HIGH,
+    });
+
     res.json({
       success: true,
       message: 'Transcript deleted successfully',
@@ -324,6 +427,19 @@ router.delete('/:id', async (req: Request, res: Response) => {
     });
   } catch (error) {
     console.error('Error deleting transcript:', error);
+
+    await logAdminAction({
+      req,
+      action: 'transcript_delete',
+      resource: `transcript:${req.params.id}`,
+      success: false,
+      category: EventCategory.DATA_MODIFICATION,
+      severity: AuditSeverity.HIGH,
+      details: {
+        reason: 'internal_error',
+        message: error instanceof Error ? error.message : 'unknown_error',
+      },
+    });
     res.status(500).json({
       success: false,
       error: 'Failed to delete transcript',
@@ -353,12 +469,33 @@ router.post('/:id/publish', async (req: Request, res: Response) => {
     });
 
     if (!transcript) {
+      await logAdminAction({
+        req,
+        action: 'transcript_publish',
+        resource: `transcript:${id}`,
+        success: false,
+        category: EventCategory.DATA_MODIFICATION,
+        severity: AuditSeverity.MEDIUM,
+        details: { reason: 'not_found' },
+      });
       return res.status(404).json({
         success: false,
         error: 'Transcript not found',
         timestamp: new Date().toISOString()
       });
     }
+
+    await logAdminAction({
+      req,
+      action: 'transcript_publish',
+      resource: `transcript:${id}`,
+      success: true,
+      category: EventCategory.DATA_MODIFICATION,
+      severity: AuditSeverity.MEDIUM,
+      details: {
+        ticker: transcript.ticker,
+      },
+    });
 
     res.json({
       success: true,
@@ -368,6 +505,19 @@ router.post('/:id/publish', async (req: Request, res: Response) => {
     });
   } catch (error) {
     console.error('Error publishing transcript:', error);
+
+    await logAdminAction({
+      req,
+      action: 'transcript_publish',
+      resource: `transcript:${req.params.id}`,
+      success: false,
+      category: EventCategory.DATA_MODIFICATION,
+      severity: AuditSeverity.MEDIUM,
+      details: {
+        reason: 'internal_error',
+        message: error instanceof Error ? error.message : 'unknown_error',
+      },
+    });
     res.status(500).json({
       success: false,
       error: 'Failed to publish transcript',
@@ -388,6 +538,16 @@ router.post('/bulk/publish', async (req: Request, res: Response) => {
 
     console.log(`✅ Auto-published ${publishedCount} transcripts`);
 
+    await logAdminAction({
+      req,
+      action: 'transcript_bulk_publish',
+      resource: 'transcripts:bulk_publish',
+      success: true,
+      category: EventCategory.DATA_MODIFICATION,
+      severity: publishedCount > 0 ? AuditSeverity.MEDIUM : AuditSeverity.LOW,
+      details: { publishedCount },
+    });
+
     res.json({
       success: true,
       publishedCount,
@@ -396,6 +556,19 @@ router.post('/bulk/publish', async (req: Request, res: Response) => {
     });
   } catch (error) {
     console.error('Error during bulk auto-publish:', error);
+
+    await logAdminAction({
+      req,
+      action: 'transcript_bulk_publish',
+      resource: 'transcripts:bulk_publish',
+      success: false,
+      category: EventCategory.DATA_MODIFICATION,
+      severity: AuditSeverity.MEDIUM,
+      details: {
+        reason: 'internal_error',
+        message: error instanceof Error ? error.message : 'unknown_error',
+      },
+    });
     res.status(500).json({
       success: false,
       error: 'Failed to auto-publish transcripts',
@@ -450,6 +623,32 @@ router.post('/bulk/status', async (req: Request, res: Response) => {
       success: false,
       error: 'Failed to update transcript statuses',
       details: error instanceof Error ? error.message : 'Unknown error',
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
+/**
+ * POST /api/admin/transcripts/auto-publish
+ * Auto-publish all reviewed transcripts that have complete data
+ */
+router.post('/auto-publish', async (req: Request, res: Response) => {
+  try {
+    console.log('🚀 Running auto-publish workflow for reviewed transcripts...');
+
+    const publishedCount = await transcriptService.autoPublishReviewedTranscripts();
+
+    res.json({
+      success: true,
+      message: `Auto-published ${publishedCount} transcripts`,
+      publishedCount,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('Error in auto-publish workflow:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to auto-publish transcripts',
       timestamp: new Date().toISOString()
     });
   }

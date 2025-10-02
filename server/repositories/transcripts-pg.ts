@@ -80,6 +80,8 @@ export const transcriptsPgRepo = {
       SELECT id, ticker, company_name, quarter, year, call_date, raw_transcript, ai_summary, status, created_at, published_at, view_count, metadata
       FROM transcripts
       WHERE raw_transcript IS NOT NULL
+        AND ai_summary IS NULL
+        AND status = 'pending'
       ORDER BY created_at DESC
       LIMIT $1;
     `;
@@ -176,7 +178,7 @@ export const transcriptsPgRepo = {
     const q = `
       UPDATE transcripts
       SET status = $2, published_at = CASE WHEN $2 = 'published' THEN NOW() ELSE published_at END
-      WHERE status = $1 AND ai_summary IS NOT NULL AND ai_summary != ''
+      WHERE status = $1 AND ai_summary IS NOT NULL
       RETURNING id;
     `;
     const res = await c.query(q, [fromStatus, toStatus]);
@@ -190,9 +192,7 @@ export const transcriptsPgRepo = {
       SET status = 'published', published_at = NOW()
       WHERE status = 'review'
         AND ai_summary IS NOT NULL
-        AND ai_summary != ''
         AND raw_transcript IS NOT NULL
-        AND raw_transcript != ''
       RETURNING id;
     `;
     const res = await c.query(q);

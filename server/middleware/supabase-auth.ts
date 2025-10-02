@@ -121,7 +121,7 @@ export const requireAuth = async (req: Request, res: Response, next: NextFunctio
  */
 export const requireAdmin = async (req: Request, res: Response, next: NextFunction) => {
   // First run auth middleware
-  await requireAuth(req, res, () => {
+  await requireAuth(req, res, async () => {
     if (!req.user) {
       return res.status(401).json({
         error: 'UNAUTHORIZED',
@@ -131,19 +131,66 @@ export const requireAdmin = async (req: Request, res: Response, next: NextFuncti
       });
     }
 
-    // Check if user has admin role
-    if (req.user.role !== 'admin') {
-      console.log(`🚫 Access denied for user ${req.user.email} - admin role required`);
-      return res.status(403).json({
-        error: 'FORBIDDEN',
-        message: 'Admin access required',
-        code: 'INSUFFICIENT_PERMISSIONS',
+    // If Supabase is not configured, block in production
+    if (!supabase) {
+      if (process.env.NODE_ENV === 'production') {
+        return res.status(500).json({
+          error: 'AUTHENTICATION_SERVICE_ERROR',
+          message: 'Authorization service not configured',
+          code: 'AUTH_NOT_CONFIGURED',
+          timestamp: new Date().toISOString()
+        });
+      }
+      // Dev fallback: allow
+      return next();
+    }
+
+    try {
+      // Check roles from RBAC tables in Supabase
+      const { data, error } = await supabase
+        .from('user_roles')
+        .select('role:roles(name)')
+        .eq('user_id', req.user.id);
+
+      if (error) {
+        console.error('RBAC check error:', error);
+        return res.status(500).json({
+          error: 'RBAC_CHECK_FAILED',
+          message: 'Failed to verify admin permissions',
+          timestamp: new Date().toISOString()
+        });
+      }
+
+      const roleNames = (data || [])
+        .map((r: any) => r.role?.name)
+        .filter(Boolean);
+
+      // Accept admin via RBAC table OR user metadata fallback
+      const metaRole = req.user?.role;
+      const metaIsAdmin = metaRole === 'admin' || metaRole === 'super_admin';
+      const isAdmin = metaIsAdmin || roleNames.includes('admin') || roleNames.includes('super_admin');
+
+      if (!isAdmin) {
+        console.log(`🚫 Access denied for user ${req.user.email} - admin/super_admin role required`);
+        return res.status(403).json({
+          error: 'FORBIDDEN',
+          message: 'Admin access required',
+          code: 'INSUFFICIENT_PERMISSIONS',
+          timestamp: new Date().toISOString()
+        });
+      }
+
+      console.log(`👑 Admin access granted to ${req.user.email}`);
+      next();
+    } catch (e) {
+      console.error('Admin check error:', e);
+      return res.status(500).json({
+        error: 'AUTHORIZATION_ERROR',
+        message: 'Authorization error',
+        code: 'AUTH_ERROR',
         timestamp: new Date().toISOString()
       });
     }
-
-    console.log(`👑 Admin access granted to ${req.user.email}`);
-    next();
   });
 };
 

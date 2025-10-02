@@ -10,6 +10,7 @@ import { AlertCircle, FileText, Sparkles, Upload } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { TranscriptManagement } from '@/components/admin/TranscriptManagement';
 import axios from 'axios';
+import { useAdminAccess } from '@/components/admin/AdminRoute';
 
 export default function AdminTranscripts() {
   const [transcript, setTranscript] = useState('');
@@ -21,8 +22,15 @@ export default function AdminTranscripts() {
   const [error, setError] = useState<string | null>(null);
   
   const { countTokens } = useTokenCounter();
+  const { permissions, isSuperAdmin, isLoadingPermissions } = useAdminAccess();
+  const canManageTranscripts = isSuperAdmin || permissions?.canManageTranscripts;
 
   const handleGenerateSummary = async () => {
+    if (!canManageTranscripts) {
+      setError('You do not have permission to generate summaries.');
+      return;
+    }
+
     if (!transcript || !ticker || !quarter || !year) {
       setError('Please fill in all required fields');
       return;
@@ -58,6 +66,11 @@ export default function AdminTranscripts() {
   };
 
   const handleSaveTranscript = async () => {
+    if (!canManageTranscripts) {
+      setError('You do not have permission to save transcripts.');
+      return;
+    }
+
     if (!transcript || !ticker || !quarter || !year || !summary) {
       setError('Please complete all fields and generate a summary');
       return;
@@ -82,6 +95,22 @@ export default function AdminTranscripts() {
       setError('Failed to save transcript');
     }
   };
+
+  if (isLoadingPermissions && !isSuperAdmin) {
+    return (
+      <div className="p-8 text-center text-sm text-muted-foreground">
+        Loading admin permissions...
+      </div>
+    );
+  }
+
+  if (!canManageTranscripts) {
+    return (
+      <div className="p-8 text-center text-sm text-muted-foreground">
+        Você não tem permissões para gerir transcripts. Contacte um super administrador para obter acesso.
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto py-8 space-y-6">
@@ -160,7 +189,7 @@ export default function AdminTranscripts() {
           <div className="flex gap-4">
             <Button
               onClick={handleGenerateSummary}
-              disabled={!transcript || !ticker || !quarter || !year || isGenerating}
+              disabled={!canManageTranscripts || !transcript || !ticker || !quarter || !year || isGenerating}
               className="flex items-center gap-2"
             >
               {isGenerating ? (
@@ -198,10 +227,14 @@ export default function AdminTranscripts() {
 
           {summary && (
             <div className="flex justify-end gap-4">
-              <Button variant="outline" onClick={() => setSummary('')}>
+              <Button variant="outline" onClick={() => setSummary('')} disabled={!canManageTranscripts}>
                 Clear Summary
               </Button>
-              <Button onClick={handleSaveTranscript} className="flex items-center gap-2">
+              <Button
+                onClick={handleSaveTranscript}
+                className="flex items-center gap-2"
+                disabled={isGenerating || !canManageTranscripts}
+              >
                 <Upload className="h-4 w-4" />
                 Save Transcript
               </Button>

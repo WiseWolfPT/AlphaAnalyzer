@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { cn } from "@/lib/utils";
-import { useAuth } from "@/contexts/temp-auth";
+import { useSupabaseAuth } from "@/contexts/supabase-auth-context";
 import { Button } from "@/components/ui/button";
 import { AuthModal } from "@/components/auth/auth-modal";
 import { 
@@ -35,11 +35,19 @@ const navigation = [
 
 export function CollapsibleSidebar() {
   const [location, navigate] = useLocation();
-  const { user } = useAuth();
+  const { user, userProfile } = useSupabaseAuth();
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  const displayName =
+    userProfile?.name ||
+    (typeof user?.user_metadata?.name === 'string' ? user.user_metadata.name : undefined) ||
+    (user?.email ? user.email.split('@')[0] : null) ||
+    'User';
+  const emailAddress = user?.email || 'utilizador@alfalyzer.com';
+  const activePlan = userProfile?.subscription_tier || 'free';
 
   useEffect(() => {
     const checkIsMobile = () => {
@@ -148,9 +156,9 @@ export function CollapsibleSidebar() {
             )}>
               {navigation.map((item) => {
                 const Icon = item.icon;
-                const isActive = location === item.href || 
-                  (item.href === '/dashboard' && location === '/') ||
-                  (item.href === '/home' && location === '/dashboard');
+                const isActive = location === item.href ||
+                  (item.href === '/find-stocks' && location === '/') ||
+                  (item.href === '/home' && location === '/find-stocks');
                 
                 return (
                   <button
@@ -203,8 +211,8 @@ export function CollapsibleSidebar() {
                         <User className="h-4 w-4 text-teya-green" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="font-medium text-sm text-sidebar-foreground truncate">{user.name || "User"}</p>
-                        <p className="text-xs text-sidebar-foreground/60 truncate">{user.email}</p>
+                        <p className="font-medium text-sm text-sidebar-foreground truncate">{displayName}</p>
+                        <p className="text-xs text-sidebar-foreground/60 truncate">{emailAddress}</p>
                       </div>
                     </button>
                     
@@ -213,10 +221,10 @@ export function CollapsibleSidebar() {
                       <div className="flex items-center gap-2">
                         <Crown className="h-3 w-3 text-amber-500" />
                         <span className="text-xs font-medium text-amber-600 dark:text-amber-400">
-                          {user.plan || "Free"} Plan
+                          {activePlan.charAt(0).toUpperCase() + activePlan.slice(1)} Plan
                         </span>
                       </div>
-                      {(!user.plan || user.plan === "Free") && (
+                      {(!userProfile?.subscription_tier || userProfile.subscription_tier === "free") && (
                         <Button
                           size="sm"
                           variant="outline"

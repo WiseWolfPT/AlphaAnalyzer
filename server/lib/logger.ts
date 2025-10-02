@@ -5,31 +5,104 @@ import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
 
-// ES module fix for __dirname
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+// Resolve __dirname in both ESM and CJS runtimes
+let __filenameResolved: string = '';
+let __dirnameResolved: string = '';
+try {
+  // @ts-ignore - import.meta may be undefined in CJS
+  const metaUrl = (import.meta as any)?.url;
+  if (metaUrl) {
+    __filenameResolved = fileURLToPath(metaUrl);
+    __dirnameResolved = path.dirname(__filenameResolved);
+  } else {
+    // CJS fallback
+    // @ts-ignore - __filename exists in CJS
+    __filenameResolved = typeof __filename !== 'undefined' ? __filename : '';
+    // @ts-ignore - __dirname exists in CJS
+    __dirnameResolved = typeof __dirname !== 'undefined' ? __dirname : process.cwd();
+  }
+} catch {
+  // CJS fallback
+  // @ts-ignore
+  __filenameResolved = typeof __filename !== 'undefined' ? __filename : '';
+  // @ts-ignore
+  __dirnameResolved = typeof __dirname !== 'undefined' ? __dirname : process.cwd();
+}
 
 // Ensure logs directory exists
-const logsDir = path.join(__dirname, '../../logs');
+const logsDir = path.join(__dirnameResolved, '../../logs');
 if (!fs.existsSync(logsDir)) {
   fs.mkdirSync(logsDir, { recursive: true });
 }
 
-// Custom log format
+// PII sanitization helpers
+function maskEmail(str: string): string {
+  // Mask emails like user@example.com -> u***@example.com
+  return str.replace(/([A-Za-z0-9._%+-])([A-Za-z0-9._%+-]*)(@[^\s]+)/g, (_m, first, rest, domain) => `${first}***${domain}`);
+}
+
+function redactTokens(str: string): string {
+  // Redact JWT-like tokens (eyJ...) and long hex strings
+  return str
+    .replace(/eyJ[a-zA-Z0-9_\-]+\.[a-zA-Z0-9_\-]+\.[a-zA-Z0-9_\-]+/g, '[REDACTED_TOKEN]')
+    .replace(/[A-Fa-f0-9]{24,}/g, '[REDACTED_HEX]');
+}
+
+function sanitizePII(value: any): any {
+  try {
+    if (value == null) return value;
+    if (typeof value === 'string') {
+      return redactTokens(maskEmail(value));
+    }
+    if (Array.isArray(value)) {
+      return value.map(v => sanitizePII(v));
+    }
+    if (typeof value === 'object') {
+      const sensitiveKeys = ['password', 'apikey', 'api_key', 'token', 'secret', 'authorization', 'session', 'cookie', 'email'];
+      const out: any = {};
+      for (const k of Object.keys(value)) {
+        if (sensitiveKeys.some(sk => k.toLowerCase().includes(sk))) {
+          out[k] = '[REDACTED]';
+        } else {
+          out[k] = sanitizePII((value as any)[k]);
+        }
+      }
+      return out;
+    }
+    return value;
+  } catch {
+    return '[SANITIZE_ERROR]';
+  }
+}
+
+// Custom log format (console)
 const customFormat = winston.format.printf(({ timestamp, level, message, ...metadata }) => {
   let msg = `${timestamp} [${level}] ${message}`;
   
   if (Object.keys(metadata).length > 0) {
-    msg += ` ${JSON.stringify(metadata)}`;
+    msg += ` ${JSON.stringify(sanitizePII(metadata))}`;
   }
   
   return msg;
+});
+
+// Global sanitize format for all transports
+const sanitizeFormat = winston.format((info: any) => {
+  // Sanitize message and metadata before other formats (for file/json too)
+  if (typeof info.message === 'string') {
+    info.message = sanitizePII(info.message);
+  }
+  if (info.metadata) {
+    info.metadata = sanitizePII(info.metadata);
+  }
+  return info;
 });
 
 // Create Winston logger
 const logger = winston.createLogger({
   level: process.env.LOG_LEVEL || 'debug',
   format: winston.format.combine(
+    sanitizeFormat(),
     winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss.SSS' }),
     winston.format.errors({ stack: true }),
     winston.format.metadata({ fillExcept: ['message', 'level', 'timestamp'] })
@@ -146,7 +219,7 @@ export const requestLogger = (req: Request, res: Response, next: NextFunction) =
     method: req.method,
     url: req.originalUrl,
     headers: sanitizeHeaders(req.headers),
-    body: req.method !== 'GET' ? req.body : undefined,
+    body: req.method !== 'GET' ? sanitizePII(req.body) : undefined,
     correlationId,
   });
   

@@ -39,7 +39,10 @@ export const apiSecurityMiddleware = async (
     
     // 3. Remover headers sensíveis EXCEPT authorization (needed for downstream auth)
     // SECURITY FIX: Don't delete authorization header as it breaks authentication chain
-    delete req.headers['x-api-key'];
+    // Allow x-api-key for public market-data endpoints (enforced by marketDataApiKey middleware)
+    if (!req.path.startsWith('/api/market-data/')) {
+      delete req.headers['x-api-key'];
+    }
     // delete req.headers['authorization']; // REMOVED - breaking authentication
     delete req.headers['x-finnhub-token'];
     delete req.headers['x-alpha-vantage-key'];
@@ -77,6 +80,10 @@ export const adminSecurityMiddleware = async (
   res: Response,
   next: NextFunction
 ) => {
+  // Allow the lightweight admin status check without requiring admin permissions
+  if (req.path === '/api/admin/auth/check') {
+    return next();
+  }
   try {
     // Verificar autenticação primeiro
     if (!req.user || !req.user.id) {

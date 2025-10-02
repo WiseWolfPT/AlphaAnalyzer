@@ -4,8 +4,9 @@ import dotenv from 'dotenv';
 dotenv.config({ path: process.env.NODE_ENV === 'production' ? '.env.production' : '.env' });
 
 // Initialize Sentry BEFORE other imports
-import { initializeSentry, setupSentryMiddleware, setupSentryErrorHandler } from './lib/sentry';
-initializeSentry();
+// Temporarily disabled - causing import issues in production
+// import { initializeSentry, setupSentryMiddleware, setupSentryErrorHandler } from './lib/sentry';
+// initializeSentry();
 
 // Validate environment variables
 import { env, isProduction, isDevelopment } from './config/env';
@@ -52,7 +53,19 @@ import compression from "compression";
 import path from "path";
 import { createServer, type Server } from "http";
 import { registerRoutes } from "./routes";
-import { setupVite, serveStatic, log } from "./vite";
+// Lazy-load Vite helpers only when needed to avoid bundling dev-only deps
+let setupVite: ((app: any, server?: any) => Promise<void>) | null = null;
+const loadViteHelpers = async () => {
+  const mod = await import('./vite');
+  setupVite = mod.setupVite;
+  return mod;
+};
+let serveStaticFn: ((app: any) => void) | null = null;
+const loadServeStatic = async () => {
+  const mod = await import('./serve-static');
+  serveStaticFn = mod.serveStatic;
+  return mod;
+};
 import { db } from "./db";
 import csrf from 'csrf';
 import session from 'express-session';
@@ -118,7 +131,8 @@ const app = express();
 const APP_VERSION = process.env.npm_package_version || '1.0.0';
 
 // Setup Sentry middleware BEFORE any other middleware
-setupSentryMiddleware(app);
+// Temporarily disabled - Sentry import commented out
+// setupSentryMiddleware(app);
 
 // CRITICAL: Health check endpoint MUST be before ALL middleware
 app.get('/health', healthCheckHandler);
@@ -249,13 +263,23 @@ const csrfProtection = (req: Request, res: Response, next: NextFunction) => {
     return next();
   }
 
-  // Skip CSRF for cache routes (Reddit Strategy - read-only from cache)
+  // Skip CSRF for cache routes (read-only from cache)
   if (req.path.startsWith('/api/cache/')) {
     return next();
   }
 
   // Skip CSRF for market-data routes (public data endpoints)
   if (req.path.startsWith('/api/market-data/')) {
+    return next();
+  }
+
+  // Skip CSRF for AI routes (uses internal auth and PostgreSQL local)
+  if (req.path.startsWith('/api/ai/')) {
+    return next();
+  }
+
+  // Skip CSRF for login/register endpoints (they establish the session)
+  if (req.path === '/api/auth/login' || req.path === '/api/auth/register') {
     return next();
   }
 
@@ -407,12 +431,22 @@ if (process.env.NODE_ENV === 'production' && csrfProtection) {
     if (req.method === 'GET' || req.headers.upgrade === 'websocket') {
       return next();
     }
-    
-    // Skip CSRF for cache endpoints (Reddit Strategy - read-only)
+
+    // Skip CSRF for cache endpoints (read-only)
     if (req.path.startsWith('/api/cache/')) {
       return next();
     }
-    
+
+    // Skip CSRF for AI endpoints (uses PostgreSQL local database)
+    if (req.path.startsWith('/api/ai/')) {
+      return next();
+    }
+
+    // CRITICAL FIX: Skip CSRF for login/register endpoints (they establish the session)
+    if (req.path === '/api/auth/login' || req.path === '/api/auth/register') {
+      return next();
+    }
+
     // SECURITY FIX: Allow CSRF bypass for valid API tokens (type=api_access)
     if (req.headers.authorization?.startsWith('Bearer ')) {
       const token = req.headers.authorization.replace('Bearer ', '');
@@ -563,7 +597,11 @@ async function initializeMarketDataServices() {
     });
 
     // ROADMAP V4: Apply Supabase authentication to protected routes
-    app.use('/api/admin/**', requireAdmin);       // Admin routes require admin role
+    // Allow unauthenticated admin status check to avoid circular dependency
+    app.use((req: any, res: any, next: any) => {
+      if (req.path === '/api/admin/auth/check') return next();
+      return requireAdmin(req, res, next);
+    });
     app.use('/api/portfolio/**', requireAuth);    // Portfolio routes require authentication
     app.use('/api/watchlist/**', requireAuth);    // Watchlist routes require authentication
     
@@ -587,11 +625,13 @@ async function initializeMarketDataServices() {
     // NOTE: Enable Vite middleware in development to serve everything from one port
     if (process.env.NODE_ENV === "development" && process.env.VITE_DISABLED !== 'true') {
       console.log('Setting up Vite development server...');
-      await setupVite(app);
+      await loadViteHelpers();
+      await (setupVite as any)(app);
     } else if (process.env.SERVE_STATIC === 'true') {
       // Only serve static files if explicitly enabled (for local testing)
       console.log('🔍 Static file serving explicitly enabled');
-      serveStatic(app);
+      await loadServeStatic();
+      (serveStaticFn as any)(app);
     } else {
       console.log('📡 API-only mode: Frontend served by Vercel');
       console.log('🔗 Frontend URL:', process.env.VITE_APP_URL || 'https://alfalyzer.vercel.app');
@@ -614,7 +654,8 @@ async function initializeMarketDataServices() {
     app.use(notFoundHandler);
 
     // Setup Sentry error handler BEFORE other error middleware
-    setupSentryErrorHandler(app);
+    // Temporarily disabled - Sentry import commented out
+    // setupSentryErrorHandler(app);
 
     // Add 401 error logging middleware
     app.use(unauthorizedLoggingMiddleware);
@@ -733,6 +774,19 @@ async function initializeMarketDataServices() {
       //   console.error('❌ Failed to initialize Socket.IO:', error);
       // }
       console.log('⚠️ Socket.IO temporarily disabled for debugging');
+      
+      // Align keep-alive timeouts with proxy (NGINX) to reduce premature closes
+      try {
+        const keepAliveMs = Number(process.env.KEEPALIVE_TIMEOUT_MS || 65000);
+        const headersTimeoutMs = Number(process.env.HEADERS_TIMEOUT_MS || 66000);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (serverInstance as any).keepAliveTimeout = keepAliveMs;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (serverInstance as any).headersTimeout = headersTimeoutMs;
+        console.log(`🔧 KeepAlive configured: keepAliveTimeout=${keepAliveMs}ms headersTimeout=${headersTimeoutMs}ms`);
+      } catch (e) {
+        console.warn('⚠️ Unable to set keep-alive timeouts:', e);
+      }
       
       // SECURITY FIX: Initialize log retention policy
       logRetention.initializeLogRetention();
@@ -866,7 +920,7 @@ async function initializeMarketDataServices() {
         console.error('⚠️ WARNING: Database may exceed 500MB limit without cleanup!');
       });
       
-      // Reddit Strategy removed - using simple cache service now
+      // Cache-first strategy with auto-fill on miss
       console.log('✅ Cache simplified to single Redis layer with 60s TTL');
       
       // AGENT 5: Initialize Keep-Alive Service to prevent cold starts

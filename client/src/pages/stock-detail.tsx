@@ -8,6 +8,7 @@ import { RealtimeStockHeaderV2 } from "@/components/stock/realtime-stock-header-
 import { StockNewsFeed } from "@/components/stock/stock-news-feed";
 import { StockFinancialsChart } from "@/components/stock/stock-financials-chart";
 import { Button } from "@/components/ui/button";
+import { fetchIntrinsicValueData, normalizeIntrinsicValue } from '@/lib/intrinsic-value';
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -185,29 +186,13 @@ export default function StockDetail() {
   const isPositive = company.change >= 0;
 
   // Fetch official Intrinsic Value (cache-first, read-only)
-  const { data: officialIvResp } = useQuery({
+  const { data: officialIVData } = useQuery({
     queryKey: ["officialIV", symbol],
-    queryFn: async () => {
-      try {
-        // Try exact symbol first
-        const r1 = await import("@/lib/api").then(m => m.intrinsicValueApi.getBySymbol(symbol));
-        if (r1 && (r1 as any).data && (r1 as any).data.intrinsicValue) return r1;
-        // Fallback: canonicalize dot->hyphen (e.g., BRK.B -> BRK-B)
-        const normalized = symbol.includes('.') ? symbol.replace(/\./g, '-') : symbol;
-        if (normalized !== symbol) {
-          const r2 = await import("@/lib/api").then(m => m.intrinsicValueApi.getBySymbol(normalized));
-          return r2;
-        }
-        return r1;
-      } catch {
-        return null as any;
-      }
-    },
+    queryFn: () => fetchIntrinsicValueData(symbol),
     staleTime: 24 * 60 * 60 * 1000,
   });
 
-  const officialIVData: any = officialIvResp && (officialIvResp as any).data ? (officialIvResp as any).data : null;
-  const officialIntrinsicValue = officialIVData?.intrinsicValue ? Number(officialIVData.intrinsicValue) : null;
+  const officialIntrinsicValue = normalizeIntrinsicValue(officialIVData);
   const latestPrice = Number(realtimeQuote?.price ?? company.price ?? 0);
   const valuationDiff = officialIntrinsicValue && latestPrice
     ? ((latestPrice - officialIntrinsicValue) / officialIntrinsicValue) * 100

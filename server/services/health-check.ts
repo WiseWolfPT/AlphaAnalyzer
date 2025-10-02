@@ -3,8 +3,8 @@
  * Monitors system components and provides status endpoints
  */
 
-import { env } from '../config/env.js';
-import { supabase } from '../lib/supabase.js';
+import { env } from '../config/env';
+import { supabase } from '../lib/supabase';
 
 export interface HealthStatus {
   status: 'healthy' | 'degraded' | 'unhealthy';
@@ -60,20 +60,17 @@ export class HealthCheckService {
       }
     }
 
-    // Check Redis
+    // Check Redis (always attempt; env gate can cause false negatives)
     try {
-      if (env.REDIS_HOST && env.REDIS_PASSWORD) {
-        // Try to import and check Redis
-        const { redisCacheService } = await import('../cache/redis-cache-service.js');
-        const redisHealth = await redisCacheService.healthCheck();
-        health.services.redis = redisHealth.status === 'healthy';
-        
-        if (health.services.redis) {
-          console.log('✅ Redis health check passed');
-        }
+      const { redisCacheService } = await import('../cache/redis-cache-service');
+      const redisHealth = await redisCacheService.healthCheck();
+      console.log('🩺 Redis health check result:', redisHealth);
+      health.services.redis = redisHealth.status === 'healthy';
+      if (health.services.redis) {
+        console.log('✅ Redis health check passed');
       }
-    } catch (error) {
-      console.log('❌ Redis health check failed:', error.message);
+    } catch (error: any) {
+      console.log('❌ Redis health check failed:', error?.message || String(error));
       health.services.redis = false;
     }
 
@@ -120,7 +117,7 @@ export class HealthCheckService {
     // Add Redis details if available
     if (health.services.redis) {
       try {
-        const { redisCacheService } = await import('../cache/redis-cache-service.js');
+        const { redisCacheService } = await import('../cache/redis-cache-service');
         const stats = redisCacheService.getStats();
         details.redis = stats;
       } catch {

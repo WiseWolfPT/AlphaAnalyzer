@@ -53,6 +53,10 @@ export const SupabaseAuthProvider: React.FC<{ children: React.ReactNode }> = ({ 
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const { toast } = useToast();
 
+  // Auth toasts gating to avoid phantom notifications
+  const [hasShownWelcomeToast, setHasShownWelcomeToast] = useState(false);
+  const authenticatingRef = React.useRef(false);
+
   // Initialize authentication state
   useEffect(() => {
     const initializeAuth = async () => {
@@ -63,6 +67,13 @@ export const SupabaseAuthProvider: React.FC<{ children: React.ReactNode }> = ({ 
         if (initialSession) {
           setSession(initialSession);
           setUser(initialSession.user);
+          try {
+            // Store token in both places for compatibility
+            localStorage.setItem('auth_token', initialSession.access_token);
+            window.localStorage.setItem('auth_token', initialSession.access_token);
+          } catch (e) {
+            console.error('Failed to store auth token:', e);
+          }
           await loadUserProfile(initialSession.user.id);
         } else {
           // No session is a valid state - user is not authenticated
@@ -93,23 +104,40 @@ export const SupabaseAuthProvider: React.FC<{ children: React.ReactNode }> = ({ 
         setUser(session?.user ?? null);
         
         if (session?.user) {
+          try {
+            // Store token in both places for compatibility
+            localStorage.setItem('auth_token', session.access_token);
+            window.localStorage.setItem('auth_token', session.access_token);
+          } catch (e) {
+            console.error('Failed to store auth token:', e);
+          }
           await loadUserProfile(session.user.id);
           
           // Update last login time
           if (event === 'SIGNED_IN') {
             await updateLastLogin(session.user.id);
-            toast({
-              title: "Bem-vindo ao Alfalyzer! 🎉",
-              description: "Autenticação realizada com sucesso.",
-            });
+            // Mostrar toast apenas quando a ação foi iniciada pelo utilizador
+            if (authenticatingRef.current && !hasShownWelcomeToast) {
+              toast({
+                title: "Bem-vindo ao Alfalyzer! 🎉",
+                description: "Autenticação realizada com sucesso.",
+              });
+              setHasShownWelcomeToast(true);
+            }
+            authenticatingRef.current = false;
           }
         } else {
           setUserProfile(null);
+          try {
+            localStorage.removeItem('auth_token');
+          } catch {}
           if (event === 'SIGNED_OUT') {
             toast({
               title: "Sessão terminada",
               description: "Logout realizado com sucesso.",
             });
+            setHasShownWelcomeToast(false);
+            authenticatingRef.current = false;
           }
         }
         
@@ -249,6 +277,7 @@ export const SupabaseAuthProvider: React.FC<{ children: React.ReactNode }> = ({ 
   const signIn = async (email: string, password: string) => {
     try {
       setLoading(true);
+      authenticatingRef.current = true;
       
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
@@ -262,6 +291,16 @@ export const SupabaseAuthProvider: React.FC<{ children: React.ReactNode }> = ({ 
           variant: "destructive",
         });
         return { user: null, error };
+      }
+
+      // Store token immediately after successful sign in
+      if (data.session) {
+        try {
+          localStorage.setItem('auth_token', data.session.access_token);
+          window.localStorage.setItem('auth_token', data.session.access_token);
+        } catch (e) {
+          console.error('Failed to store auth token:', e);
+        }
       }
 
       return { user: data.user, error: null };
@@ -282,11 +321,12 @@ export const SupabaseAuthProvider: React.FC<{ children: React.ReactNode }> = ({ 
   const signInWithGoogle = async () => {
     try {
       setLoading(true);
+      authenticatingRef.current = true;
       
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/dashboard`,
+          redirectTo: `${window.location.origin}/find-stocks`,
           queryParams: {
             access_type: 'offline',
             prompt: 'consent',
@@ -328,6 +368,9 @@ export const SupabaseAuthProvider: React.FC<{ children: React.ReactNode }> = ({ 
       setUser(null);
       setSession(null);
       setUserProfile(null);
+      try {
+        localStorage.removeItem('auth_token');
+      } catch {}
 
       return { error: null };
     } catch (error: any) {

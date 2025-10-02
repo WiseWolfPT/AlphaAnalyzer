@@ -4,8 +4,17 @@
  */
 
 import { Express } from 'express';
-import * as Sentry from '@sentry/node';
-import { nodeProfilingIntegration } from '@sentry/profiling-node';
+
+// Conditional import to handle missing Sentry packages
+let Sentry: any = null;
+let nodeProfilingIntegration: any = null;
+
+try {
+  Sentry = require('@sentry/node');
+  nodeProfilingIntegration = require('@sentry/profiling-node').nodeProfilingIntegration;
+} catch (error) {
+  console.log('Sentry packages not installed - using stub implementation');
+}
 
 // Configuration
 const SENTRY_DSN = process.env.SENTRY_DSN;
@@ -16,6 +25,12 @@ const RELEASE = process.env.APP_VERSION || '1.0.0';
 let sentryInitialized = false;
 
 export function initializeSentry() {
+  // Check if Sentry is available
+  if (!Sentry) {
+    console.log('Sentry not available - error monitoring disabled.');
+    return;
+  }
+
   // Only initialize Sentry when DSN is provided
   if (!SENTRY_DSN) {
     console.warn('Sentry DSN not provided. Error monitoring disabled.');
@@ -97,10 +112,10 @@ export function initializeSentry() {
 
 // Express middleware integration
 export function setupSentryMiddleware(app: Express) {
-  if (!sentryInitialized) {
+  if (!Sentry || !sentryInitialized) {
     return;
   }
-  
+
   // Check if new Sentry v10 methods exist, otherwise skip
   if (typeof Sentry.requestHandler !== 'function') {
     console.warn('Sentry middleware functions not available - skipping setup');
@@ -117,10 +132,10 @@ export function setupSentryMiddleware(app: Express) {
 }
 
 export function setupSentryErrorHandler(app: Express) {
-  if (!sentryInitialized) {
+  if (!Sentry || !sentryInitialized) {
     return;
   }
-  
+
   // Check if new Sentry v10 method exists
   if (typeof Sentry.setupExpressErrorHandler !== 'function') {
     console.warn('Sentry error handler not available - skipping setup');
@@ -134,7 +149,7 @@ export function setupSentryErrorHandler(app: Express) {
 
 // Custom error reporting
 export function reportError(error: Error, context?: Record<string, any>, user?: { id: string; email?: string }) {
-  if (!sentryInitialized) {
+  if (!Sentry || !sentryInitialized) {
     console.error('Sentry error:', error);
     return;
   }

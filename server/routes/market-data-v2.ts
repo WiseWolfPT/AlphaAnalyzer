@@ -1,8 +1,6 @@
 import { Router, Request, Response } from 'express';
 import { getUnifiedAPIService } from '../services/unified-api';
 import { getQuotaTracker } from '../services/quota';
-import { FinnhubProvider } from '../services/unified-api/providers/finnhub.provider';
-import { TwelveDataProvider } from '../services/unified-api/providers/twelve-data.provider';
 import { FMPProvider } from '../services/unified-api/providers/fmp.provider';
 import { AlphaVantageProvider } from '../services/unified-api/providers/alpha-vantage.provider';
 import { marketDataRateLimiters } from '../middleware/rate-limit';
@@ -20,10 +18,8 @@ const quotaTracker = getQuotaTracker();
   try {
     // Initialize all providers in priority order
     const providers = [
-      new FinnhubProvider(),      // Priority 1
-      new TwelveDataProvider(),   // Priority 2
-      new FMPProvider(),          // Priority 3
-      new AlphaVantageProvider()  // Priority 4 (backup)
+      new FMPProvider(),          // Primary
+      new AlphaVantageProvider()  // Fallback
     ];
     
     await unifiedAPI.initialize(providers);

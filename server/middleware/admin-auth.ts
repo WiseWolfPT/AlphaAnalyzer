@@ -161,7 +161,7 @@ export const adminRateLimit = () => {
     const key = `${req.ip}-admin`;
     const now = Date.now();
     const windowMs = 60 * 1000; // 1 minute window
-    const maxAttempts = 30; // 30 admin actions per minute
+    const maxAttempts = 10; // Aggressive limit: 10 admin actions per minute
 
     const userAttempts = attempts.get(key) || { count: 0, lastAttempt: 0 };
 

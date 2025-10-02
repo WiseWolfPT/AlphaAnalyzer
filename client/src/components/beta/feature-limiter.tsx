@@ -3,7 +3,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Lock, Crown, Users, TrendingUp } from 'lucide-react';
-import { useAuth } from '@/contexts/temp-auth';
+import { useSupabaseAuth } from '@/contexts/supabase-auth-context';
 
 interface FeatureLimiterProps {
   children: ReactNode;
@@ -45,9 +45,13 @@ export function FeatureLimiter({
   requiredTier, 
   className 
 }: FeatureLimiterProps) {
-  const { user } = useAuth();
+  const { user, userProfile } = useSupabaseAuth();
   // Simplified for now - treat all users as free tier
-  const isSubscribed = () => false;
+  const isSubscribed = () => {
+    if (!user) return false;
+    const tier = userProfile?.subscription_tier?.toLowerCase();
+    return tier === 'pro' || tier === 'premium';
+  };
   const config = featureConfig[feature];
   const tier = requiredTier || config.tier;
   

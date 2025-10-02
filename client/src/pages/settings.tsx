@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
 import { MainLayout } from "@/components/layout/main-layout";
 import { Button } from "@/components/ui/button";
@@ -28,21 +28,27 @@ import {
   Database,
   Smartphone
 } from "lucide-react";
-import { useAuth } from "@/contexts/temp-auth";
+import { useSupabaseAuth } from "@/contexts/supabase-auth-context";
 import { useTheme } from "@/hooks/use-theme";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 
 export default function Settings() {
-  const { user, signOut } = useAuth();
+  const { user, userProfile } = useSupabaseAuth();
   const { theme, setTheme } = useTheme();
   const { toast } = useToast();
   const [, setLocation] = useLocation();
+  const displayName =
+    userProfile?.name ||
+    (typeof user?.user_metadata?.name === 'string' ? user.user_metadata.name : undefined) ||
+    (user?.email ? user.email.split('@')[0] : null) ||
+    "António Francisco";
+  const emailAddress = user?.email || "alcateiafinanceirapt@gmail.com";
   
   // Form states
   const [profileData, setProfileData] = useState({
-    name: user?.name || "António Francisco",
-    email: user?.email || "alcateiafinanceirapt@gmail.com",
+    name: displayName,
+    email: emailAddress,
     timezone: "Europe/Lisbon",
     language: "pt",
     currency: "EUR"
@@ -63,6 +69,14 @@ export default function Settings() {
     sharePortfolio: false,
     analyticsOptOut: false
   });
+
+  useEffect(() => {
+    setProfileData((prev) => ({
+      ...prev,
+      name: displayName,
+      email: emailAddress,
+    }));
+  }, [displayName, emailAddress]);
 
   const handleSaveProfile = () => {
     toast({
@@ -111,7 +125,7 @@ export default function Settings() {
           <div className="flex items-center space-x-2">
             <Badge variant="outline" className="text-xs">
               <Crown className="h-3 w-3 mr-1" />
-              Pro Trial
+              {(userProfile?.subscription_tier || 'free').toUpperCase()} Plan
             </Badge>
           </div>
         </div>

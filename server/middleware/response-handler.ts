@@ -11,6 +11,7 @@
 import { Request, Response, NextFunction } from 'express';
 import onFinished from 'on-finished';
 import log from '../lib/logger';
+import { apiUsageTracker } from '../services/api-usage-tracker';
 
 // Extend Express Request/Response types for our custom properties
 declare module 'express-serve-static-core' {
@@ -168,6 +169,12 @@ export const centralizedResponseHandler = (req: Request, res: Response, next: Ne
       authStatus: res.locals.authStatus
     };
     
+    // Fire-and-forget API usage tracking (non-blocking)
+    try {
+      // We intentionally don't await to avoid adding latency
+      void apiUsageTracker.trackRequest(req as any, res as any, responseTime);
+    } catch {}
+
     // Log based on response status and context
     if (res.statusCode >= 500) {
       log.error('🚨 Server Error Response', metrics);

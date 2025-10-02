@@ -61,7 +61,7 @@ export default function AdvancedCharts() {
       setError('Dados sendo atualizados... Recarregue em 1 minuto');
       console.error('Error fetching stock data:', err);
       
-      // Show cache miss message - data is being updated via Reddit Strategy
+      // Show cache miss message - data is being updated via cache-first strategy
       setTimeout(() => {
         if (symbol) {
           fetchStockData(symbol);
@@ -85,7 +85,7 @@ export default function AdvancedCharts() {
             </p>
             <div className="mt-4 flex items-center justify-center gap-2 text-xs text-muted-foreground">
               <Wifi className="w-4 h-4" />
-              <span>Connected to Reddit Strategy cache system</span>
+              <span>Connected to cache-first system</span>
             </div>
           </div>
         </div>
@@ -108,7 +108,7 @@ export default function AdvancedCharts() {
             <div className="mb-6 p-4 bg-secondary/50 rounded-lg">
               <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground mb-2">
                 <Activity className="w-4 h-4" />
-                <span>Reddit Strategy Active</span>
+                <span>Cache Strategy Active</span>
               </div>
               <p className="text-xs text-muted-foreground">
                 Data updates happen in the background every few minutes

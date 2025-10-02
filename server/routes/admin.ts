@@ -7,20 +7,20 @@ import express from 'express';
 import { supabaseAdmin } from '../lib/supabase-admin';
 import { getUnifiedAPIService } from '../services/unified-api';
 import { db } from '../lib/supabase-admin';
-import { asyncHandler, createAuthenticationError, createAuthorizationError } from '../middleware/error-handler';
-import { requireAdmin, adminRateLimit } from '../middleware/admin-auth';
+import { requireAdmin as requireAdminSupabase } from '../middleware/supabase-auth';
+import { adminRateLimit } from '../middleware/admin-auth';
 import { cronManager } from '../services/cron/cron-manager';
 import { performanceMonitor } from '../services/monitoring/performance-monitor';
 import { keepAliveService } from '../services/keep-alive';
+import { transcriptsPgRepo } from '../repositories/transcripts-pg';
+import { logAdminAction } from '../utils/admin-audit';
+import { EventCategory, AuditSeverity } from '../security/compliance-audit';
 
 // Import admin sub-routes
 import authRoutes from './admin/auth';
 import transcriptRoutes from './admin/transcripts';
 
 const router = express.Router();
-
-// Apply rate limiting to all admin routes
-router.use(adminRateLimit());
 
 // Check if Supabase is configured
 const checkSupabase = (req: express.Request, res: express.Response, next: express.NextFunction) => {
@@ -34,18 +34,26 @@ const checkSupabase = (req: express.Request, res: express.Response, next: expres
   next();
 };
 
+// Apply rate limiting to all admin routes
+router.use(adminRateLimit());
+
 // Apply Supabase check to all routes that need it
 router.use(checkSupabase);
 
-// Mount admin sub-routes
+// Auth routes keep their own admin handling
 router.use('/auth', authRoutes);
+
+// Require admin for everything below this line
+router.use(requireAdminSupabase as any);
+
+// Mount admin sub-routes that require permissions
 router.use('/transcripts', transcriptRoutes);
 
 /**
  * GET /api/admin/system-stats
  * Retorna estatísticas gerais do sistema
  */
-router.get('/system-stats', requireAdmin(), async (req, res) => {
+router.get('/system-stats', async (req, res) => {
   try {
     console.log('📊 Coletando estatísticas reais do sistema...');
 
@@ -65,19 +73,35 @@ router.get('/system-stats', requireAdmin(), async (req, res) => {
       user.last_sign_in_at && new Date(user.last_sign_in_at) > oneDayAgo
     ).length;
 
+    // Function to get PostgreSQL transcript count
+    const getTranscriptCount = async (): Promise<number> => {
+      try {
+        if (process.env.PGHOST) {
+          const stats = await transcriptsPgRepo.getStats();
+          return stats.total;
+        }
+        // Fallback to Supabase if PostgreSQL not configured
+        const result = await supabaseAdmin.from('transcripts').select('id', { count: 'exact', head: true });
+        return result.count || 0;
+      } catch (error) {
+        console.error('Error getting transcript count:', error);
+        return 0;
+      }
+    };
+
     // Buscar estatísticas do banco de dados
     const [portfoliosCount, watchlistsCount, transactionsCount, transcriptsCount] = await Promise.all([
       supabaseAdmin.from('portfolios').select('id', { count: 'exact', head: true }),
       supabaseAdmin.from('watchlists').select('id', { count: 'exact', head: true }),
       supabaseAdmin.from('transactions').select('id', { count: 'exact', head: true }),
-      supabaseAdmin.from('transcripts').select('id', { count: 'exact', head: true })
+      getTranscriptCount() // Use PostgreSQL for transcripts
     ]);
 
-    const totalRecords = 
-      (portfoliosCount.count || 0) + 
-      (watchlistsCount.count || 0) + 
-      (transactionsCount.count || 0) + 
-      (transcriptsCount.count || 0);
+    const totalRecords =
+      (portfoliosCount.count || 0) +
+      (watchlistsCount.count || 0) +
+      (transactionsCount.count || 0) +
+      transcriptsCount;
 
     // Estatísticas de API (simulação realística até implementar tracking real)
     const apiQuotaUsed = {
@@ -121,7 +145,7 @@ router.get('/system-stats', requireAdmin(), async (req, res) => {
       portfolios: portfoliosCount.count || 0,
       watchlists: watchlistsCount.count || 0,
       transactions: transactionsCount.count || 0,
-      transcripts: transcriptsCount.count || 0,
+      transcripts: transcriptsCount || 0,
       lastBackup: new Date(Date.now() - 86400000).toISOString(),
       diskUsage: '2.4 GB' // TODO: Implementar cálculo real
     };
@@ -135,10 +159,37 @@ router.get('/system-stats', requireAdmin(), async (req, res) => {
     };
 
     console.log('✅ Estatísticas reais coletadas:', stats);
+
+    await logAdminAction({
+      req,
+      action: 'admin_view_system_stats',
+      resource: 'admin:system_stats',
+      success: true,
+      category: EventCategory.SYSTEM_ACCESS,
+      severity: AuditSeverity.LOW,
+      details: {
+        totalUsers,
+        activeUsers,
+      },
+    });
+
     res.json(stats);
 
   } catch (error) {
     console.error('❌ Erro ao coletar estatísticas:', error);
+
+    await logAdminAction({
+      req,
+      action: 'admin_view_system_stats',
+      resource: 'admin:system_stats',
+      success: false,
+      category: EventCategory.SYSTEM_ACCESS,
+      severity: AuditSeverity.MEDIUM,
+      details: {
+        message: error instanceof Error ? error.message : 'unknown_error',
+      },
+    });
+
     res.status(500).json({ 
       error: 'Erro interno do servidor',
       details: error instanceof Error ? error.message : 'Erro desconhecido'
@@ -150,7 +201,7 @@ router.get('/system-stats', requireAdmin(), async (req, res) => {
  * POST /api/admin/trigger-job
  * Executa job manual para um símbolo específico
  */
-router.post('/trigger-job', requireAdmin(), async (req, res) => {
+router.post('/trigger-job', async (req, res) => {
   try {
     const { symbol } = req.body;
 
@@ -280,10 +331,38 @@ router.post('/trigger-job', requireAdmin(), async (req, res) => {
     };
 
     console.log(`✅ Job manual para ${upperSymbol} finalizado em ${duration}ms`);
+
+    await logAdminAction({
+      req,
+      action: 'admin_manual_job',
+      resource: `job:${upperSymbol}`,
+      success: jobStatus === 'success',
+      category: EventCategory.CONFIGURATION_CHANGE,
+      severity: jobStatus === 'success' ? AuditSeverity.MEDIUM : AuditSeverity.HIGH,
+      details: {
+        duration,
+        jobStatus,
+        actions,
+      },
+    });
+
     res.json(jobResult);
 
   } catch (error) {
     console.error('❌ Erro ao executar job manual:', error);
+
+    await logAdminAction({
+      req,
+      action: 'admin_manual_job',
+      resource: `job:${req.body?.symbol ?? 'unknown'}`,
+      success: false,
+      category: EventCategory.CONFIGURATION_CHANGE,
+      severity: AuditSeverity.HIGH,
+      details: {
+        message: error instanceof Error ? error.message : 'unknown_error',
+      },
+    });
+
     res.status(500).json({ 
       error: 'Erro ao executar job manual',
       details: error instanceof Error ? error.message : 'Erro desconhecido'
@@ -295,7 +374,7 @@ router.post('/trigger-job', requireAdmin(), async (req, res) => {
  * GET /api/admin/users
  * Lista todos os usuários do sistema
  */
-router.get('/users', requireAdmin(), async (req, res) => {
+router.get('/users', async (req, res) => {
   try {
     console.log('👥 Carregando lista de usuários do Supabase Auth...');
 
@@ -355,10 +434,34 @@ router.get('/users', requireAdmin(), async (req, res) => {
     );
 
     console.log(`✅ ${usersWithData.length} usuários carregados do Supabase`);
+
+    await logAdminAction({
+      req,
+      action: 'admin_list_users',
+      resource: 'admin:users',
+      success: true,
+      category: EventCategory.DATA_ACCESS,
+      severity: AuditSeverity.MEDIUM,
+      details: { returned: usersWithData.length },
+    });
+
     res.json(usersWithData);
 
   } catch (error) {
     console.error('❌ Erro ao carregar usuários:', error);
+
+    await logAdminAction({
+      req,
+      action: 'admin_list_users',
+      resource: 'admin:users',
+      success: false,
+      category: EventCategory.DATA_ACCESS,
+      severity: AuditSeverity.MEDIUM,
+      details: {
+        message: error instanceof Error ? error.message : 'unknown_error',
+      },
+    });
+
     res.status(500).json({ 
       error: 'Erro ao carregar usuários',
       details: error instanceof Error ? error.message : 'Erro desconhecido'
@@ -370,7 +473,7 @@ router.get('/users', requireAdmin(), async (req, res) => {
  * GET /api/admin/users/stats
  * Estatísticas gerais de usuários
  */
-router.get('/users/stats', requireAdmin(), async (req, res) => {
+router.get('/users/stats', async (req, res) => {
   try {
     console.log('📈 Coletando estatísticas reais de usuários...');
 
@@ -413,10 +516,34 @@ router.get('/users/stats', requireAdmin(), async (req, res) => {
     };
 
     console.log('✅ Estatísticas reais coletadas:', stats);
+
+    await logAdminAction({
+      req,
+      action: 'admin_view_user_stats',
+      resource: 'admin:users_stats',
+      success: true,
+      category: EventCategory.DATA_ACCESS,
+      severity: AuditSeverity.LOW,
+      details: stats,
+    });
+
     res.json(stats);
 
   } catch (error) {
     console.error('❌ Erro ao coletar estatísticas de usuários:', error);
+
+    await logAdminAction({
+      req,
+      action: 'admin_view_user_stats',
+      resource: 'admin:users_stats',
+      success: false,
+      category: EventCategory.DATA_ACCESS,
+      severity: AuditSeverity.MEDIUM,
+      details: {
+        message: error instanceof Error ? error.message : 'unknown_error',
+      },
+    });
+
     res.status(500).json({ 
       error: 'Erro ao coletar estatísticas',
       details: error instanceof Error ? error.message : 'Erro desconhecido'
@@ -428,12 +555,21 @@ router.get('/users/stats', requireAdmin(), async (req, res) => {
  * PATCH /api/admin/users/:id/status
  * Atualiza status de um usuário
  */
-router.patch('/users/:id/status', requireAdmin(), async (req, res) => {
+router.patch('/users/:id/status', async (req, res) => {
   try {
     const { id } = req.params;
     const { status } = req.body;
 
     if (!['active', 'banned', 'inactive'].includes(status)) {
+      await logAdminAction({
+        req,
+        action: 'admin_update_user_status',
+        resource: `user:${id}`,
+        success: false,
+        category: EventCategory.CONFIGURATION_CHANGE,
+        severity: AuditSeverity.MEDIUM,
+        details: { reason: 'invalid_status', status },
+      });
       return res.status(400).json({ error: 'Status inválido' });
     }
 
@@ -474,10 +610,33 @@ router.patch('/users/:id/status', requireAdmin(), async (req, res) => {
       updated_at: new Date().toISOString()
     };
 
+    await logAdminAction({
+      req,
+      action: 'admin_update_user_status',
+      resource: `user:${id}`,
+      success: true,
+      category: EventCategory.CONFIGURATION_CHANGE,
+      severity: AuditSeverity.MEDIUM,
+      details: { status },
+    });
+
     res.json(result);
 
   } catch (error) {
     console.error('❌ Erro ao atualizar status do usuário:', error);
+
+    await logAdminAction({
+      req,
+      action: 'admin_update_user_status',
+      resource: `user:${req.params.id}`,
+      success: false,
+      category: EventCategory.CONFIGURATION_CHANGE,
+      severity: AuditSeverity.HIGH,
+      details: {
+        message: error instanceof Error ? error.message : 'unknown_error',
+      },
+    });
+
     res.status(500).json({ 
       error: 'Erro ao atualizar status',
       details: error instanceof Error ? error.message : 'Erro desconhecido'
@@ -489,7 +648,7 @@ router.patch('/users/:id/status', requireAdmin(), async (req, res) => {
  * DELETE /api/admin/users/:id
  * Remove um usuário do sistema
  */
-router.delete('/users/:id', requireAdmin(), async (req, res) => {
+router.delete('/users/:id', async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -507,10 +666,31 @@ router.delete('/users/:id', requireAdmin(), async (req, res) => {
     // ou podem ser mantidos para auditoria dependendo da configuração RLS
 
     console.log(`✅ Usuário ${id} removido com sucesso do Auth`);
+    await logAdminAction({
+      req,
+      action: 'admin_delete_user',
+      resource: `user:${id}`,
+      success: true,
+      category: EventCategory.DATA_MODIFICATION,
+      severity: AuditSeverity.HIGH,
+    });
+
     res.json({ message: 'Usuário removido com sucesso' });
 
   } catch (error) {
     console.error('❌ Erro ao remover usuário:', error);
+
+    await logAdminAction({
+      req,
+      action: 'admin_delete_user',
+      resource: `user:${req.params.id}`,
+      success: false,
+      category: EventCategory.DATA_MODIFICATION,
+      severity: AuditSeverity.HIGH,
+      details: {
+        message: error instanceof Error ? error.message : 'unknown_error',
+      },
+    });
     res.status(500).json({ 
       error: 'Erro ao remover usuário',
       details: error instanceof Error ? error.message : 'Erro desconhecido'
@@ -522,7 +702,7 @@ router.delete('/users/:id', requireAdmin(), async (req, res) => {
  * GET /api/admin/api-quotas
  * Monitoramento detalhado de quotas das APIs
  */
-router.get('/api-quotas', requireAdmin(), async (req, res) => {
+router.get('/api-quotas', async (req, res) => {
   try {
     console.log('📊 Coletando informações reais de quotas das APIs...');
 
@@ -591,10 +771,34 @@ router.get('/api-quotas', requireAdmin(), async (req, res) => {
     };
 
     console.log('✅ Informações de quotas coletadas');
+
+    await logAdminAction({
+      req,
+      action: 'admin_view_api_quotas',
+      resource: 'admin:api_quotas',
+      success: true,
+      category: EventCategory.DATA_ACCESS,
+      severity: AuditSeverity.LOW,
+      details: { usagePercentage: response.summary.usagePercentage },
+    });
+
     res.json(response);
 
   } catch (error) {
     console.error('❌ Erro ao coletar quotas das APIs:', error);
+
+    await logAdminAction({
+      req,
+      action: 'admin_view_api_quotas',
+      resource: 'admin:api_quotas',
+      success: false,
+      category: EventCategory.DATA_ACCESS,
+      severity: AuditSeverity.MEDIUM,
+      details: {
+        message: error instanceof Error ? error.message : 'unknown_error',
+      },
+    });
+
     res.status(500).json({ 
       error: 'Erro ao coletar quotas',
       details: error instanceof Error ? error.message : 'Erro desconhecido'
@@ -606,7 +810,7 @@ router.get('/api-quotas', requireAdmin(), async (req, res) => {
  * GET /api/admin/performance-metrics
  * Métricas detalhadas de performance do sistema
  */
-router.get('/performance-metrics', requireAdmin(), async (req, res) => {
+router.get('/performance-metrics', async (req, res) => {
   try {
     console.log('📊 Coletando métricas de performance...');
 
@@ -702,6 +906,19 @@ router.get('/performance-metrics', requireAdmin(), async (req, res) => {
       timestamp: new Date().toISOString()
     };
 
+    await logAdminAction({
+      req,
+      action: 'admin_view_performance_metrics',
+      resource: 'admin:performance_metrics',
+      success: true,
+      category: EventCategory.DATA_ACCESS,
+      severity: AuditSeverity.LOW,
+      details: {
+        providers: performanceData.apiProviders.length,
+        cacheHitRate: performanceData.cache.hitRate,
+      },
+    });
+
     res.json({
       success: true,
       data: performanceData,
@@ -710,6 +927,19 @@ router.get('/performance-metrics', requireAdmin(), async (req, res) => {
 
   } catch (error) {
     console.error('❌ Erro ao coletar métricas de performance:', error);
+
+    await logAdminAction({
+      req,
+      action: 'admin_view_performance_metrics',
+      resource: 'admin:performance_metrics',
+      success: false,
+      category: EventCategory.DATA_ACCESS,
+      severity: AuditSeverity.MEDIUM,
+      details: {
+        message: error instanceof Error ? error.message : 'unknown_error',
+      },
+    });
+
     res.status(500).json({
       success: false,
       error: 'Erro ao coletar métricas de performance',
@@ -723,12 +953,34 @@ router.get('/performance-metrics', requireAdmin(), async (req, res) => {
  * GET /api/admin/cron/status
  * Get status of all cron jobs
  */
-router.get('/cron/status', requireAdmin(), async (req, res) => {
+router.get('/cron/status', async (req, res) => {
   try {
     const status = cronManager.getStatus();
+    await logAdminAction({
+      req,
+      action: 'admin_view_cron_status',
+      resource: 'admin:cron_status',
+      success: true,
+      category: EventCategory.SYSTEM_ACCESS,
+      severity: AuditSeverity.LOW,
+      details: { jobs: Object.keys(status.jobs || {}).length },
+    });
+
     res.json(status);
   } catch (error) {
     console.error('❌ Error getting cron status:', error);
+
+    await logAdminAction({
+      req,
+      action: 'admin_view_cron_status',
+      resource: 'admin:cron_status',
+      success: false,
+      category: EventCategory.SYSTEM_ACCESS,
+      severity: AuditSeverity.MEDIUM,
+      details: {
+        message: error instanceof Error ? error.message : 'unknown_error',
+      },
+    });
     res.status(500).json({
       error: 'Failed to get cron status',
       details: error instanceof Error ? error.message : 'Unknown error'
@@ -740,13 +992,22 @@ router.get('/cron/status', requireAdmin(), async (req, res) => {
  * POST /api/admin/cron/trigger/:jobName
  * Manually trigger a specific cron job
  */
-router.post('/cron/trigger/:jobName', requireAdmin(), async (req, res) => {
+router.post('/cron/trigger/:jobName', async (req, res) => {
   try {
     const { jobName } = req.params;
     
     console.log(`🔄 Manually triggering cron job: ${jobName}`);
     await cronManager.triggerJob(jobName);
     
+    await logAdminAction({
+      req,
+      action: 'admin_trigger_cron_job',
+      resource: `cron:${jobName}`,
+      success: true,
+      category: EventCategory.CONFIGURATION_CHANGE,
+      severity: AuditSeverity.MEDIUM,
+    });
+
     res.json({
       success: true,
       message: `Job ${jobName} triggered successfully`,
@@ -754,6 +1015,18 @@ router.post('/cron/trigger/:jobName', requireAdmin(), async (req, res) => {
     });
   } catch (error) {
     console.error(`❌ Error triggering cron job ${req.params.jobName}:`, error);
+
+    await logAdminAction({
+      req,
+      action: 'admin_trigger_cron_job',
+      resource: `cron:${req.params.jobName}`,
+      success: false,
+      category: EventCategory.CONFIGURATION_CHANGE,
+      severity: AuditSeverity.HIGH,
+      details: {
+        message: error instanceof Error ? error.message : 'unknown_error',
+      },
+    });
     res.status(500).json({
       error: 'Failed to trigger cron job',
       details: error instanceof Error ? error.message : 'Unknown error'
@@ -765,7 +1038,7 @@ router.post('/cron/trigger/:jobName', requireAdmin(), async (req, res) => {
  * GET /api/admin/monitoring/health
  * Get comprehensive health status
  */
-router.get('/monitoring/health', requireAdmin(), async (req, res) => {
+router.get('/monitoring/health', async (req, res) => {
   try {
     const health = performanceMonitor.getHealthStatus();
     const keepAliveMetrics = keepAliveService.getMetrics();
@@ -793,7 +1066,7 @@ router.get('/monitoring/health', requireAdmin(), async (req, res) => {
  * GET /api/admin/monitoring/performance
  * Get detailed performance metrics
  */
-router.get('/monitoring/performance', requireAdmin(), async (req, res) => {
+router.get('/monitoring/performance', async (req, res) => {
   try {
     const performanceStats = performanceMonitor.getStats();
     res.json(performanceStats);
@@ -810,9 +1083,18 @@ router.get('/monitoring/performance', requireAdmin(), async (req, res) => {
  * POST /api/admin/monitoring/reset
  * Reset performance metrics (for testing)
  */
-router.post('/monitoring/reset', requireAdmin(), async (req, res) => {
+router.post('/monitoring/reset', async (req, res) => {
   try {
     performanceMonitor.reset();
+    await logAdminAction({
+      req,
+      action: 'admin_reset_monitoring',
+      resource: 'admin:monitoring_metrics',
+      success: true,
+      category: EventCategory.CONFIGURATION_CHANGE,
+      severity: AuditSeverity.MEDIUM,
+    });
+
     res.json({
       success: true,
       message: 'Performance metrics reset',
@@ -820,6 +1102,18 @@ router.post('/monitoring/reset', requireAdmin(), async (req, res) => {
     });
   } catch (error) {
     console.error('❌ Error resetting performance metrics:', error);
+
+    await logAdminAction({
+      req,
+      action: 'admin_reset_monitoring',
+      resource: 'admin:monitoring_metrics',
+      success: false,
+      category: EventCategory.CONFIGURATION_CHANGE,
+      severity: AuditSeverity.HIGH,
+      details: {
+        message: error instanceof Error ? error.message : 'unknown_error',
+      },
+    });
     res.status(500).json({
       error: 'Failed to reset metrics',
       details: error instanceof Error ? error.message : 'Unknown error'

@@ -20,10 +20,8 @@ Financial analysis platform with real-time market data, earnings transcripts, an
 - Real-time quotes updating
 
 ⚠️ **Pending Features:**
-- API endpoint /api/market-data/batch needs protection
-- Admin panel not implemented
-- Transcripts feature missing
-- Dashboard navigation improvements
+- Observabilidade e SLOs (scripts de verificação rápida – Fase 6)
+- Revisão final de segurança/RLS e documentação (Fases 7-8)
 
 ## TECH STACK
 
@@ -33,6 +31,140 @@ Financial analysis platform with real-time market data, earnings transcripts, an
 **Cache:** Redis 6.2+ (256MB configured)
 **APIs:** Alpha Vantage, Finnhub, FMP, Twelve Data, Polygon  
 **Deployment:** Hetzner CX22 (€3.79/mo) - Frontend e Backend no mesmo servidor com PM2
+
+## MONITORING & SLOs
+
+SLOs (alvo):
+- Latência P95: < 200ms (API)
+- Erros 5xx: < 0.1%
+- Cache hit rate: > 80%
+- Uptime: > 99.9%
+
+Scripts (funcionam com localhost:3001 e produção):
+- `scripts/monitoring/check-health.sh [URL]`
+  - Verifica `/api/health` e mede latência.
+- `scripts/monitoring/check-cache.sh [URL]`
+  - Verifica `/api/cache/status` e calcula hit rate.
+- `scripts/monitoring/check-batch.sh [URL]`
+  - Faz POST em `/api/market-data/quotes/batch` (usa `MARKET_DATA_API_KEY` se definido).
+- `scripts/monitoring/check-slo.sh [URL]`
+  - Executa amostragem, calcula P95, taxa de erro 5xx, hit rate, e uptime (rolling).
+- `scripts/monitoring/monitor-all.sh [URL]`
+  - Executa todos os checks acima de forma sequencial.
+
+Uso (local):
+```bash
+export TARGET_URL=http://localhost:3001
+scripts/monitoring/monitor-all.sh
+```
+
+Uso (produção):
+```bash
+export TARGET_URL=https://128.140.45.28.sslip.io
+export MARKET_DATA_API_KEY="<sua_api_key>"  # necessário para batch
+scripts/monitoring/monitor-all.sh
+```
+
+Logs:
+- Os scripts gravam logs em `/var/log/alfalyzer/monitoring/` sempre que possível.
+- Caso sem permissões, usam `scripts/monitoring/logs/` no repositório.
+
+Cron (produção):
+- `*/15 * * * * cd '/home/teste 1' && TARGET_URL=https://128.140.45.28.sslip.io scripts/monitoring/monitor-all.sh >> /var/log/alfalyzer/monitoring/cron.log 2>&1`
+
+## OPERAÇÃO / ENV (Pacing & TTL)
+
+Parâmetros (podem ser ajustados sem alterar código; defaults mantêm comportamento atual):
+
+- Warming / Pacing
+  - `HOT_SET_SIZE` (default: 0 = usa todos)
+  - `HOT_SET_REFRESH_SECONDS` (default: 30) — worker de preços
+  - `WARM_SET_SIZE` (default: 0 = desativado)
+  - `WARM_SET_REFRESH_SECONDS` (default: 0 = desativado)
+  - `QUOTES_CALLS_PER_MIN_BUDGET` (default: 0 = desativado) — token bucket por minuto
+
+- TTLs de cache
+  - `TTL_QUOTE_SECONDS` (default: 60)
+  - `TTL_HISTORICAL_SECONDS` (default: 7200)
+  - `TTL_FUNDAMENTALS_SECONDS` (default: 3600)
+  - `TTL_PROFILE_SECONDS` (default: 86400)
+  - `TTL_MARKET_STATUS_SECONDS` (default: 300)
+  - `TTL_DEFAULT_SECONDS` (default: 3600)
+
+Notas:
+- Ativar budgets e warm set é opt‑in: definir os ENV acima quando quisermos aplicar segmentação/pacing.
+- UNIVERSE_SOURCE (`pg`/`env`): gerir universo via PG (tabela `stocks`) ou fallback por ENV.
+
+## DEPLOY & ROLLBACK
+
+Comandos principais:
+- Deploy frontend: `npm run deploy` (build + assets + restart)
+- Deploy completo (frontend + server): `npm run deploy:full`
+- Restart PM2: `npm run deploy:restart`
+- Rollback (servidor): `scripts/rollback/rollback.sh [ref]`
+  - Ex.: `scripts/rollback/rollback.sh HEAD~1` ou `scripts/rollback/rollback.sh <tag>`
+
+Pós‑deploy:
+- Verificar health e endpoints com scripts de monitoring (acima)
+- Ver logs em `/var/log/alfalyzer/monitoring/cron.log`
+
+### Deployment Troubleshooting (2025‑10‑01)
+
+- Force rsync quando o caminho remoto tem espaço:
+  ```bash
+  rsync --archive --verbose --delete --checksum --progress \
+    dist/server/ root@128.140.45.28:'/home/teste\ 1/dist/server/'
+  ```
+- Confirmar binário remoto atualizado:
+  ```bash
+  ssh root@128.140.45.28 "grep -RIn 'MISSING_OR_INVALID_API_KEY' '/home/teste 1/dist/server/index.cjs'"
+  ssh root@128.140.45.28 "md5sum '/home/teste 1/dist/server/index.cjs'"
+  ```
+- Reiniciar com env atualizado (app + worker):
+  ```bash
+  ssh root@128.140.45.28 "pm2 restart alfalyzer --update-env && pm2 restart price-worker --update-env && pm2 save"
+  ```
+- Validações de segurança e rate limits:
+  ```bash
+  # 401 sem key
+  curl -i 'https://128.140.45.28.sslip.io/api/market-data/quotes/batch?symbols=AAPL,MSFT'
+  # 200 com key
+  curl -i -H "X-API-Key: $MARKET_DATA_API_KEY" \
+    'https://128.140.45.28.sslip.io/api/market-data/quotes/batch?symbols=AAPL,MSFT'
+  # rate limit header=100
+  curl -i 'https://128.140.45.28.sslip.io/api/market-data/quote/AAPL' | grep X-RateLimit-Limit
+  ```
+
+## HYBRID DB (Phase 9)
+
+- Configuração PG em produção (`.env.production`):
+  - `PGHOST=127.0.0.1`
+  - `PGPORT=5432`
+  - `PGUSER=alfalyzer`
+  - `PGPASSWORD=********`
+  - `PGDATABASE=alfalyzer_db`
+- Verificação de conectividade:
+  - Local: `node scripts/monitoring/check-pg.mjs` (usa PG* envs)
+  - Servidor: `ssh root@128.140.45.28 "cd '/home/teste 1' && PGHOST=127.0.0.1 PGPORT=5432 PGUSER=... PGPASSWORD=... PGDATABASE=alfalyzer_db node scripts/monitoring/check-pg.mjs"`
+- Transcripts Worker: usa PG se `PGHOST` estiver definido; caso contrário, fallback a Supabase Admin.
+- Tabela `stocks`: usada para o universo de símbolos; verifique se existe ou crie conforme migrações de dados.
+
+## SECURITY & RLS (Phase 7)
+
+- Logs: PII redaction habilitado no backend (e-mails/tokens mascarados em `server/lib/logger.ts`).
+- RLS: ✅ ATIVO em 9 tabelas Supabase (portfolios, watchlists, profiles, users, alerts). Ver `docs/RLS_CHECKLIST.md` para detalhes.
+
+### Monitorização Contínua (Cron)
+- **Frequência:** A cada 15 minutos
+- **Logs consolidados:** `/var/log/alfalyzer/monitoring/cron.log`
+- **Métricas SLO:** `/var/log/alfalyzer/monitoring/slo-*.log`
+
+Verificar status atual:
+```bash
+tail -20 /var/log/alfalyzer/monitoring/cron.log
+tail -1 /var/log/alfalyzer/monitoring/slo-*.log
+```
+
 
 ## PORTS & SERVICES
 
@@ -88,15 +220,24 @@ Financial analysis platform with real-time market data, earnings transcripts, an
 
 **Data Distribution:**
 - **Redis Local**: Cache temporário (preços, news) - TTL 60s a 24h
-- **PostgreSQL Local**: Dados pesados (transcripts, portfolios, AI analysis)
-- **Supabase Free**: Apenas auth + profiles leves
+- **PostgreSQL Local**: Dados pesados (transcripts: 134+, AI analyses) - Database: alfalyzer_db
+- **Supabase Free**: Apenas auth + profiles leves (NÃO transcripts)
 
 **Patterns:**
 - 3-tier backend: Controllers → Services → Repositories
 - API rotation with automatic fallback
-- Single Redis cache layer (60s TTL for prices)
+- Single Redis cache layer with differentiated TTLs:
+  - Quotes: 60s
+  - Historical: 2h
+  - Financials: 1h
+  - Company Profile: 24h
+  - Market Status: 5min
+- Cache-first strategy with auto-fill on miss
 - Shared types in `/shared` directory
-- Worker updates cache proactively every 60s
+- Workers compilados (CJS) para produção:
+  - alfalyzer: `dist/server/index.cjs`
+  - price-worker: `dist/server/workers/price-worker.cjs`
+  - transcripts-worker: `dist/server/workers/transcripts-worker.cjs`
 
 ## KEY CONVENTIONS
 
@@ -118,7 +259,7 @@ Financial analysis platform with real-time market data, earnings transcripts, an
    - Create policies for user data isolation
 
 4. **API Fallback Order**
-   Alpha Vantage → Finnhub → FMP → Twelve Data → Polygon
+   FMP → Alpha Vantage
 
 5. **File Naming**
    - Components: `PascalCase.tsx`
@@ -130,7 +271,8 @@ Financial analysis platform with real-time market data, earnings transcripts, an
 ```bash
 npm install          # Install dependencies
 npm run dev          # Start dev server
-npm run build        # Production build
+npm run build        # Production build (frontend)
+npm run build:server # Compile server and workers to CJS
 npm test             # Run tests
 npm run lint         # Lint code
 ```
@@ -207,9 +349,23 @@ DELETE /api/watchlists/:id
 
 **Solutions Applied:**
 1. Fixed regex in `server/middleware/api-security.ts` line 176: `/^https?:\/\/[a-z0-9]*\.?128\.140\.45\.28\.sslip\.io$/`
-2. Updated `.env.production` with real FMP API key: `FMP_API_KEY=sEoOHoj4kGtqhkU7MrQl4lmeF4LwB2Bh`
+2. Updated `.env.production` with real FMP API key: `FMP_API_KEY=<YOUR_FMP_API_KEY>`
 
 **Result:** Real-time stock prices now display correctly. System supports 1000+ concurrent users through Redis cache architecture.
+
+### ✅ RESOLVED: Batch endpoint sem autenticação (2025‑10‑01)
+**Previous Cause:** Middleware de API key podia ser bypassado — endpoints de batch retornavam 200 sem `X‑API‑Key`.
+
+**Root Cause:** Ausência de defense‑in‑depth nos handlers GET/POST (confiança apenas no middleware/proxy).
+
+**Solutions Applied:**
+1) Adicionada verificação explícita de API key em `server/routes/market-data.ts`:
+   - GET `/api/market-data/quotes/batch`: valida `X-API-Key`/query antes de processar
+   - POST `/api/market-data/quotes/batch`: valida `X-API-Key`/query antes de processar
+2) Rate limits normalizados (100/1000/5000) no rate limiter específico de market data
+3) Force deploy com checksum para caminho com espaço e validação pós‑deploy (grep + md5sum)
+
+**Result:** Batch agora exige autenticação. GET/POST sem key → 401; com key → 200. Headers mostram `X‑RateLimit‑Limit: 100` em produção.
 
 ### Page crashes with .toFixed() error
 **Cause:** Calling .toFixed() on undefined values
@@ -220,7 +376,7 @@ DELETE /api/watchlists/:id
 - `/client/src/App.tsx` - Main routes (needs navigation fix)
 - `/server/routes/market-data.ts` - API endpoints
 - `/client/src/hooks/use-realtime-quotes.ts` - WebSocket logic
-- `/server/services/simple-cache-service.ts` - Redis cache (replaced Reddit Strategy)
+- `/server/services/simple-cache-service.ts` - Redis cache with differentiated TTLs
 - `/server/middleware/api-security.ts` - Origin validation & security
 
 ## SERVER ACCESS
@@ -228,9 +384,16 @@ DELETE /api/watchlists/:id
 ```bash
 ssh root@128.140.45.28
 cd "/home/teste 1/"
-pm2 status              # Check application
-pm2 logs alfalyzer      # View logs
-pm2 restart alfalyzer   # Restart if needed
+pm2 status              # Check all processes
+pm2 logs alfalyzer      # API logs
+pm2 logs price-worker   # Price worker logs
+pm2 logs transcripts-worker # Transcripts worker logs
+pm2 restart all         # Restart everything
+
+# Health checks
+curl localhost:3001/api/health  # API
+curl localhost:3002/health      # Price worker
+curl localhost:3003/health      # Transcripts worker
 ```
 
 ## ENVIRONMENT VARIABLES
@@ -259,10 +422,26 @@ Key variables:
 - **Development**: Local `.env` file
 - **Restart Required**: `pm2 restart alfalyzer --update-env` after changes
 
-## PRODUCTION STATUS (Updated 2025-09-07)
-✅ **WORKING**: Stock prices displaying correctly  
-✅ **CAPACITY**: Supports 1000+ concurrent users  
+## MONITORIZAÇÃO ATIVA (2025-09-26)
+
+**⚠️ Fase 11 em Progresso - Monitorização de Pacing/Budget**
+
+ENVs ativos em produção:
+- `HOT_SET_SIZE=100` (top 100 símbolos sempre quentes)
+- `HOT_SET_REFRESH_SECONDS=60` (atualização a cada 60s)
+- `QUOTES_CALLS_PER_MIN_BUDGET=180` (limite 180 calls/min)
+
+Próximas verificações:
+- **T+24h (2025-09-27):** Primeira análise de métricas
+- **T+48h (2025-09-28):** Decisão sobre ativação warm set
+
+**📊 Ver detalhes completos:** [docs/MONITORING_PLAN.md](docs/MONITORING_PLAN.md)
+
+## PRODUCTION STATUS (Updated 2025-09-26)
+✅ **WORKING**: Stock prices displaying correctly
+✅ **CAPACITY**: Supports 1000+ concurrent users
 ✅ **ARCHITECTURE**: Redis cache + FMP API integration operational
+✅ **MONITORING**: Active pacing control with token bucket
 
 ---
-Last updated: 2025-09-01
+Last updated: 2025-09-26

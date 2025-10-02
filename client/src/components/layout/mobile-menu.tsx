@@ -8,8 +8,9 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'wouter';
 import { useTheme } from "@/hooks/use-theme";
-import { useAuth } from "@/contexts/temp-auth";
+import { useSupabaseAuth } from "@/contexts/supabase-auth-context";
 import { useCurrency } from '@/contexts/currency-context';
+import { useTranslation } from 'react-i18next';
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
@@ -62,9 +63,15 @@ interface MarketIndex {
 export function MobileMenu({ isOpen, onOpenChange, trigger }: MobileMenuProps) {
   const { theme, setTheme } = useTheme();
   const [, setLocation] = useLocation();
-  const { user, signOut } = useAuth();
+  const { user, userProfile, signOut } = useSupabaseAuth();
   const { t, i18n } = useTranslation(['common', 'markets', 'currencies']);
   const { currentCurrency, setCurrency, formatCurrency, convertCurrency } = useCurrency();
+
+  const displayName =
+    userProfile?.name ||
+    (typeof user?.user_metadata?.name === 'string' ? user.user_metadata.name : undefined) ||
+    (user?.email ? user.email.split('@')[0] : null) ||
+    'Investidor';
 
   // Smart market indices based on currency selection
   const getMarketIndices = (): MarketIndex[] => {
@@ -88,7 +95,7 @@ export function MobileMenu({ isOpen, onOpenChange, trigger }: MobileMenuProps) {
     {
       icon: <Home className="h-5 w-5" />,
       label: t('navigation.dashboard'),
-      href: '/dashboard'
+      href: '/find-stocks'
     },
     {
       icon: <PieChart className="h-5 w-5" />,
@@ -126,7 +133,10 @@ export function MobileMenu({ isOpen, onOpenChange, trigger }: MobileMenuProps) {
   };
 
   const handleSignOut = async () => {
-    await signOut();
+    const { error } = await signOut();
+    if (error) {
+      console.error('Erro no logout:', error.message);
+    }
     setLocation('/');
     onOpenChange(false);
   };
@@ -327,12 +337,12 @@ export function MobileMenu({ isOpen, onOpenChange, trigger }: MobileMenuProps) {
               <div className="flex items-center space-x-3 p-3 bg-secondary/20 rounded-lg mb-4">
                 <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
                   <span className="text-sm font-medium text-primary">
-                    {user?.name?.charAt(0).toUpperCase() || 'A'}
+                    {displayName.charAt(0).toUpperCase() || 'A'}
                   </span>
                 </div>
                 <div>
                   <div className="font-medium text-sm">
-                    {user?.name || 'António Francisco'}
+                    {displayName}
                   </div>
                   <div className="text-xs text-muted-foreground">
                     {t('account.investor_status')}
