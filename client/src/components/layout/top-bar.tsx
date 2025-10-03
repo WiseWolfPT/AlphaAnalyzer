@@ -128,7 +128,7 @@ export function TopBar({ onMobileMenuToggle }: TopBarProps) {
           </Button>
         )}
         {/* Market Indices */}
-        <div className="hidden lg:flex items-center space-x-6">
+        <div className="hidden lg:flex items-center space-x-6" aria-live="polite">
           <div className="flex items-center space-x-3 bg-secondary/30 px-3 py-2 rounded-lg">
             <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{t('indices.dow', { ns: 'markets' })}</span>
             <span className="font-bold text-sm">{convertedIndices.dow !== null ? formatCurrency(convertedIndices.dow) : '—'}</span>
