@@ -3,8 +3,9 @@ import { Button } from "@/components/ui/button";
 import { BarChart3, Menu, X, Moon, Sun, User, LogOut } from "lucide-react";
 import { useSupabaseAuth } from "@/contexts/supabase-auth-context";
 import { useTheme } from "@/hooks/use-theme";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { useLocation } from "wouter";
+import { Sheet, SheetTrigger, SheetContent, SheetClose } from "@/components/ui/sheet";
 
 export function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -29,6 +30,7 @@ export function Header() {
       return;
     }
     setLocation('/');
+    setIsMobileMenuOpen(false);
   };
 
   useEffect(() => {
@@ -71,7 +73,8 @@ export function Header() {
   const handleBetaLogin = () => {
     // Beta login - redirect directly to find-stocks since we're in demo mode
     // No actual authentication needed for demo
-    setLocation('/find-stocks');
+    setLocation('/stocks');
+    setIsMobileMenuOpen(false);
   };
 
   return (
@@ -90,7 +93,7 @@ export function Header() {
           {/* Logo */}
           <div 
             className="flex items-center gap-2 sm:gap-3 cursor-pointer hover:opacity-80 transition-opacity"
-            onClick={() => setLocation(user ? "/find-stocks" : "/")}
+            onClick={() => setLocation(user ? "/stocks" : "/")}
           >
             <div className="w-8 h-8 sm:w-10 sm:h-10 bg-teya-green-dark dark:bg-teya-green rounded-xl flex items-center justify-center shadow-lg hover:shadow-teya-green/30 transition-all duration-300 hover:scale-105">
               <BarChart3 className="h-4 w-4 sm:h-5 sm:w-5 text-deep-black" />
@@ -122,15 +125,18 @@ export function Header() {
           <div className="hidden md:flex items-center space-x-4">
             {/* Theme Toggle */}
             <Button
+              type="button"
               variant="ghost"
               size="sm"
               onClick={() => setTheme(theme === "light" ? "dark" : "light")}
-              className="h-9 w-9 p-0"
+              className="h-11 w-11 p-0 bg-secondary/60 hover:bg-secondary text-foreground border border-border/60"
+              aria-label={theme === "light" ? "Ativar modo escuro" : "Ativar modo claro"}
+              aria-pressed={theme === "dark"}
             >
               {theme === "light" ? (
-                <Moon className="h-4 w-4" />
+                <Moon className="h-4 w-4" aria-hidden="true" />
               ) : (
-                <Sun className="h-4 w-4" />
+                <Sun className="h-4 w-4" aria-hidden="true" />
               )}
             </Button>
 
@@ -143,7 +149,7 @@ export function Header() {
                 <span className="hidden lg:inline">{displayName}</span>
               </div>
                 <Button 
-                  onClick={() => setLocation('/find-stocks')}
+                  onClick={() => setLocation('/stocks')}
                   className="bg-teya-green-dark dark:bg-teya-green hover:bg-teya-green-dark/90 dark:hover:bg-teya-green/90 text-deep-black dark:text-rich-black"
                 >
                   Dashboard
@@ -152,9 +158,10 @@ export function Header() {
                   variant="ghost" 
                   size="sm"
                   onClick={handleSignOut}
-                  className="h-9 w-9 p-0"
+                  className="h-11 w-11 p-0 bg-secondary/60 hover:bg-secondary text-foreground border border-border/60"
+                  aria-label="Terminar sessão"
                 >
-                  <LogOut className="h-4 w-4" />
+                  <LogOut className="h-4 w-4" aria-hidden="true" />
                 </Button>
               </div>
             ) : (
@@ -162,14 +169,15 @@ export function Header() {
                 <Button 
                   variant="ghost" 
                   size="sm"
-                  className="text-foreground hover:text-teya-green border border-transparent hover:border-teya-green/30"
+                  className="h-11 px-4 text-foreground hover:bg-secondary/60 border border-border/60"
                   onClick={handleBetaLogin}
                 >
                   Beta Login
                 </Button>
                 <Button 
                   variant="ghost" 
-                  className="text-foreground hover:text-teya-green border border-transparent hover:border-teya-green/30"
+                  size="sm"
+                  className="h-11 px-4 text-foreground hover:bg-secondary/60 border border-border/60"
                   onClick={() => setLocation('/login')}
                 >
                   Login
@@ -184,112 +192,126 @@ export function Header() {
             )}
           </div>
 
-          {/* Mobile Menu Button */}
-          <button
-            className="md:hidden p-1.5 sm:p-2 rounded-lg hover:bg-secondary/50 transition-colors touch-target-44"
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-          >
-            {isMobileMenuOpen ? (
-              <X className="h-5 w-5 sm:h-6 sm:w-6" />
-            ) : (
-              <Menu className="h-5 w-5 sm:h-6 sm:w-6" />
-            )}
-          </button>
-        </div>
-
-        {/* Mobile Menu */}
-        <AnimatePresence>
-          {isMobileMenuOpen && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              exit={{ opacity: 0, height: 0 }}
-              className="md:hidden border-t border-border/50 py-4"
+          {/* Mobile Menu */}
+          <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
+            <SheetTrigger asChild>
+              <Button
+                type="button"
+                variant="ghost"
+                className="md:hidden h-11 w-11 p-0 bg-secondary/60 hover:bg-secondary text-foreground border border-border/60"
+                aria-label={isMobileMenuOpen ? "Fechar menu de navegação" : "Abrir menu de navegação"}
+              >
+                {isMobileMenuOpen ? (
+                  <X className="h-5 w-5" aria-hidden="true" />
+                ) : (
+                  <Menu className="h-5 w-5" aria-hidden="true" />
+                )}
+              </Button>
+            </SheetTrigger>
+            <SheetContent
+              side="left"
+              className="w-full sm:max-w-sm p-0 bg-background text-foreground"
             >
-              <nav className="flex flex-col space-y-4">
-                {navItems.map((item) => (
-                  <button
-                    key={item.name}
-                    onClick={() => scrollToSection(item.href)}
-                    className="text-muted-foreground hover:text-foreground transition-colors duration-200 font-medium px-4 py-2 text-left"
-                  >
-                    {item.name}
-                  </button>
-                ))}
-                
-                <div className="flex flex-col space-y-2 px-4 pt-4 border-t border-border/50">
-                  {/* Theme Toggle Mobile */}
-                  <Button
-                    variant="ghost"
-                    onClick={() => setTheme(theme === "light" ? "dark" : "light")}
-                    className="justify-start"
-                  >
-                    {theme === "light" ? (
+              <nav className="flex flex-col h-full overflow-y-auto">
+                <div className="px-6 pt-12 pb-6 space-y-4">
+                  <div className="flex flex-col space-y-4">
+                    {navItems.map((item) => (
+                      <SheetClose asChild key={item.name}>
+                        <button
+                          onClick={() => scrollToSection(item.href)}
+                          className="text-base font-medium text-muted-foreground hover:text-foreground transition-colors text-left"
+                        >
+                          {item.name}
+                        </button>
+                      </SheetClose>
+                    ))}
+                  </div>
+
+                  <div className="pt-4 border-t border-border/50 space-y-3">
+                    <Button
+                      variant="ghost"
+                      className="justify-start text-foreground bg-secondary/60 hover:bg-secondary border border-border/60"
+                      onClick={() => setTheme(theme === "light" ? "dark" : "light")}
+                      aria-label={theme === "light" ? "Ativar modo escuro" : "Ativar modo claro"}
+                      aria-pressed={theme === "dark"}
+                    >
+                      {theme === "light" ? (
+                        <>
+                          <Moon className="h-4 w-4 mr-2" aria-hidden="true" />
+                          Modo escuro
+                        </>
+                      ) : (
+                        <>
+                          <Sun className="h-4 w-4 mr-2" aria-hidden="true" />
+                          Modo claro
+                        </>
+                      )}
+                    </Button>
+
+                    {user ? (
                       <>
-                        <Moon className="h-4 w-4 mr-2" />
-                        Modo escuro
+                        <div className="flex items-center gap-2 px-4 py-2 text-sm text-muted-foreground">
+                          <div className="w-8 h-8 bg-teya-green-dark dark:bg-teya-green rounded-full flex items-center justify-center text-deep-black font-semibold text-xs">
+                            {displayName.charAt(0).toUpperCase()}
+                          </div>
+                          <span>{displayName}</span>
+                        </div>
+                        <SheetClose asChild>
+                          <Button 
+                            onClick={() => setLocation('/stocks')}
+                            className="bg-teya-green-dark dark:bg-teya-green hover:bg-teya-green-dark/90 dark:hover:bg-teya-green/90 text-deep-black dark:text-rich-black justify-start"
+                          >
+                            <User className="h-4 w-4 mr-2" aria-hidden="true" />
+                            Dashboard
+                          </Button>
+                        </SheetClose>
+                        <SheetClose asChild>
+                          <Button 
+                            variant="ghost" 
+                            onClick={handleSignOut}
+                            className="text-foreground justify-start bg-secondary/60 hover:bg-secondary border border-border/60"
+                          >
+                            <LogOut className="h-4 w-4 mr-2" aria-hidden="true" />
+                            Terminar sessão
+                          </Button>
+                        </SheetClose>
                       </>
                     ) : (
                       <>
-                        <Sun className="h-4 w-4 mr-2" />
-                        Modo claro
+                        <SheetClose asChild>
+                          <Button 
+                            variant="ghost" 
+                            className="text-foreground justify-start bg-secondary/60 hover:bg-secondary border border-border/60"
+                            onClick={handleBetaLogin}
+                          >
+                            Beta Login
+                          </Button>
+                        </SheetClose>
+                        <SheetClose asChild>
+                          <Button 
+                            variant="ghost" 
+                            className="text-foreground justify-start bg-secondary/60 hover:bg-secondary border border-border/60"
+                            onClick={() => setLocation('/login')}
+                          >
+                            Login
+                          </Button>
+                        </SheetClose>
+                        <SheetClose asChild>
+                          <Button 
+                            className="bg-teya-green-dark dark:bg-teya-green hover:bg-teya-green-dark/90 dark:hover:bg-teya-green/90 text-deep-black dark:text-rich-black justify-start"
+                            onClick={() => setLocation('/register')}
+                          >
+                            Registar
+                          </Button>
+                        </SheetClose>
                       </>
                     )}
-                  </Button>
-
-                  {user ? (
-                    <>
-                      <div className="flex items-center gap-2 px-4 py-2 text-sm text-muted-foreground">
-                        <div className="w-8 h-8 bg-teya-green-dark dark:bg-teya-green rounded-full flex items-center justify-center text-deep-black font-semibold text-xs">
-                          {displayName.charAt(0).toUpperCase()}
-                        </div>
-                        <span>{displayName}</span>
-                      </div>
-                      <Button 
-                        onClick={() => setLocation('/find-stocks')}
-                        className="bg-teya-green-dark dark:bg-teya-green hover:bg-teya-green-dark/90 dark:hover:bg-teya-green/90 text-deep-black dark:text-rich-black justify-start"
-                      >
-                        <User className="h-4 w-4 mr-2" />
-                        Dashboard
-                      </Button>
-                      <Button 
-                        variant="ghost" 
-                        onClick={handleSignOut}
-                        className="text-foreground justify-start"
-                      >
-                        <LogOut className="h-4 w-4 mr-2" />
-                        Logout
-                      </Button>
-                    </>
-                  ) : (
-                    <>
-                      <Button 
-                        variant="ghost" 
-                        className="text-foreground justify-start border border-transparent hover:border-teya-green/30"
-                        onClick={handleBetaLogin}
-                      >
-                        Beta Login
-                      </Button>
-                      <Button 
-                        variant="ghost" 
-                        className="text-foreground justify-start border border-transparent hover:border-teya-green/30"
-                        onClick={() => setLocation('/login')}
-                      >
-                        Login
-                      </Button>
-                      <Button 
-                        className="bg-teya-green-dark dark:bg-teya-green hover:bg-teya-green-dark/90 dark:hover:bg-teya-green/90 text-deep-black dark:text-rich-black justify-start"
-                        onClick={() => setLocation('/register')}
-                      >
-                        Registar
-                      </Button>
-                    </>
-                  )}
+                  </div>
                 </div>
               </nav>
-            </motion.div>
-          )}
-        </AnimatePresence>
+            </SheetContent>
+          </Sheet>
+        </div>
       </div>
     </motion.header>
   );

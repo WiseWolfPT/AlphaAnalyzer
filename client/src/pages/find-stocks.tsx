@@ -21,6 +21,8 @@ import { useSocketQuotes } from "@/hooks/use-socket-quotes";
 import { TestAPIConnection } from "@/components/test-api-connection";
 import { ConnectionTest } from "@/components/debug/connection-test";
 import { MarketMovers } from "@/components/market/market-movers";
+import { StockCardSkeleton } from "@/components/ui/stock-card-skeleton";
+import { Skeleton } from "@/components/ui/skeleton";
 
 // All stocks from Supabase - expanded list
 const ALL_STOCKS = [
@@ -568,13 +570,38 @@ export default function FindStocks() {
   if (isLoading) {
     return (
       <MainLayout>
-        <div className="space-y-8">
+        <div className="space-y-6 px-4 sm:px-6 lg:px-8 py-4 sm:py-6" aria-busy="true">
           <BetaBanner />
-          <div className="text-center py-8">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
-            <p className="mt-4 text-gray-600">Loading real market data...</p>
+          <div className="space-y-4" role="status" aria-live="polite">
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+              <div className="space-y-2">
+                <Skeleton className="h-8 w-48" />
+                <Skeleton className="h-4 w-64 max-w-xs" />
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                {Array.from({ length: 4 }).map((_, index) => (
+                  <Skeleton key={index} className="h-10 w-24" />
+                ))}
+              </div>
+            </div>
+
+            <Card className="border-teya-green/20">
+              <CardContent className="p-6 space-y-4">
+                <Skeleton className="h-12 w-full" />
+                <div className="flex flex-wrap gap-2">
+                  {Array.from({ length: 6 }).map((_, index) => (
+                    <Skeleton key={index} className="h-9 w-24" />
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4" aria-hidden="true">
+              {POPULAR_SYMBOLS.slice(0, 15).map((symbol) => (
+                <StockCardSkeleton key={symbol} />
+              ))}
+            </div>
           </div>
-          {/* Debug connection test */}
           <ConnectionTest />
         </div>
       </MainLayout>
@@ -615,10 +642,10 @@ export default function FindStocks() {
             <div>
               <h1 className="text-2xl sm:text-3xl font-bold tracking-tight flex items-center gap-2">
                 <Search className="w-6 h-6 sm:w-8 sm:h-8 text-teya-green" />
-                🔍 Find Stocks
+                🔍 Pesquisar ações
               </h1>
               <p className="text-sm sm:text-base text-muted-foreground mt-1">
-                Discover and analyze stocks with powerful search and filtering tools
+                Descubra e analise empresas com ferramentas avançadas de pesquisa e filtros inteligentes
               </p>
             </div>
             <div className="flex flex-wrap items-center gap-2">
@@ -701,7 +728,7 @@ export default function FindStocks() {
                     setSearchQuery(stock.symbol);
                     handleStockSelect(stock.symbol);
                   }}
-                  placeholder="Search 50+ stocks by symbol, name, or sector..."
+                  placeholder="Pesquisar mais de 50 ações por símbolo, nome ou setor..."
                   showRecentSearches={true}
                   showPopularStocks={true}
                 />
@@ -716,7 +743,7 @@ export default function FindStocks() {
                     )}
                     onClick={() => filterBySector('all')}
                   >
-                    All Stocks ({countStocksBySector('all')})
+                    Todas as ações ({countStocksBySector('all')})
                   </Badge>
                   <Badge 
                     variant={activeFilter === 'Technology' ? 'default' : 'outline'}

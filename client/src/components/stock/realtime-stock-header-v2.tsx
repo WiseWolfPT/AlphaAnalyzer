@@ -44,12 +44,21 @@ export function RealtimeStockHeaderV2({
     afterHoursChangePercent: company.afterHoursChangePercent
   } : company;
 
+  const liveAnnouncement = realtimeQuote
+    ? `Preco atualizado para ${symbol}: ${realtimeQuote.price.toFixed(2)} dolares.`
+    : isConnected
+      ? `Ligacao em tempo real ativa para ${symbol}.`
+      : `Modo em tempo real inativo para ${symbol}.`;
+
   return (
     <div className="relative">
+      <span className="sr-only" role="status" aria-live="polite">
+        {liveAnnouncement}
+      </span>
       {/* Realtime indicator */}
       {isConnected && realtimeQuote && (
         <div className="absolute -top-2 -right-2">
-          <span className="inline-flex h-2 w-2 rounded-full bg-green-500 animate-pulse" 
+          <span className="inline-flex h-2 w-2 rounded-full bg-green-500 motion-safe:animate-pulse" 
                 title="Dados em tempo real" />
         </div>
       )}
