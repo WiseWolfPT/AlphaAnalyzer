@@ -1,5 +1,6 @@
 import { advancedCache } from './advanced-cache-manager';
 import { ServerMarketDataService } from '../services/market-data-service';
+import { simpleCacheService } from '../services/simple-cache-service';
 import { EventEmitter } from 'events';
 
 interface WarmingTask {
@@ -175,7 +176,29 @@ export class CacheWarmer extends EventEmitter {
     await advancedCache.get(key, async () => {
       this.stats.apiCallsUsed++;
       this.updateRateLimit('quote');
-      return await this.marketDataService.getQuote(symbol);
+
+      // Prefer the simplified cache service, which already handles provider fallbacks
+      const quote = await simpleCacheService.getQuote(symbol);
+      if (quote) {
+        return quote;
+      }
+
+      // Backwards compatibility: if the new market data service exposes a real-time quote method, use it
+      const getRealtime = (this.marketDataService as unknown as {
+        getRealTimeQuote?: (s: string) => Promise<unknown>;
+        getQuote?: (s: string) => Promise<unknown>;
+      });
+
+      if (typeof getRealtime?.getRealTimeQuote === 'function') {
+        return await getRealtime.getRealTimeQuote(symbol);
+      }
+
+      if (typeof getRealtime?.getQuote === 'function') {
+        return await getRealtime.getQuote(symbol);
+      }
+
+      console.warn(`⚠️ CacheWarmer: no quote provider available for ${symbol}`);
+      return null;
     }, {
       dataType: 'quote',
       symbol
@@ -191,7 +214,22 @@ export class CacheWarmer extends EventEmitter {
     await advancedCache.get(key, async () => {
       this.stats.apiCallsUsed++;
       this.updateRateLimit('fundamentals');
-      return await this.marketDataService.getFundamentals(symbol);
+
+      const service = this.marketDataService as unknown as {
+        getCompanyFundamentals?: (s: string) => Promise<unknown>;
+        getFundamentals?: (s: string) => Promise<unknown>;
+      };
+
+      if (typeof service.getCompanyFundamentals === 'function') {
+        return await service.getCompanyFundamentals(symbol);
+      }
+
+      if (typeof service.getFundamentals === 'function') {
+        return await service.getFundamentals(symbol);
+      }
+
+      console.warn(`⚠️ CacheWarmer: fundamentals warming skipped for ${symbol} (no provider)`);
+      return null;
     }, {
       dataType: 'fundamentals',
       symbol
@@ -210,7 +248,17 @@ export class CacheWarmer extends EventEmitter {
       await advancedCache.get(key, async () => {
         this.stats.apiCallsUsed++;
         this.updateRateLimit('charts');
-        return await this.marketDataService.getHistoricalData(symbol, '1day', this.getOutputSize(timeframe));
+
+        const service = this.marketDataService as unknown as {
+          getHistoricalData?: (s: string, interval: string, size?: string) => Promise<unknown>;
+        };
+
+        if (typeof service.getHistoricalData === 'function') {
+          return await service.getHistoricalData(symbol, '1day', this.getOutputSize(timeframe));
+        }
+
+        console.warn(`⚠️ CacheWarmer: historical warming skipped for ${symbol} (${timeframe})`);
+        return null;
       }, {
         dataType: 'charts',
         symbol
