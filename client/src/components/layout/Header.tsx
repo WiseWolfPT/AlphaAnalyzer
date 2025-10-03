@@ -5,7 +5,7 @@ import { useSupabaseAuth } from "@/contexts/supabase-auth-context";
 import { useTheme } from "@/hooks/use-theme";
 import { motion } from "framer-motion";
 import { useLocation } from "wouter";
-import { Sheet, SheetTrigger, SheetContent, SheetClose } from "@/components/ui/sheet";
+import { Sheet, SheetTrigger, SheetContent, SheetClose, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 
 export function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -212,8 +212,12 @@ export function Header() {
               side="left"
               className="w-full sm:max-w-sm p-0 bg-background text-foreground"
             >
-              <nav className="flex flex-col h-full overflow-y-auto">
-                <div className="px-6 pt-12 pb-6 space-y-4">
+              <SheetHeader className="px-6 pt-10 pb-4 text-left">
+                <SheetTitle id="mobile-menu-title">Navegação principal</SheetTitle>
+                <SheetDescription>Escolhe uma secção ou ação rápida</SheetDescription>
+              </SheetHeader>
+              <nav className="flex flex-col h-full overflow-y-auto" aria-labelledby="mobile-menu-title">
+                <div className="px-6 pb-6 space-y-4">
                   <div className="flex flex-col space-y-4">
                     {navItems.map((item) => (
                       <SheetClose asChild key={item.name}>
