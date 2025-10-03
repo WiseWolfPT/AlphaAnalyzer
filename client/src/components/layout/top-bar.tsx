@@ -117,12 +117,14 @@ export function TopBar({ onMobileMenuToggle }: TopBarProps) {
         {/* Mobile Menu Button */}
         {isMobile && (
           <Button
+            type="button"
             variant="ghost"
             size="sm"
             onClick={onMobileMenuToggle}
-            className="h-11 w-11 p-0 bg-secondary/50 hover:bg-secondary border border-border/50 md:hidden"
+            className="h-11 w-11 p-0 bg-secondary/60 hover:bg-secondary text-foreground border border-border/60 md:hidden"
+            aria-label="Menu principal"
           >
-            <Menu className="h-4 w-4" />
+            <Menu className="h-4 w-4" aria-hidden="true" />
           </Button>
         )}
         {/* Market Indices */}
@@ -217,15 +219,18 @@ export function TopBar({ onMobileMenuToggle }: TopBarProps) {
 
         {/* Theme Toggle */}
         <Button
+          type="button"
           variant="ghost"
           size="sm"
           onClick={() => setTheme(theme === "light" ? "dark" : "light")}
-          className="h-11 w-11 p-0 bg-secondary/50 hover:bg-secondary border border-border/50"
+          className="h-11 w-11 p-0 bg-secondary/60 hover:bg-secondary text-foreground border border-border/60"
+          aria-label={theme === "light" ? "Ativar modo escuro" : "Ativar modo claro"}
+          aria-pressed={theme === "dark"}
         >
           {theme === "light" ? (
-            <Moon className="h-4 w-4" />
+            <Moon className="h-4 w-4" aria-hidden="true" />
           ) : (
-            <Sun className="h-4 w-4" />
+            <Sun className="h-4 w-4" aria-hidden="true" />
           )}
         </Button>
 
@@ -235,7 +240,8 @@ export function TopBar({ onMobileMenuToggle }: TopBarProps) {
             <Button 
               variant="ghost" 
               size="sm" 
-              className="h-11 w-11 p-0 bg-secondary/50 hover:bg-secondary border border-border/50 rounded-full flex items-center justify-center"
+              className="h-11 w-11 p-0 bg-secondary/60 hover:bg-secondary text-foreground border border-border/60 rounded-full flex items-center justify-center"
+              aria-label="Abrir menu do utilizador"
             >
               <div className="h-9 w-9 rounded-full bg-teya-green/20 flex items-center justify-center text-teya-green font-medium text-sm">
                 {avatarInitial}
