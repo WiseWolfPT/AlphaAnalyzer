@@ -70,6 +70,8 @@ Logs:
 - Caso sem permissões, usam `scripts/monitoring/logs/` no repositório.
 
 Cron (produção):
+- `*/1 4-20 * * 1-5` — job `cache-warmer` (20 tickers core) usando `simpleCacheService.getQuote`
+- `*/5 4-20 * * 1-5` — job novo `find-stocks-warm`, aquece 57 tickers dos cartões Find Stocks via `getBatchQuotes` (≈2 chamadas FMP por execução, ~408/dia)
 - `*/15 * * * * cd '/home/teste 1' && TARGET_URL=https://128.140.45.28.sslip.io scripts/monitoring/monitor-all.sh >> /var/log/alfalyzer/monitoring/cron.log 2>&1`
 
 ## OPERAÇÃO / ENV (Pacing & TTL)
@@ -96,6 +98,40 @@ Notas:
 - UNIVERSE_SOURCE (`pg`/`env`): gerir universo via PG (tabela `stocks`) ou fallback por ENV.
 
 ## DEPLOY & ROLLBACK
+
+### 🚨 CRITICAL DEPLOYMENT SAFETY RULE (Incident 2025-10-04)
+
+**⚠️ ALWAYS use npm scripts - NEVER run rsync --delete manually!**
+
+```bash
+# ✅ CORRECT - Use these npm scripts:
+npm run deploy          # Frontend only (build + assets + restart)
+npm run deploy:full     # Complete deploy (frontend + backend)
+npm run deploy:server   # Backend only
+npm run deploy:assets   # Frontend assets only
+
+# ❌ NEVER DO THIS - Will delete backend/frontend:
+rsync --delete 'client/dist/public/' root@128.140.45.28:'/home/teste\ 1/dist/'
+```
+
+**Why this rule exists:**
+- **Incident (2025-10-04):** Manual rsync to wrong path deleted entire `/dist/server/` directory
+- **Impact:** Backend crash, all stock prices disappeared (502 errors)
+- **Root cause:** `rsync --delete 'client/dist/public/' → '/dist/'` removed everything not in source (including `/dist/server/`)
+- **Recovery time:** ~15 minutes (rebuild + redeploy server)
+
+**Safe deployment architecture:**
+- `deploy:assets` → deploys ONLY to `/dist/public/` (frontend safe, backend untouched)
+- `deploy:server` → deploys ONLY to `/dist/server/` (backend safe, frontend untouched)
+- Each script uses `--delete` safely within its own isolated directory
+
+**If you must troubleshoot deployment:**
+1. Check `package.json` scripts first
+2. Use `npm run deploy:full` for complete deployments
+3. Only run manual rsync WITHOUT `--delete` flag for testing
+4. Always verify with: `ssh root@128.140.45.28 "ls -lah '/home/teste 1/dist/'"`
+
+---
 
 Comandos principais:
 - Deploy frontend: `npm run deploy` (build + assets + restart)
@@ -134,6 +170,37 @@ Pós‑deploy:
   # rate limit header=100
   curl -i 'https://128.140.45.28.sslip.io/api/market-data/quote/AAPL' | grep X-RateLimit-Limit
   ```
+
+### ⚠️ Deploy Confiável via tar+scp (2025-10-03)
+
+**Problema**: rsync com `--checksum` às vezes não detecta mudanças em bundles grandes (1.2MB+).
+
+**Solução garantida** (usar quando rsync falhar):
+```bash
+# 1. Build local
+npm run build:server
+
+# 2. Criar tar e enviar
+cd dist
+tar czf /tmp/server-dist.tar.gz server/
+scp /tmp/server-dist.tar.gz root@128.140.45.28:/tmp/
+
+# 3. Extrair no servidor (limpa primeiro)
+ssh root@128.140.45.28 'cd "/home/teste 1/dist" && rm -rf server && tar xzf /tmp/server-dist.tar.gz'
+
+# 4. Restart PM2
+ssh root@128.140.45.28 "pm2 restart alfalyzer --update-env"
+
+# 5. Validar timestamp
+ssh root@128.140.45.28 "ls -lh '/home/teste 1/dist/server/index.cjs'"
+# Deve mostrar timestamp de hoje
+
+# 6. Validar código deployado
+ssh root@128.140.45.28 "grep -n 'simpleCacheService.getQuote' '/home/teste 1/dist/server/index.cjs' | wc -l"
+# Deve retornar > 0 se código novo usar simpleCacheService
+```
+
+**Quando usar**: Se rsync reportar "sent 288 bytes" para arquivo de 1.2MB → usar tar+scp.
 
 ## HYBRID DB (Phase 9)
 

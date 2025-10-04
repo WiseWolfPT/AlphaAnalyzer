@@ -27,6 +27,7 @@
     "logs": "pm2 logs alfalyzer",
     "restart": "pm2 restart alfalyzer",
     "stop": "pm2 stop alfalyzer",
+    "_comment": "⚠️ DEPLOYMENT SAFETY: Always use 'deploy' or 'deploy:full' - NEVER run rsync --delete manually! These scripts deploy to separate directories to prevent accidental deletion of backend/frontend.",
     "deploy": "npm run build && npm run deploy:assets && npm run deploy:restart",
     "deploy:server": "rsync -avz --delete 'dist/server/' root@128.140.45.28:/home/teste\\ 1/dist/server/",
     "deploy:full": "npm run build:full && npm run deploy:assets && npm run deploy:server && npm run deploy:restart && npm run smoke:prod:quick",
