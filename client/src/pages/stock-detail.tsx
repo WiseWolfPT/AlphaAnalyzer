@@ -227,11 +227,12 @@ export default function StockDetail() {
           <Button 
             variant="ghost" 
             size="sm"
-            onClick={() => setLocation('/find-stocks')}
-            className="gap-2"
+            onClick={() => setLocation('/stocks')}
+            className="gap-2 text-foreground hover:bg-secondary/60 border border-border/50"
+            aria-label="Voltar à pesquisa de ações"
           >
             <ArrowLeft className="w-4 h-4" />
-            Back to Find Stocks
+            Voltar à pesquisa
           </Button>
           
           <Button

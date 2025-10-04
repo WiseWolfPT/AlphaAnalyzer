@@ -269,7 +269,7 @@ export default function FindStocks() {
     }
   });
   
-  // Fallback to cached data if direct FMP fails
+  // Utiliza dados em cache se o acesso direto à FMP falhar
   const cachedQuery = useCachedBatchQuotes(displayedSymbols, {
     enabled: !useDirectFMP || directFMPQuery.isError,
     onError: (error) => {
@@ -277,7 +277,7 @@ export default function FindStocks() {
     }
   });
   
-  // Use direct FMP data if available, otherwise fall back to cached
+  // Usa dados FMP diretos quando disponíveis; caso contrário recorre à cache
   const { data: quotesData, isLoading, error, refetch, status, fetchStatus } = 
     useDirectFMP && !directFMPQuery.isError ? directFMPQuery : cachedQuery;
 
@@ -349,7 +349,7 @@ export default function FindStocks() {
     
     const range = ranges[category];
     if (range) {
-      // Update advanced filters with the market cap range
+      // Atualiza os filtros avançados com a variação de capitalização
       setAdvancedFilters(prev => ({
         ...prev,
         minMarketCap: range.min * 1e9,
@@ -487,7 +487,7 @@ export default function FindStocks() {
       // First check if stock is in displayed symbols (sector filter)
       if (!displayedSymbols.includes(stock.symbol)) return false;
       
-      // Apply advanced filters
+      // Aplica os filtros avançados
       if (advancedFilters.sectors && advancedFilters.sectors.length > 0) {
         if (!advancedFilters.sectors.includes(stock.sector)) return false;
       }
@@ -666,17 +666,17 @@ export default function FindStocks() {
                 </div>
               )}
               
-              {/* PHASE 2: Toggle between Direct FMP and Cached data */}
+              {/* Fase 2: alternar entre FMP direto e dados em cache */}
               <Button
                 variant={useDirectFMP ? 'default' : 'outline'}
                 size="sm"
                 onClick={() => setUseDirectFMP(!useDirectFMP)}
                 className={useDirectFMP ? 'bg-blue-500 hover:bg-blue-600 text-white' : ''}
-                title={useDirectFMP ? "Using Direct FMP (Real-time)" : "Using Cached Data"}
+                title={useDirectFMP ? "A usar FMP Direto (tempo real)" : "A usar dados em cache"}
               >
                 <Zap className="w-4 h-4" />
                 <span className="ml-1 hidden sm:inline">
-                  {useDirectFMP ? 'Direct FMP' : 'Cached'}
+                  {useDirectFMP ? 'FMP Direto' : 'Dados em cache'}
                 </span>
               </Button>
               <Button
@@ -684,7 +684,7 @@ export default function FindStocks() {
                 size="sm"
                 onClick={() => refetch()}
                 disabled={isLoading}
-                title="Refresh stock data"
+                title="Atualizar dados das ações"
               >
                 <RefreshCw className={cn("w-4 h-4", isLoading && "animate-spin")} />
               </Button>
@@ -914,7 +914,7 @@ export default function FindStocks() {
           >
             <div className="flex items-center gap-2 mb-2">
               <ArrowUpIcon className="w-5 h-5 text-green-500" />
-              <h3 className="font-semibold">Top Gainers</h3>
+              <h3 className="font-semibold">Maiores Ganhos</h3>
             </div>
             <p className="text-sm text-muted-foreground">Biggest % gains today</p>
           </Card>
@@ -925,7 +925,7 @@ export default function FindStocks() {
           >
             <div className="flex items-center gap-2 mb-2">
               <ArrowDownIcon className="w-5 h-5 text-red-500" />
-              <h3 className="font-semibold">Top Losers</h3>
+              <h3 className="font-semibold">Maiores Quedas</h3>
             </div>
             <p className="text-sm text-muted-foreground">Biggest % losses today</p>
           </Card>
@@ -974,10 +974,10 @@ export default function FindStocks() {
                 >
                   <Activity className="w-3 h-3 mr-1" />
                   {quotesData._source === 'fmp_direct' 
-                    ? '🎯 Real-time FMP Data' 
+                    ? '🎯 Dados FMP em tempo real' 
                     : quotesData.quotes?.some(q => q.provider === 'fallback')
-                    ? 'Demo data (backend unavailable)' 
-                    : 'Cached data'}
+                    ? 'Dados de demonstração (backend indisponível)' 
+                    : 'Dados em cache'}
                 </Badge>
               )}
             </div>
@@ -991,9 +991,9 @@ export default function FindStocks() {
                   <SelectItem value="alphabetical-desc">Z → A</SelectItem>
                   <SelectItem value="price-high">Price (High → Low)</SelectItem>
                   <SelectItem value="price-low">Price (Low → High)</SelectItem>
-                  <SelectItem value="gainers">Top Gainers ↑</SelectItem>
-                  <SelectItem value="losers">Top Losers ↓</SelectItem>
-                  <SelectItem value="volume">Most Active</SelectItem>
+                  <SelectItem value="gainers">Maiores Ganhos ↑</SelectItem>
+                  <SelectItem value="losers">Maiores Quedas ↓</SelectItem>
+                  <SelectItem value="volume">Mais Ativas</SelectItem>
                   <SelectItem value="marketCap">Market Cap ↓</SelectItem>
                   <SelectItem value="pe-high">P/E Ratio (High)</SelectItem>
                   <SelectItem value="pe-low">P/E Ratio (Low)</SelectItem>
@@ -1011,15 +1011,15 @@ export default function FindStocks() {
             <Alert variant="default" className="border-yellow-500/50 bg-yellow-50/50 dark:bg-yellow-950/20">
               <AlertCircle className="h-4 w-4 text-yellow-600" />
               <AlertDescription className="text-sm">
-                <strong>Limited connectivity:</strong> Some real-time data may be unavailable. 
-                {stocks.length > 0 ? ' Showing cached data.' : ' Please try again later.'}
+                <strong>Conectividade limitada:</strong> Alguns dados em tempo real podem estar indisponíveis. 
+                {stocks.length > 0 ? ' A mostrar dados em cache.' : ' Por favor, tente novamente mais tarde.'}
                 <Button 
                   variant="ghost" 
                   size="sm" 
                   onClick={() => refetch()}
-                  className="ml-2"
+                  className="ml-2 text-foreground hover:bg-secondary/60 border border-border/50"
                 >
-                  Retry
+                  Tentar novamente
                 </Button>
               </AlertDescription>
             </Alert>

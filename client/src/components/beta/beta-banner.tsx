@@ -9,7 +9,7 @@ export function BetaBanner() {
       fontSize: '14px',
       marginBottom: '20px'
     }}>
-      <strong>BETA</strong> You're using Alpha Analyzer BETA! Join our community for updates.
+      <strong>BETA</strong> Está a usar o Alpha Analyzer BETA! Junte-se à nossa comunidade para atualizações.
     </div>
   );
 }

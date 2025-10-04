@@ -175,7 +175,7 @@ export const MarketMovers: React.FC = () => {
             className={activeTab === 'gainers' ? 'bg-green-600 hover:bg-green-700' : ''}
           >
             <TrendingUp className="w-4 h-4 mr-1" />
-            Top Gainers
+            Maiores Ganhos
           </Button>
           <Button
             variant={activeTab === 'losers' ? 'default' : 'outline'}
@@ -184,7 +184,7 @@ export const MarketMovers: React.FC = () => {
             className={activeTab === 'losers' ? 'bg-red-600 hover:bg-red-700' : ''}
           >
             <TrendingDown className="w-4 h-4 mr-1" />
-            Top Losers
+            Maiores Quedas
           </Button>
           <Button
             variant={activeTab === 'active' ? 'default' : 'outline'}
@@ -193,7 +193,7 @@ export const MarketMovers: React.FC = () => {
             className={activeTab === 'active' ? 'bg-blue-600 hover:bg-blue-700' : ''}
           >
             <Activity className="w-4 h-4 mr-1" />
-            Most Active
+            Mais Ativas
           </Button>
         </div>
       </CardHeader>

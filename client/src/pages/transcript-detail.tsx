@@ -284,10 +284,10 @@ export default function TranscriptDetail() {
       <MainLayout>
         <div className="container mx-auto px-6 py-8">
           <div className="text-center">
-            <h1 className="text-2xl font-bold mb-4">Transcript Not Found</h1>
+            <h1 className="text-2xl font-bold mb-4">Transcrição Não Encontrada</h1>
             <Button onClick={() => setLocation('/transcripts')}>
               <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Transcripts
+              Voltar às Transcrições
             </Button>
           </div>
         </div>
@@ -299,7 +299,7 @@ export default function TranscriptDetail() {
     const url = window.location.href;
     navigator.clipboard.writeText(url);
     toast({
-      description: "Link copied to clipboard",
+      description: "Ligação copiada para a área de transferência",
       forceRegenerate: true
     });
   };
@@ -347,7 +347,8 @@ export default function TranscriptDetail() {
             <Button
               variant="ghost"
               onClick={() => setLocation('/transcripts')}
-              className="h-10 w-10 p-0"
+              className="h-10 w-10 p-0 text-foreground hover:bg-secondary/60 border border-border/50"
+              aria-label="Voltar à lista de transcrições"
             >
               <ArrowLeft className="h-5 w-5" />
             </Button>
@@ -613,7 +614,7 @@ export default function TranscriptDetail() {
                     );
                   }
 
-                  // Fallback to simple display if no structured metrics
+                  // Mostra um layout simples quando não existem métricas estruturadas
                   return (
                     <Card className="overflow-hidden">
                       <CardHeader className="bg-gradient-to-r from-green-500/5 to-green-500/10 border-b">

@@ -78,11 +78,16 @@ export function CollapsibleSidebar() {
         <div className="fixed top-4 left-4 z-50 md:hidden">
           <Button
             variant="outline"
-            size="sm"
             onClick={toggleSidebar}
-            className="bg-background border-teya-green/20 hover:bg-teya-green/10"
+            className="h-11 w-11 p-0 bg-background border-teya-green/20 hover:bg-teya-green/10"
+            aria-label={isMobileMenuOpen ? "Fechar menu lateral" : "Abrir menu lateral"}
+            aria-expanded={isMobileMenuOpen}
           >
-            {isMobileMenuOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
+            {isMobileMenuOpen ? (
+              <X className="w-4 h-4" aria-hidden="true" />
+            ) : (
+              <Menu className="w-4 h-4" aria-hidden="true" />
+            )}
           </Button>
         </div>
       )}

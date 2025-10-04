@@ -166,7 +166,7 @@ export function AdvancedFilters({
           className={cn("gap-2", className)}
         >
           <Filter className="w-4 h-4" />
-          Advanced Filters
+          Filtros Avançados
           {activeFiltersCount > 0 && (
             <Badge variant="secondary" className="ml-1">
               {activeFiltersCount}
@@ -177,15 +177,15 @@ export function AdvancedFilters({
       <PopoverContent className="w-[420px] p-0" align="end">
         <div className="p-4">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="font-semibold">Advanced Filters</h3>
+            <h3 className="font-semibold">Filtros Avançados</h3>
             {activeFiltersCount > 0 && (
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={clearAllFilters}
-                className="text-xs"
+                className="text-xs text-foreground hover:bg-secondary/60 border border-border/50"
               >
-                Clear All
+                Limpar tudo
               </Button>
             )}
           </div>
