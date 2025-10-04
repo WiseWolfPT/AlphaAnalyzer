@@ -424,6 +424,7 @@ function Router() {
         <Route path="/reset-password" component={ResetPassword} />
         <Route path="/trial" component={Trial} />
         <Route path="/home" component={FindStocks} />
+        <Route path="/stocks" component={FindStocks} />
         {/* Alias para compatibilidade com botões antigos */}
         <Route path="/find-stocks" component={FindStocks} />
         <Route path="/compare" component={Compare} />
@@ -575,8 +576,17 @@ function App() {
                       <NotificationToast />
                       <Toaster />
                       <DebugModeToggle />
-                      <a href="#main-content" className="sr-only focus:not-sr-only">
-                        Skip to main content
+                      <a
+                        href="#conteudo-principal"
+                        className="sr-only focus:not-sr-only"
+                        onClick={() => {
+                          const mainContent = document.getElementById('conteudo-principal');
+                          if (mainContent) {
+                            mainContent.focus();
+                          }
+                        }}
+                      >
+                        Saltar para conteúdo principal
                       </a>
                       <Router />
                       <CookieConsentBanner />
