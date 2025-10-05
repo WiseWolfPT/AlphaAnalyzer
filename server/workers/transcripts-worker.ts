@@ -186,6 +186,15 @@ async function fetchFmpTranscript(symbol: string, quarter: string, year: number)
   }
 }
 
+async function checkTranscriptExists(symbol: string, quarter: string, year: number): Promise<boolean> {
+  try {
+    const existing = await transcriptService.findByKey(symbol.toUpperCase(), quarter, year);
+    return !!existing;
+  } catch (e) {
+    return false;
+  }
+}
+
 async function fetchLatestTranscriptForSymbol(symbol: string): Promise<{content: string, quarter: string, year: number} | null> {
   const apiKey = process.env.FMP_API_KEY;
   if (!apiKey) return null;
@@ -200,9 +209,17 @@ async function fetchLatestTranscriptForSymbol(symbol: string): Promise<{content:
 
   for (const {quarter, year} of quarters) {
     try {
+      // ✅ CHECK POSTGRESQL FIRST - avoid unnecessary API calls
+      const exists = await checkTranscriptExists(symbol, quarter, year);
+      if (exists) {
+        logger.info('Transcripts worker: already in cache - SKIP', { symbol, quarter, year });
+        continue; // 0 API calls
+      }
+
+      // Only fetch if NOT exists
       const content = await fetchFmpTranscript(symbol, quarter, year);
       if (content) {
-        console.log(`✅ Found ${symbol} transcript: ${quarter} ${year}`);
+        logger.info('Transcripts worker: NEW transcript fetched', { symbol, quarter, year });
         return { content, quarter, year };
       }
     } catch (e) {
@@ -392,7 +409,7 @@ async function runCycle() {
   logger.info('Transcripts worker: cycle start', { source: INGEST_SOURCE });
   // Refresh symbols universe at the beginning of each cycle
   await refreshSymbolsUniverse();
-  // Optional backfill
+  // Optional backfill (disabled by default - only fetch NEW transcripts)
   if (BACKFILL_TRANSCRIPTS && INGEST_SOURCE === 'fmp') {
     try {
       const now = new Date();
@@ -412,16 +429,26 @@ async function runCycle() {
             uniq.set(`${sym}:${year}:${q}`, { symbol: sym, companyName: r.company || sym, date, quarter: q, year });
           }
           const events = Array.from(uniq.values()).slice(0, UNIVERSE_LIMIT_PER_CYCLE);
-          let c = 0; let errs = 0;
+          let c = 0; let errs = 0; let skipped = 0;
           for (const ev of events) {
             try {
+              // ✅ CHECK POSTGRESQL FIRST - critical optimization
+              const exists = await checkTranscriptExists(ev.symbol, ev.quarter, ev.year);
+              if (exists) {
+                skipped++;
+                continue; // Skip - already in database (0 API calls)
+              }
+
+              // Only fetch if NOT exists
               const content = await fetchFmpTranscript(ev.symbol, ev.quarter, ev.year);
-              await upsertTranscript({ ticker: ev.symbol, company_name: ev.companyName, quarter: ev.quarter, year: ev.year, call_date: ev.date, raw_transcript: content, status: 'pending' });
-              c++;
+              if (content) {
+                await upsertTranscript({ ticker: ev.symbol, company_name: ev.companyName, quarter: ev.quarter, year: ev.year, call_date: ev.date, raw_transcript: content, status: 'pending' });
+                c++;
+              }
               await new Promise(r => setTimeout(r, 250));
             } catch { errs++; }
           }
-          logger.info('Transcripts worker: backfill complete', { updated: c, errors: errs });
+          logger.info('Transcripts worker: backfill complete', { updated: c, skipped, errors: errs });
         }
       }
     } catch (e:any) {

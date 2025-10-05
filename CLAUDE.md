@@ -216,6 +216,86 @@ ssh root@128.140.45.28 "grep -n 'simpleCacheService.getQuote' '/home/teste 1/dis
 - Transcripts Worker: usa PG se `PGHOST` estiver definido; caso contrário, fallback a Supabase Admin.
 - Tabela `stocks`: usada para o universo de símbolos; verifique se existe ou crie conforme migrações de dados.
 
+## TRANSCRIPTS WORKER OPTIMIZATION (2025-10-05)
+
+### 🚨 Incidente Crítico de Bandwidth
+**Descoberta:** Worker estava fazendo **319,910 API calls/mês** à FMP, consumindo 3.03GB bandwidth (15% do limite mensal total).
+
+**Root Causes Identificados:**
+1. **BACKFILL infinito**: Re-fetching todos os transcripts dos últimos 180 dias a cada 30min
+2. **Sem PostgreSQL check**: Ignorava dados já em cache, sempre chamava API
+3. **4 tentativas por símbolo**: fetchLatestTranscriptForSymbol tentava Q2, Q1, Q4, Q3 sequencialmente
+
+**Impacto:** FMP bandwidth excedido (20.25/20 GB), worker parado até reset (1 Novembro 2025).
+
+### ✅ Solução Implementada
+
+**Otimizações aplicadas:**
+```typescript
+// 1. PostgreSQL-first strategy
+async function checkTranscriptExists(symbol, quarter, year) {
+  const existing = await transcriptService.findByKey(symbol, quarter, year);
+  return !!existing; // Se existe → SKIP (0 API calls)
+}
+
+// 2. Backfill desativado
+BACKFILL_TRANSCRIPTS=false
+
+// 3. Smart fetching
+// ANTES: 4 chamadas por símbolo
+// DEPOIS: 0-1 chamadas (skip se existe)
+```
+
+**Configuração otimizada (`.env.production`):**
+```bash
+BACKFILL_TRANSCRIPTS=false
+TRANSCRIPTS_INTERVAL_MS=3600000  # 1 hora entre ciclos
+SYMBOLS_UNIVERSE_LIMIT_PER_CYCLE=1493  # TODAS as empresas
+FMP_CAL_LOOKBACK_DAYS=7  # Últimos 7 dias
+FMP_CAL_LOOKAHEAD_DAYS=2  # Próximos 2 dias
+TRANSCRIPTS_SOURCE=fmp
+SYMBOLS_UNIVERSE_SOURCE=pg
+```
+
+### 📊 Resultados Esperados
+
+| Métrica | Antes | Depois |
+|---------|-------|--------|
+| **API calls/mês** | 319,910 | ~510 ✅ |
+| **Bandwidth/mês** | 3.03 GB | ~24 MB ✅ |
+| **Empresas cobertas** | 912 | 1,493 ✅ |
+| **Lógica** | Re-fetch tudo | Só novos ✅ |
+
+**Dados em PostgreSQL:**
+- 1,493 empresas no universo (tabela `stocks`)
+- 1,393 transcripts já em cache (62MB)
+- 912 empresas com histórico de earnings
+
+### 🔄 Como Reiniciar Worker (após 1 Nov 2025)
+
+```bash
+# 1. Verificar que FMP bandwidth resetou
+# Dashboard FMP deve mostrar 0/20 GB
+
+# 2. Reiniciar worker
+ssh root@128.140.45.28
+pm2 start transcripts-worker
+
+# 3. Validar comportamento otimizado (aguardar 5min)
+pm2 logs transcripts-worker --lines 50 | grep -i "SKIP\|already in cache"
+# Deve mostrar: "already in cache - SKIP" para ~99% dos símbolos
+
+# 4. Monitorar primeiras horas
+# Esperado: ~0-10 novos transcripts (só earnings recentes)
+# API calls: ~10-20 (vs 10,664 anterior)
+```
+
+### ⚠️ Status Atual
+- **Worker:** STOPPED (parado desde 2025-10-05)
+- **FMP Bandwidth:** 20.25/20 GB (excedido)
+- **Reset Date:** 1 Novembro 2025
+- **Código otimizado:** DEPLOYED ✅
+
 ## SECURITY & RLS (Phase 7)
 
 - Logs: PII redaction habilitado no backend (e-mails/tokens mascarados em `server/lib/logger.ts`).
