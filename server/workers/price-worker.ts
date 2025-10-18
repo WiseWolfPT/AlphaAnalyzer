@@ -76,9 +76,12 @@ type UniverseSource = 'env' | 'pg';
 
 class ProactiveWorker {
   private stocks: string[] = [
+    // Portuguese Stocks (Euronext Lisbon)
+    'GALP.LS', 'EDP.LS', 'JMT.LS', 'NOS.LS', 'ALTRI.LS',
+
     // Magnificent 7
     'AAPL', 'MSFT', 'GOOGL', 'AMZN', 'NVDA', 'META', 'TSLA',
-    
+
     // Top S&P 500 by market cap
     'BRK-B', 'JPM', 'JNJ', 'V', 'PG', 'UNH', 'HD', 'MA',
     'DIS', 'BAC', 'ADBE', 'NFLX', 'CRM', 'CMCSA', 'XOM', 'CVX',
@@ -294,15 +297,15 @@ class ProactiveWorker {
     const startTime = Date.now();
     const timestamp = new Date().toISOString();
     logger.info(`⏱️ Starting update cycle at ${timestamp}`);
-    
+
     let updatedCount = 0;
     let apiCalls = 0;
-    
+
     // Build update universe based on hot/warm configuration
     // 1) Hot set: first N symbols from list (or all if N=0)
     const hotCount = this.hotSetSize > 0 ? Math.min(this.hotSetSize, this.stocks.length) : this.stocks.length;
     const hotSet = this.stocks.slice(0, hotCount);
-    
+
     // 2) Warm set: next M symbols, updated fractionally per cycle (round-robin)
     let toUpdate = [...hotSet];
     let warmChunk: string[] = [];
@@ -326,80 +329,78 @@ class ProactiveWorker {
       this.bucket = new TokenBucket(this.quotesCallsPerMinBudget, 60_000);
     }
 
-    // Process selected symbols in batches
-    for (let i = 0; i < toUpdate.length; i += this.batchSize) {
+    // Import FMP provider for batch quotes (more efficient than individual calls)
+    const { FMPProvider } = await import('../services/providers/fmp-provider.js');
+    const fmpProvider = new FMPProvider(process.env.FMP_API_KEY || '');
+
+    // Process symbols in batches for efficiency
+    // FMP supports up to 50 symbols per request (confirmed via testing)
+    const batchSize = 50;
+    const batches = [];
+    for (let i = 0; i < toUpdate.length; i += batchSize) {
+      batches.push(toUpdate.slice(i, i + batchSize));
+    }
+
+    logger.info(`📦 Processing ${toUpdate.length} symbols in ${batches.length} batches (${batchSize} symbols/batch)`);
+
+    for (const batch of batches) {
       if (!this.isRunning) break;
-      
-      const batch = toUpdate.slice(i, i + this.batchSize);
-      const batchString = batch.join(',');
-      
+
       try {
-        // Token bucket pacing (if enabled)
+        // Token bucket pacing (if enabled) - 1 token per batch
         if (this.bucket) {
           await this.bucket.take(1);
         }
 
-        // Fetch batch quotes from FMP with timeout + limited retries/backoff
-        const url = `https://financialmodelingprep.com/api/v3/quote/${batchString}?apikey=${process.env.FMP_API_KEY}`;
-        const response = await fetchWithTimeout(url, { timeoutMs: 7000, retries: 2, backoffMs: 800 });
-
+        // Fetch batch quotes from FMP
+        const quotes = await fmpProvider.getBatchQuotes(batch);
         apiCalls++;
         this.totalApiCalls++;
-        
-        if (!response.ok) {
-          logger.error(`FMP API error: ${response.status} ${response.statusText}`);
-          this.failedUpdates += batch.length;
-          continue;
-        }
-        
-        const quotes = await response.json();
-        
-        // Save each quote to Redis applying TTL per set (hot vs warm)
+
+        // Cache all quotes from the batch
         for (const quote of quotes) {
-          if (quote && quote.symbol) {
-            const cacheKey = `quote:${quote.symbol}`;
-            const effectiveTtl = warmSymbols.has(String(quote.symbol).toUpperCase())
-              ? this.ttlWarmSeconds
-              : this.ttlHotSeconds;
-            await (redisCacheService as any).set(
-              cacheKey,
-              {
-                ...quote,
-                cachedAt: timestamp,
-                fromWorker: true
-              },
-              effectiveTtl
-            );
-            updatedCount++;
-            this.totalUpdates++;
+          const symbol = quote.symbol.toUpperCase();
+          const cacheKey = `quote:${symbol}`;
+
+          // Determine TTL based on hot/warm set membership
+          const effectiveTtl = warmSymbols.has(symbol)
+            ? this.ttlWarmSeconds
+            : this.ttlHotSeconds;
+
+          await (redisCacheService as any).set(
+            cacheKey,
+            {
+              ...quote,
+              cachedAt: timestamp,
+              fromWorker: true
+            },
+            effectiveTtl
+          );
+
+          updatedCount++;
+          this.totalUpdates++;
+
+          logger.debug(`Updated ${symbol}: $${quote.price} (TTL: ${effectiveTtl}s)`);
+        }
+
+        // Track failed symbols in this batch
+        const fetchedSymbols = new Set(quotes.map(q => q.symbol.toUpperCase()));
+        for (const symbol of batch) {
+          if (!fetchedSymbols.has(symbol.toUpperCase())) {
+            logger.warn(`Failed to fetch quote for ${symbol} in batch`);
+            this.failedUpdates++;
           }
         }
-        
-        // Also save as a batch for efficient batch queries
-        if (quotes.length > 0) {
-          const batchKey = `batch:${batch.join(',').substring(0, 100)}`; // Truncate key for safety
-          await (redisCacheService as any).set(
-            batchKey,
-            {
-              symbols: batch,
-              quotes: quotes,
-              cachedAt: timestamp
-            },
-            Math.min(this.ttlHotSeconds, this.ttlWarmSeconds)
-          );
-        }
-        
-        logger.debug(`Updated batch ${Math.floor(i/this.batchSize) + 1}/${Math.ceil(this.stocks.length/this.batchSize)}: ${quotes.length} quotes`);
-        
-        // Legacy spacing only if no token bucket is configured
+
+        // Small delay between batches to respect rate limits (only if no token bucket)
         if (!this.bucket) {
-          // Conservative spacing ~3/sec when no budget configured
-          await new Promise(resolve => setTimeout(resolve, 350));
+          await new Promise(resolve => setTimeout(resolve, 250));
         }
-        
+
       } catch (error) {
-        logger.error(`Failed to update batch starting at index ${i}:`, error);
-        this.failedUpdates += batch.length;
+        logger.error(`Failed to process batch:`, error);
+        // Mark all symbols in failed batch as failed
+        batch.forEach(() => this.failedUpdates++);
       }
     }
     
@@ -487,41 +488,3 @@ startWorker().catch(error => {
 });
 
 export { ProactiveWorker };
-
-// --- Helpers: robust fetch with timeout + basic retry/backoff ---
-type FetchOpts = { timeoutMs?: number; retries?: number; backoffMs?: number };
-async function fetchWithTimeout(url: string, opts: FetchOpts = {}): Promise<Response> {
-  const timeoutMs = Math.max(500, opts.timeoutMs ?? 7000);
-  const retries = Math.max(0, opts.retries ?? 0);
-  const backoffMs = Math.max(100, opts.backoffMs ?? 500);
-
-  for (let attempt = 0; attempt <= retries; attempt++) {
-    const controller = new AbortController();
-    const to = setTimeout(() => controller.abort(), timeoutMs);
-    try {
-      const resp = await fetch(url as any, { signal: controller.signal } as any);
-      clearTimeout(to);
-      // Retry on 429/5xx
-      if (resp.status === 429 || (resp.status >= 500 && resp.status < 600)) {
-        if (attempt < retries) {
-          await sleep(backoffMs * (attempt + 1));
-          continue;
-        }
-      }
-      return resp;
-    } catch (e) {
-      clearTimeout(to);
-      if (attempt < retries) {
-        await sleep(backoffMs * (attempt + 1));
-        continue;
-      }
-      throw e;
-    }
-  }
-  // Should not reach here
-  throw new Error('fetchWithTimeout: exhausted retries');
-}
-
-function sleep(ms: number) {
-  return new Promise(r => setTimeout(r, ms));
-}
