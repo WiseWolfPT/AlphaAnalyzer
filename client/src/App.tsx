@@ -192,6 +192,13 @@ const Transcripts = createLazyComponent(
   }
 );
 
+const TranscriptsSymbol = createLazyComponent(
+  () => import("@/pages/transcripts-symbol"),
+  {
+    name: 'TranscriptsSymbol'
+  }
+);
+
 const TranscriptDetail = createLazyComponent(
   () => import("@/pages/transcript-detail"),
   {
@@ -473,6 +480,7 @@ function Router() {
         <Route path="/watchlists" component={Watchlists} />
         <Route path="/earnings" component={Earnings} />
         <Route path="/transcripts" component={Transcripts} />
+        <Route path="/transcripts/:symbol" component={TranscriptsSymbol} />
         <Route path="/transcript/:id" component={TranscriptDetail} />
         <Route path="/profile" component={Profile} />
         <Route path="/settings" component={Settings} />

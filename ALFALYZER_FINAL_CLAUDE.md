@@ -2195,82 +2195,329 @@ Sistema de cache está **FUNCIONAL e EFICIENTE**. Os 4 items não feitos são **
 
 ### 📊 FASE 3: Valor Intrínseco - Métodos & Charts (DIA 8-10)
 
-**Objetivo:** Múltiplos métodos + Valuation Chart + Gauge
+**Objetivo:** Expandir de 1 método (AlfaValue™) para 10+ métodos comparáveis + Visualização profissional
+
+**Referência Técnica:** `ALFALYZER_FASE3_GAPS_STOCKORACLE.md`
+- Análise completa vs StockOracle (Adam Khoo)
+- 11 métodos únicos identificados
+- 3 GAPs de melhoria vs competidor
+- 7 vantagens competitivas documentadas
 
 **Agentes:**
-- `backend-architect` - DCF externos, múltiplos
-- `frontend-react-specialist` - Charts + Gauge
-- `financial-analyst` - Validar múltiplos
+- `backend-architect` - DCF externos, múltiplos, macro multiplier
+- `frontend-react-specialist` - Charts, Gauge, UX enhancements
+- `financial-analyst` - Validar fórmulas e cálculos
 
 **Tarefas:**
 
-#### Backend (2 dias)
-1. **DCF Externos (FMP)** (1 dia)
-   ```typescript
-   /server/services/fmp-dcf.ts
-   - getDCF_FCF_EXT() → /discounted-cash-flow
-   - getDCF_FCFE_EXT() → /levered-discounted-cash-flow
-   - getDCF_TERM_EXT() → /custom-discounted-cash-flow
-   - getDCF_TERM_FCFE_EXT() → /custom-levered-discounted-cash-flow
-   ```
+#### Backend (2.5 dias)
 
-2. **Múltiplos Internos** (0.5 dia)
-   ```typescript
-   - PE_MEAN_5Y, PE_MED_5Y
-   - PS_MEAN_5Y, PS_MED_5Y
-   - PB_MEAN_5Y
-   - PEG, PSG
-   ```
+**1. DCF Externos (FMP Benchmarks)** (1 dia)
+```typescript
+/server/services/fmp-dcf.ts (NOVO)
+- getDCF_FCF_EXT(ticker) → GET /discounted-cash-flow
+  - Benchmark: DCF baseado em FCF (cálculo FMP)
+  - Compara com nosso DCF interno
 
-3. **Macro Multiplier** (0.5 dia)
-   ```
-   - US10Y - US2Y = slope
-   - ΔFFR = YoY Fed Funds Rate change
-   - m = 1.03 (bullish) | 0.97 (bearish) | 1.00 (neutral)
-   ```
+- getDCF_FCFE_EXT(ticker) → GET /levered-discounted-cash-flow
+  - Benchmark: DCF baseado em FCFE (Free Cash Flow to Equity)
 
-4. **Endpoints** (0.5 dia)
-   ```
-   GET /api/iv/:ticker/chart → All methods + price
-   GET /api/iv/:ticker/methods/:method/auto → Calculator inputs
-   POST /api/iv/:ticker/methods/:method/calc → User calc
-   GET /api/macro/multiplier?region=US
-   ```
+- getDCF_TERM_EXT(ticker) → GET /custom-discounted-cash-flow
+  - Benchmark: DCF Terminal (Gordon Growth Model)
 
-#### Frontend (1-2 dias)
-1. **Valuation Chart** (1 dia)
-   ```tsx
-   /client/src/components/stock/valuation-chart.tsx
-   - Bar chart: All methods (AlfaValue, DCF internos, externos, múltiplos)
-   - Lines: AlfaValue (verde), Preço (preto)
-   - Tooltip: Fórmula curta + inputs + as_of
-   ```
+- getDCF_TERM_FCFE_EXT(ticker) → GET /custom-levered-discounted-cash-flow
+  - Benchmark: DCF Terminal FCFE
 
-2. **Gauge Component** (0.5 dia)
-   ```tsx
-   /client/src/components/stock/valuation-gauge.tsx
-   - Ponteiro: Preço atual
-   - Arco: Centrado no IV
-   - Zonas: Verde (≤-15%), Amarelo (-15% a +15%), Vermelho (≥+15%)
-   ```
+// Cache: 24h TTL
+// Validação: Divergência >10% vs interno = WARN
+```
 
-3. **Integration** (0.5 dia)
-   ```tsx
-   /client/src/pages/intrinsic-value.tsx
-   - Adicionar Gauge + Chart
-   - Fetch /api/iv/:ticker/chart
-   - Dropdown: Selecionar método ativo (default: AlfaValue)
-   ```
+**2. Múltiplos Históricos** (0.5 dia)
+```typescript
+/server/services/valuation-service.ts (EXTEND)
 
-**Deliverables:**
-- [ ] Endpoint /api/iv/:ticker/chart retorna todos métodos
-- [ ] Valuation Chart mostra 10+ métodos
-- [ ] Gauge funciona (ponteiro + cores)
-- [ ] Mid-year discounting aplicado em todos DCF
-- [ ] Macro multiplier calculado e logado
-- [ ] Tests passam
+// P/E Mean (5y)
+calculatePEMean5Y(ticker) {
+  // 1. Fetch historical P/E: [2020, 2021, 2022, 2023, 2024]
+  // 2. Mean = sum(ratios) / 5
+  // 3. IV = Mean × EPS_TTM
+  // Fórmula: IV = Mean_PE_5y × Current_EPS
+}
 
-**Aprovação:** Utilizador valida visualmente + Financial Analyst
+// P/S Mean (5y)
+calculatePSMean5Y(ticker) {
+  // Fórmula: IV = Mean_PS_5y × Current_Sales_per_Share
+}
+
+// P/B Mean (5y)
+calculatePBMean5Y(ticker) {
+  // Fórmula: IV = Mean_PB_5y × Current_Book_Value_per_Share
+}
+
+// Dados: FMP /ratios-ttm, /key-metrics-ttm
+// Cache: 24h TTL
+```
+
+**3. Growth-Adjusted Ratios** (0.5 dia)
+```typescript
+// PEG Ratio
+calculatePEG(ticker) {
+  fairPEG = 1.5;              // Benchmark "justo"
+  growthRate = g_1_5;         // Taxa crescimento 3-5y
+  eps = EPS_TTM;
+
+  IV = fairPEG × growthRate × eps;
+  // Exemplo: 1.5 × 10.07% × $6.61 = $99.84
+}
+
+// PSG Ratio
+calculatePSG(ticker) {
+  fairPSG = 0.2;              // Benchmark "justo"
+  growthRate = revenue_CAGR_3y;
+  sps = Sales_per_Share_TTM;
+
+  IV = fairPSG × growthRate × sps;
+}
+```
+
+**4. Macro Multiplier** (0.5 dia)
+```typescript
+/server/services/macro-service.ts (NOVO)
+
+getMacroMultiplier(region = 'US') {
+  // Inputs
+  us10y = await getYield('US10Y');     // FMP /treasury
+  us2y = await getYield('US2Y');
+  ffr_current = await getFedFundsRate(); // FMP /economic
+  ffr_yoy = ffr_current - ffr_1y_ago;
+
+  // Cálculo
+  yieldSlope = us10y - us2y;
+
+  if (yieldSlope < 0 && ffr_yoy > 0.5) {
+    return 0.97; // Bearish (inversão + Fed agressivo)
+  }
+  if (yieldSlope > 1.0 && ffr_yoy < -0.5) {
+    return 1.03; // Bullish (curva normal + Fed dovish)
+  }
+  return 1.00; // Neutral
+}
+
+// Aplicação: Multiplica TODOS os IVs pelo ajuste macro
+// Cache: 6h TTL
+```
+
+**5. Endpoints Consolidadores** (0.5 dia)
+```typescript
+// Endpoint principal
+GET /api/iv/:ticker/chart
+Response: {
+  ticker: string;
+  price: number;
+  methods: Array<{
+    name: string;           // "AlfaValue™", "DCF-20 FCF FMP", etc
+    category: string;       // "proprietary", "dcf", "multiples", "growth"
+    iv: number;
+    discount_pct: number;
+    formula: string;        // "FCF × PV(g1-5, g6-10, g11-20, DR)"
+    confidence: string;     // "HIGH", "MEDIUM", "LOW"
+  }>;
+  macro_multiplier: number;
+  as_of: string;
+}
+
+// Calculadoras customizadas
+GET /api/iv/:ticker/methods/:method/auto → Pre-filled inputs
+POST /api/iv/:ticker/methods/:method/calc → User calculation
+
+// Macro data
+GET /api/macro/multiplier?region=US
+```
+
+**6. 🆕 GAP #3: "Based On" Selector (MUST-HAVE)** (0.5 dia)
+```typescript
+// Backend support para user escolher métrica base
+interface DCFCalcRequest {
+  based_on: 'fcf' | 'ocf' | 'ni';  // NEW PARAMETER
+  current_value: number;            // Valor da métrica escolhida
+  growth_1_5: number;
+  growth_6_10: number;
+  growth_11_20: number;
+  discount_rate: number;
+  // ...
+}
+
+// Modificar calculateDCF20Internal para aceitar base métrica
+calculateDCF20Internal(params: DCFCalcRequest) {
+  const baseMetric = params.based_on === 'fcf' ? params.current_value :
+                     params.based_on === 'ocf' ? params.current_value :
+                     params.current_value; // NI
+
+  // Apply DCF formula com métrica escolhida
+  // ...
+}
+```
+
+**7. 🟠 GAP #2: "Without NRI" Toggle (SHOULD-HAVE)** (1 dia - OPCIONAL)
+```typescript
+// Non-Recurring Items normalization
+interface MultipleCalcOptions {
+  exclude_nri?: boolean;  // Default: false
+}
+
+calculatePEMean5Y(ticker, options = {}) {
+  let eps = await getEPS_TTM(ticker);
+
+  if (options.exclude_nri) {
+    // Opção 1: FMP incomeBeforeIncomeTaxExpense
+    const normalizedNI = await getNormalizedIncome(ticker);
+    eps = normalizedNI / sharesOutstanding;
+
+    // Opção 2: Heurística (se NI volátil >30% YoY)
+    const niVolatility = calculateVolatility(ticker);
+    if (niVolatility > 0.30) {
+      warn("High NI volatility - consider excluding NRI");
+    }
+  }
+
+  return meanPE_5y × eps;
+}
+```
+
+#### Frontend (1.5 dias)
+
+**1. Valuation Chart Component** (1 dia)
+```tsx
+/client/src/components/stock/valuation-methods-chart.tsx (NOVO)
+
+interface ValuationMethod {
+  name: string;
+  iv: number;
+  discount_pct: number;
+  category: 'proprietary' | 'dcf' | 'multiples' | 'growth';
+}
+
+<ValuationMethodsChart
+  methods={allMethods}
+  currentPrice={price}
+  highlightMethod="AlfaValue™"
+/>
+
+// Rendering
+- Bar chart horizontal
+- Barras verdes: IV < Price (undervalued)
+- Barras vermelhas: IV > Price (overvalued)
+- Linha vertical preta: Current Price
+- Linha vertical verde: AlfaValue™ (destaque)
+- Tooltip: Formula + Inputs + Confidence
+- Grouping: Por categoria (DCF, Multiples, Growth)
+
+// Library: Recharts ou shadcn/ui BarChart
+```
+
+**2. Valuation Gauge Component** (0.5 dia)
+```tsx
+/client/src/components/stock/valuation-gauge.tsx (NOVO)
+
+<ValuationGauge
+  iv={selectedMethod.iv}
+  price={currentPrice}
+  method={selectedMethod.name}
+/>
+
+// Visual
+- Arc gauge (180°)
+- Ponteiro: Current Price position
+- Zonas de cor:
+  - Verde (0-120°): ≤-15% discount (Strong Buy)
+  - Amarelo (120-150°): -15% a +15% (Hold)
+  - Vermelho (150-180°): ≥+15% premium (Overvalued)
+- Centro: IV value
+- Label: Discount %
+
+// Library: Custom SVG ou recharts RadialBarChart
+```
+
+**3. Integration & UX** (0.5 dia)
+```tsx
+/client/src/pages/intrinsic-value.tsx (UPDATE)
+
+// State
+const [selectedMethod, setSelectedMethod] = useState('alfavalue');
+const [basedOn, setBasedOn] = useState<'fcf'|'ocf'|'ni'>('fcf');
+const [excludeNRI, setExcludeNRI] = useState(false);
+
+// Fetch data
+const { data: chartData } = useQuery({
+  queryKey: ['iv-chart', ticker, basedOn, excludeNRI],
+  queryFn: () => fetch(`/api/iv/${ticker}/chart?based_on=${basedOn}&exclude_nri=${excludeNRI}`)
+});
+
+// UI Layout
+<div className="space-y-6">
+  {/* Method Selector */}
+  <Select value={selectedMethod} onChange={setSelectedMethod}>
+    <option value="alfavalue">AlfaValue™ (Recommended)</option>
+    <option value="dcf_fcf_int">DCF-20 (FCF) Internal</option>
+    <option value="dcf_fcf_fmp">DCF-20 (FCF) FMP Benchmark</option>
+    <option value="pe_mean">Mean P/E (5y)</option>
+    {/* ... todas as opções */}
+  </Select>
+
+  {/* 🆕 GAP #3: Based On Selector */}
+  <Select label="Based On" value={basedOn} onChange={setBasedOn}>
+    <option value="fcf">Free Cash Flow (recommended)</option>
+    <option value="ocf">Operating Cash Flow</option>
+    <option value="ni">Net Income</option>
+  </Select>
+
+  {/* 🆕 GAP #2: Without NRI Toggle (OPCIONAL) */}
+  <Checkbox
+    checked={excludeNRI}
+    onChange={setExcludeNRI}
+    label="Use normalized earnings (ex-NRI)"
+  >
+    <Tooltip>Excludes one-time gains/losses for cleaner valuation</Tooltip>
+  </Checkbox>
+
+  {/* Gauge */}
+  <ValuationGauge
+    iv={chartData.methods.find(m => m.name === selectedMethod)?.iv}
+    price={chartData.price}
+  />
+
+  {/* Chart */}
+  <ValuationMethodsChart
+    methods={chartData.methods}
+    currentPrice={chartData.price}
+    highlightMethod={selectedMethod}
+  />
+
+  {/* Details Card */}
+  <MethodDetailsCard method={selectedMethod} data={chartData} />
+</div>
+```
+
+**Deliverables (Expandidos):**
+- [ ] 🔴 Endpoint `/api/iv/:ticker/chart` retorna 10+ métodos
+- [ ] 🔴 4 DCF externos (FMP benchmarks) funcionando
+- [ ] 🔴 3 múltiplos históricos (P/E, P/S, P/B Mean 5y)
+- [ ] 🔴 2 growth-adjusted (PEG, PSG)
+- [ ] 🔴 Macro multiplier calculado e aplicado
+- [ ] 🔴 Valuation Chart mostra todos métodos (bar chart)
+- [ ] 🔴 Gauge funciona (ponteiro + 3 zonas cor)
+- [ ] 🔴 **GAP #3: "Based On" Selector** (dropdown FCF/OCF/NI)
+- [ ] 🟠 GAP #2: "Without NRI" Toggle (checkbox - OPCIONAL)
+- [ ] 🟡 GAP #1: Median variants (P/E, P/S, P/B - FASE 4+)
+- [ ] Mid-year discounting aplicado em todos DCF internos
+- [ ] Cache Redis com TTLs apropriados (24h métodos, 6h macro)
+- [ ] Tests passam (unit + integration)
+- [ ] Documentação atualizada (README, API docs)
+
+**Aprovação:**
+1. Utilizador valida visualmente (chart + gauge funcionam)
+2. Financial Analyst valida fórmulas (≤3% erro vs benchmarks)
+3. Playwright E2E tests (navegação + data loading)
 
 ---
 

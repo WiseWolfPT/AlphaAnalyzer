@@ -11,11 +11,15 @@ export const queryKeys = {
   stocks: () => [...queryKeys.all, 'stocks'] as const,
   stock: (symbol: string) => [...queryKeys.stocks(), symbol] as const,
   stockQuote: (symbol: string) => [...queryKeys.stock(symbol), 'quote'] as const,
-  stockChart: (symbol: string, params: ChartParams) => 
+  stockChart: (symbol: string, params: ChartParams) =>
     [...queryKeys.stock(symbol), 'chart', params] as const,
   stockFundamentals: (symbol: string) => [...queryKeys.stock(symbol), 'fundamentals'] as const,
   stockNews: (symbol: string) => [...queryKeys.stock(symbol), 'news'] as const,
   stockBatch: (symbols: string[]) => [...queryKeys.stocks(), 'batch', symbols.sort().join(',')] as const,
+  // Stock details queries (for use-stock-queries.ts)
+  stockProfile: (symbol: string) => [...queryKeys.stock(symbol), 'profile'] as const,
+  stockMetrics: (symbol: string) => [...queryKeys.stock(symbol), 'metrics'] as const,
+  stockFinancials: (symbol: string) => [...queryKeys.stock(symbol), 'financials'] as const,
 
   // Portfolio-related queries
   portfolios: () => [...queryKeys.all, 'portfolios'] as const,
@@ -60,6 +64,13 @@ export const queryKeys = {
   search: () => [...queryKeys.all, 'search'] as const,
   searchStocks: (query: string) => [...queryKeys.search(), 'stocks', query] as const,
   searchCompanies: (query: string) => [...queryKeys.search(), 'companies', query] as const,
+
+  // Intrinsic Value / AlfaValue queries
+  intrinsicValue: () => [...queryKeys.all, 'intrinsic-value'] as const,
+  alfaValue: (ticker: string) => [...queryKeys.intrinsicValue(), ticker.toUpperCase()] as const,
+  alfaValueMain: (ticker: string) => [...queryKeys.alfaValue(ticker), 'main'] as const,
+  valuationChart: (ticker: string, basedOn: string, excludeNRI: boolean) =>
+    [...queryKeys.alfaValue(ticker), 'chart', basedOn, excludeNRI] as const,
 } as const;
 
 // Type definitions for query parameters

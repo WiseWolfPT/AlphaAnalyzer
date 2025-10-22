@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
+import { FinancialMetricsDisplay } from '@/components/transcript/financial-metrics-display';
 
 // Helper to get API URL (consistent with list page)
 const getApiUrl = () => (import.meta && import.meta.env && import.meta.env.DEV ? 'http://localhost:3001' : '');

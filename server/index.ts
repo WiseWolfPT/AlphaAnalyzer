@@ -597,9 +597,9 @@ async function initializeMarketDataServices() {
     });
 
     // ROADMAP V4: Apply Supabase authentication to protected routes
-    // Allow unauthenticated admin status check to avoid circular dependency
-    app.use((req: any, res: any, next: any) => {
-      if (req.path === '/api/admin/auth/check') return next();
+    // Apply admin authentication only to /api/admin/* routes (except /api/admin/auth/check)
+    app.use('/api/admin', (req: any, res: any, next: any) => {
+      if (req.path === '/auth/check') return next();
       return requireAdmin(req, res, next);
     });
     app.use('/api/portfolio/**', requireAuth);    // Portfolio routes require authentication

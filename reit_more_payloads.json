@@ -1,0 +1,46 @@
+{
+  "CCI": {
+    "detail": {
+      "symbol": "CCI",
+      "guid": "7f323ab5-44f0-4008-9b5f-8c3168a56293",
+      "sector": "Real Estate",
+      "industry": "REIT - Specialty"
+    },
+    "oracle": 87.53,
+    "stockPrice": 97.48,
+    "discountAndPremium": 11.37
+  },
+  "EQIX": {
+    "detail": {
+      "symbol": "EQIX",
+      "guid": "92a39f37-cc19-4a3a-b09a-1e526bdb1cd9",
+      "sector": "Real Estate",
+      "industry": "REIT - Specialty"
+    },
+    "oracle": 870.88,
+    "stockPrice": 813.93,
+    "discountAndPremium": -6.54
+  },
+  "PSA": {
+    "detail": {
+      "symbol": "PSA",
+      "guid": "f50a7d49-a59f-417a-a4ae-538604868744",
+      "sector": "Real Estate",
+      "industry": "REIT - Industrial"
+    },
+    "oracle": 281.15,
+    "stockPrice": 307.61,
+    "discountAndPremium": 9.41
+  },
+  "VICI": {
+    "detail": {
+      "symbol": "VICI",
+      "guid": "97fbbfde-bcdb-4424-afad-212ba7155462",
+      "sector": "Real Estate",
+      "industry": "REIT - Diversified"
+    },
+    "oracle": 35.61,
+    "stockPrice": 30.86,
+    "discountAndPremium": -13.34
+  }
+}

@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
+import { queryKeys } from '@/lib/query-keys';
 
 // Helper to get API URL
 const getApiUrl = () => {
@@ -71,7 +72,7 @@ export function useCachedBatchQuotes(symbols: string[], options: any = {}) {
 // Hook for single quote from cache
 export function useCachedQuote(symbol: string, options = {}) {
   return useQuery({
-    queryKey: ['cache', 'quote', symbol],
+    queryKey: queryKeys.stockQuote(symbol),
     queryFn: async () => {
       const apiUrl = getApiUrl();
       const response = await fetch(`${apiUrl}/api/cache/quotes/${symbol}`);
@@ -133,7 +134,7 @@ export function useCachedHistorical(symbol: string, period: string = '1M', optio
 // Hook for fundamentals from cache
 export function useCachedFundamentals(symbol: string, options = {}) {
   return useQuery({
-    queryKey: ['cache', 'fundamentals', symbol],
+    queryKey: queryKeys.stockFundamentals(symbol),
     queryFn: async () => {
       const apiUrl = getApiUrl();
       const response = await fetch(`${apiUrl}/api/cache/fundamentals/${symbol}`);
@@ -153,7 +154,7 @@ export function useCachedFundamentals(symbol: string, options = {}) {
 // Hook for financials from cache
 export function useCachedFinancials(symbol: string, options = {}) {
   return useQuery({
-    queryKey: ['cache', 'financials', symbol],
+    queryKey: queryKeys.stockFinancials(symbol),
     queryFn: async () => {
       const apiUrl = getApiUrl();
       const response = await fetch(`${apiUrl}/api/cache/financials/${symbol}`);

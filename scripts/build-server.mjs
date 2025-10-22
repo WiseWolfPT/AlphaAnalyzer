@@ -112,5 +112,10 @@ await build({
   outfile: resolve(outdir, 'workers', 'transcripts-worker.cjs'),
   ...workerCommon,
 });
+await build({
+  entryPoints: [resolve(root, 'server', 'workers', 'valuation-updater.ts')],
+  outfile: resolve(outdir, 'workers', 'valuation-updater.cjs'),
+  ...workerCommon,
+});
 
 console.log('✅ Workers build complete -> dist/server/workers/*.cjs');

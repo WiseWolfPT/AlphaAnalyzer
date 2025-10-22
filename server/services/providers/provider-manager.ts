@@ -18,6 +18,13 @@ export interface StockQuote {
   pe?: number;
   timestamp: string;
   provider: string;
+  // After-hours and pre-market data
+  afterMarketPrice?: number | null;
+  afterMarketChange?: number | null;
+  afterMarketChangePercentage?: number | null;
+  preMarketPrice?: number | null;
+  preMarketChange?: number | null;
+  preMarketChangePercentage?: number | null;
 }
 
 export interface MarketStatus {

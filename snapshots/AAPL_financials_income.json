@@ -1,0 +1,215 @@
+{
+  "message": "GET Request successful.",
+  "result": {
+    "generalIndustryCode": "01",
+    "header": [
+      "2020-Sep-26",
+      "2021-Sep-25",
+      "2022-Sep-24",
+      "2023-Sep-30",
+      "2024-Sep-28",
+      "TTM"
+    ],
+    "headerYears": [
+      "2020",
+      "2021",
+      "2022",
+      "2023",
+      "2024"
+    ],
+    "headerQuarters": [],
+    "frequencyCode": 1,
+    "data": [
+      {
+        "description": "Total Revenue",
+        "isMil": true,
+        "data": {
+          "value1": 274150,
+          "value2": 365817,
+          "value3": 394328,
+          "value4": 383285,
+          "value5": 391035,
+          "ttmValue": 408625
+        }
+      },
+      {
+        "description": "Revenue",
+        "isMil": true,
+        "data": {
+          "value1": 274150,
+          "value2": 365817,
+          "value3": 394328,
+          "value4": 383285,
+          "value5": 391035,
+          "ttmValue": 408625
+        }
+      },
+      {
+        "description": "Cost of Goods Sold (COGS)",
+        "isMil": true,
+        "data": {
+          "value1": 170143,
+          "value2": 212981,
+          "value3": 223546,
+          "value4": 214137,
+          "value5": 210352,
+          "ttmValue": 217886
+        }
+      },
+      {
+        "description": "Gross Profit",
+        "isMil": true,
+        "data": {
+          "value1": 104007,
+          "value2": 152836,
+          "value3": 170782,
+          "value4": 169148,
+          "value5": 180683,
+          "ttmValue": 190739
+        }
+      },
+      {
+        "description": "Other Selling, General & Administrative Expense",
+        "isMil": true,
+        "data": {
+          "value1": 19916,
+          "value2": 21973,
+          "value3": 25094,
+          "value4": 24932,
+          "value5": 26097,
+          "ttmValue": 27076
+        }
+      },
+      {
+        "description": "Research & Development (R&D) Expense",
+        "isMil": true,
+        "data": {
+          "value1": 18752,
+          "value2": 21914,
+          "value3": 26251,
+          "value4": 29915,
+          "value5": 31370,
+          "ttmValue": 33449
+        }
+      },
+      {
+        "description": "Selling, General, Administrative & Other Expense",
+        "isMil": true,
+        "data": {
+          "value1": 38668,
+          "value2": 43887,
+          "value3": 51345,
+          "value4": 54847,
+          "value5": 57467,
+          "ttmValue": 60525
+        }
+      },
+      {
+        "description": "Operating Income",
+        "isMil": true,
+        "data": {
+          "value1": 65339,
+          "value2": 108949,
+          "value3": 119437,
+          "value4": 114301,
+          "value5": 123216,
+          "ttmValue": 130214
+        }
+      },
+      {
+        "description": "Non-Operating Income/(Expense)",
+        "isMil": true,
+        "data": {
+          "value1": 4160,
+          "value2": 2903,
+          "value3": 2597,
+          "value4": 3368,
+          "value5": 269,
+          "ttmValue": -679
+        }
+      },
+      {
+        "description": "EBT Excl. Unusual Items",
+        "data": {
+          "value1": 66626,
+          "value2": 109207,
+          "value3": 119103,
+          "value4": 113736,
+          "value5": 123485,
+          "ttmValue": 129535
+        }
+      },
+      {
+        "description": "Income Tax Expense",
+        "isMil": true,
+        "data": {
+          "value1": 9680,
+          "value2": 14527,
+          "value3": 19300,
+          "value4": 16741,
+          "value5": 29749,
+          "ttmValue": 30255
+        }
+      },
+      {
+        "description": "Net Income",
+        "isMil": true,
+        "data": {
+          "value1": 57411,
+          "value2": 94680,
+          "value3": 99803,
+          "value4": 96995,
+          "value5": 93736,
+          "ttmValue": 99280
+        }
+      },
+      {
+        "description": "Basic EPS",
+        "data": {
+          "value1": 3.2754,
+          "value2": 5.614,
+          "value3": 6.1132,
+          "value4": 6.134,
+          "value5": 6.0836,
+          "ttmValue": 6.5782
+        }
+      },
+      {
+        "description": "Shares Outstanding (Diluted Average)",
+        "isMil": true,
+        "data": {
+          "value1": 17528.214,
+          "value2": 16864.919,
+          "value3": 16325.819,
+          "value4": 15812.547,
+          "value5": 15408.095,
+          "ttmValue": 14948.179
+        }
+      },
+      {
+        "description": "Dividend Payout Ratio",
+        "isPercentage": true,
+        "data": {
+          "value1": 24.2718446601942,
+          "value2": 15.1407196294977,
+          "value3": 14.7222403978277,
+          "value4": 15.3244212585589,
+          "value5": 16.1088828982839,
+          "ttmValue": 15.3537441853395
+        }
+      },
+      {
+        "description": "EBITDA",
+        "isMil": true,
+        "data": {
+          "value1": 76395,
+          "value2": 120233,
+          "value3": 130541,
+          "value4": 125820,
+          "value5": 134661,
+          "ttmValue": 141696
+        }
+      }
+    ]
+  }
+}

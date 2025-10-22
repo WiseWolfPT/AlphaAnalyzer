@@ -23,6 +23,20 @@ import { CacheService } from '../services/cache/cache-service';
 import { simpleCacheService } from '../services/simple-cache-service';
 // Legacy threeTierCache removed from market-data routes per Phase 1
 import { optionalMarketDataApiKey } from '../middleware/market-data-api-key';
+// Valuation controllers (AlfaValue™ - FASE 2)
+import {
+  getAlfaValue,
+  getRiskFree,
+  getMRP,
+  getGTerm,
+  getSectorGrowth,
+} from '../controllers/valuation-controller';
+
+// IV Chart controller (FASE 3)
+import {
+  getIVChart,
+  getMacroMultiplier as getMacroMultiplierController,
+} from '../controllers/iv-chart-controller';
 
 const router = Router();
 
@@ -2123,7 +2137,6 @@ router.get('/fmp/quote-short/:symbol',
   }
 );
 
-export default router;
 /**
  * GET /api/market-data/extended-hours/:symbol
  * Prefer FMP stable endpoints; fallback to v4 if needed (pre-market)
@@ -2312,3 +2325,65 @@ router.post('/extended-hours/batch', async (req: Request, res: Response) => {
     res.status(500).json({ error: 'EXTENDED_HOURS_BATCH_ERROR' });
   }
 });
+
+/**
+ * ========================================
+ * VALUATION ENDPOINTS (AlfaValue™ - FASE 2)
+ * ========================================
+ */
+
+/**
+ * GET /api/iv/:ticker/main
+ * Calculate AlfaValue™ intrinsic value for a stock
+ */
+router.get('/:ticker/main', authService, getAlfaValue);
+
+/**
+ * GET /api/iv/rf?region=US
+ * Get risk-free rate (US 10Y Treasury)
+ */
+router.get('/rf', authService, getRiskFree);
+
+/**
+ * GET /api/iv/mrp?region=US
+ * Get market risk premium for a region
+ */
+router.get('/mrp', authService, getMRP);
+
+/**
+ * GET /api/iv/gterm?region=US
+ * Get terminal growth rate (GDP + inflation)
+ */
+router.get('/gterm', authService, getGTerm);
+
+/**
+ * GET /api/iv/sector/growth?industry=Technology
+ * Get sector mid-growth rate for an industry
+ */
+router.get('/sector/growth', authService, getSectorGrowth);
+
+/**
+ * FASE 3: IV Chart and Macro Routes
+ */
+
+/**
+ * GET /api/iv/:ticker/chart
+ * Get consolidated valuation methods chart for a ticker
+ * Query params:
+ * - based_on: "fcf" | "ocf" | "ni" (default: "fcf") - GAP #3
+ *
+ * Note: Router is mounted at /api/iv, so route is /:ticker/chart
+ */
+router.get("/:ticker/chart", authService, getIVChart);
+
+/**
+ * GET /api/macro/multiplier
+ * Get current macro multiplier and sentiment
+ *
+ * Note: Router is also mounted at /api/market-data, so this creates both:
+ * - /api/market-data/macro/multiplier
+ * - /api/iv/macro/multiplier (unintended but harmless)
+ */
+router.get("/macro/multiplier", authService, getMacroMultiplierController);
+
+export default router;

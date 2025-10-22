@@ -79,7 +79,7 @@ router.post('/quotes/batch', async (req: Request, res: Response) => {
     }
 
     const { symbols } = validation.data;
-    
+
     // Use cache-first strategy for batch
     const quotesBySymbol = await simpleCacheService.getBatchQuotes(symbols);
     const quotes = Object.values(quotesBySymbol);
@@ -89,12 +89,286 @@ router.post('/quotes/batch', async (req: Request, res: Response) => {
       _source: 'cache-first',
       _timestamp: Date.now(),
     });
-    
+
   } catch (error) {
     logger.error('Batch quotes fetch error:', error);
     res.status(500).json({
       error: 'CACHE_ERROR',
       message: 'Failed to fetch cached quotes'
+    });
+  }
+});
+
+/**
+ * GET /api/cache/fundamentals/:symbol
+ * Cached company profile + key metrics (1 hour TTL)
+ * Combines profile and metrics into single endpoint to reduce API calls
+ */
+router.get('/fundamentals/:symbol', async (req: Request, res: Response) => {
+  try {
+    const validation = symbolSchema.safeParse({ symbol: req.params.symbol });
+    if (!validation.success) {
+      return res.status(400).json({
+        error: 'INVALID_SYMBOL',
+        message: validation.error.errors[0].message
+      });
+    }
+
+    const { symbol } = validation.data;
+    const { redisCacheService } = await import('../cache/redis-cache-service');
+
+    const cacheKey = `fundamentals:${symbol}`;
+    const cached = await redisCacheService.get(cacheKey);
+
+    if (cached) {
+      return res.json({
+        data: cached,
+        _cached: true,
+        _source: 'redis',
+        _timestamp: Date.now()
+      });
+    }
+
+    // Fetch from FMP and cache for 1 hour
+    const apiKey = process.env.FMP_API_KEY;
+    if (!apiKey || apiKey === 'demo') {
+      return res.status(503).json({ error: 'FMP_NOT_CONFIGURED' });
+    }
+
+    const [profileRes, metricsRes] = await Promise.all([
+      fetch(`https://financialmodelingprep.com/api/v3/profile/${symbol}?apikey=${apiKey}`),
+      fetch(`https://financialmodelingprep.com/api/v3/key-metrics/${symbol}?period=quarter&limit=1&apikey=${apiKey}`)
+    ]);
+
+    const profileData = await profileRes.json();
+    const metricsData = await metricsRes.json();
+
+    const profile = Array.isArray(profileData) ? profileData[0] : profileData;
+    const metrics = Array.isArray(metricsData) ? metricsData[0] : metricsData;
+
+    const combined = {
+      // Profile data
+      symbol: profile?.symbol || symbol,
+      name: profile?.companyName || profile?.name,
+      sector: profile?.sector,
+      industry: profile?.industry,
+      description: profile?.description,
+      marketCap: profile?.mktCap || profile?.marketCap,
+      logo: profile?.image,
+      website: profile?.website,
+      ceo: profile?.ceo,
+      employees: profile?.fullTimeEmployees,
+      country: profile?.country,
+      exchange: profile?.exchangeShortName,
+      ipo: profile?.ipoDate,
+      // Metrics data
+      peRatio: metrics?.peRatio,
+      pegRatio: metrics?.pegRatio,
+      dividendYield: metrics?.dividendYield,
+      beta: metrics?.beta,
+      eps: metrics?.eps,
+      roe: metrics?.roe,
+      bookValuePerShare: metrics?.bookValuePerShare,
+      priceToBookRatio: metrics?.priceToBookRatio,
+      '52WeekLow': metrics?.week52Low,
+      '52WeekHigh': metrics?.week52High,
+    };
+
+    await redisCacheService.set(cacheKey, combined, 3600); // 1 hour TTL
+
+    res.json({
+      data: combined,
+      _cached: false,
+      _source: 'fmp',
+      _timestamp: Date.now()
+    });
+
+  } catch (error) {
+    logger.error('Fundamentals fetch error:', error);
+    res.status(500).json({
+      error: 'FUNDAMENTALS_ERROR',
+      message: 'Failed to fetch fundamentals'
+    });
+  }
+});
+
+/**
+ * GET /api/cache/financials/:symbol
+ * Cached income statement data (1 hour TTL)
+ */
+router.get('/financials/:symbol', async (req: Request, res: Response) => {
+  try {
+    const validation = symbolSchema.safeParse({ symbol: req.params.symbol });
+    if (!validation.success) {
+      return res.status(400).json({
+        error: 'INVALID_SYMBOL',
+        message: validation.error.errors[0].message
+      });
+    }
+
+    const { symbol } = validation.data;
+    const period = req.query.period === 'annual' ? 'annual' : 'quarter';
+    const limit = req.query.limit || '12';
+
+    const { redisCacheService } = await import('../cache/redis-cache-service');
+
+    const cacheKey = `financials:${symbol}:${period}:lim${limit}`;
+    const cached = await redisCacheService.get(cacheKey);
+
+    if (cached) {
+      return res.json({
+        data: cached,
+        _cached: true,
+        _source: 'redis',
+        _timestamp: Date.now()
+      });
+    }
+
+    // Fetch from FMP and cache for 1 hour
+    const apiKey = process.env.FMP_API_KEY;
+    if (!apiKey || apiKey === 'demo') {
+      return res.status(503).json({ error: 'FMP_NOT_CONFIGURED' });
+    }
+
+    const response = await fetch(
+      `https://financialmodelingprep.com/api/v3/income-statement/${symbol}?period=${period}&limit=${limit}&apikey=${apiKey}`
+    );
+
+    const data = await response.json();
+    await redisCacheService.set(cacheKey, data, 3600); // 1 hour TTL
+
+    res.json({
+      data,
+      _cached: false,
+      _source: 'fmp',
+      _timestamp: Date.now()
+    });
+
+  } catch (error) {
+    logger.error('Financials fetch error:', error);
+    res.status(500).json({
+      error: 'FINANCIALS_ERROR',
+      message: 'Failed to fetch financials'
+    });
+  }
+});
+
+/**
+ * GET /api/cache/historical/:symbol/:period
+ * Cached historical price data (2 hour TTL)
+ */
+router.get('/historical/:symbol/:period', async (req: Request, res: Response) => {
+  try {
+    const validation = symbolSchema.safeParse({ symbol: req.params.symbol });
+    if (!validation.success) {
+      return res.status(400).json({
+        error: 'INVALID_SYMBOL',
+        message: validation.error.errors[0].message
+      });
+    }
+
+    const { symbol } = validation.data;
+    const period = req.params.period || '1M';
+
+    const { redisCacheService } = await import('../cache/redis-cache-service');
+
+    const cacheKey = `historical:${symbol}:${period}`;
+    const cached = await redisCacheService.get(cacheKey);
+
+    if (cached) {
+      return res.json({
+        data: cached,
+        _cached: true,
+        _source: 'redis',
+        _timestamp: Date.now()
+      });
+    }
+
+    // Fetch from FMP and cache for 2 hours
+    const apiKey = process.env.FMP_API_KEY;
+    if (!apiKey || apiKey === 'demo') {
+      return res.status(503).json({ error: 'FMP_NOT_CONFIGURED' });
+    }
+
+    const response = await fetch(
+      `https://financialmodelingprep.com/api/v3/historical-price-full/${symbol}?apikey=${apiKey}`
+    );
+
+    const data = await response.json();
+    await redisCacheService.set(cacheKey, data, 7200); // 2 hour TTL
+
+    res.json({
+      data,
+      _cached: false,
+      _source: 'fmp',
+      _timestamp: Date.now()
+    });
+
+  } catch (error) {
+    logger.error('Historical fetch error:', error);
+    res.status(500).json({
+      error: 'HISTORICAL_ERROR',
+      message: 'Failed to fetch historical data'
+    });
+  }
+});
+
+/**
+ * GET /api/cache/news/:symbol
+ * Cached news articles (30 minute TTL)
+ */
+router.get('/news/:symbol', async (req: Request, res: Response) => {
+  try {
+    const validation = symbolSchema.safeParse({ symbol: req.params.symbol });
+    if (!validation.success) {
+      return res.status(400).json({
+        error: 'INVALID_SYMBOL',
+        message: validation.error.errors[0].message
+      });
+    }
+
+    const { symbol } = validation.data;
+    const limit = req.query.limit || '10';
+
+    const { redisCacheService } = await import('../cache/redis-cache-service');
+
+    const cacheKey = `news:${symbol}:lim${limit}`;
+    const cached = await redisCacheService.get(cacheKey);
+
+    if (cached) {
+      return res.json({
+        articles: cached,
+        _cached: true,
+        _source: 'redis',
+        _timestamp: Date.now()
+      });
+    }
+
+    // Fetch from FMP and cache for 30 minutes
+    const apiKey = process.env.FMP_API_KEY;
+    if (!apiKey || apiKey === 'demo') {
+      return res.status(503).json({ error: 'FMP_NOT_CONFIGURED' });
+    }
+
+    const response = await fetch(
+      `https://financialmodelingprep.com/api/v3/stock_news?tickers=${symbol}&limit=${limit}&apikey=${apiKey}`
+    );
+
+    const articles = await response.json();
+    await redisCacheService.set(cacheKey, articles, 1800); // 30 minute TTL
+
+    res.json({
+      articles,
+      _cached: false,
+      _source: 'fmp',
+      _timestamp: Date.now()
+    });
+
+  } catch (error) {
+    logger.error('News fetch error:', error);
+    res.status(500).json({
+      error: 'NEWS_ERROR',
+      message: 'Failed to fetch news'
     });
   }
 });

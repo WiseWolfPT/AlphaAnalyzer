@@ -130,6 +130,15 @@ export const transcriptsPgRepo = {
     return res.rows?.[0] || null;
   },
 
+  async findByKey(ticker: string, quarter: string, year: number): Promise<TranscriptRow | null> {
+    const c = await getClient();
+    const res = await c.query(
+      'SELECT * FROM transcripts WHERE ticker = $1 AND quarter = $2 AND year = $3 LIMIT 1',
+      [ticker.toUpperCase(), quarter, year]
+    );
+    return res.rows?.[0] || null;
+  },
+
   async incrementViewCount(id: number): Promise<void> {
     const c = await getClient();
     await c.query('UPDATE transcripts SET view_count = COALESCE(view_count,0) + 1 WHERE id = $1', [id]);

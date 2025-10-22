@@ -2,6 +2,7 @@ import cron from 'node-cron';
 import { getSupabaseClient } from '../../lib/supabase-client';
 import { logger } from '../../lib/logger';
 import fetch from 'node-fetch';
+import { simpleCacheService } from '../simple-cache-service';
 
 export interface CronJob {
   name: string;
@@ -177,22 +178,25 @@ export class CronManager {
    */
   private async keepAlive(): Promise<void> {
     logger.info('🫀 Keep-alive ping to prevent cold start...');
-    
+
     // Log cold start detection
     const startupTime = process.uptime();
     if (startupTime < 60) {
       logger.warn(`🥶 Cold start detected! Server uptime: ${startupTime.toFixed(2)}s`);
-      
+
       // Report cold start to Supabase
-      await supabase
-        .from('performance_logs')
-        .insert({
-          event_type: 'cold_start',
-          duration_ms: startupTime * 1000,
-          timestamp: new Date().toISOString()
-        });
+      const supabase = getSupabaseClient();
+      if (supabase) {
+        await supabase
+          .from('performance_logs')
+          .insert({
+            event_type: 'cold_start',
+            duration_ms: startupTime * 1000,
+            timestamp: new Date().toISOString()
+          });
+      }
     }
-    
+
     // Self-ping to keep warm (if needed)
     if (process.env.SELF_PING_URL) {
       try {
@@ -209,46 +213,47 @@ export class CronManager {
    */
   private async warmPopularStocksCache(): Promise<void> {
     logger.info('🔥 Warming cache for popular stocks...');
-    
-    // Import the market data service dynamically to avoid circular dependencies
-    const { MarketDataService } = await import('../market-data-service');
-    const marketDataService = new MarketDataService();
-    
+
     const results = {
       success: 0,
       failed: 0,
       cached: 0
     };
-    
+
     // Process in batches to avoid rate limiting
     const batchSize = 5;
     for (let i = 0; i < this.POPULAR_STOCKS.length; i += batchSize) {
       const batch = this.POPULAR_STOCKS.slice(i, i + batchSize);
-      
+
       const promises = batch.map(async (symbol) => {
         try {
-          const result = await marketDataService.getQuote(symbol);
-          if (result.cached) {
-            results.cached++;
-          } else {
+          // Canonizar símbolos .LS → -LS para compatibilidade com FMP
+          const canonicalSymbol = symbol.replace(/\./g, '-');
+
+          // Usar simpleCacheService que já implementa fallbacks e canonização
+          const quote = await simpleCacheService.getQuote(canonicalSymbol);
+
+          if (quote) {
             results.success++;
+          } else {
+            results.failed++;
           }
         } catch (error) {
           results.failed++;
           logger.error(`Failed to warm cache for ${symbol}:`, error);
         }
       });
-      
+
       await Promise.all(promises);
-      
+
       // Add delay between batches to respect rate limits
       if (i + batchSize < this.POPULAR_STOCKS.length) {
         await new Promise(resolve => setTimeout(resolve, 2000));
       }
     }
-    
-    logger.info(`Cache warming complete: ${results.success} fetched, ${results.cached} already cached, ${results.failed} failed`);
-    
+
+    logger.info(`Cache warming complete: ${results.success} fetched, ${results.failed} failed`);
+
     // Publish results to Supabase Realtime
     await this.publishRealtimeEvent('cache_warming', {
       timestamp: new Date().toISOString(),
@@ -261,32 +266,38 @@ export class CronManager {
    */
   private async cleanupExpiredCache(): Promise<void> {
     logger.info('🧹 Cleaning up expired cache entries...');
-    
+
     try {
+      const supabase = getSupabaseClient();
+      if (!supabase) {
+        logger.warn('Supabase client not available, skipping cache cleanup');
+        return;
+      }
+
       // Clean stock quotes
       const { count: quotesDeleted } = await supabase
         .from('stock_quotes')
         .delete()
         .lt('expires_at', new Date().toISOString());
-      
+
       // Clean batch quotes
       const { count: batchDeleted } = await supabase
         .from('batch_quotes')
         .delete()
         .lt('expires_at', new Date().toISOString());
-      
+
       // Clean market status
       const { count: statusDeleted } = await supabase
         .from('market_status')
         .delete()
         .lt('expires_at', new Date().toISOString());
-      
+
       logger.info(`Cleaned up: ${quotesDeleted || 0} quotes, ${batchDeleted || 0} batch quotes, ${statusDeleted || 0} market statuses`);
-      
+
       // Get cache statistics
       const stats = await this.getCacheStatistics();
       logger.info('Cache statistics after cleanup:', stats);
-      
+
     } catch (error) {
       logger.error('Cache cleanup failed:', error);
       throw error;
@@ -298,18 +309,24 @@ export class CronManager {
    */
   private async monitorApiQuotas(): Promise<void> {
     logger.info('📊 Monitoring API quotas...');
-    
+
+    const supabase = getSupabaseClient();
+    if (!supabase) {
+      logger.warn('Supabase client not available, skipping quota monitoring');
+      return;
+    }
+
     const { data: quotas } = await supabase
       .from('api_metadata')
       .select('*')
       .order('last_called', { ascending: false });
-    
+
     const alerts: any[] = [];
-    
+
     for (const quota of quotas || []) {
       if (quota.quota_remaining && quota.call_count) {
         const usagePercent = (quota.call_count / (quota.call_count + quota.quota_remaining)) * 100;
-        
+
         if (usagePercent > 90) {
           alerts.push({
             provider: quota.provider,
@@ -329,7 +346,7 @@ export class CronManager {
         }
       }
     }
-    
+
     // Publish alerts to Supabase Realtime
     if (alerts.length > 0) {
       await this.publishRealtimeEvent('quota_alerts', {
@@ -349,7 +366,7 @@ export class CronManager {
       memory: process.memoryUsage(),
       cron_jobs: {}
     };
-    
+
     // Add cron job metrics
     this.metrics.forEach((metric, jobName) => {
       metrics.cron_jobs[jobName] = {
@@ -360,18 +377,21 @@ export class CronManager {
         lastError: metric.lastError
       };
     });
-    
+
     // Publish to Supabase Realtime
     await this.publishRealtimeEvent('performance_metrics', metrics);
-    
+
     // Also store in database for historical analysis
-    await supabase
-      .from('performance_logs')
-      .insert({
-        event_type: 'metrics_snapshot',
-        data: metrics,
-        timestamp: metrics.timestamp
-      });
+    const supabase = getSupabaseClient();
+    if (supabase) {
+      await supabase
+        .from('performance_logs')
+        .insert({
+          event_type: 'metrics_snapshot',
+          data: metrics,
+          timestamp: metrics.timestamp
+        });
+    }
   }
 
   /**
@@ -394,6 +414,12 @@ export class CronManager {
    */
   private async publishRealtimeEvent(eventType: string, data: any): Promise<void> {
     try {
+      const supabase = getSupabaseClient();
+      if (!supabase) {
+        logger.debug(`Supabase client not available, skipping realtime event ${eventType}`);
+        return;
+      }
+
       await supabase
         .from('realtime_events')
         .insert({

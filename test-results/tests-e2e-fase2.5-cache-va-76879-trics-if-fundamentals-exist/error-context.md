@@ -1,0 +1,123 @@
+# Page snapshot
+
+```yaml
+- link "Saltar para conteúdo principal":
+  - /url: "#conteudo-principal"
+- text: A atualizar índices de mercado…
+- region "Notifications (F8)":
+  - list
+- link "Saltar para conteúdo principal":
+  - /url: "#conteudo-principal"
+- link "Saltar para conteúdo principal":
+  - /url: "#conteudo-principal"
+- img
+- heading "Alfalyzer" [level=1]
+- paragraph: Financial Analytics
+- button:
+  - img
+- navigation:
+  - button "Find Stocks":
+    - img
+    - text: Find Stocks
+  - button "Intrinsic Value":
+    - img
+    - text: Intrinsic Value
+  - button "My Portfolios":
+    - img
+    - text: My Portfolios
+  - button "Watchlists":
+    - img
+    - text: Watchlists
+  - button "Transcripts":
+    - img
+    - text: Transcripts
+  - button "Earnings":
+    - img
+    - text: Earnings
+- button "Sign In":
+  - img
+  - text: Sign In
+- banner:
+  - text: DOW $39,131.53 +0.52% S&P $5,088.80 +0.39% NASDAQ $15,996.82 +0.17%
+  - combobox
+  - combobox: USD
+  - combobox: USA
+  - button:
+    - img
+  - button "Ativar modo claro" [pressed]
+  - button "Abrir menu do utilizador": I
+- main:
+  - button "Voltar à pesquisa de ações":
+    - img
+    - text: Voltar à pesquisa
+  - button "Tempo Real":
+    - img
+    - text: Tempo Real
+  - status: Modo em tempo real inativo para AAPL.
+  - img "AAPL logo"
+  - heading "AAPL" [level=1]
+  - text: $252.29 +$4.84 (+1.96%)
+  - paragraph: Apple Inc.
+  - text: "After Hours $204.49+$0.57 (+0.28%) Technology Earnings: Jul 30"
+  - heading "AlfaValue™" [level=3]
+  - img
+  - text: "Updated: 10/17/2025"
+  - paragraph: Intrinsic Value
+  - paragraph: $125.44
+  - paragraph: Current Price
+  - paragraph: $252.29
+  - img
+  - text: Overvalued ▲
+  - paragraph: 49.3%
+  - paragraph: Premium
+  - button "View Assumptions":
+    - img
+    - text: View Assumptions
+  - paragraph: Current Price
+  - paragraph: $252.29
+  - paragraph: +4.84(+1.96%)
+  - paragraph: Market Cap
+  - paragraph: $2.7T
+  - paragraph: P/E Ratio
+  - paragraph: "31.97"
+  - paragraph: Dividend Yield
+  - paragraph: 0.13%
+  - paragraph: Volume
+  - paragraph: 48.8M
+  - paragraph: "Avg: 48.1M"
+  - paragraph: Beta
+  - paragraph: "1.25"
+  - tablist:
+    - tab "Overview" [selected]:
+      - img
+      - text: Overview
+    - tab "Financials":
+      - img
+      - text: Financials
+    - tab "Valuation":
+      - img
+      - text: Valuation
+    - tab "News":
+      - img
+      - text: News
+    - tab "Compare":
+      - img
+      - text: Compare
+  - tabpanel "Overview":
+    - img
+    - text: Análise de Valor Intrínseco
+    - heading "$125.44" [level=3]
+    - paragraph: Valor Intrínseco (Oficial)
+    - heading "$252.29" [level=3]
+    - paragraph: Preço Atual
+    - img
+    - text: Sobrevalorizada 49.3%
+    - paragraph: vs. Valor Intrínseco
+    - img
+    - text: Baseado em DCF com crescimento conservador e WACC estimado Resumo da Empresa
+    - paragraph: Apple Inc. designs, manufactures, and markets smartphones, personal computers, tablets, wearables, and accessories worldwide. The company offers iPhone, a line of smartphones; Mac, a line of personal computers; iPad, a line of multi-purpose tablets; and wearables, home, and accessories comprising AirPods, Apple TV, Apple Watch, Beats products, and HomePod. It also provides AppleCare support and cloud services; and operates various platforms, including the App Store that allow customers to discover and download applications and digital content, such as books, music, video, games, and podcasts, as well as advertising services include third-party licensing arrangements and its own advertising platforms. In addition, the company offers various subscription-based services, such as Apple Arcade, a game subscription service; Apple Fitness+, a personalized fitness service; Apple Music, which offers users a curated listening experience with on-demand radio stations; Apple News+, a subscription news and magazine service; Apple TV+, which offers exclusive original content; Apple Card, a co-branded credit card; and Apple Pay, a cashless payment service, as well as licenses its intellectual property. The company serves consumers, and small and mid-sized businesses; and the education, enterprise, and government markets. It distributes third-party applications for its products through the App Store. The company also sells its products through its retail and online stores, and direct sales force; and third-party cellular network carriers, wholesalers, retailers, and resellers. Apple Inc. was founded in 1976 and is headquartered in Cupertino, California.
+    - text: Setor Technology Indústria Consumer Electronics Market Cap $2.7T P/E Ratio 31.97 Dividend 0.13%
+    - button "Comparar com Outras":
+      - img
+      - text: Comparar com Outras
+```

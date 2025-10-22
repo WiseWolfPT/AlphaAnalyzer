@@ -1,0 +1,465 @@
+{
+  "detail": {
+    "message": "GET Request successful.",
+    "result": {
+      "id": 25345,
+      "guid": "f42210d0-332a-4ef8-b5f3-e125a3ea742f",
+      "symbol": "APO",
+      "exchange": "New York Stock Exchange",
+      "sector": "Financial Services",
+      "industry": "Asset Management - Global",
+      "companyName": "Apollo Global Management Inc",
+      "generalIndustryCode": "06",
+      "currency": "U.S. Dollar",
+      "currencyCode": "USD"
+    }
+  },
+  "pp": {
+    "message": "GET Request successful.",
+    "result": {
+      "intrinsicGuid": "00000000-0000-0000-0000-000000000000",
+      "method": 10,
+      "baseOn": 0,
+      "intrinsicValue": 110.79,
+      "stockPrice": 121.38,
+      "discountandPremium": 9.56,
+      "userId": null,
+      "stockId": null,
+      "deductFromIntrinsicValue": false,
+      "addToIntrinsicValue": false
+    }
+  },
+  "chart": {
+    "message": "GET Request successful.",
+    "result": {
+      "data": [
+        [
+          "1863",
+          215.49,
+          -43.67
+        ],
+        [
+          "2315",
+          215.49,
+          -43.67
+        ],
+        [
+          "1865",
+          144.73,
+          -16.13
+        ],
+        [
+          "1867",
+          178.55,
+          -32.02
+        ],
+        [
+          "1871",
+          110.79,
+          9.56
+        ],
+        [
+          "1040",
+          200.67,
+          -39.51
+        ],
+        [
+          "1037",
+          222.76,
+          -45.51
+        ],
+        [
+          "1196",
+          71.12,
+          70.67
+        ],
+        [
+          "1210",
+          491.15,
+          -75.29
+        ],
+        [
+          "1198",
+          101.74,
+          19.31
+        ]
+      ],
+      "stockPrice": 121.38
+    }
+  },
+  "ratios": {
+    "message": "GET Request successful.",
+    "result": [
+      {
+        "id": 1845,
+        "name": "EBITDA per Share",
+        "dataType": "Number",
+        "section": "8",
+        "subSection": null,
+        "value": "11.960268391539388460890583808",
+        "isPercentage": false,
+        "isMil": false,
+        "growthRatePeriod": null
+      },
+      {
+        "id": 1017,
+        "name": "Earnings Yield",
+        "dataType": "Number",
+        "section": "8",
+        "subSection": null,
+        "value": "3.73581447804328",
+        "isPercentage": true,
+        "isMil": false,
+        "growthRatePeriod": null
+      },
+      {
+        "id": 2264,
+        "name": "Enterprise Value",
+        "dataType": "Number",
+        "section": "5,8",
+        "subSection": null,
+        "value": "84565.27652646",
+        "isPercentage": false,
+        "isMil": true,
+        "growthRatePeriod": null
+      },
+      {
+        "id": 1024,
+        "name": "Enterprise Value to Free Cash Flow",
+        "dataType": "Number",
+        "section": "8",
+        "subSection": null,
+        "value": "17.240627222519877675840978593",
+        "isPercentage": false,
+        "isMil": false,
+        "growthRatePeriod": null
+      },
+      {
+        "id": 1022,
+        "name": "Enterprise Value to EBIT",
+        "dataType": "Number",
+        "section": "8",
+        "subSection": null,
+        "value": "14.470444306375770020533880903",
+        "isPercentage": false,
+        "isMil": false,
+        "growthRatePeriod": null
+      },
+      {
+        "id": 1023,
+        "name": "Enterprise Value to EBITDA",
+        "dataType": "Number",
+        "section": "8",
+        "subSection": null,
+        "value": "11.976388121577680215266959354",
+        "isPercentage": false,
+        "isMil": false,
+        "growthRatePeriod": null
+      },
+      {
+        "id": 1025,
+        "name": "Enterprise Value to Revenue",
+        "dataType": "Number",
+        "section": "8",
+        "subSection": null,
+        "value": "3.2764539529817900038744672608",
+        "isPercentage": false,
+        "isMil": false,
+        "growthRatePeriod": null
+      },
+      {
+        "id": 1843,
+        "name": "Forward Price to Earnings Ratio (Next Year)",
+        "dataType": "Number",
+        "section": "8,10",
+        "subSection": null,
+        "value": "13.331728283165996",
+        "isPercentage": false,
+        "isMil": false,
+        "growthRatePeriod": null
+      },
+      {
+        "id": 1171,
+        "name": "Mean Price to Book (PB) Ratio",
+        "dataType": "Number",
+        "section": "8",
+        "subSection": null,
+        "value": "7.11",
+        "isPercentage": false,
+        "isMil": false,
+        "growthRatePeriod": null
+      },
+      {
+        "id": 1172,
+        "name": "Mean Price to Book (PB) Value",
+        "dataType": "Number",
+        "section": "8",
+        "subSection": null,
+        "value": "222.7563",
+        "isPercentage": false,
+        "isMil": false,
+        "growthRatePeriod": null
+      },
+      {
+        "id": 1173,
+        "name": "Mean Price to Earnings (PE) Ratio",
+        "dataType": "Number",
+        "section": "8",
+        "subSection": null,
+        "value": "19.01",
+        "isPercentage": false,
+        "isMil": false,
+        "growthRatePeriod": null
+      },
+      {
+        "id": 1175,
+        "name": "Mean Price to Earnings (PE) Value",
+        "dataType": "Number",
+        "section": "8",
+        "subSection": null,
+        "value": "101.7035",
+        "isPercentage": false,
+        "isMil": false,
+        "growthRatePeriod": null
+      },
+      {
+        "id": 1174,
+        "name": "Mean Price to Earnings (PE) Ratio without NRI",
+        "dataType": "Number",
+        "section": "8",
+        "subSection": null,
+        "value": "13.17",
+        "isPercentage": false,
+        "isMil": false,
+        "growthRatePeriod": null
+      },
+      {
+        "id": 1176,
+        "name": "Mean Price to Earnings (PE) Value without NRI",
+        "dataType": "Number",
+        "section": "8",
+        "subSection": null,
+        "value": "71.118",
+        "isPercentage": false,
+        "isMil": false,
+        "growthRatePeriod": null
+      },
+      {
+        "id": 1177,
+        "name": "Mean Price to Sales (PS) Ratio",
+        "dataType": "Number",
+        "section": "8",
+        "subSection": null,
+        "value": "4.59",
+        "isPercentage": false,
+        "isMil": false,
+        "growthRatePeriod": null
+      },
+      {
+        "id": 1178,
+        "name": "Mean Price to Sales (PS) Value",
+        "dataType": "Number",
+        "section": "8",
+        "subSection": null,
+        "value": "200.6748",
+        "isPercentage": false,
+        "isMil": false,
+        "growthRatePeriod": null
+      },
+      {
+        "id": 1179,
+        "name": "Median Price to Book (PB) Ratio",
+        "dataType": "Number",
+        "section": "8",
+        "subSection": null,
+        "value": "5.33",
+        "isPercentage": false,
+        "isMil": false,
+        "growthRatePeriod": null
+      },
+      {
+        "id": 1180,
+        "name": "Median Price to Book (PB) Value",
+        "dataType": "Number",
+        "section": "8",
+        "subSection": null,
+        "value": "166.9889",
+        "isPercentage": false,
+        "isMil": false,
+        "growthRatePeriod": null
+      },
+      {
+        "id": 1181,
+        "name": "Median Price to Earnings (PE) Ratio",
+        "dataType": "Number",
+        "section": "8",
+        "subSection": null,
+        "value": "12.55",
+        "isPercentage": false,
+        "isMil": false,
+        "growthRatePeriod": null
+      },
+      {
+        "id": 1183,
+        "name": "Median Price to Earnings (PE) Value",
+        "dataType": "Number",
+        "section": "8",
+        "subSection": null,
+        "value": "67.1425",
+        "isPercentage": false,
+        "isMil": false,
+        "growthRatePeriod": null
+      },
+      {
+        "id": 1182,
+        "name": "Median Price to Earnings (PE) Ratio without NRI",
+        "dataType": "Number",
+        "section": "8",
+        "subSection": null,
+        "value": "12.21",
+        "isPercentage": false,
+        "isMil": false,
+        "growthRatePeriod": null
+      },
+      {
+        "id": 1184,
+        "name": "Median Price to Earnings (PE) Value without NRI",
+        "dataType": "Number",
+        "section": "8",
+        "subSection": null,
+        "value": "65.934",
+        "isPercentage": false,
+        "isMil": false,
+        "growthRatePeriod": null
+      },
+      {
+        "id": 1185,
+        "name": "Median Price to Sales (PS) Ratio",
+        "dataType": "Number",
+        "section": "8",
+        "subSection": null,
+        "value": "3.68",
+        "isPercentage": false,
+        "isMil": false,
+        "growthRatePeriod": null
+      },
+      {
+        "id": 1186,
+        "name": "Median Price to Sales (PS) Value",
+        "dataType": "Number",
+        "section": "8",
+        "subSection": null,
+        "value": "160.8896",
+        "isPercentage": false,
+        "isMil": false,
+        "growthRatePeriod": null
+      },
+      {
+        "id": 1863,
+        "name": "Discounted Cash Flow 20-year (DCF-20) Value",
+        "dataType": "Number",
+        "section": "8",
+        "subSection": null,
+        "value": "215.48610373349608610096551078",
+        "isPercentage": false,
+        "isMil": false,
+        "growthRatePeriod": null
+      },
+      {
+        "id": 1865,
+        "name": "Discounted Net Income 20-year (DNI-20) Value",
+        "dataType": "Number",
+        "section": "8",
+        "subSection": null,
+        "value": "144.7260460462050706744508726",
+        "isPercentage": false,
+        "isMil": false,
+        "growthRatePeriod": null
+      },
+      {
+        "id": 1867,
+        "name": "Discounted Free Cash Flow Terminal (DFCF-Terminal) Value",
+        "dataType": "Number",
+        "section": "8",
+        "subSection": null,
+        "value": "178.55498458060252045327506479",
+        "isPercentage": false,
+        "isMil": false,
+        "growthRatePeriod": null
+      },
+      {
+        "id": 2315,
+        "name": "Discounted Free Cash Flow 20-year (DFCF-20) Value",
+        "dataType": "Number",
+        "section": "8",
+        "subSection": null,
+        "value": "215.48610373349608610096551078",
+        "isPercentage": false,
+        "isMil": false,
+        "growthRatePeriod": null
+      },
+      {
+        "id": 2392,
+        "name": "Rule of 40",
+        "dataType": "Number",
+        "section": "8",
+        "subSection": null,
+        "value": "8.99",
+        "isPercentage": true,
+        "isMil": false,
+        "growthRatePeriod": null
+      }
+    ]
+  },
+  "dcf": {
+    "message": "GET Request successful.",
+    "result": {
+      "operationCashFlow": 4905,
+      "totalDebt": 12144,
+      "cashandSTInvestment": 15176,
+      "discountRate": 7.77,
+      "sharesOutstanding": 590.37,
+      "growthRateFirsttoFifthYear": 12.56,
+      "growthRateSixthToTenthYear": 12.23,
+      "growthRateEleventhToTwentiethYear": 4,
+      "note": null,
+      "intrinsicGuid": "00000000-0000-0000-0000-000000000000",
+      "method": 1,
+      "baseOn": 1,
+      "intrinsicValue": 215.49,
+      "stockPrice": 121.38,
+      "discountandPremium": -43.67,
+      "userId": null,
+      "stockId": null,
+      "deductFromIntrinsicValue": true,
+      "addToIntrinsicValue": true
+    }
+  },
+  "dfcf": {
+    "message": "GET Request successful.",
+    "result": {
+      "freeCashFlow": 4905,
+      "totalDebt": 12144,
+      "cashandSTInvestment": 15176,
+      "discountRate": 7.77,
+      "sharesOutstanding": 590.37,
+      "growthRateFirsttoFifthYear": 12.56,
+      "growthRateSixthToTenthYear": 12.23,
+      "growthRateEleventhToTwentiethYear": 4,
+      "note": null,
+      "intrinsicGuid": "00000000-0000-0000-0000-000000000000",
+      "method": 12,
+      "baseOn": 1,
+      "intrinsicValue": 215.49,
+      "stockPrice": 121.38,
+      "discountandPremium": -43.67,
+      "userId": null,
+      "stockId": null,
+      "deductFromIntrinsicValue": true,
+      "addToIntrinsicValue": true
+    }
+  },
+  "dni": {
+    "error": 404
+  }
+}

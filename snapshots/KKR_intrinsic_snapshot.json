@@ -1,0 +1,262 @@
+{
+  "detail": {
+    "message": "GET Request successful.",
+    "result": {
+      "id": 28380,
+      "guid": "9116157a-1212-474d-aab6-f8746ab0c078",
+      "symbol": "KKR",
+      "exchange": "New York Stock Exchange",
+      "sector": "Financial Services",
+      "industry": "Asset Management",
+      "companyName": "KKR & Co Inc",
+      "generalIndustryCode": "06",
+      "currency": "U.S. Dollar",
+      "currencyCode": "USD"
+    }
+  },
+  "pp": {
+    "message": "GET Request successful.",
+    "result": {
+      "intrinsicGuid": "00000000-0000-0000-0000-000000000000",
+      "method": 10,
+      "baseOn": 0,
+      "intrinsicValue": 72.84,
+      "stockPrice": 117.6,
+      "discountandPremium": 61.45,
+      "userId": null,
+      "stockId": null,
+      "deductFromIntrinsicValue": false,
+      "addToIntrinsicValue": false
+    }
+  },
+  "chart": {
+    "message": "GET Request successful.",
+    "result": {
+      "data": [
+        [
+          "1863",
+          327.39,
+          -64.08
+        ],
+        [
+          "2315",
+          317.51,
+          -62.96
+        ],
+        [
+          "1865",
+          73.57,
+          59.85
+        ],
+        [
+          "1867",
+          303.2,
+          -61.21
+        ],
+        [
+          "1871",
+          72.84,
+          61.45
+        ],
+        [
+          "1040",
+          90.93,
+          29.33
+        ],
+        [
+          "1037",
+          93.09,
+          26.33
+        ],
+        [
+          "1196",
+          29.66,
+          296.56
+        ],
+        [
+          "1210",
+          75.93,
+          54.89
+        ],
+        [
+          "1198",
+          68.11,
+          72.67
+        ]
+      ],
+      "stockPrice": 117.6
+    }
+  },
+  "ratios": {
+    "message": "GET Request successful.",
+    "result": [
+      {
+        "name": "EBITDA per Share",
+        "value": "4.7432725066602402935876666741"
+      },
+      {
+        "name": "Earnings Yield",
+        "value": "1.56746598511614"
+      },
+      {
+        "name": "Enterprise Value",
+        "value": "192142.6879616"
+      },
+      {
+        "name": "Enterprise Value to Free Cash Flow",
+        "value": "28.926239116357458519037622102"
+      },
+      {
+        "name": "Enterprise Value to EBIT",
+        "value": "43.348838879578817798449444509"
+      },
+      {
+        "name": "Enterprise Value to EBITDA",
+        "value": "42.45237772445712356575541374"
+      },
+      {
+        "name": "Enterprise Value to Revenue",
+        "value": "10.764181667623705966154982104"
+      },
+      {
+        "name": "Forward Price to Earnings Ratio (Next Year)",
+        "value": "17.463000268181787"
+      },
+      {
+        "name": "Mean Price to Book (PB) Ratio",
+        "value": "3.23"
+      },
+      {
+        "name": "Mean Price to Book (PB) Value",
+        "value": "93.0886"
+      },
+      {
+        "name": "Mean Price to Earnings (PE) Ratio",
+        "value": "12.47"
+      },
+      {
+        "name": "Mean Price to Earnings (PE) Value",
+        "value": "26.187"
+      },
+      {
+        "name": "Mean Price to Earnings (PE) Ratio without NRI",
+        "value": "13.18"
+      },
+      {
+        "name": "Mean Price to Earnings (PE) Value without NRI",
+        "value": "29.655"
+      },
+      {
+        "name": "Mean Price to Sales (PS) Ratio",
+        "value": "4.86"
+      },
+      {
+        "name": "Mean Price to Sales (PS) Value",
+        "value": "90.9306"
+      },
+      {
+        "name": "Median Price to Book (PB) Ratio",
+        "value": "2.7"
+      },
+      {
+        "name": "Median Price to Book (PB) Value",
+        "value": "77.814"
+      },
+      {
+        "name": "Median Price to Earnings (PE) Ratio",
+        "value": "21.57"
+      },
+      {
+        "name": "Median Price to Earnings (PE) Value",
+        "value": "45.297"
+      },
+      {
+        "name": "Median Price to Earnings (PE) Ratio without NRI",
+        "value": "20.56"
+      },
+      {
+        "name": "Median Price to Earnings (PE) Value without NRI",
+        "value": "46.26"
+      },
+      {
+        "name": "Median Price to Sales (PS) Ratio",
+        "value": "4.88"
+      },
+      {
+        "name": "Median Price to Sales (PS) Value",
+        "value": "91.3048"
+      },
+      {
+        "name": "Discounted Cash Flow 20-year (DCF-20) Value",
+        "value": "327.38752779399271672356929355"
+      },
+      {
+        "name": "Discounted Net Income 20-year (DNI-20) Value",
+        "value": "73.56857175978713489345634221"
+      },
+      {
+        "name": "Discounted Free Cash Flow Terminal (DFCF-Terminal) Value",
+        "value": "303.20259123546348288112679599"
+      },
+      {
+        "name": "Discounted Free Cash Flow 20-year (DFCF-20) Value",
+        "value": "317.50844834014644084740749956"
+      },
+      {
+        "name": "Rule of 40",
+        "value": "-3.72"
+      }
+    ]
+  },
+  "dcf": {
+    "message": "GET Request successful.",
+    "result": {
+      "operationCashFlow": 6828.48,
+      "totalDebt": 51782.272,
+      "cashandSTInvestment": 18056.173,
+      "discountRate": 7.77,
+      "sharesOutstanding": 954.21,
+      "growthRateFirsttoFifthYear": 20.18,
+      "growthRateSixthToTenthYear": 25,
+      "growthRateEleventhToTwentiethYear": 4,
+      "note": null,
+      "intrinsicGuid": "00000000-0000-0000-0000-000000000000",
+      "method": 1,
+      "baseOn": 1,
+      "intrinsicValue": 327.39,
+      "stockPrice": 117.6,
+      "discountandPremium": -64.08,
+      "userId": null,
+      "stockId": null,
+      "deductFromIntrinsicValue": true,
+      "addToIntrinsicValue": true
+    }
+  },
+  "dfcf": {
+    "message": "GET Request successful.",
+    "result": {
+      "freeCashFlow": 6642.505,
+      "totalDebt": 51782.272,
+      "cashandSTInvestment": 18056.173,
+      "discountRate": 7.77,
+      "sharesOutstanding": 954.21,
+      "growthRateFirsttoFifthYear": 20.18,
+      "growthRateSixthToTenthYear": 25,
+      "growthRateEleventhToTwentiethYear": 4,
+      "note": null,
+      "intrinsicGuid": "00000000-0000-0000-0000-000000000000",
+      "method": 12,
+      "baseOn": 1,
+      "intrinsicValue": 317.51,
+      "stockPrice": 117.6,
+      "discountandPremium": -62.96,
+      "userId": null,
+      "stockId": null,
+      "deductFromIntrinsicValue": true,
+      "addToIntrinsicValue": true
+    }
+  },
+  "dni": {
+    "error": 404
+  }
+}

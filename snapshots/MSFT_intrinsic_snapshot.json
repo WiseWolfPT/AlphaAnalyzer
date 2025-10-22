@@ -1,0 +1,181 @@
+{
+  "guid": "a9869c6c-f0ca-4588-87e8-f4c957966af2",
+  "pp": {
+    "message": "GET Request successful.",
+    "result": {
+      "intrinsicGuid": "00000000-0000-0000-0000-000000000000",
+      "method": 10,
+      "baseOn": 0,
+      "intrinsicValue": 520.56,
+      "stockPrice": 513.58,
+      "discountandPremium": -1.34,
+      "userId": null,
+      "stockId": null,
+      "deductFromIntrinsicValue": false,
+      "addToIntrinsicValue": false
+    }
+  },
+  "dcf": {
+    "message": "GET Request successful.",
+    "result": {
+      "operationCashFlow": 136162,
+      "totalDebt": 43151,
+      "cashandSTInvestment": 94565,
+      "discountRate": 5.97,
+      "sharesOutstanding": 7465,
+      "growthRateFirsttoFifthYear": 17.46,
+      "growthRateSixthToTenthYear": 8.54,
+      "growthRateEleventhToTwentiethYear": 4,
+      "intrinsicGuid": "00000000-0000-0000-0000-000000000000",
+      "method": 1,
+      "baseOn": 1,
+      "intrinsicValue": 607.21,
+      "stockPrice": 513.58,
+      "discountandPremium": -15.42,
+      "deductFromIntrinsicValue": true,
+      "addToIntrinsicValue": true
+    }
+  },
+  "dfcf20": {
+    "message": "GET Request successful.",
+    "result": {
+      "freeCashFlow": 71611,
+      "totalDebt": 43151,
+      "cashandSTInvestment": 94565,
+      "discountRate": 5.97,
+      "sharesOutstanding": 7465,
+      "growthRateFirsttoFifthYear": 17.46,
+      "growthRateSixthToTenthYear": 8.54,
+      "growthRateEleventhToTwentiethYear": 4,
+      "intrinsicGuid": "00000000-0000-0000-0000-000000000000",
+      "method": 12,
+      "baseOn": 1,
+      "intrinsicValue": 322.61,
+      "stockPrice": 513.58,
+      "discountandPremium": 59.19,
+      "deductFromIntrinsicValue": true,
+      "addToIntrinsicValue": true
+    }
+  },
+  "ratios": {
+    "message": "GET Request successful.",
+    "result": [
+      {
+        "name": "EBITDA per Share",
+        "value": "21.80418174507438681141938078"
+      },
+      {
+        "name": "Earnings Yield",
+        "value": "2.74252628616232"
+      },
+      {
+        "name": "Enterprise Value",
+        "value": "3851493.7"
+      },
+      {
+        "name": "Enterprise Value to Free Cash Flow",
+        "value": "53.783548616832609515297929089"
+      },
+      {
+        "name": "Enterprise Value to EBIT",
+        "value": "29.966184022158595792356529317"
+      },
+      {
+        "name": "Enterprise Value to EBITDA",
+        "value": "23.67512924066117124925467633"
+      },
+      {
+        "name": "Enterprise Value to Revenue",
+        "value": "13.671159361644730303417529213"
+      },
+      {
+        "name": "Forward Price to Earnings Ratio (Next Year)",
+        "value": "28.108772927658034"
+      },
+      {
+        "name": "Mean Price to Book (PB) Ratio",
+        "value": "12.29"
+      },
+      {
+        "name": "Mean Price to Book (PB) Value",
+        "value": "567.798"
+      },
+      {
+        "name": "Mean Price to Earnings (PE) Ratio",
+        "value": "33.42"
+      },
+      {
+        "name": "Mean Price to Earnings (PE) Value",
+        "value": "456.183"
+      },
+      {
+        "name": "Mean Price to Earnings (PE) Ratio without NRI",
+        "value": "33.29"
+      },
+      {
+        "name": "Mean Price to Earnings (PE) Value without NRI",
+        "value": "456.073"
+      },
+      {
+        "name": "Mean Price to Sales (PS) Ratio",
+        "value": "11.89"
+      },
+      {
+        "name": "Mean Price to Sales (PS) Value",
+        "value": "448.9664"
+      },
+      {
+        "name": "Median Price to Book (PB) Ratio",
+        "value": "12.11"
+      },
+      {
+        "name": "Median Price to Book (PB) Value",
+        "value": "559.482"
+      },
+      {
+        "name": "Median Price to Earnings (PE) Ratio",
+        "value": "34.43"
+      },
+      {
+        "name": "Median Price to Earnings (PE) Value",
+        "value": "469.9695"
+      },
+      {
+        "name": "Median Price to Earnings (PE) Ratio without NRI",
+        "value": "34.25"
+      },
+      {
+        "name": "Median Price to Earnings (PE) Value without NRI",
+        "value": "469.225"
+      },
+      {
+        "name": "Median Price to Sales (PS) Ratio",
+        "value": "12.08"
+      },
+      {
+        "name": "Median Price to Sales (PS) Value",
+        "value": "456.1408"
+      },
+      {
+        "name": "Discounted Cash Flow 20-year (DCF-20) Value",
+        "value": "607.21040172316233015688639211"
+      },
+      {
+        "name": "Discounted Net Income 20-year (DNI-20) Value",
+        "value": "455.85326333488600037727571838"
+      },
+      {
+        "name": "Discounted Free Cash Flow Terminal (DFCF-Terminal) Value",
+        "value": "321.76245347809113194909578031"
+      },
+      {
+        "name": "Discounted Free Cash Flow 20-year (DFCF-20) Value",
+        "value": "322.6122473362813117006193196"
+      },
+      {
+        "name": "Rule of 40",
+        "value": "59.83"
+      }
+    ]
+  }
+}

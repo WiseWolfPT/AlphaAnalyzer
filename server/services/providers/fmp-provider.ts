@@ -79,7 +79,7 @@ export class FMPProvider extends BaseProvider {
       }
 
       const quote = data[0];
-      
+
       return {
         symbol: quote.symbol,
         price: quote.price,
@@ -94,7 +94,14 @@ export class FMPProvider extends BaseProvider {
         eps: quote.eps,
         pe: quote.pe,
         timestamp: new Date(quote.timestamp * 1000).toISOString(),
-        provider: this.name
+        provider: this.name,
+        // After-hours and pre-market data
+        afterMarketPrice: quote.afterMarketPrice ?? null,
+        afterMarketChange: quote.afterMarketChange ?? null,
+        afterMarketChangePercentage: quote.afterMarketChangePercentage ?? null,
+        preMarketPrice: quote.preMarketPrice ?? null,
+        preMarketChange: quote.preMarketChange ?? null,
+        preMarketChangePercentage: quote.preMarketChangePercentage ?? null
       };
     } catch (error) {
       this.handleApiError(error, `getQuote(${symbol})`);
@@ -139,7 +146,14 @@ export class FMPProvider extends BaseProvider {
         eps: quote.eps,
         pe: quote.pe,
         timestamp: new Date(quote.timestamp * 1000).toISOString(),
-        provider: this.name
+        provider: this.name,
+        // After-hours and pre-market data
+        afterMarketPrice: quote.afterMarketPrice ?? null,
+        afterMarketChange: quote.afterMarketChange ?? null,
+        afterMarketChangePercentage: quote.afterMarketChangePercentage ?? null,
+        preMarketPrice: quote.preMarketPrice ?? null,
+        preMarketChange: quote.preMarketChange ?? null,
+        preMarketChangePercentage: quote.preMarketChangePercentage ?? null
       }));
     } catch (error) {
       // Fallback to individual fetches if batch fails

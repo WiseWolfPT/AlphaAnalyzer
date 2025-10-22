@@ -111,8 +111,9 @@ export const queryClient = new QueryClient({
       queryFn: getQueryFn({ on401: "throw" }),
       refetchInterval: false,
       refetchOnWindowFocus: false,
-      staleTime: 5 * 60 * 1000, // 5 minutes (not Infinity for real-time data)
-      gcTime: 10 * 60 * 1000, // 10 minutes (TanStack Query v5)
+      refetchOnMount: false, // CRITICAL: Use cache if data is fresh (within staleTime)
+      staleTime: 5 * 60 * 1000, // 5 minutes - data stays fresh
+      gcTime: 10 * 60 * 1000, // 10 minutes - cache persists in memory (TanStack Query v5)
       retry: 2, // Retry failed requests
       retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000),
     },

@@ -1,0 +1,226 @@
+# Page snapshot
+
+```yaml
+- link "Saltar para conteúdo principal":
+  - /url: "#conteudo-principal"
+- text: A atualizar índices de mercado…
+- region "Notifications (F8)":
+  - list
+- link "Saltar para conteúdo principal":
+  - /url: "#conteudo-principal"
+- link "Saltar para conteúdo principal":
+  - /url: "#conteudo-principal"
+- img
+- heading "Alfalyzer" [level=1]
+- paragraph: Financial Analytics
+- button:
+  - img
+- navigation:
+  - button "Find Stocks":
+    - img
+    - text: Find Stocks
+  - button "Intrinsic Value":
+    - img
+    - text: Intrinsic Value
+  - button "My Portfolios":
+    - img
+    - text: My Portfolios
+  - button "Watchlists":
+    - img
+    - text: Watchlists
+  - button "Transcripts":
+    - img
+    - text: Transcripts
+  - button "Earnings":
+    - img
+    - text: Earnings
+- button "Sign In":
+  - img
+  - text: Sign In
+- banner:
+  - text: DOW $39,131.53 +0.52% S&P $5,088.80 +0.39% NASDAQ $15,996.82 +0.17%
+  - combobox
+  - combobox: USD
+  - combobox: USA
+  - button:
+    - img
+  - button "Ativar modo claro" [pressed]
+  - button "Abrir menu do utilizador": I
+- main:
+  - heading "🔍 Pesquisar ações" [level=1]:
+    - img
+    - text: 🔍 Pesquisar ações
+  - paragraph: Descubra e analise empresas com ferramentas avançadas de pesquisa e filtros inteligentes
+  - button "Dados em cache":
+    - img
+    - text: Dados em cache
+  - button "Atualizar dados das ações":
+    - img
+  - button "Tempo Real":
+    - img
+    - text: Tempo Real
+  - button:
+    - img
+  - button:
+    - img
+  - img
+  - textbox "Pesquisar mais de 50 ações por símbolo, nome ou setor..."
+  - text: "Todas as ações (52) Technology (14) Healthcare (9) Financial (6) Consumer Staples (5) Consumer (6) Energy (2) Industrials (5) Market Cap: All Sizes Mega Cap ($200B+) Large Cap ($10B-$200B) Mid Cap ($2B-$10B) Small Cap ($300M-$2B)"
+  - strong: BETA
+  - text: Está a usar o Alpha Analyzer BETA! Junte-se à nossa comunidade para atualizações.
+  - img
+  - text: Market Movers
+  - button:
+    - img
+  - button "Maiores Ganhos":
+    - img
+    - text: Maiores Ganhos
+  - button "Maiores Quedas":
+    - img
+    - text: Maiores Quedas
+  - button "Mais Ativas":
+    - img
+    - text: Mais Ativas
+  - text: 1 RANI Rani Therapeutics Holdings, Inc. $1.64
+  - img
+  - text: +248.27% 2 ARTV Artiva Biotherapeutics, Inc. $6.01
+  - img
+  - text: +116.97% 3 KZR Kezar Life Sciences, Inc. $6.36
+  - img
+  - text: +52.52% 4 CIIT Tianci International, Inc. $0.88
+  - img
+  - text: +52.26% 5 SYRA Syra Health Corp. Class A Common Stock $0.10
+  - img
+  - text: +46.15%
+  - paragraph: "Last updated: 2:57:22 AM"
+  - img
+  - heading "Maiores Ganhos" [level=3]
+  - paragraph: Biggest % gains today
+  - img
+  - heading "Maiores Quedas" [level=3]
+  - paragraph: Biggest % losses today
+  - img
+  - heading "Most Popular" [level=3]
+  - paragraph: Most viewed stocks
+  - img
+  - heading "All Stocks" [level=3]
+  - paragraph: 52 total stocks
+  - paragraph: Showing 15 of 52 stocks
+  - img
+  - text: Dados em cache
+  - combobox: A → Z
+  - button "Filtros Avançados":
+    - img
+    - text: Filtros Avançados
+  - text: A
+  - heading "AAPL" [level=3]
+  - paragraph: Apple Inc.
+  - text: $252.29
+  - img
+  - text: +1.96% Technology M
+  - heading "MSFT" [level=3]
+  - paragraph: Microsoft Corporation
+  - text: $513.58
+  - img
+  - text: +0.39% Technology G
+  - heading "GOOGL" [level=3]
+  - paragraph: Alphabet Inc.
+  - text: $253.30
+  - img
+  - text: +0.73% Technology A
+  - heading "AMZN" [level=3]
+  - paragraph: Amazon.com Inc.
+  - text: $213.04
+  - img
+  - text: "-0.67% Consumer Discretionary M"
+  - heading "META" [level=3]
+  - paragraph: Meta Platforms Inc.
+  - text: $716.91
+  - img
+  - text: +0.68% Technology N
+  - heading "NVDA" [level=3]
+  - paragraph: NVIDIA Corporation
+  - text: $183.22
+  - img
+  - text: +0.78% Technology J
+  - heading "JPM" [level=3]
+  - paragraph: JPMorgan Chase & Co.
+  - text: $297.56
+  - img
+  - text: "-0.33% Financial Services V"
+  - heading "V" [level=3]
+  - paragraph: Visa Inc.
+  - text: $341.89
+  - img
+  - text: +1.94% Financial Services M
+  - heading "MA" [level=3]
+  - paragraph: Mastercard Incorporated
+  - text: $560.97
+  - img
+  - text: +2.02% Financial Services B
+  - heading "BAC" [level=3]
+  - paragraph: Bank of America Corp.
+  - text: $51.28
+  - img
+  - text: +1.67% Financial Services W
+  - heading "WFC" [level=3]
+  - paragraph: Wells Fargo & Company
+  - text: $83.28
+  - img
+  - text: "-0.86% Financial Services B"
+  - heading "BRK-B" [level=3]
+  - paragraph: Berkshire Hathaway Inc.
+  - text: $492.42
+  - img
+  - text: +0.74% Financial Services J
+  - heading "JNJ" [level=3]
+  - paragraph: Johnson & Johnson
+  - text: $193.22
+  - img
+  - text: +0.57% Healthcare U
+  - heading "UNH" [level=3]
+  - paragraph: UnitedHealth Group Inc.
+  - text: $356.60
+  - img
+  - text: "-0.02% Healthcare P"
+  - heading "PFE" [level=3]
+  - paragraph: Pfizer Inc.
+  - text: $24.51
+  - img
+  - text: +1.16% Healthcare
+  - heading "🧪 API Connection Test (Temporary)" [level=3]
+  - paragraph: This test component verifies that the API is properly connected and CORS is configured correctly.
+  - text: API Connection Test
+  - button "Run API Tests"
+  - img
+  - paragraph: Backend Health Check
+  - img
+  - paragraph: Stock Quote API (AAPL)
+  - img
+  - paragraph: Simple POST Test
+  - img
+  - paragraph: Batch Quotes API
+  - img
+  - paragraph: Market Status API
+  - paragraph: "Expected Results:"
+  - list:
+    - listitem: ✅ Backend Health Check should pass
+    - listitem: ✅ Stock quotes should show real prices (not demo data)
+    - listitem: ✅ No CORS errors in browser console
+    - listitem: ✅ No WebSocket errors (they're disabled)
+  - heading "Need help finding the right stocks?" [level=3]
+  - paragraph: Explore our advanced tools and educational resources
+  - button "Value Calculator"
+  - button "Get Help"
+- img
+- heading "🍪 Utilizamos Cookies" [level=3]
+- paragraph:
+  - text: Utilizamos cookies para melhorar a sua experiência, analisar o tráfego do site e personalizar conteúdo. Ao clicar em "Aceitar Todos", concorda com o uso de TODOS os cookies. Pode gerir as suas preferências clicando em "Personalizar".
+  - link "Saber mais":
+    - /url: /cookie-policy
+- button "Rejeitar Todos"
+- button "Personalizar":
+  - img
+  - text: Personalizar
+- button "Aceitar Todos"
+```

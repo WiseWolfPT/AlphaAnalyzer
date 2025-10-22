@@ -11,10 +11,10 @@ import { Slider } from "@/components/ui/slider";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Progress } from "@/components/ui/progress";
-import { 
-  Calculator, 
-  TrendingUp, 
-  Target, 
+import {
+  Calculator,
+  TrendingUp,
+  Target,
   BarChart3,
   PieChart,
   Activity,
@@ -23,26 +23,37 @@ import {
   ArrowUp,
   ArrowDown,
   Info,
-  Wifi
+  Wifi,
+  TrendingDown,
+  Minus
 } from "lucide-react";
 import { ResponsiveContainer } from "@/components/ui/lightweight-chart";
-import { 
-  PieChart as RechartsPieChart, 
-  BarChart, 
-  XAxis, 
-  YAxis, 
+import {
+  PieChart as RechartsPieChart,
+  BarChart,
+  XAxis,
+  YAxis,
   CartesianGrid,
-  Pie, 
-  Cell, 
-  Bar, 
-  Tooltip, 
-  Legend 
+  Pie,
+  Cell,
+  Bar,
+  Tooltip,
+  Legend
 } from "recharts";
 import { motion } from "framer-motion";
 import { useRealtimeQuote } from "@/hooks/use-realtime-quotes";
 import type { Stock } from "@shared/schema";
 import { useCachedQuote, useCachedFundamentals, useCachedFinancials } from "@/hooks/use-cache-data";
 import { DCFCalculatorCard } from "@/components/stock/dcf-calculator-card";
+import { AlfaValueHeader } from "@/components/stock/alfa-value-header";
+import { useAlfaValue } from "@/hooks/use-alfa-value";
+import { cn } from "@/lib/utils";
+import { ValuationMethodsChart } from "@/components/stock/valuation-methods-chart";
+import { ValuationGauge } from "@/components/stock/valuation-gauge";
+import { useValuationChart, type BasedOn } from "@/hooks/use-valuation-chart";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SelectLabel, SelectGroup } from "@/components/ui/select";
+import { DualValuationLayout, type AutoCalculation, type MyCalculation } from "@/components/stock/dual-valuation-layout";
+import { useToast } from "@/hooks/use-toast";
 
 interface ValuationResult {
   method: string;
@@ -66,6 +77,30 @@ export default function IntrinsicValue() {
   const [calculation, setCalculation] = useState<IntrinsicCalculation | null>(null);
   const [useRealtime, setUseRealtime] = useState(true);
 
+  // FASE 3: Valuation Methods Selection
+  const [basedOn, setBasedOn] = useState<BasedOn>('fcf');
+  const [showAllMethods, setShowAllMethods] = useState(false);
+  const [selectedMethod, setSelectedMethod] = useState('alfavalue');
+
+  // FASE 3.2: My Calculation state
+  const [myCalculation, setMyCalculation] = useState<MyCalculation>({
+    stockPrice: 0,
+    iv: 0,
+    premium: 0,
+    operatingCF: 0,
+    totalDebt: 0,
+    cash: 0,
+    discountRate: 0,
+    shares: 0,
+    growth_1_5: 0,
+    growth_6_10: 0,
+    growth_11_20: 0,
+    deductDebt: true,
+    addCash: true,
+  });
+
+  const { toast } = useToast();
+
   // Manual calculation inputs
   const [eps, setEps] = useState("6.13");
   const [growthRate, setGrowthRate] = useState(8);
@@ -73,6 +108,39 @@ export default function IntrinsicValue() {
   const [terminalGrowth, setTerminalGrowth] = useState(3);
   const [years, setYears] = useState(10);
   const [presetKey, setPresetKey] = useState<'conservative' | 'base' | 'optimistic' | null>(null);
+
+  /**
+   * FASE 3.2: Detect method category for dynamic input mapping
+   *
+   * Categories:
+   * - dcf: AlfaValue, DCF-20, DNI-20, DFCF (all use fcf_ttm_musd, debt, cash, growth rates)
+   * - multiples: P/E Mean/Median, P/S Mean/Median, P/B Mean/Median (use current_price, ratios, per-share metrics)
+   * - growth: PEG, PSG (use last_price, eps/sales, growth_rate, ratios)
+   *
+   * @param methodName - Selected method name from dropdown
+   * @returns Category string for conditional mapping
+   */
+  const getMethodCategory = (methodName: string): 'dcf' | 'multiples' | 'growth' => {
+    const name = methodName.toLowerCase();
+
+    // DCF methods: Use FCF/OCF/NI, debt, cash, discount rate, growth rates
+    if (
+      name.includes('alfavalue') ||
+      name.includes('dcf') ||
+      name.includes('dni') ||
+      name.includes('dfcf')
+    ) {
+      return 'dcf';
+    }
+
+    // Growth-adjusted methods: Use last_price, EPS/Sales, growth rate
+    if (name.includes('peg') || name.includes('psg')) {
+      return 'growth';
+    }
+
+    // Multiples methods: Use current_price, historical ratios, per-share metrics
+    return 'multiples';
+  };
 
   // Read symbol from URL on page load
   useEffect(() => {
@@ -131,17 +199,155 @@ export default function IntrinsicValue() {
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
-  // Official Intrinsic Value (backend computed)
+  // AlfaValue™ - Official Intrinsic Value (new system)
+  const { data: alfaValueData, isLoading: isLoadingAlfaValue } = useAlfaValue(normalizedSymbol);
+
+  // FASE 3: All Valuation Methods (10+)
+  const { data: valuationChartData, isLoading: isLoadingValuationChart, error: valuationChartError } = useValuationChart(
+    normalizedSymbol,
+    {
+      basedOn,
+      excludeNRI: false,
+      enabled: !!selectedStock?.symbol && showAllMethods,
+    }
+  );
+
+  // FASE 3.2: Initialize myCalculation with auto values when data loads
+  // FIXED: Dynamic method-aware rendering based on input category
+  useEffect(() => {
+    if (alfaValueData && valuationChartData) {
+      const autoMethod = valuationChartData.methods.find(m => m.name === selectedMethod);
+      const price = valuationChartData.price;
+      const iv = autoMethod?.iv || alfaValueData.iv;
+      const premium = ((price - iv) / iv) * 100;
+
+      // Detect method category for conditional mapping
+      const category = getMethodCategory(selectedMethod);
+      const methodInputs = autoMethod?.inputs || {};
+
+      console.log('[DEBUG] useEffect methodInputs for', selectedMethod, '(category:', category, '):', methodInputs);
+
+      let calculationData: MyCalculation;
+
+      if (category === 'dcf') {
+        // DCF Methods: Map FCF/OCF/NI, debt, cash, discount rate, growth rates
+        calculationData = {
+          stockPrice: price,
+          iv: iv,
+          premium: premium,
+          operatingCF: Number(
+            methodInputs.fcf_ttm_musd ||
+            methodInputs.net_income_ttm_musd ||
+            methodInputs.operating_cf ||
+            alfaValueData.inputs?.fcf_ttm_musd || 0
+          ),
+          totalDebt: Number(
+            methodInputs.total_debt_musd ||
+            methodInputs.debt_musd ||
+            alfaValueData.inputs?.debt_musd || 0
+          ),
+          cash: Number(
+            methodInputs.cash_musd ||
+            methodInputs.cash ||
+            alfaValueData.inputs?.cash_musd || 0
+          ),
+          discountRate: Number(
+            methodInputs.discount_rate ?
+              methodInputs.discount_rate * 100 :
+              (alfaValueData.assumptions?.discount_rate || 0) * 100
+          ),
+          shares: Number(
+            methodInputs.shares_outstanding_m ||
+            methodInputs.shares_m ||
+            alfaValueData.inputs?.shares_m || 0
+          ),
+          growth_1_5: Number(
+            methodInputs.growth_rate_y1_5 ?
+              methodInputs.growth_rate_y1_5 * 100 :
+              methodInputs.stage1_growth_rate ?
+                methodInputs.stage1_growth_rate * 100 :
+                (alfaValueData.assumptions?.g_1_5 || 0) * 100
+          ),
+          growth_6_10: Number(
+            methodInputs.growth_rate_y6_10 ?
+              methodInputs.growth_rate_y6_10 * 100 :
+              methodInputs.stage2_growth_rate ?
+                methodInputs.stage2_growth_rate * 100 :
+                (alfaValueData.assumptions?.g_6_10 || 0) * 100
+          ),
+          growth_11_20: Number(
+            methodInputs.growth_rate_y11_20 ?
+              methodInputs.growth_rate_y11_20 * 100 :
+              methodInputs.terminal_growth_rate ?
+                methodInputs.terminal_growth_rate * 100 :
+                (alfaValueData.assumptions?.g_11_20 || 0) * 100
+          ),
+          deductDebt: true,
+          addCash: true,
+        };
+      } else if (category === 'growth') {
+        // Growth Methods (PEG/PSG): Map last_price, EPS/Sales, growth_rate
+        // Display these in the same UI fields for consistency
+        calculationData = {
+          stockPrice: price,
+          iv: iv,
+          premium: premium,
+          operatingCF: Number(methodInputs.last_price || price), // Map to first field
+          totalDebt: Number(methodInputs.eps_without_nri || methodInputs.sales_per_share || 0), // Map to second field
+          cash: Number(methodInputs.pe_without_nri || methodInputs.ps_ratio || 0), // Map to third field
+          discountRate: Number(methodInputs.fair_peg_ratio || methodInputs.fair_psg_ratio || 1.5), // Map to discount field
+          shares: Number(alfaValueData.inputs?.shares_m || 0), // Keep shares
+          growth_1_5: Number(methodInputs.growth_rate ? methodInputs.growth_rate * 100 : 0), // Map growth to first period
+          growth_6_10: 0, // Not used in PEG/PSG
+          growth_11_20: 0, // Not used in PEG/PSG
+          deductDebt: false,
+          addCash: false,
+        };
+      } else {
+        // Multiples Methods (P/E, P/S, P/B): Map current_price, ratios, per-share metrics
+        calculationData = {
+          stockPrice: price,
+          iv: iv,
+          premium: premium,
+          operatingCF: Number(methodInputs.current_price || price), // Map to first field
+          totalDebt: Number(
+            methodInputs.mean_pe_ratio_5y ||
+            methodInputs.median_pe_ratio_5y ||
+            methodInputs.mean_ps_ratio_5y ||
+            methodInputs.median_ps_ratio_5y ||
+            methodInputs.mean_pb_ratio_5y ||
+            methodInputs.median_pb_ratio_5y || 0
+          ), // Map historical ratio to second field
+          cash: Number(
+            methodInputs.eps_ttm ||
+            methodInputs.sales_per_share_ttm ||
+            methodInputs.book_value_per_share_ttm || 0
+          ), // Map per-share metric to third field
+          discountRate: 0, // Not used in multiples
+          shares: Number(alfaValueData.inputs?.shares_m || 0), // Keep shares
+          growth_1_5: 0, // Not used in multiples
+          growth_6_10: 0,
+          growth_11_20: 0,
+          deductDebt: false,
+          addCash: false,
+        };
+      }
+
+      setMyCalculation(calculationData);
+    }
+  }, [alfaValueData, valuationChartData, selectedMethod]);
+
+  // Legacy: Official Intrinsic Value (backend computed) - kept for backward compatibility
   const { data: officialIV } = useQuery({
     queryKey: [`/api/valuation/intrinsic/${normalizedSymbol}`],
-    enabled: !!selectedStock?.symbol,
+    enabled: !!selectedStock?.symbol && !alfaValueData, // only fetch if AlfaValue not available
     staleTime: 24 * 60 * 60 * 1000,
   });
 
-  // Cache-first Intrinsic Value (fallback)
+  // Legacy: Cache-first Intrinsic Value (fallback)
   const { data: cachedIV } = useQuery({
     queryKey: [`/api/cache/intrinsic-values/${normalizedSymbol}`],
-    enabled: !!selectedStock?.symbol,
+    enabled: !!selectedStock?.symbol && !alfaValueData && !officialIV, // only fetch if AlfaValue not available
     staleTime: 24 * 60 * 60 * 1000,
   });
   
@@ -371,6 +577,120 @@ export default function IntrinsicValue() {
     { growthRate: 12, discountRate: 9, terminalGrowth: 2.5, marginOfSafety: 20, projectionYears: 10 }
   ) : null;
 
+  // FASE 3.2: Handler functions for DualValuationLayout
+  const handleMyCalculationChange = (field: string, value: number | boolean) => {
+    setMyCalculation(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleCalculate = async () => {
+    if (!selectedStock?.symbol) return;
+
+    try {
+      toast({
+        title: "Calculating...",
+        description: "Computing custom intrinsic value",
+      });
+
+      // Call backend API to calculate with custom values
+      const response = await fetch(`/api/iv/${normalizedSymbol}/calculate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          method: selectedMethod,
+          based_on: basedOn,
+          operating_cf: myCalculation.operatingCF,
+          total_debt: myCalculation.totalDebt,
+          cash: myCalculation.cash,
+          discount_rate: myCalculation.discountRate / 100,
+          shares: myCalculation.shares,
+          growth_1_5: myCalculation.growth_1_5 / 100,
+          growth_6_10: myCalculation.growth_6_10 / 100,
+          growth_11_20: myCalculation.growth_11_20 / 100,
+          deduct_debt: myCalculation.deductDebt,
+          add_cash: myCalculation.addCash,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Calculation failed');
+      }
+
+      const result = await response.json();
+      const newIV = result.iv;
+      const newPremium = ((myCalculation.stockPrice - newIV) / newIV) * 100;
+
+      setMyCalculation(prev => ({
+        ...prev,
+        iv: newIV,
+        premium: newPremium,
+      }));
+
+      toast({
+        title: "Calculation complete",
+        description: `New intrinsic value: $${newIV.toFixed(2)}`,
+      });
+    } catch (error) {
+      console.error('Calculate error:', error);
+      toast({
+        variant: "destructive",
+        title: "Calculation failed",
+        description: "Please check your inputs and try again",
+      });
+    }
+  };
+
+  const handleSave = () => {
+    if (!selectedStock?.symbol) return;
+
+    try {
+      const storageKey = `alfalyzer_${normalizedSymbol}_assumptions`;
+      localStorage.setItem(storageKey, JSON.stringify(myCalculation));
+
+      toast({
+        title: "Assumptions saved",
+        description: `Saved for ${selectedStock.symbol}`,
+      });
+    } catch (error) {
+      console.error('Save error:', error);
+      toast({
+        variant: "destructive",
+        title: "Save failed",
+        description: "Could not save to localStorage",
+      });
+    }
+  };
+
+  const handleLoad = () => {
+    if (!selectedStock?.symbol) return;
+
+    try {
+      const storageKey = `alfalyzer_${normalizedSymbol}_assumptions`;
+      const saved = localStorage.getItem(storageKey);
+
+      if (saved) {
+        const loadedData = JSON.parse(saved);
+        setMyCalculation(loadedData);
+
+        toast({
+          title: "Assumptions loaded",
+          description: `Loaded for ${selectedStock.symbol}`,
+        });
+      } else {
+        toast({
+          title: "No saved data",
+          description: "No assumptions found for this stock",
+        });
+      }
+    } catch (error) {
+      console.error('Load error:', error);
+      toast({
+        variant: "destructive",
+        title: "Load failed",
+        description: "Could not load from localStorage",
+      });
+    }
+  };
+
   return (
     <MainLayout>
       <div className="container mx-auto px-6 py-8 max-w-7xl">
@@ -433,18 +753,18 @@ export default function IntrinsicValue() {
                     <div>
                       <h2 className="text-2xl font-bold">{selectedStock.symbol}</h2>
                       <p className="text-muted-foreground">{selectedStock.name}</p>
-                      <Badge variant="secondary">{selectedStock.sector}</Badge>
+                      {selectedStock.sector && <Badge variant="secondary">{selectedStock.sector}</Badge>}
                     </div>
                   </div>
                   <div className="text-right relative">
                     {/* Realtime indicator */}
                     {useRealtime && isConnected && realtimeQuote && (
                       <div className="absolute -top-2 -right-2">
-                        <span className="inline-flex h-2 w-2 rounded-full bg-green-500 animate-pulse" 
+                        <span className="inline-flex h-2 w-2 rounded-full bg-green-500 animate-pulse"
                               title="Dados em tempo real" />
                       </div>
                     )}
-                    
+
                     <div className="text-3xl font-bold">
                       {formatCurrency(
                         (realtimeQuote?.price ?? cachedQuote?.price ?? cachedQuote?.close ?? cachedQuote?.last ?? 0) ||
@@ -455,8 +775,8 @@ export default function IntrinsicValue() {
                       ((realtimeQuote?.change ?? cachedQuote?.change ?? parseFloat(String(selectedStock.changePercent || 0))) >= 0)
                         ? 'text-green-600' : 'text-red-600'
                     }`}>
-                      {((realtimeQuote?.change ?? cachedQuote?.change ?? parseFloat(String(selectedStock.changePercent || 0))) >= 0) ? 
-                        <ArrowUp className="h-4 w-4" /> : 
+                      {((realtimeQuote?.change ?? cachedQuote?.change ?? parseFloat(String(selectedStock.changePercent || 0))) >= 0) ?
+                        <ArrowUp className="h-4 w-4" /> :
                         <ArrowDown className="h-4 w-4" />
                       }
                       <span>
@@ -470,7 +790,420 @@ export default function IntrinsicValue() {
               </CardContent>
             </Card>
 
-            {/* Official Intrinsic Value reference + Scenario */}
+            {/* AlfaValue™ Header - New System */}
+            <AlfaValueHeader ticker={normalizedSymbol} />
+
+            {/* FASE 3: Valuation Methods Comparison (10+ methods) */}
+            {alfaValueData && (
+              <Card>
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <BarChart3 className="h-5 w-5 text-primary" />
+                      <div>
+                        <CardTitle>Compare All Valuation Methods</CardTitle>
+                        <p className="text-sm text-muted-foreground mt-1">
+                          See how 10+ different valuation models assess {selectedStock.symbol}'s fair value
+                        </p>
+                      </div>
+                    </div>
+
+                    <Button
+                      variant={showAllMethods ? "default" : "outline"}
+                      onClick={() => setShowAllMethods(!showAllMethods)}
+                      className={showAllMethods ? 'bg-teya-green hover:bg-teya-green-dark text-black' : ''}
+                    >
+                      {showAllMethods ? (
+                        <>
+                          <BarChart3 className="w-4 h-4 mr-2" />
+                          Hide Methods
+                        </>
+                      ) : (
+                        <>
+                          <BarChart3 className="w-4 h-4 mr-2" />
+                          Show All Methods
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </CardHeader>
+
+                {showAllMethods && (
+                  <CardContent className="space-y-6">
+                    {/* FASE 3.2: 15 Valuation Methods Dropdown */}
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                      <Label htmlFor="method-selector" className="text-sm font-medium min-w-[80px]">
+                        Method:
+                      </Label>
+                      <Select
+                        value={selectedMethod}
+                        onValueChange={(value) => setSelectedMethod(value)}
+                      >
+                        <SelectTrigger id="method-selector" className="flex-1">
+                          <SelectValue placeholder="Select valuation method" />
+                        </SelectTrigger>
+                        <SelectContent className="max-h-[400px]">
+                          <SelectItem value="alfavalue">AlfaValue™ (Proprietary)</SelectItem>
+
+                          <SelectGroup>
+                            <SelectLabel className="text-xs text-muted-foreground mt-2">DCF Models</SelectLabel>
+                            <SelectItem value="dcf-20-fcf">DCF-20 Free Cash Flow</SelectItem>
+                            <SelectItem value="dcf-20-ocf">DCF-20 Operating Cash Flow</SelectItem>
+                            <SelectItem value="dcf-20-ni">DCF-20 Net Income</SelectItem>
+                            <SelectItem value="dni-20">DNI-20 Net Income</SelectItem>
+                            <SelectItem value="dfcf-terminal">DFCF Terminal (FMP)</SelectItem>
+                            <SelectItem value="dfcf-20">DFCF-20 (FMP)</SelectItem>
+                          </SelectGroup>
+
+                          <SelectGroup>
+                            <SelectLabel className="text-xs text-muted-foreground mt-2">Historical Multiples - Mean</SelectLabel>
+                            <SelectItem value="pe-mean">P/E Mean 5Y</SelectItem>
+                            <SelectItem value="pe-mean-nri">P/E Mean 5Y (without NRI)</SelectItem>
+                            <SelectItem value="ps-mean">P/S Mean 5Y</SelectItem>
+                            <SelectItem value="pb-mean">P/B Mean 5Y</SelectItem>
+                            <SelectItem value="pb-mean-nri">P/B Mean 5Y (without NRI)</SelectItem>
+                          </SelectGroup>
+
+                          <SelectGroup>
+                            <SelectLabel className="text-xs text-muted-foreground mt-2">Historical Multiples - Median</SelectLabel>
+                            <SelectItem value="pe-median">P/E Median 5Y</SelectItem>
+                            <SelectItem value="pe-median-nri">P/E Median 5Y (without NRI)</SelectItem>
+                            <SelectItem value="ps-median">P/S Median 5Y</SelectItem>
+                            <SelectItem value="pb-median">P/B Median 5Y</SelectItem>
+                            <SelectItem value="pb-median-nri">P/B Median 5Y (without NRI)</SelectItem>
+                          </SelectGroup>
+
+                          <SelectGroup>
+                            <SelectLabel className="text-xs text-muted-foreground mt-2">Growth-Adjusted</SelectLabel>
+                            <SelectItem value="peg">PEG Ratio</SelectItem>
+                            <SelectItem value="psg">PSG Ratio</SelectItem>
+                          </SelectGroup>
+                        </SelectContent>
+                      </Select>
+                      <Badge variant="outline" className="hidden sm:flex">
+                        <Info className="h-3 w-3 mr-1" />
+                        17 Methods
+                      </Badge>
+                    </div>
+
+                    {/* Based On selector - only show for DCF methods */}
+                    {selectedMethod.includes('dcf') && (
+                      <div className="flex items-center gap-4">
+                        <Label htmlFor="based-on-selector" className="text-sm font-medium min-w-[80px]">
+                          Based On:
+                        </Label>
+                        <Select
+                          value={basedOn}
+                          onValueChange={(value) => setBasedOn(value as BasedOn)}
+                        >
+                          <SelectTrigger id="based-on-selector" className="w-[200px]">
+                            <SelectValue placeholder="Select base metric" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="fcf">Free Cash Flow (FCF)</SelectItem>
+                            <SelectItem value="ocf">Operating Cash Flow (OCF)</SelectItem>
+                            <SelectItem value="ni">Net Income (NI)</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <Badge variant="outline" className="ml-auto">
+                          <Info className="h-3 w-3 mr-1" />
+                          Changes DCF calculations basis
+                        </Badge>
+                      </div>
+                    )}
+
+                    {/* Loading State */}
+                    {isLoadingValuationChart && (
+                      <div className="text-center py-8">
+                        <motion.div
+                          animate={{ rotate: 360 }}
+                          transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                          className="w-12 h-12 mx-auto mb-4"
+                        >
+                          <Calculator className="w-full h-full text-primary" />
+                        </motion.div>
+                        <p className="text-muted-foreground">Loading valuation methods...</p>
+                      </div>
+                    )}
+
+                    {/* Error State */}
+                    {valuationChartError && (
+                      <div className="text-center py-8 text-red-500">
+                        <p>Failed to load valuation methods</p>
+                        <p className="text-sm text-muted-foreground mt-2">
+                          {valuationChartError instanceof Error ? valuationChartError.message : 'Unknown error'}
+                        </p>
+                      </div>
+                    )}
+
+                    {/* FASE 3.2: Dual Column Layout (Auto vs My Calculation) */}
+                    {valuationChartData && alfaValueData && (() => {
+                      const autoMethod = valuationChartData.methods.find(m => m.name === selectedMethod);
+                      const price = valuationChartData.price;
+                      const iv = autoMethod?.iv || alfaValueData.iv;
+                      const premium = ((price - iv) / iv) * 100;
+
+                      // FIXED: Use method-specific inputs with dynamic category mapping
+                      const category = getMethodCategory(selectedMethod);
+                      const methodInputs = autoMethod?.inputs || {};
+
+                      let autoCalculation: AutoCalculation;
+
+                      if (category === 'dcf') {
+                        // DCF Methods: Standard mapping
+                        autoCalculation = {
+                          stockPrice: price,
+                          iv: iv,
+                          premium: premium,
+                          operatingCF: Number(
+                            methodInputs.fcf_ttm_musd ||
+                            methodInputs.net_income_ttm_musd ||
+                            methodInputs.operating_cf ||
+                            alfaValueData.inputs?.fcf_ttm_musd || 0
+                          ),
+                          totalDebt: Number(
+                            methodInputs.total_debt_musd ||
+                            methodInputs.debt_musd ||
+                            alfaValueData.inputs?.debt_musd || 0
+                          ),
+                          cash: Number(
+                            methodInputs.cash_musd ||
+                            methodInputs.cash ||
+                            alfaValueData.inputs?.cash_musd || 0
+                          ),
+                          discountRate: Number(
+                            methodInputs.discount_rate ?
+                              methodInputs.discount_rate * 100 :
+                              (alfaValueData.assumptions?.discount_rate || 0) * 100
+                          ),
+                          shares: Number(
+                            methodInputs.shares_outstanding_m ||
+                            methodInputs.shares_m ||
+                            alfaValueData.inputs?.shares_m || 0
+                          ),
+                          growth_1_5: Number(
+                            methodInputs.growth_rate_y1_5 ?
+                              methodInputs.growth_rate_y1_5 * 100 :
+                              methodInputs.stage1_growth_rate ?
+                                methodInputs.stage1_growth_rate * 100 :
+                                (alfaValueData.assumptions?.g_1_5 || 0) * 100
+                          ),
+                          growth_6_10: Number(
+                            methodInputs.growth_rate_y6_10 ?
+                              methodInputs.growth_rate_y6_10 * 100 :
+                              methodInputs.stage2_growth_rate ?
+                                methodInputs.stage2_growth_rate * 100 :
+                                (alfaValueData.assumptions?.g_6_10 || 0) * 100
+                          ),
+                          growth_11_20: Number(
+                            methodInputs.growth_rate_y11_20 ?
+                              methodInputs.growth_rate_y11_20 * 100 :
+                              methodInputs.terminal_growth_rate ?
+                                methodInputs.terminal_growth_rate * 100 :
+                                (alfaValueData.assumptions?.g_11_20 || 0) * 100
+                          ),
+                        };
+                      } else if (category === 'growth') {
+                        // Growth Methods (PEG/PSG): Map to same fields
+                        autoCalculation = {
+                          stockPrice: price,
+                          iv: iv,
+                          premium: premium,
+                          operatingCF: Number(methodInputs.last_price || price),
+                          totalDebt: Number(methodInputs.eps_without_nri || methodInputs.sales_per_share || 0),
+                          cash: Number(methodInputs.pe_without_nri || methodInputs.ps_ratio || 0),
+                          discountRate: Number(methodInputs.fair_peg_ratio || methodInputs.fair_psg_ratio || 1.5),
+                          shares: Number(alfaValueData.inputs?.shares_m || 0),
+                          growth_1_5: Number(methodInputs.growth_rate ? methodInputs.growth_rate * 100 : 0),
+                          growth_6_10: 0,
+                          growth_11_20: 0,
+                        };
+                      } else {
+                        // Multiples Methods: Map current_price, ratios, per-share
+                        autoCalculation = {
+                          stockPrice: price,
+                          iv: iv,
+                          premium: premium,
+                          operatingCF: Number(methodInputs.current_price || price),
+                          totalDebt: Number(
+                            methodInputs.mean_pe_ratio_5y ||
+                            methodInputs.median_pe_ratio_5y ||
+                            methodInputs.mean_ps_ratio_5y ||
+                            methodInputs.median_ps_ratio_5y ||
+                            methodInputs.mean_pb_ratio_5y ||
+                            methodInputs.median_pb_ratio_5y || 0
+                          ),
+                          cash: Number(
+                            methodInputs.eps_ttm ||
+                            methodInputs.sales_per_share_ttm ||
+                            methodInputs.book_value_per_share_ttm || 0
+                          ),
+                          discountRate: 0,
+                          shares: Number(alfaValueData.inputs?.shares_m || 0),
+                          growth_1_5: 0,
+                          growth_6_10: 0,
+                          growth_11_20: 0,
+                        };
+                      }
+
+                      return (
+                        <DualValuationLayout
+                          method={selectedMethod}
+                          autoCalculation={autoCalculation}
+                          myCalculation={myCalculation}
+                          onMyCalculationChange={handleMyCalculationChange}
+                          onCalculate={handleCalculate}
+                          onSave={handleSave}
+                          onLoad={handleLoad}
+                        />
+                      );
+                    })()}
+
+                    {/* Horizontal Bar Chart (full width) - Highlight selected method */}
+                    {valuationChartData && (
+                      <ValuationMethodsChart
+                        methods={valuationChartData.methods}
+                        currentPrice={valuationChartData.price}
+                        highlightMethod={selectedMethod}
+                      />
+                    )}
+                  </CardContent>
+                )}
+              </Card>
+            )}
+
+            {/* Educational: How is Intrinsic Value Calculated? */}
+            {alfaValueData && (
+              <Card className="border-blue-500/20 bg-gradient-to-r from-blue-500/5 to-transparent">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Info className="h-5 w-5 text-blue-500" />
+                    How is Intrinsic Value Calculated?
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <div className="prose prose-sm max-w-none">
+                    <p className="text-muted-foreground">
+                      AlfaValue™ uses a 20-year Discounted Cash Flow (DCF) model to calculate intrinsic value.
+                      The model projects future cash flows and discounts them back to present value using a
+                      company-specific discount rate (WACC).
+                    </p>
+                  </div>
+
+                  {/* Step-by-step breakdown */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {/* Step 1: Project Cash Flows */}
+                    <div className="p-4 border rounded-lg bg-background/50">
+                      <div className="flex items-center gap-2 mb-3">
+                        <div className="w-8 h-8 rounded-full bg-teya-green/10 flex items-center justify-center text-teya-green font-bold">
+                          1
+                        </div>
+                        <h4 className="font-semibold">Project Cash Flows</h4>
+                      </div>
+                      <div className="space-y-2 text-sm">
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Starting FCF:</span>
+                          <span className="font-medium">${alfaValueData.inputs.fcf_ttm_musd.toFixed(0)}M</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Years 1-5 Growth:</span>
+                          <span className="font-medium text-green-600">
+                            {(alfaValueData.assumptions.g_1_5 * 100).toFixed(1)}%
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Years 6-10 Growth:</span>
+                          <span className="font-medium text-green-600">
+                            {(alfaValueData.assumptions.g_6_10 * 100).toFixed(1)}%
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Years 11-20 Growth:</span>
+                          <span className="font-medium text-green-600">
+                            {(alfaValueData.assumptions.g_11_20 * 100).toFixed(1)}%
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Step 2: Discount to Present Value */}
+                    <div className="p-4 border rounded-lg bg-background/50">
+                      <div className="flex items-center gap-2 mb-3">
+                        <div className="w-8 h-8 rounded-full bg-blue-500/10 flex items-center justify-center text-blue-500 font-bold">
+                          2
+                        </div>
+                        <h4 className="font-semibold">Discount to Present Value</h4>
+                      </div>
+                      <div className="space-y-2 text-sm">
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Risk-Free Rate:</span>
+                          <span className="font-medium">{(alfaValueData.assumptions.rf * 100).toFixed(2)}%</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Beta:</span>
+                          <span className="font-medium">{alfaValueData.assumptions.beta.toFixed(2)}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Market Risk Premium:</span>
+                          <span className="font-medium">{(alfaValueData.assumptions.mrp * 100).toFixed(1)}%</span>
+                        </div>
+                        <div className="flex justify-between pt-2 border-t">
+                          <span className="font-medium">WACC (Discount Rate):</span>
+                          <span className="font-bold text-blue-600">
+                            {(alfaValueData.assumptions.discount_rate * 100).toFixed(2)}%
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Step 3: Adjust for Balance Sheet */}
+                    <div className="p-4 border rounded-lg bg-background/50">
+                      <div className="flex items-center gap-2 mb-3">
+                        <div className="w-8 h-8 rounded-full bg-purple-500/10 flex items-center justify-center text-purple-500 font-bold">
+                          3
+                        </div>
+                        <h4 className="font-semibold">Adjust for Balance Sheet</h4>
+                      </div>
+                      <div className="space-y-2 text-sm">
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Enterprise Value:</span>
+                          <span className="font-medium">Calculated</span>
+                        </div>
+                        <div className="flex justify-between text-green-600">
+                          <span>+ Cash:</span>
+                          <span className="font-medium">${alfaValueData.inputs.cash_musd.toFixed(0)}M</span>
+                        </div>
+                        <div className="flex justify-between text-red-600">
+                          <span>- Debt:</span>
+                          <span className="font-medium">${alfaValueData.inputs.debt_musd.toFixed(0)}M</span>
+                        </div>
+                        <div className="flex justify-between pt-2 border-t">
+                          <span className="font-medium">÷ Shares:</span>
+                          <span className="font-bold">{alfaValueData.inputs.shares_m.toFixed(0)}M</span>
+                        </div>
+                        <div className="flex justify-between pt-2 border-t">
+                          <span className="font-bold text-teya-green">Intrinsic Value/Share:</span>
+                          <span className="font-bold text-teya-green text-lg">
+                            {formatCurrency(alfaValueData.iv)}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Formula Display */}
+                  <div className="p-4 bg-secondary/30 rounded-lg border border-secondary">
+                    <h4 className="font-semibold mb-2 text-sm">DCF Formula</h4>
+                    <div className="font-mono text-xs text-muted-foreground overflow-x-auto">
+                      IV = Σ(FCF<sub>t</sub> / (1 + WACC)<sup>t</sup>) + (Cash - Debt) / Shares
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Legacy: Official Intrinsic Value reference + Scenario (only show if AlfaValue not available) */}
+            {!alfaValueData && (
             <Card>
               <CardContent className="p-6">
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-6 items-center">
@@ -532,8 +1265,10 @@ export default function IntrinsicValue() {
                 </div>
               </CardContent>
             </Card>
+            )}
 
-            {/* Presets (simple) */}
+            {/* Legacy: Presets (simple) - Only show if using legacy system */}
+            {!alfaValueData && (
             <Card>
               <CardHeader>
                 <CardTitle>Presets de Cenário</CardTitle>
@@ -544,9 +1279,116 @@ export default function IntrinsicValue() {
                 <Button variant={presetKey === 'optimistic' ? 'default' : 'outline'} onClick={() => setPresetKey('optimistic')}>Otimista</Button>
               </CardContent>
             </Card>
+            )}
 
-            {/* Calculation Results */}
-            {isCalculating ? (
+            {/* Calculation Results - Show AlfaValue visualization or legacy calculation */}
+            {alfaValueData ? (
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* AlfaValue Status Card */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Target className="h-5 w-5 text-teya-green" />
+                      Valuation Status
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    <div className="text-center">
+                      <div className="grid grid-cols-2 gap-4 mb-4">
+                        <div className="p-4 bg-secondary/30 rounded-lg">
+                          <div className="text-sm text-muted-foreground">Current Price</div>
+                          <div className="text-2xl font-bold">{formatCurrency(alfaValueData.price)}</div>
+                        </div>
+                        <div className="p-4 bg-teya-green/10 rounded-lg">
+                          <div className="text-sm text-muted-foreground">Intrinsic Value</div>
+                          <div className="text-2xl font-bold text-teya-green">{formatCurrency(alfaValueData.iv)}</div>
+                        </div>
+                      </div>
+
+                      <div className={cn(
+                        "text-center p-4 rounded-lg",
+                        alfaValueData.status === 'undervalued'
+                          ? 'bg-green-500/10 border border-green-500/20'
+                          : alfaValueData.status === 'overvalued'
+                          ? 'bg-red-500/10 border border-red-500/20'
+                          : 'bg-gray-500/10 border border-gray-500/20'
+                      )}>
+                        <div className={cn(
+                          "text-2xl font-bold",
+                          alfaValueData.status === 'undervalued' ? 'text-green-600' : 'text-red-600'
+                        )}>
+                          {formatPercentage(Math.abs(alfaValueData.discount_pct))}
+                        </div>
+                        <div className="text-sm">
+                          {alfaValueData.status === 'undervalued' ? 'Discount to Fair Value' : 'Premium to Fair Value'}
+                        </div>
+                        <Badge className="mt-2" variant={alfaValueData.status === 'undervalued' ? 'default' : 'secondary'}>
+                          {alfaValueData.status === 'undervalued' ? (
+                            <>
+                              <TrendingUp className="h-3 w-3 mr-1" />
+                              Undervalued
+                            </>
+                          ) : alfaValueData.status === 'overvalued' ? (
+                            <>
+                              <TrendingDown className="h-3 w-3 mr-1" />
+                              Overvalued
+                            </>
+                          ) : (
+                            <>
+                              <Minus className="h-3 w-3 mr-1" />
+                              Fairly Priced
+                            </>
+                          )}
+                        </Badge>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Confidence & Metadata */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Activity className="h-5 w-5 text-purple-500" />
+                      Analysis Metadata
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="space-y-3">
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-muted-foreground">Confidence Level:</span>
+                        <Badge variant={
+                          alfaValueData.confidence === 'HIGH' ? 'default' :
+                          alfaValueData.confidence === 'MED' ? 'secondary' : 'outline'
+                        }>
+                          {alfaValueData.confidence}
+                        </Badge>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-sm text-muted-foreground">Sector Growth (Mid):</span>
+                        <span className="font-medium">{(alfaValueData.meta.g_sector_mid * 100).toFixed(1)}%</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-sm text-muted-foreground">Growth Source:</span>
+                        <span className="font-medium capitalize">{alfaValueData.meta.g_sector_source}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-sm text-muted-foreground">Region:</span>
+                        <span className="font-medium">{alfaValueData.meta.region}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-sm text-muted-foreground">Terminal Growth (Regional):</span>
+                        <span className="font-medium">{(alfaValueData.meta.g_term_region * 100).toFixed(1)}%</span>
+                      </div>
+                      <div className="flex justify-between pt-3 border-t">
+                        <span className="text-sm text-muted-foreground">Calculation Date:</span>
+                        <span className="font-medium">{new Date(alfaValueData.as_of).toLocaleDateString()}</span>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            ) : isCalculating ? (
               <Card>
                 <CardContent className="p-8 text-center">
                   <motion.div

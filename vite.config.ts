@@ -819,14 +819,15 @@ export default defineConfig({
     // Disable source maps in production for security and performance
     sourcemap: process.env.NODE_ENV === 'development',
     
-    // Re-enable minification now that chunking is fixed
-    minify: 'terser',
-    terserOptions: {
-      compress: {
-        drop_console: true,
-        drop_debugger: true
-      }
-    },
+    // TEMPORARILY DISABLED: Testing if terser is removing methodInputs logic
+    minify: false,
+    // minify: 'terser',
+    // terserOptions: {
+    //   compress: {
+    //     drop_console: true,
+    //     drop_debugger: true
+    //   }
+    // },
     
     // Additional optimization settings
     target: 'es2020',

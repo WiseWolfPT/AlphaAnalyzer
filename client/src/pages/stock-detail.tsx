@@ -7,11 +7,13 @@ import { StockHeaderV2 } from "@/components/stock/stock-header-v2";
 import { RealtimeStockHeaderV2 } from "@/components/stock/realtime-stock-header-v2";
 import { StockNewsFeed } from "@/components/stock/stock-news-feed";
 import { StockFinancialsChart } from "@/components/stock/stock-financials-chart";
+import { AlfaValueHeader } from "@/components/stock/alfa-value-header";
 import { Button } from "@/components/ui/button";
-import { fetchIntrinsicValueData, normalizeIntrinsicValue } from '@/lib/intrinsic-value';
+// Legacy intrinsic value imports removed - now using AlfaValueHeader component with useAlfaValue hook
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Skeleton } from "@/components/ui/skeleton";
 import { 
   TrendingUp, 
   TrendingDown, 
@@ -34,8 +36,10 @@ import { useRealtimeQuote } from "@/hooks/use-realtime-quotes";
 import { useCompanyData } from "@/hooks/use-company-profile";
 import { useCachedQuote } from "@/hooks/use-cache-data";
 import { useExtendedHours } from "@/hooks/use-extended-hours";
-import { useStockDetails } from "@/hooks/use-stock-details";
+import { useStockDetails } from "@/hooks/use-stock-queries";
+import { useAlfaValue } from "@/hooks/use-alfa-value";
 import { ClientOnly } from "@/components/shared/client-only";
+// Transcripts per-symbol view moved to dedicated routes
 
 // Mock company data
 const getCompanyData = (symbol: string) => {
@@ -139,15 +143,18 @@ export default function StockDetail() {
   }, [cachedQuote]);
   
   // Get detailed stock data from new endpoints
-  const { 
-    profile: detailedProfile, 
-    metrics: detailedMetrics, 
-    incomeStatements, 
-    news, 
+  const {
+    profile: detailedProfile,
+    metrics: detailedMetrics,
+    incomeStatements,
+    news,
     historicalPrices,
-    isLoading: isLoadingDetails 
+    isLoading: isLoadingDetails
   } = useStockDetails(symbol);
-  
+
+  // Get AlfaValue intrinsic value data
+  const { data: alfaValueData, isLoading: isLoadingAlfaValue } = useAlfaValue(symbol);
+
   // Use real data if available, fallback to mock
   const mockData = getCompanyData(symbol);
   const company = (detailedProfile || profile) ? {
@@ -185,24 +192,15 @@ export default function StockDetail() {
   
   const isPositive = company.change >= 0;
 
-  // Fetch official Intrinsic Value (cache-first, read-only)
-  const { data: officialIVData } = useQuery({
-    queryKey: ["officialIV", symbol],
-    queryFn: () => fetchIntrinsicValueData(symbol),
-    staleTime: 24 * 60 * 60 * 1000,
-  });
-
-  const officialIntrinsicValue = normalizeIntrinsicValue(officialIVData);
+  // Intrinsic value data from useAlfaValue hook (shared with AlfaValueHeader)
+  const officialIntrinsicValue = alfaValueData?.iv ?? null;
   const latestPrice = Number(realtimeQuote?.price ?? company.price ?? 0);
-  const valuationDiff = officialIntrinsicValue && latestPrice
-    ? ((latestPrice - officialIntrinsicValue) / officialIntrinsicValue) * 100
-    : null;
-  const isUndervalued = valuationDiff !== null ? valuationDiff < 0 : null;
-
-  // Simple sensitivity band (client-side only, based on official IV if available)
-  const baseIV = officialIntrinsicValue ?? null;
-  const conservativeIV = baseIV ? baseIV * 0.9 : null; // -10%
-  const optimisticIV = baseIV ? baseIV * 1.1 : null;   // +10%
+  const valuationDiff = alfaValueData?.discount_pct ?? null;
+  const isUndervalued = alfaValueData?.status === 'undervalued';
+  const baseIV = alfaValueData?.iv ?? null;
+  // Conservative and optimistic scenarios not available yet
+  const conservativeIV = null;
+  const optimisticIV = null;
 
   const formatCurrency = (value: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(value || 0);
 
@@ -292,6 +290,9 @@ export default function StockDetail() {
           />
         )}
 
+        {/* AlfaValue™ Header - Intrinsic Value */}
+        <AlfaValueHeader ticker={symbol} />
+
         {/* Price Information */}
         <Card className="border-teya-green/20">
           <CardContent className="p-6">
@@ -308,7 +309,7 @@ export default function StockDetail() {
                 </p>
               </div>
               {/* Extended hours block */}
-              {extendedHours && (extendedHours.afterHours || extendedHours.preMarket) && (
+              {extendedHours && extendedHours.isExtendedHours && (extendedHours.afterHours || extendedHours.preMarket) && (
                 <div className="col-span-2 md:col-span-2 lg:col-span-2">
                   <div className="flex items-center gap-2 mb-1">
                     <p className="text-sm text-muted-foreground">Extended Hours</p>
@@ -359,26 +360,27 @@ export default function StockDetail() {
 
         {/* Main Content Tabs */}
         <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
             <TabsTrigger value="overview" className="flex items-center gap-2">
               <Activity className="h-4 w-4" />
-              Overview
+              <span className="hidden sm:inline">Overview</span>
             </TabsTrigger>
             <TabsTrigger value="financials" className="flex items-center gap-2">
               <BarChart3 className="h-4 w-4" />
-              Financials
+              <span className="hidden sm:inline">Financials</span>
             </TabsTrigger>
+            {/* Transcripts tab removed: use /transcripts or /transcripts/:symbol */}
             <TabsTrigger value="valuation" className="flex items-center gap-2">
               <Calculator className="h-4 w-4" />
-              Valuation
+              <span className="hidden sm:inline">Valuation</span>
             </TabsTrigger>
             <TabsTrigger value="news" className="flex items-center gap-2">
               <Newspaper className="h-4 w-4" />
-              News
+              <span className="hidden sm:inline">News</span>
             </TabsTrigger>
             <TabsTrigger value="compare" className="flex items-center gap-2">
               <ChartLine className="h-4 w-4" />
-              Compare
+              <span className="hidden sm:inline">Compare</span>
             </TabsTrigger>
           </TabsList>
 
@@ -406,7 +408,13 @@ export default function StockDetail() {
                       <div className="flex items-center justify-between">
                         <div>
                           <h3 className="text-2xl font-bold text-teya-green">
-                            {baseIV ? formatCurrency(baseIV) : 'N/A'}
+                            {isLoadingAlfaValue ? (
+                              <Skeleton className="h-8 w-32" />
+                            ) : baseIV ? (
+                              formatCurrency(baseIV)
+                            ) : (
+                              'N/A'
+                            )}
                           </h3>
                           <p className="text-sm text-muted-foreground">Valor Intrínseco (Oficial)</p>
                         </div>
@@ -415,24 +423,45 @@ export default function StockDetail() {
                           <p className="text-sm text-muted-foreground">Preço Atual</p>
                         </div>
                       </div>
-                      
+
                       <div className="flex items-center justify-between p-3 bg-background/60 rounded-lg">
                         <div className="flex items-center gap-2">
-                          <div className={`w-3 h-3 rounded-full ${isUndervalued === null ? 'bg-gray-400' : isUndervalued ? 'bg-green-500' : 'bg-red-500'}`} />
-                          <Badge className={`${isUndervalued ? 'bg-green-500/10 text-green-700 border-green-200' : 'bg-red-500/10 text-red-700 border-red-200'}`}>
-                            {isUndervalued ? (
-                              <TrendingUp className="h-3 w-3 mr-1" />
-                            ) : (
-                              <TrendingDown className="h-3 w-3 mr-1" />
-                            )}
-                            {isUndervalued === null ? '—' : isUndervalued ? 'Subvalorizada' : 'Sobrevalorizada'}
-                          </Badge>
+                          {isLoadingAlfaValue ? (
+                            <>
+                              <Skeleton className="h-3 w-3 rounded-full" />
+                              <Skeleton className="h-6 w-32" />
+                            </>
+                          ) : (
+                            <>
+                              <div className={`w-3 h-3 rounded-full ${isUndervalued === null ? 'bg-gray-400' : isUndervalued ? 'bg-green-500' : 'bg-red-500'}`} />
+                              <Badge className={`${isUndervalued ? 'bg-green-500/10 text-green-700 border-green-200' : 'bg-red-500/10 text-red-700 border-red-200'}`}>
+                                {isUndervalued ? (
+                                  <TrendingDown className="h-3 w-3 mr-1" />
+                                ) : (
+                                  <TrendingUp className="h-3 w-3 mr-1" />
+                                )}
+                                {isUndervalued === null ? '—' : isUndervalued ? 'Subvalorizada' : 'Sobrevalorizada'}
+                              </Badge>
+                            </>
+                          )}
                         </div>
                         <div className="text-right">
-                          <span className={`text-lg font-bold ${valuationDiff !== null && valuationDiff < 0 ? 'text-green-600' : 'text-red-600'}`}>
-                            {valuationDiff === null ? '—' : `${valuationDiff.toFixed(1)}%`}
-                          </span>
-                          <p className="text-xs text-muted-foreground">vs. Valor Intrínseco</p>
+                          {isLoadingAlfaValue ? (
+                            <Skeleton className="h-6 w-16 ml-auto" />
+                          ) : (
+                            <>
+                              <span className={`text-lg font-bold ${
+                                valuationDiff !== null
+                                  ? valuationDiff < 0
+                                    ? 'text-green-600'
+                                    : 'text-red-600'
+                                  : 'text-muted-foreground'
+                              }`}>
+                                {valuationDiff === null ? '—' : `${Math.abs(valuationDiff).toFixed(1)}%`}
+                              </span>
+                              <p className="text-xs text-muted-foreground">vs. Valor Intrínseco</p>
+                            </>
+                          )}
                         </div>
                       </div>
 
@@ -497,6 +526,8 @@ export default function StockDetail() {
             <StockFinancialsChart data={incomeStatements} isLoading={isLoadingDetails} />
           </TabsContent>
 
+          {/* Transcripts content removed: navigate to /transcripts or /transcripts/:symbol */}
+
           <TabsContent value="valuation" className="space-y-6">
             {/* Valuation Tab - Detalhe do cálculo IV */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -511,7 +542,15 @@ export default function StockDetail() {
                 <CardContent className="space-y-4">
                   <div className="bg-teya-green/5 border border-teya-green/20 rounded-lg p-4">
                     <div className="text-center mb-4">
-                      <h3 className="text-3xl font-bold text-teya-green">{baseIV ? formatCurrency(baseIV) : 'N/A'}</h3>
+                      <h3 className="text-3xl font-bold text-teya-green">
+                        {isLoadingAlfaValue ? (
+                          <Skeleton className="h-9 w-40 mx-auto" />
+                        ) : baseIV ? (
+                          formatCurrency(baseIV)
+                        ) : (
+                          'N/A'
+                        )}
+                      </h3>
                       <p className="text-sm text-muted-foreground">Valor Intrínseco (Oficial)</p>
                     </div>
                     

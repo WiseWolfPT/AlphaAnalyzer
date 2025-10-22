@@ -219,6 +219,10 @@ export async function registerRoutes(app: Express): Promise<void> {
   // Maintain backward compatibility
   // TEMPORARILY: Remove apiSecurityMiddleware for development
   app.use("/api/market-data", marketDataRouter);
+
+  // FASE 2 - BACKEND: Alias /api/iv/* → /api/market-data/iv/*
+  // Allows frontend to call shorter routes while reusing market-data router
+  app.use("/api/iv", marketDataRouter);
   
   // Stock data routes (keep after auth alias so /api/user/* resolves first)
   app.use("/api", stocksRouter);

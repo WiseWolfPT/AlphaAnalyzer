@@ -172,4 +172,17 @@ export class TranscriptService {
     // Fallback for Supabase (not implemented yet)
     return 0;
   }
+
+  // New: Find transcript by unique key (ticker, quarter, year)
+  async findByKey(ticker: string, quarter: string, year: number): Promise<Transcript | null> {
+    if (this.usePg) return await transcriptsPgRepo.findByKey(ticker, quarter, year) as any;
+    // Fallback for Supabase: filter by ticker/quarter/year
+    const result = await db.transcripts.getAll({ ticker, quarter, year: year.toString() as any, limit: 1 });
+    return result.data[0] || null;
+  }
+
+  // New: Alias for getTranscriptById (for worker compatibility)
+  async findById(id: number): Promise<Transcript | null> {
+    return this.getTranscriptById(id);
+  }
 }

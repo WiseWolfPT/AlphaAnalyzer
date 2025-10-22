@@ -34,11 +34,15 @@ router.get('/', authService.optionalAuth(), async (req: Request, res: Response) 
   try {
     const filter = publicFilterSchema.parse(req.query);
 
-    // 1. Verificar cache primeiro
-    const cached = await transcriptCacheService.getCachedList();
-    if (cached) {
-      console.log('✅ Serving transcripts from cache');
-      return res.json({ success: true, data: cached });
+    // 1. Verificar cache primeiro (apenas pedidos sem filtros e offset=0)
+    const isDefaultListRequest = !filter.ticker && !filter.year && !filter.quarter && filter.offset === 0;
+    if (isDefaultListRequest) {
+      const cached = await transcriptCacheService.getCachedList();
+      if (cached) {
+        console.log('✅ Serving transcripts from cache (default list)');
+        const sliced = cached.slice(0, filter.limit);
+        return res.json({ success: true, data: sliced });
+      }
     }
 
     // 2. Query DB se cache miss
@@ -63,8 +67,10 @@ router.get('/', authService.optionalAuth(), async (req: Request, res: Response) 
       // Exclude raw_transcript, status, created_at, metadata
     }));
 
-    // 3. Cachear resultado
-    await transcriptCacheService.cacheList(publicData);
+    // 3. Cachear resultado apenas para pedidos default (sem filtros)
+    if (isDefaultListRequest) {
+      await transcriptCacheService.cacheList(publicData);
+    }
 
     res.json({
       success: true,
@@ -320,6 +326,248 @@ router.post('/admin/auto-publish', marketDataApiKey, async (req: Request, res: R
       success: false,
       error: 'Failed to auto-publish transcripts',
       details: error instanceof Error ? error.message : 'Unknown error',
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
+/**
+ * ========================================================================
+ * ONDA 3 - TRANSCRIPTS API ROUTES (Task #5)
+ * ========================================================================
+ *
+ * Cache-first strategy with PostgreSQL backend:
+ * - Latest: Redis cache (7 days TTL) → PostgreSQL
+ * - History: Direct PostgreSQL query (no cache)
+ *
+ * Memory Impact:
+ * - Redis: ~10KB per symbol × 914 symbols = 9MB (3.5% of 256MB)
+ * - History queries: Zero Redis footprint
+ */
+
+// Symbol validation schema
+const symbolParamSchema = z.object({
+  symbol: z.string()
+    .min(1, 'Symbol is required')
+    .max(10, 'Symbol too long')
+    .regex(/^[A-Z0-9\-\.]+$/i, 'Invalid symbol format')
+    .transform(val => val.toUpperCase().trim())
+});
+
+/**
+ * GET /api/transcripts/symbol/:symbol
+ *
+ * Get latest transcript OR historical transcripts for a symbol
+ *
+ * Query Parameters:
+ * - history=true: Returns last 5 years (up to 20 transcripts)
+ * - (default): Returns latest transcript only
+ *
+ * Examples:
+ * - GET /api/transcripts/symbol/AAPL → Latest transcript
+ * - GET /api/transcripts/symbol/AAPL?history=true → Last 20 transcripts
+ *
+ * Response Format:
+ * {
+ *   "success": true,
+ *   "data": {...} | [...],
+ *   "timestamp": "2025-10-07T..."
+ * }
+ */
+router.get('/symbol/:symbol', authService.optionalAuth(), async (req: Request, res: Response) => {
+  try {
+    // Validate symbol parameter
+    const validation = symbolParamSchema.safeParse({ symbol: req.params.symbol });
+
+    if (!validation.success) {
+      return res.status(400).json({
+        success: false,
+        error: 'INVALID_SYMBOL',
+        message: validation.error.errors[0].message,
+        timestamp: new Date().toISOString()
+      });
+    }
+
+    const { symbol } = validation.data;
+    const isHistoryRequest = req.query.history === 'true';
+
+    console.log(`📄 Transcript request: ${symbol} ${isHistoryRequest ? '(history)' : '(latest)'}`);
+
+    // Route 1: Historical transcripts (last 5 years, no cache)
+    if (isHistoryRequest) {
+      const history = await transcriptCacheService.getHistory(symbol, 20);
+
+      if (!history || history.length === 0) {
+        return res.status(404).json({
+          success: false,
+          error: 'NO_TRANSCRIPTS_FOUND',
+          message: `No historical transcripts found for ${symbol}`,
+          symbol,
+          timestamp: new Date().toISOString()
+        });
+      }
+
+      console.log(`✅ Found ${history.length} historical transcripts for ${symbol}`);
+
+      return res.json({
+        success: true,
+        data: history,
+        count: history.length,
+        symbol,
+        period: 'last_5_years',
+        timestamp: new Date().toISOString()
+      });
+    }
+
+    // Route 2: Latest transcript (Redis cache → PostgreSQL)
+    const latest = await transcriptCacheService.getLatest(symbol);
+
+    if (!latest) {
+      return res.status(404).json({
+        success: false,
+        error: 'NO_TRANSCRIPT_FOUND',
+        message: `No published transcript found for ${symbol}`,
+        symbol,
+        timestamp: new Date().toISOString()
+      });
+    }
+
+    console.log(`✅ Latest transcript for ${symbol}: ${latest.quarter} ${latest.year}`);
+
+    res.json({
+      success: true,
+      data: latest,
+      symbol,
+      timestamp: new Date().toISOString()
+    });
+
+  } catch (error) {
+    console.error(`❌ Error fetching transcript for ${req.params.symbol}:`, error);
+
+    res.status(500).json({
+      success: false,
+      error: 'TRANSCRIPT_FETCH_ERROR',
+      message: 'Failed to fetch transcript data',
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
+/**
+ * GET /api/transcripts/symbol/:symbol/full
+ *
+ * Get full transcript with raw content (for detail page)
+ *
+ * Query Parameters:
+ * - quarter: Required (Q1, Q2, Q3, Q4)
+ * - year: Required (2020-2025)
+ *
+ * Example:
+ * GET /api/transcripts/symbol/AAPL/full?quarter=Q4&year=2024
+ *
+ * Response includes raw_transcript field (large payload)
+ */
+router.get('/symbol/:symbol/full', authService.optionalAuth(), async (req: Request, res: Response) => {
+  try {
+    // Validate symbol
+    const symbolValidation = symbolParamSchema.safeParse({ symbol: req.params.symbol });
+
+    if (!symbolValidation.success) {
+      return res.status(400).json({
+        success: false,
+        error: 'INVALID_SYMBOL',
+        message: symbolValidation.error.errors[0].message,
+        timestamp: new Date().toISOString()
+      });
+    }
+
+    // Validate query parameters
+    const querySchema = z.object({
+      quarter: z.string()
+        .regex(/^Q[1-4]$/i, 'Quarter must be Q1, Q2, Q3, or Q4')
+        .transform(val => val.toUpperCase()),
+      year: z.coerce.number()
+        .int()
+        .min(2020, 'Year must be 2020 or later')
+        .max(new Date().getFullYear() + 1, 'Invalid future year')
+    });
+
+    const queryValidation = querySchema.safeParse(req.query);
+
+    if (!queryValidation.success) {
+      return res.status(400).json({
+        success: false,
+        error: 'INVALID_PARAMETERS',
+        message: queryValidation.error.errors[0].message,
+        timestamp: new Date().toISOString()
+      });
+    }
+
+    const { symbol } = symbolValidation.data;
+    const { quarter, year } = queryValidation.data;
+
+    console.log(`📄 Full transcript request: ${symbol} ${quarter} ${year}`);
+
+    // Fetch full transcript (no cache for large content)
+    const fullTranscript = await transcriptCacheService.getFullTranscript(symbol, quarter, year);
+
+    if (!fullTranscript) {
+      return res.status(404).json({
+        success: false,
+        error: 'TRANSCRIPT_NOT_FOUND',
+        message: `No transcript found for ${symbol} ${quarter} ${year}`,
+        symbol,
+        quarter,
+        year,
+        timestamp: new Date().toISOString()
+      });
+    }
+
+    console.log(`✅ Full transcript fetched: ${symbol} ${quarter} ${year} (${(fullTranscript.raw_transcript?.length || 0) / 1024}KB)`);
+
+    res.json({
+      success: true,
+      data: fullTranscript,
+      symbol,
+      quarter,
+      year,
+      timestamp: new Date().toISOString()
+    });
+
+  } catch (error) {
+    console.error(`❌ Error fetching full transcript for ${req.params.symbol}:`, error);
+
+    res.status(500).json({
+      success: false,
+      error: 'TRANSCRIPT_FETCH_ERROR',
+      message: 'Failed to fetch full transcript',
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
+/**
+ * GET /api/transcripts/cache/stats
+ *
+ * Get cache statistics for monitoring
+ * Public endpoint (no auth required)
+ */
+router.get('/cache/stats', async (req: Request, res: Response) => {
+  try {
+    const stats = await transcriptCacheService.getCacheStats();
+
+    res.json({
+      success: true,
+      data: stats,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('Error fetching cache stats:', error);
+
+    res.status(500).json({
+      success: false,
+      error: 'CACHE_STATS_ERROR',
+      message: 'Failed to fetch cache statistics',
       timestamp: new Date().toISOString()
     });
   }
