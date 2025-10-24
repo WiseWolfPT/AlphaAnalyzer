@@ -1,18 +1,24 @@
 /**
  * TDD Test Suite for P/S and P/B Multiples Refactoring
  *
+ * ONDA 2.2 UPDATE: Median methods (calculatePSMedian5Y, calculatePBMedian5Y, calculatePBMedianWithoutNRI)
+ * have been removed from the backend to align with StockOracle methodology.
+ * Tests for Median methods should be considered DEPRECATED and can be removed in future cleanup.
+ *
  * Testing Strategy:
  * 1. RED: Write failing tests expecting rich response objects
  * 2. GREEN: Refactor methods to return PSValuationResponse/PBValuationResponse
  * 3. REFACTOR: Ensure code quality and maintainability
  *
- * Methods under test:
+ * Active Methods:
  * - calculatePSMean5Y() → PSValuationResponse
- * - calculatePSMedian5Y() → PSValuationResponse
  * - calculatePBMean5Y() → PBValuationResponse
- * - calculatePBMedian5Y() → PBValuationResponse
  * - calculatePBMeanWithoutNRI() → PBValuationResponse (excludeNRI: true)
- * - calculatePBMedianWithoutNRI() → PBValuationResponse (excludeNRI: true)
+ *
+ * Deprecated (ONDA 2.2):
+ * - calculatePSMedian5Y() → REMOVED
+ * - calculatePBMedian5Y() → REMOVED
+ * - calculatePBMedianWithoutNRI() → REMOVED
  */
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';

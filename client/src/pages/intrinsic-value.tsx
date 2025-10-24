@@ -54,6 +54,9 @@ import { useValuationChart, type BasedOn } from "@/hooks/use-valuation-chart";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SelectLabel, SelectGroup } from "@/components/ui/select";
 import { DualValuationLayout, type AutoCalculation, type MyCalculation } from "@/components/stock/dual-valuation-layout";
 import { useToast } from "@/hooks/use-toast";
+import { useMethodInputMapper } from "@/hooks/useMethodInputMapper";
+import { FinancialInputsDynamic } from "@/components/stock/financial-inputs-dynamic";
+import { CustomMethodSelector, type CustomBasedOn } from "@/components/intrinsic-value/custom-method-selector";
 
 interface ValuationResult {
   method: string;
@@ -82,6 +85,44 @@ export default function IntrinsicValue() {
   const [showAllMethods, setShowAllMethods] = useState(false);
   const [selectedMethod, setSelectedMethod] = useState('alfavalue');
 
+  // ONDA 3.2: Custom Method "Based On" selection
+  const [customBasedOn, setCustomBasedOn] = useState<CustomBasedOn>(() => {
+    // Load from localStorage on mount
+    try {
+      const saved = localStorage.getItem('alfavalue-custom-based-on');
+      if (saved && ['ocf', 'fcf', 'ni'].includes(saved)) {
+        return saved as CustomBasedOn;
+      }
+    } catch (error) {
+      console.error('Failed to load customBasedOn from localStorage:', error);
+    }
+    return 'fcf'; // Default to FCF (recommended)
+  });
+
+  /**
+   * ONDA 3.2: Map Custom method + basedOn to backend method ID
+   *
+   * When user selects "Custom" method, we need to translate their "Based On"
+   * choice (OCF/FCF/NI) to the appropriate backend DCF method ID.
+   *
+   * Mapping:
+   * - OCF → dcf-20-ocf (DCF-20 Operating Cash Flow)
+   * - FCF → dcf-20-fcf (DCF-20 Free Cash Flow)
+   * - NI  → dcf-20-ni  (DCF-20 Net Income)
+   */
+  const getEffectiveMethodId = (method: string): string => {
+    if (method !== 'custom') return method;
+
+    // Map customBasedOn to backend method ID
+    const methodMap: Record<CustomBasedOn, string> = {
+      'ocf': 'dcf-20-ocf',
+      'fcf': 'dcf-20-fcf',
+      'ni': 'dcf-20-ni',
+    };
+
+    return methodMap[customBasedOn];
+  };
+
   // FASE 3.2: My Calculation state
   const [myCalculation, setMyCalculation] = useState<MyCalculation>({
     stockPrice: 0,
@@ -109,38 +150,6 @@ export default function IntrinsicValue() {
   const [years, setYears] = useState(10);
   const [presetKey, setPresetKey] = useState<'conservative' | 'base' | 'optimistic' | null>(null);
 
-  /**
-   * FASE 3.2: Detect method category for dynamic input mapping
-   *
-   * Categories:
-   * - dcf: AlfaValue, DCF-20, DNI-20, DFCF (all use fcf_ttm_musd, debt, cash, growth rates)
-   * - multiples: P/E Mean/Median, P/S Mean/Median, P/B Mean/Median (use current_price, ratios, per-share metrics)
-   * - growth: PEG, PSG (use last_price, eps/sales, growth_rate, ratios)
-   *
-   * @param methodName - Selected method name from dropdown
-   * @returns Category string for conditional mapping
-   */
-  const getMethodCategory = (methodName: string): 'dcf' | 'multiples' | 'growth' => {
-    const name = methodName.toLowerCase();
-
-    // DCF methods: Use FCF/OCF/NI, debt, cash, discount rate, growth rates
-    if (
-      name.includes('alfavalue') ||
-      name.includes('dcf') ||
-      name.includes('dni') ||
-      name.includes('dfcf')
-    ) {
-      return 'dcf';
-    }
-
-    // Growth-adjusted methods: Use last_price, EPS/Sales, growth rate
-    if (name.includes('peg') || name.includes('psg')) {
-      return 'growth';
-    }
-
-    // Multiples methods: Use current_price, historical ratios, per-share metrics
-    return 'multiples';
-  };
 
   // Read symbol from URL on page load
   useEffect(() => {
@@ -212,130 +221,12 @@ export default function IntrinsicValue() {
     }
   );
 
-  // FASE 3.2: Initialize myCalculation with auto values when data loads
-  // FIXED: Dynamic method-aware rendering based on input category
-  useEffect(() => {
-    if (alfaValueData && valuationChartData) {
-      const autoMethod = valuationChartData.methods.find(m => m.name === selectedMethod);
-      const price = valuationChartData.price;
-      const iv = autoMethod?.iv || alfaValueData.iv;
-      const premium = ((price - iv) / iv) * 100;
-
-      // Detect method category for conditional mapping
-      const category = getMethodCategory(selectedMethod);
-      const methodInputs = autoMethod?.inputs || {};
-
-      console.log('[DEBUG] useEffect methodInputs for', selectedMethod, '(category:', category, '):', methodInputs);
-
-      let calculationData: MyCalculation;
-
-      if (category === 'dcf') {
-        // DCF Methods: Map FCF/OCF/NI, debt, cash, discount rate, growth rates
-        calculationData = {
-          stockPrice: price,
-          iv: iv,
-          premium: premium,
-          operatingCF: Number(
-            methodInputs.fcf_ttm_musd ||
-            methodInputs.net_income_ttm_musd ||
-            methodInputs.operating_cf ||
-            alfaValueData.inputs?.fcf_ttm_musd || 0
-          ),
-          totalDebt: Number(
-            methodInputs.total_debt_musd ||
-            methodInputs.debt_musd ||
-            alfaValueData.inputs?.debt_musd || 0
-          ),
-          cash: Number(
-            methodInputs.cash_musd ||
-            methodInputs.cash ||
-            alfaValueData.inputs?.cash_musd || 0
-          ),
-          discountRate: Number(
-            methodInputs.discount_rate ?
-              methodInputs.discount_rate * 100 :
-              (alfaValueData.assumptions?.discount_rate || 0) * 100
-          ),
-          shares: Number(
-            methodInputs.shares_outstanding_m ||
-            methodInputs.shares_m ||
-            alfaValueData.inputs?.shares_m || 0
-          ),
-          growth_1_5: Number(
-            methodInputs.growth_rate_y1_5 ?
-              methodInputs.growth_rate_y1_5 * 100 :
-              methodInputs.stage1_growth_rate ?
-                methodInputs.stage1_growth_rate * 100 :
-                (alfaValueData.assumptions?.g_1_5 || 0) * 100
-          ),
-          growth_6_10: Number(
-            methodInputs.growth_rate_y6_10 ?
-              methodInputs.growth_rate_y6_10 * 100 :
-              methodInputs.stage2_growth_rate ?
-                methodInputs.stage2_growth_rate * 100 :
-                (alfaValueData.assumptions?.g_6_10 || 0) * 100
-          ),
-          growth_11_20: Number(
-            methodInputs.growth_rate_y11_20 ?
-              methodInputs.growth_rate_y11_20 * 100 :
-              methodInputs.terminal_growth_rate ?
-                methodInputs.terminal_growth_rate * 100 :
-                (alfaValueData.assumptions?.g_11_20 || 0) * 100
-          ),
-          deductDebt: true,
-          addCash: true,
-        };
-      } else if (category === 'growth') {
-        // Growth Methods (PEG/PSG): Map last_price, EPS/Sales, growth_rate
-        // Display these in the same UI fields for consistency
-        calculationData = {
-          stockPrice: price,
-          iv: iv,
-          premium: premium,
-          operatingCF: Number(methodInputs.last_price || price), // Map to first field
-          totalDebt: Number(methodInputs.eps_without_nri || methodInputs.sales_per_share || 0), // Map to second field
-          cash: Number(methodInputs.pe_without_nri || methodInputs.ps_ratio || 0), // Map to third field
-          discountRate: Number(methodInputs.fair_peg_ratio || methodInputs.fair_psg_ratio || 1.5), // Map to discount field
-          shares: Number(alfaValueData.inputs?.shares_m || 0), // Keep shares
-          growth_1_5: Number(methodInputs.growth_rate ? methodInputs.growth_rate * 100 : 0), // Map growth to first period
-          growth_6_10: 0, // Not used in PEG/PSG
-          growth_11_20: 0, // Not used in PEG/PSG
-          deductDebt: false,
-          addCash: false,
-        };
-      } else {
-        // Multiples Methods (P/E, P/S, P/B): Map current_price, ratios, per-share metrics
-        calculationData = {
-          stockPrice: price,
-          iv: iv,
-          premium: premium,
-          operatingCF: Number(methodInputs.current_price || price), // Map to first field
-          totalDebt: Number(
-            methodInputs.mean_pe_ratio_5y ||
-            methodInputs.median_pe_ratio_5y ||
-            methodInputs.mean_ps_ratio_5y ||
-            methodInputs.median_ps_ratio_5y ||
-            methodInputs.mean_pb_ratio_5y ||
-            methodInputs.median_pb_ratio_5y || 0
-          ), // Map historical ratio to second field
-          cash: Number(
-            methodInputs.eps_ttm ||
-            methodInputs.sales_per_share_ttm ||
-            methodInputs.book_value_per_share_ttm || 0
-          ), // Map per-share metric to third field
-          discountRate: 0, // Not used in multiples
-          shares: Number(alfaValueData.inputs?.shares_m || 0), // Keep shares
-          growth_1_5: 0, // Not used in multiples
-          growth_6_10: 0,
-          growth_11_20: 0,
-          deductDebt: false,
-          addCash: false,
-        };
-      }
-
-      setMyCalculation(calculationData);
-    }
-  }, [alfaValueData, valuationChartData, selectedMethod]);
+  // FASE 3.2: Use new hook to map inputs dynamically (replaces giant useEffect)
+  // ONDA 3.2: Pass effective method ID (maps "custom" to actual DCF method)
+  const effectiveMethodIdForMapper = selectedMethod === 'custom'
+    ? getEffectiveMethodId(selectedMethod)
+    : selectedMethod;
+  const mappedInputs = useMethodInputMapper(effectiveMethodIdForMapper, valuationChartData, alfaValueData);
 
   // Legacy: Official Intrinsic Value (backend computed) - kept for backward compatibility
   const { data: officialIV } = useQuery({
@@ -378,6 +269,17 @@ export default function IntrinsicValue() {
       });
     } catch {}
   }, [officialIV, cachedIV, selectedStock?.symbol]);
+
+  // ONDA 3.2: Persist customBasedOn to localStorage
+  useEffect(() => {
+    if (selectedMethod === 'custom') {
+      try {
+        localStorage.setItem('alfavalue-custom-based-on', customBasedOn);
+      } catch (error) {
+        console.error('Failed to save customBasedOn to localStorage:', error);
+      }
+    }
+  }, [customBasedOn, selectedMethod]);
 
   // Auto-calculate Scenario model when presets change
   useEffect(() => {
@@ -856,7 +758,7 @@ export default function IntrinsicValue() {
                           </SelectGroup>
 
                           <SelectGroup>
-                            <SelectLabel className="text-xs text-muted-foreground mt-2">Historical Multiples - Mean</SelectLabel>
+                            <SelectLabel className="text-xs text-muted-foreground mt-2">Historical Multiples</SelectLabel>
                             <SelectItem value="pe-mean">P/E Mean 5Y</SelectItem>
                             <SelectItem value="pe-mean-nri">P/E Mean 5Y (without NRI)</SelectItem>
                             <SelectItem value="ps-mean">P/S Mean 5Y</SelectItem>
@@ -865,26 +767,30 @@ export default function IntrinsicValue() {
                           </SelectGroup>
 
                           <SelectGroup>
-                            <SelectLabel className="text-xs text-muted-foreground mt-2">Historical Multiples - Median</SelectLabel>
-                            <SelectItem value="pe-median">P/E Median 5Y</SelectItem>
-                            <SelectItem value="pe-median-nri">P/E Median 5Y (without NRI)</SelectItem>
-                            <SelectItem value="ps-median">P/S Median 5Y</SelectItem>
-                            <SelectItem value="pb-median">P/B Median 5Y</SelectItem>
-                            <SelectItem value="pb-median-nri">P/B Median 5Y (without NRI)</SelectItem>
-                          </SelectGroup>
-
-                          <SelectGroup>
                             <SelectLabel className="text-xs text-muted-foreground mt-2">Growth-Adjusted</SelectLabel>
                             <SelectItem value="peg">PEG Ratio</SelectItem>
                             <SelectItem value="psg">PSG Ratio</SelectItem>
+                          </SelectGroup>
+
+                          <SelectGroup>
+                            <SelectLabel className="text-xs text-muted-foreground mt-2">Custom</SelectLabel>
+                            <SelectItem value="custom">Custom (DCF with selectable base)</SelectItem>
                           </SelectGroup>
                         </SelectContent>
                       </Select>
                       <Badge variant="outline" className="hidden sm:flex">
                         <Info className="h-3 w-3 mr-1" />
-                        17 Methods
+                        15 Methods
                       </Badge>
                     </div>
+
+                    {/* ONDA 3.2: Custom Method "Based On" Selector */}
+                    {selectedMethod === 'custom' && (
+                      <CustomMethodSelector
+                        value={customBasedOn}
+                        onChange={setCustomBasedOn}
+                      />
+                    )}
 
                     {/* Based On selector - only show for DCF methods */}
                     {selectedMethod.includes('dcf') && (
@@ -938,119 +844,35 @@ export default function IntrinsicValue() {
 
                     {/* FASE 3.2: Dual Column Layout (Auto vs My Calculation) */}
                     {valuationChartData && alfaValueData && (() => {
-                      const autoMethod = valuationChartData.methods.find(m => m.name === selectedMethod);
+                      // ONDA 3.2: Use effective method ID (maps "custom" to actual DCF method)
+                      const effectiveMethodId = getEffectiveMethodId(selectedMethod);
+                      const autoMethod = valuationChartData.methods.find(m => m.method_id === effectiveMethodId);
                       const price = valuationChartData.price;
                       const iv = autoMethod?.iv || alfaValueData.iv;
                       const premium = ((price - iv) / iv) * 100;
 
-                      // FIXED: Use method-specific inputs with dynamic category mapping
-                      const category = getMethodCategory(selectedMethod);
-                      const methodInputs = autoMethod?.inputs || {};
-
-                      let autoCalculation: AutoCalculation;
-
-                      if (category === 'dcf') {
-                        // DCF Methods: Standard mapping
-                        autoCalculation = {
-                          stockPrice: price,
-                          iv: iv,
-                          premium: premium,
-                          operatingCF: Number(
-                            methodInputs.fcf_ttm_musd ||
-                            methodInputs.net_income_ttm_musd ||
-                            methodInputs.operating_cf ||
-                            alfaValueData.inputs?.fcf_ttm_musd || 0
-                          ),
-                          totalDebt: Number(
-                            methodInputs.total_debt_musd ||
-                            methodInputs.debt_musd ||
-                            alfaValueData.inputs?.debt_musd || 0
-                          ),
-                          cash: Number(
-                            methodInputs.cash_musd ||
-                            methodInputs.cash ||
-                            alfaValueData.inputs?.cash_musd || 0
-                          ),
-                          discountRate: Number(
-                            methodInputs.discount_rate ?
-                              methodInputs.discount_rate * 100 :
-                              (alfaValueData.assumptions?.discount_rate || 0) * 100
-                          ),
-                          shares: Number(
-                            methodInputs.shares_outstanding_m ||
-                            methodInputs.shares_m ||
-                            alfaValueData.inputs?.shares_m || 0
-                          ),
-                          growth_1_5: Number(
-                            methodInputs.growth_rate_y1_5 ?
-                              methodInputs.growth_rate_y1_5 * 100 :
-                              methodInputs.stage1_growth_rate ?
-                                methodInputs.stage1_growth_rate * 100 :
-                                (alfaValueData.assumptions?.g_1_5 || 0) * 100
-                          ),
-                          growth_6_10: Number(
-                            methodInputs.growth_rate_y6_10 ?
-                              methodInputs.growth_rate_y6_10 * 100 :
-                              methodInputs.stage2_growth_rate ?
-                                methodInputs.stage2_growth_rate * 100 :
-                                (alfaValueData.assumptions?.g_6_10 || 0) * 100
-                          ),
-                          growth_11_20: Number(
-                            methodInputs.growth_rate_y11_20 ?
-                              methodInputs.growth_rate_y11_20 * 100 :
-                              methodInputs.terminal_growth_rate ?
-                                methodInputs.terminal_growth_rate * 100 :
-                                (alfaValueData.assumptions?.g_11_20 || 0) * 100
-                          ),
-                        };
-                      } else if (category === 'growth') {
-                        // Growth Methods (PEG/PSG): Map to same fields
-                        autoCalculation = {
-                          stockPrice: price,
-                          iv: iv,
-                          premium: premium,
-                          operatingCF: Number(methodInputs.last_price || price),
-                          totalDebt: Number(methodInputs.eps_without_nri || methodInputs.sales_per_share || 0),
-                          cash: Number(methodInputs.pe_without_nri || methodInputs.ps_ratio || 0),
-                          discountRate: Number(methodInputs.fair_peg_ratio || methodInputs.fair_psg_ratio || 1.5),
-                          shares: Number(alfaValueData.inputs?.shares_m || 0),
-                          growth_1_5: Number(methodInputs.growth_rate ? methodInputs.growth_rate * 100 : 0),
-                          growth_6_10: 0,
-                          growth_11_20: 0,
-                        };
-                      } else {
-                        // Multiples Methods: Map current_price, ratios, per-share
-                        autoCalculation = {
-                          stockPrice: price,
-                          iv: iv,
-                          premium: premium,
-                          operatingCF: Number(methodInputs.current_price || price),
-                          totalDebt: Number(
-                            methodInputs.mean_pe_ratio_5y ||
-                            methodInputs.median_pe_ratio_5y ||
-                            methodInputs.mean_ps_ratio_5y ||
-                            methodInputs.median_ps_ratio_5y ||
-                            methodInputs.mean_pb_ratio_5y ||
-                            methodInputs.median_pb_ratio_5y || 0
-                          ),
-                          cash: Number(
-                            methodInputs.eps_ttm ||
-                            methodInputs.sales_per_share_ttm ||
-                            methodInputs.book_value_per_share_ttm || 0
-                          ),
-                          discountRate: 0,
-                          shares: Number(alfaValueData.inputs?.shares_m || 0),
-                          growth_1_5: 0,
-                          growth_6_10: 0,
-                          growth_11_20: 0,
-                        };
-                      }
+                      // Simplified: autoCalculation only needs summary data (gauges use these)
+                      const autoCalculation: AutoCalculation = {
+                        stockPrice: price,
+                        iv: iv,
+                        premium: premium,
+                        // These fields are no longer used (replaced by mappedInputs)
+                        operatingCF: 0,
+                        totalDebt: 0,
+                        cash: 0,
+                        discountRate: 0,
+                        shares: 0,
+                        growth_1_5: 0,
+                        growth_6_10: 0,
+                        growth_11_20: 0,
+                      };
 
                       return (
                         <DualValuationLayout
                           method={selectedMethod}
                           autoCalculation={autoCalculation}
                           myCalculation={myCalculation}
+                          mappedInputs={mappedInputs}
                           onMyCalculationChange={handleMyCalculationChange}
                           onCalculate={handleCalculate}
                           onSave={handleSave}

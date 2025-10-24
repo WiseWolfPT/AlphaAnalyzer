@@ -1,13 +1,15 @@
 /**
- * IV Chart Controller - FASE 3
+ * IV Chart Controller - FASE 3 + ONDA 1.2
  *
  * Consolidates all valuation methods (10+) for charting and comparison:
  * - 1 Proprietary: AlfaValue"
- * - 4 DCF External: FMP benchmarks
+ * - 4 DCF External: FMP benchmarks (NOW with dynamic growth rates)
  * - 3 Multiples: P/E, P/S, P/B Mean 5y
  * - 2 Growth: PEG, PSG
  *
  * Applies macro multiplier to all IVs and calculates discount percentages
+ *
+ * ONDA 1.2 FIX: Growth rates now dynamic (analyst + historical fallback)
  */
 
 import { Request, Response } from 'express';
@@ -15,11 +17,20 @@ import { valuationService } from '../services/valuation-service';
 import { fmpDCFService } from '../services/fmp-dcf';
 import { macroService } from '../services/macro-service';
 import { logger } from '../lib/logger';
+import { redisCacheService } from '../cache/redis-cache-service';
+import { methodCacheService } from '../services/method-cache-service';
+import { estimateGrowthRates } from '../utils/growth-rate-estimator';
+import { isETF, getETFReason } from '../utils/stock-classifier';
+import axios from 'axios';
 import {
   IVChartResponse,
   ValuationMethod,
   DCFBaseMetric,
+  MethodId,
 } from '../types/valuation';
+
+const FMP_BASE_URL = 'https://financialmodelingprep.com';
+const FMP_API_KEY = process.env.FMP_API_KEY || '';
 
 /**
  * GET /api/iv/:ticker/chart
@@ -39,6 +50,43 @@ export async function getIVChart(req: Request, res: Response): Promise<void> {
       return;
     }
 
+    // ONDA 4.1: Enhanced ETF Detection - Get company profile first for comprehensive check
+    const companyProfile = await getCompanyProfile(ticker);
+
+    // ETF Detection with 4 strategies (suffix, known list, API type, name pattern)
+    if (isETF(ticker, companyProfile)) {
+      const reason = getETFReason(ticker, companyProfile);
+      logger.info(`[IV Chart] Rejected ETF request: ${ticker} (${reason})`);
+      res.status(400).json({
+        error: 'ETF_NOT_SUPPORTED',
+        message: `${ticker} is an ETF. Intrinsic value calculations are only available for individual stocks.`,
+        reason,
+        suggestion: 'Try analyzing individual stocks within the ETF instead.',
+        alternative_methods: [
+          'Price momentum',
+          'Relative strength',
+          'Expense ratio analysis',
+          'Tracking error analysis'
+        ]
+      });
+      return;
+    }
+
+    // Redis Cache Check - 24h TTL to reduce FMP API calls (27 → 0 when cached)
+    const cacheKey = `iv:chart:${ticker}:${basedOn}`;
+    try {
+      const cached = await redisCacheService.get<IVChartResponse>(cacheKey);
+      if (cached) {
+        logger.info(`[IV Chart] Cache HIT for ${ticker} (based_on: ${basedOn})`);
+        res.json(cached);
+        return;
+      }
+      logger.info(`[IV Chart] Cache MISS for ${ticker} (based_on: ${basedOn}) - fetching from FMP`);
+    } catch (cacheError) {
+      // Cache error shouldn't block the request, just log and continue
+      logger.error(`[IV Chart] Cache read error for ${ticker}:`, cacheError);
+    }
+
     logger.info(`[IVChart] Generating chart for ${ticker} (based_on: ${basedOn})`);
 
     // 1. Get current price
@@ -54,8 +102,22 @@ export async function getIVChart(req: Request, res: Response): Promise<void> {
     const macroSentiment = macroData.sentiment;
 
     logger.info(`[IVChart] Macro multiplier: ${macroMultiplier.toFixed(3)} (${macroSentiment})`);
+    const sector = companyProfile?.sector;
 
-    // 3. Get base metric if "based_on" is specified (GAP #3)
+    // 4. Estimate growth rates (ONDA 1.2 FIX - P0 Bug Resolution)
+    logger.info(`[IVChart] Fetching growth rates for ${ticker} (sector: ${sector || 'unknown'})`);
+    const growthRates = await estimateGrowthRates({
+      ticker,
+      sector
+    });
+    logger.info(
+      `[IVChart] Growth rates: Y1-5=${(growthRates.year1To5 * 100).toFixed(2)}%, ` +
+      `Y6-10=${(growthRates.year6To10 * 100).toFixed(2)}%, ` +
+      `Y11-20=${(growthRates.year11To20 * 100).toFixed(2)}% ` +
+      `(source: ${growthRates.dataSource}, confidence: ${growthRates.confidence})`
+    );
+
+    // 5. Get base metric if "based_on" is specified (GAP #3)
     let baseMetricInfo: { current: number; historical: number[] } | null = null;
     if (basedOn !== 'fcf') {
       // Only fetch if user selected OCF or NI (FCF is default in AlfaValue)
@@ -68,7 +130,26 @@ export async function getIVChart(req: Request, res: Response): Promise<void> {
       }
     }
 
-    // 4. Calculate all 17 methods in parallel (15 valid + 2 FCFE variants)
+    // 6. Calculate all 14 methods in parallel using method-level cache (ONDA 7)
+    logger.info(`[IV-Chart] Using method-level cache for ${ticker}`);
+
+    const methodIds: MethodId[] = [
+      'alfa-value',
+      'dcf-fcf-20',
+      'dcf-fcfe-20',
+      'dcf-terminal-fcf',
+      'dcf-terminal-fcfe',
+      'dni-20',
+      'pe-mean',
+      'pe-mean-without-nri',
+      'ps-mean',
+      'pb-mean',
+      'pb-mean-without-nri',
+      'peg',
+      'psg',
+      'dfcf-terminal',
+    ];
+
     const [
       alfaValue,
       dcfFCF,
@@ -78,44 +159,21 @@ export async function getIVChart(req: Request, res: Response): Promise<void> {
       dni20,
       peMean,
       peMeanNoNRI,
-      peMedian,
-      peMedianNoNRI,
       psMean,
-      psMedian,
       pbMean,
       pbMeanNoNRI,
-      pbMedian,
-      pbMedianNoNRI,
       peg,
       psg,
       dfcfTerminal,
-    ] = await Promise.allSettled([
-      // Proprietary
-      valuationService.getAlfaValue(ticker),
-      // DCF External
-      fmpDCFService.getDCF_FCF_EXT(ticker),
-      fmpDCFService.getDCF_FCFE_EXT(ticker),
-      fmpDCFService.getDCF_TERM_EXT(ticker),
-      fmpDCFService.getDCF_TERM_FCFE_EXT(ticker),
-      // DCF Internal - NEW
-      valuationService.calculateDNI20(ticker),
-      // Multiples - Mean
-      valuationService.calculatePEMean5Y(ticker),
-      valuationService.calculatePEMeanWithoutNRI(ticker),
-      valuationService.calculatePEMedian5Y(ticker),
-      valuationService.calculatePEMedianWithoutNRI(ticker),
-      valuationService.calculatePSMean5Y(ticker),
-      valuationService.calculatePSMedian5Y(ticker),
-      valuationService.calculatePBMean5Y(ticker),
-      valuationService.calculatePBMeanWithoutNRI(ticker),
-      valuationService.calculatePBMedian5Y(ticker),
-      valuationService.calculatePBMedianWithoutNRI(ticker),
-      // Growth
-      valuationService.calculatePEG(ticker),
-      valuationService.calculatePSG(ticker),
-      // Terminal Value - NEW
-      valuationService.calculateDFCFTerminal(ticker),
-    ]);
+    ] = await Promise.allSettled(
+      methodIds.map((id: MethodId) => methodCacheService.warmMethod(ticker, id).then(result => {
+        // Attach growth rates for DCF methods
+        if (['dcf-fcf-20', 'dcf-fcfe-20', 'dcf-terminal-fcf', 'dcf-terminal-fcfe'].includes(id)) {
+          if (result) (result as any).growthRates = growthRates;
+        }
+        return result;
+      }))
+    );
 
     // 4. Build methods array
     const methods: ValuationMethod[] = [];
@@ -136,7 +194,7 @@ export async function getIVChart(req: Request, res: Response): Promise<void> {
 
       // Map method name to input structure
       switch (methodName) {
-        case 'AlfaValue"':  // ✅ FIXED: nome correto usado em addMethod
+        case 'AlfaValue™':  // ✅ FIXED: nome correto usado em addMethod
           return {
             method: 'alfavalue',
             based_on: 'fcf',
@@ -166,10 +224,12 @@ export async function getIVChart(req: Request, res: Response): Promise<void> {
             cash_musd: data.inputs?.cashAndCashEquivalents || 0,
             discount_rate: 0.0627,  // ✅ CAPM conservador (Rf=1%, MRP=4.8%)
             shares_outstanding_m: data.inputs?.sharesOutstanding || 0,
-            // Growth rates não disponíveis no FMP, usar defaults
-            growth_rate_y1_5: 0,
-            growth_rate_y6_10: 0,
-            growth_rate_y11_20: 0,
+            // ✅ ONDA 1.2 FIX: Growth rates now dynamic from estimator
+            growth_rate_y1_5: data.growthRates?.year1To5 || 0,
+            growth_rate_y6_10: data.growthRates?.year6To10 || 0,
+            growth_rate_y11_20: data.growthRates?.year11To20 || 0,
+            data_source: data.growthRates?.dataSource || 'default',
+            confidence: data.growthRates?.confidence || 'low',
             deduct_debt: true,
             add_cash: true,
           };
@@ -205,10 +265,12 @@ export async function getIVChart(req: Request, res: Response): Promise<void> {
             cash_musd: data.inputs?.cashAndCashEquivalents || 0,
             discount_rate: 0.0627,  // ✅ CAPM conservador (Rf=1%, MRP=4.8%)
             shares_outstanding_m: data.inputs?.sharesOutstanding || 0,
-            // Growth rates não disponíveis no FMP, usar defaults
-            growth_rate_y1_5: 0,
-            growth_rate_y6_10: 0,
-            growth_rate_y11_20: 0,
+            // ✅ ONDA 1.2 FIX: Growth rates now dynamic from estimator
+            growth_rate_y1_5: data.growthRates?.year1To5 || 0,
+            growth_rate_y6_10: data.growthRates?.year6To10 || 0,
+            growth_rate_y11_20: data.growthRates?.year11To20 || 0,
+            data_source: data.growthRates?.dataSource || 'default',
+            confidence: data.growthRates?.confidence || 'low',
             deduct_debt: true,
             add_cash: true,
           };
@@ -223,10 +285,12 @@ export async function getIVChart(req: Request, res: Response): Promise<void> {
             cash_musd: data.inputs?.cashAndCashEquivalents || 0,
             discount_rate: 0.0627,  // ✅ CAPM conservador (Rf=1%, MRP=4.8%)
             shares_outstanding_m: data.inputs?.sharesOutstanding || 0,
-            // Growth rates não disponíveis no FMP, usar defaults
-            growth_rate_y1_5: 0,
-            growth_rate_y6_10: 0,
-            growth_rate_y11_20: 0,
+            // ✅ ONDA 1.2 FIX: Growth rates now dynamic from estimator
+            growth_rate_y1_5: data.growthRates?.year1To5 || 0,
+            growth_rate_y6_10: data.growthRates?.year6To10 || 0,
+            growth_rate_y11_20: data.growthRates?.year11To20 || 0,
+            data_source: data.growthRates?.dataSource || 'default',
+            confidence: data.growthRates?.confidence || 'low',
             deduct_debt: true,
             add_cash: true,
           };
@@ -259,30 +323,10 @@ export async function getIVChart(req: Request, res: Response): Promise<void> {
             pe_ratios: data.historicalPE || [],
           };
 
-        case 'P/E Median 5y':  // ✅ FIXED: bate com addMethod
-        case 'P/E Median without NRI':  // ✅ FIXED: bate com addMethod
-          return {
-            method: 'pe-median',
-            exclude_nri: methodName.includes('without NRI'),
-            median_pe_ratio_5y: data.medianPE || 0,
-            current_price: data.currentPrice || 0,
-            eps_ttm: data.eps || 0,
-            pe_ratios: data.historicalPE || [],
-          };
-
         case 'P/S Mean 5y':  // ✅ FIXED: bate com addMethod
           return {
             method: 'ps-mean',
             mean_ps_ratio_5y: data.avgPS || 0,
-            current_price: data.currentPrice || 0,
-            sales_per_share_ttm: data.salesPerShare || 0,
-            ps_ratios: data.historicalPS || [],
-          };
-
-        case 'P/S Median 5y':  // ✅ FIXED: bate com addMethod
-          return {
-            method: 'ps-median',
-            median_ps_ratio_5y: data.medianPS || 0,
             current_price: data.currentPrice || 0,
             sales_per_share_ttm: data.salesPerShare || 0,
             ps_ratios: data.historicalPS || [],
@@ -294,17 +338,6 @@ export async function getIVChart(req: Request, res: Response): Promise<void> {
             method: 'pb-mean',
             exclude_nri: methodName.includes('without NRI'),
             mean_pb_ratio_5y: data.avgPB || 0,
-            current_price: data.currentPrice || 0,
-            book_value_per_share_ttm: data.bookValuePerShare || 0,
-            pb_ratios: data.historicalPB || [],
-          };
-
-        case 'P/B Median 5y':  // ✅ FIXED: bate com addMethod
-        case 'P/B Median without NRI':  // ✅ FIXED: bate com addMethod
-          return {
-            method: 'pb-median',
-            exclude_nri: methodName.includes('without NRI'),
-            median_pb_ratio_5y: data.medianPB || 0,
             current_price: data.currentPrice || 0,
             book_value_per_share_ttm: data.bookValuePerShare || 0,
             pb_ratios: data.historicalPB || [],
@@ -337,6 +370,41 @@ export async function getIVChart(req: Request, res: Response): Promise<void> {
       }
     }
 
+    /**
+     * Map display names to frontend method IDs
+     * Ensures consistent lookup between backend and frontend
+     */
+    function getMethodId(methodName: string): string {
+      const mapping: Record<string, string> = {
+        'AlfaValue™': 'alfavalue',
+        'DCF-20 Free Cash Flow': 'dcf-20-fcf',
+        'DCF-20 Operating Cash Flow': 'dcf-20-ocf',
+        'DCF-20 Net Income': 'dcf-20-ni',
+        'DNI-20 Net Income': 'dni-20',
+        'DNI-20 NI': 'dni-20',
+        'DFCF Terminal (FMP)': 'dfcf-terminal',
+        'DFCF Terminal': 'dfcf-terminal',
+        'DFCF-20 (FMP)': 'dfcf-20',
+        'DCF-20 FCF FMP': 'dcf-20-fcf',
+        'DCF-20 FCFE FMP': 'dcf-20-fcfe',
+        'DCF Terminal FCF FMP': 'dcf-terminal-fcf',
+        'DCF Terminal FCFE FMP': 'dcf-terminal-fcfe',
+        'P/E Mean 5Y': 'pe-mean',
+        'P/E Mean 5y': 'pe-mean',
+        'P/E Mean 5Y (without NRI)': 'pe-mean-without-nri',
+        'P/E Mean without NRI': 'pe-mean-without-nri',
+        'P/S Mean 5Y': 'ps-mean',
+        'P/S Mean 5y': 'ps-mean',
+        'P/B Mean 5Y': 'pb-mean',
+        'P/B Mean 5y': 'pb-mean',
+        'P/B Mean 5Y (without NRI)': 'pb-mean-without-nri',
+        'P/B Mean without NRI': 'pb-mean-without-nri',
+        'PEG Ratio': 'peg',
+        'PSG Ratio': 'psg',
+      };
+      return mapping[methodName] || methodName.toLowerCase().replace(/\s+/g, '-');
+    }
+
     // Helper to add method
     const addMethod = (
       result: PromiseSettledResult<any>,
@@ -354,6 +422,7 @@ export async function getIVChart(req: Request, res: Response): Promise<void> {
 
           methods.push({
             name,
+            method_id: getMethodId(name),  // ✅ FASE 3.2 FIX: Frontend lookup ID
             category,
             iv: adjustedIV,
             discount_pct,
@@ -370,9 +439,9 @@ export async function getIVChart(req: Request, res: Response): Promise<void> {
     // Add all methods
     addMethod(
       alfaValue,
-      'AlfaValue"',
+      'AlfaValue™',
       'proprietary',
-      'FCF � PV(g���, g����, g�����, DR) + Cash - Debt',
+      'FCF → PV(g1-5, g6-10, g11-20, DR) + Cash - Debt',
       'internal',
       (data) => data.iv
     );
@@ -487,51 +556,6 @@ export async function getIVChart(req: Request, res: Response): Promise<void> {
     );
 
     addMethod(
-      peMedian,
-      'P/E Median 5y',
-      'multiples',
-      'Median(P/E_5y) × EPS_TTM',
-      'internal',
-      (data) => data.iv
-    );
-
-    addMethod(
-      peMedianNoNRI,
-      'P/E Median without NRI',
-      'multiples',
-      'Median(P/E_5y_adj) × Adjusted_EPS_TTM',
-      'internal',
-      (data) => data.iv
-    );
-
-    addMethod(
-      psMedian,
-      'P/S Median 5y',
-      'multiples',
-      'Median(P/S_5y) × Sales_per_Share_TTM',
-      'internal',
-      (data) => data.iv
-    );
-
-    addMethod(
-      pbMedian,
-      'P/B Median 5y',
-      'multiples',
-      'Median(P/B_5y) × Book_Value_per_Share_TTM',
-      'internal',
-      (data) => data.iv
-    );
-
-    addMethod(
-      pbMedianNoNRI,
-      'P/B Median without NRI',
-      'multiples',
-      'Median(P/B_5y_adj) × Adjusted_BVPS_TTM',
-      'internal',
-      (data) => data.iv
-    );
-
-    addMethod(
       dfcfTerminal,
       'DFCF Terminal',
       'dcf',
@@ -556,10 +580,56 @@ export async function getIVChart(req: Request, res: Response): Promise<void> {
 
     logger.info(`[IVChart] ${ticker}: Generated ${methods.length} methods`);
 
+    // Save to Redis cache with 24h TTL
+    try {
+      const TTL_24H = 86400; // 24 hours in seconds
+      await redisCacheService.set(cacheKey, response, TTL_24H);
+      logger.info(`[IV Chart] Cached ${ticker} for 24h (key: ${cacheKey})`);
+    } catch (cacheError) {
+      // Cache save failure shouldn't block the response
+      logger.error(`[IV Chart] Cache save error for ${ticker}:`, cacheError);
+    }
+
     res.json(response);
   } catch (error: any) {
     logger.error('[IVChart] Error generating chart:', error);
     res.status(500).json({ error: 'Failed to generate IV chart', details: error.message });
+  }
+}
+
+/**
+ * Helper: Get company profile for sector classification
+ * Used by growth rate estimator for sector-specific caps
+ */
+async function getCompanyProfile(ticker: string): Promise<{ sector?: string } | null> {
+  try {
+    const upperTicker = ticker.toUpperCase();
+    const cacheKey = `profile:sector:${upperTicker}`;
+
+    const cached = await redisCacheService.get<{ sector?: string }>(cacheKey);
+    if (cached) {
+      return cached;
+    }
+
+    // Fetch from FMP
+    const url = `${FMP_BASE_URL}/api/v3/profile/${upperTicker}?apikey=${FMP_API_KEY}`;
+    const response = await axios.get(url, {
+      timeout: 10000,
+      headers: { 'Accept-Encoding': 'gzip' }
+    });
+
+    if (!response.data || !Array.isArray(response.data) || response.data.length === 0) {
+      return null;
+    }
+
+    const result = { sector: response.data[0].sector };
+
+    // Cache for 7 days (sector rarely changes)
+    await redisCacheService.set(cacheKey, result, 604800);
+    return result;
+  } catch (error) {
+    logger.warn(`[IVChart] Could not fetch profile for ${ticker}:`, error);
+    return null;
   }
 }
 

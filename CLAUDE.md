@@ -40,6 +40,8 @@ SLOs (alvo):
 - Cache hit rate: > 80%
 - Uptime: > 99.9%
 
+### System Monitoring Scripts
+
 Scripts (funcionam com localhost:3001 e produção):
 - `scripts/monitoring/check-health.sh [URL]`
   - Verifica `/api/health` e mede latência.
@@ -52,10 +54,47 @@ Scripts (funcionam com localhost:3001 e produção):
 - `scripts/monitoring/monitor-all.sh [URL]`
   - Executa todos os checks acima de forma sequencial.
 
+### ONDA 7: Intelligent Warming Worker Monitoring
+
+**NEW:** Comprehensive observability for IV cache warming system
+
+Scripts:
+- `scripts/monitoring/watch-warming.sh [URL]`
+  - Live dashboard com atualização a cada 5s
+  - Mostra: cache coverage, bandwidth, queue metrics, worker status
+- `scripts/monitoring/daily-summary-warming.sh [URL]`
+  - Relatório diário completo com recomendações
+  - Guardado em `/var/log/alfalyzer/monitoring/warming-summary-YYYY-MM-DD.txt`
+
+API Endpoints:
+- `GET /api/monitoring/warming/overview` - Dashboard completo
+- `GET /api/monitoring/warming/cache-heatmap?limit=100` - Cobertura por stock
+- `GET /api/monitoring/warming/method-coverage` - Cobertura por método (14 métodos)
+- `GET /api/monitoring/warming/real-time` - SSE stream (atualizações 5s)
+
+Métricas Rastreadas:
+- **Cache Coverage:** % de 1,493 stocks × 14 métodos de valorização cached
+- **Cache Hotness:** Hot (<1h), Warm (1-12h), Cold (12-24h), Stale (>24h)
+- **Bandwidth:** Uso diário vs budget (682.67 MB/dia = 20 GB/mês)
+- **API Calls:** Rastreamento de chamadas FMP (rate limit: 4 req/s)
+- **Workers Status:** Health de 4 workers (earnings, warming, price, transcripts)
+- **Queue Metrics:** Pending, in-progress, throughput, avg wait time
+
+Alerting Service:
+- Auto-monitoring via `WarmingAlertingService`
+- Alertas: Bandwidth >85% (WARNING), >95% (CRITICAL)
+- Canais: Structured logger, Slack, Discord, Email
+- Cooldown: 1 hora entre alertas duplicados
+
+Documentação completa: `docs/WARMING_MONITORING_GUIDE.md`
+
 Uso (local):
 ```bash
 export TARGET_URL=http://localhost:3001
 scripts/monitoring/monitor-all.sh
+
+# Warming worker específico
+scripts/monitoring/watch-warming.sh
 ```
 
 Uso (produção):
@@ -63,6 +102,9 @@ Uso (produção):
 export TARGET_URL=https://128.140.45.28.sslip.io
 export MARKET_DATA_API_KEY="<sua_api_key>"  # necessário para batch
 scripts/monitoring/monitor-all.sh
+
+# Warming worker dashboard
+scripts/monitoring/watch-warming.sh https://128.140.45.28.sslip.io
 ```
 
 Logs:
@@ -73,6 +115,7 @@ Cron (produção):
 - `*/1 4-20 * * 1-5` — job `cache-warmer` (20 tickers core) usando `simpleCacheService.getQuote`
 - `*/5 4-20 * * 1-5` — job novo `find-stocks-warm`, aquece 57 tickers dos cartões Find Stocks via `getBatchQuotes` (≈2 chamadas FMP por execução, ~408/dia)
 - `*/15 * * * * cd '/home/teste 1' && TARGET_URL=https://128.140.45.28.sslip.io scripts/monitoring/monitor-all.sh >> /var/log/alfalyzer/monitoring/cron.log 2>&1`
+- `0 0 * * * cd '/home/teste 1' && scripts/monitoring/daily-summary-warming.sh https://128.140.45.28.sslip.io >> /var/log/alfalyzer/monitoring/daily-summary.log 2>&1` — Daily warming summary
 
 ## OPERAÇÃO / ENV (Pacing & TTL)
 

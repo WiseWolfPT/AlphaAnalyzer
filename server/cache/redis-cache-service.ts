@@ -229,6 +229,24 @@ export class RedisCacheService {
   }
 
   /**
+   * Get length of Redis list
+   */
+  async llen(key: string): Promise<number> {
+    if (!this.connected) {
+      return 0;
+    }
+
+    try {
+      const length = await this.redis.llen(key);
+      return length;
+    } catch (error) {
+      console.error(`❌ Redis llen error for ${key}:`, error);
+      this.stats.errors++;
+      return 0;
+    }
+  }
+
+  /**
    * Get TTL for key
    */
   async ttl(key: string): Promise<number> {

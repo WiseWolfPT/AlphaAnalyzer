@@ -344,6 +344,7 @@ export type ValuationMethodCategory = 'proprietary' | 'dcf' | 'multiples' | 'gro
  */
 export interface ValuationMethod {
   name: string;                     // "AlfaValue™", "DCF-20 FCF FMP", "P/E Mean 5y", etc
+  method_id: string;                // Frontend lookup ID: "alfavalue", "peg", "ps-mean", etc
   category: ValuationMethodCategory;
   iv: number | null;                // Intrinsic value per share (null if unavailable)
   discount_pct: number | null;      // ((IV - Price) / Price) * 100
@@ -364,6 +365,55 @@ export interface IVChartResponse {
   macro_multiplier: number;         // Applied to all IVs
   macro_sentiment: 'bearish' | 'neutral' | 'bullish';
   as_of: string;
+}
+
+/**
+ * ONDA 7: Method-Level Cache Types
+ *
+ * Types for method-level caching system that enables proactive warming
+ */
+
+/**
+ * Supported method IDs for caching
+ */
+export type MethodId =
+  | 'alfa-value'
+  | 'dcf-fcf-20'
+  | 'dcf-fcfe-20'
+  | 'dcf-terminal-fcf'
+  | 'dcf-terminal-fcfe'
+  | 'dni-20'
+  | 'pe-mean'
+  | 'pe-mean-without-nri'
+  | 'ps-mean'
+  | 'pb-mean'
+  | 'pb-mean-without-nri'
+  | 'peg'
+  | 'psg'
+  | 'dfcf-terminal';
+
+/**
+ * Generic valuation result from any method
+ */
+export interface ValuationResult {
+  ticker: string;
+  iv: number;
+  confidence: ValuationConfidence;
+  as_of: string;
+  inputs?: Record<string, any>;
+  [key: string]: any;  // Allow additional method-specific fields
+}
+
+/**
+ * Method cache statistics
+ */
+export interface MethodCacheStats {
+  totalMethods: number;
+  cachedMethods: number;
+  cacheHitRate: number;
+  oldestCache: string | null;
+  newestCache: string | null;
+  memoryUsage: string;
 }
 
 /**
@@ -474,15 +524,6 @@ export interface PSMeanInputs {
 }
 
 /**
- * P/S Median (5-year historical median) - METHOD #6
- */
-export interface PSMedianInputs {
-  method: 'P/S Median 5Y';
-  median_ps_ratio_5y: number;        // Median P/S ratio (7.34)
-  revenue_per_share_ttm: number;     // Revenue per share ($27.34)
-}
-
-/**
  * P/E Mean (5-year historical mean, excluding NRI) - METHOD #7
  */
 export interface PEMeanInputs {
@@ -492,29 +533,11 @@ export interface PEMeanInputs {
 }
 
 /**
- * P/E Median (5-year historical median, excluding NRI) - METHOD #8
- */
-export interface PEMedianInputs {
-  method: 'P/E Median 5Y ex-NRI';
-  median_pe_ratio_5y: number;        // Median P/E ratio (29.42)
-  eps_ttm: number;                   // Earnings per share ($6.61)
-}
-
-/**
  * P/B Mean (5-year historical mean) - METHOD #9
  */
 export interface PBMeanInputs {
   method: 'P/B Mean 5Y';
   mean_pb_ratio_5y: number;          // Mean P/B ratio (43.06)
-  book_value_per_share_ttm: number;  // Book value per share ($4.43)
-}
-
-/**
- * P/B Median (5-year historical median) - METHOD #10
- */
-export interface PBMedianInputs {
-  method: 'P/B Median 5Y';
-  median_pb_ratio_5y: number;        // Median P/B ratio (42.78)
   book_value_per_share_ttm: number;  // Book value per share ($4.43)
 }
 
@@ -548,29 +571,11 @@ export interface PEMeanWithoutNRIInputs {
 }
 
 /**
- * P/E Median without NRI (alternative calculation) - METHOD #14
- */
-export interface PEMedianWithoutNRIInputs {
-  method: 'P/E Median 5Y without NRI';
-  median_pe_ratio_5y_without_nri: number; // Median P/E ratio without NRI (29.42)
-  eps_ttm_without_nri: number;            // EPS without NRI ($6.61)
-}
-
-/**
  * P/B Mean without NRI (alternative calculation) - METHOD #15
  */
 export interface PBMeanWithoutNRIInputs {
   method: 'P/B Mean 5Y without NRI';
   mean_pb_ratio_5y_without_nri: number;   // Mean P/B ratio without NRI
-  book_value_per_share_ttm_without_nri: number;
-}
-
-/**
- * P/B Median without NRI (alternative calculation) - METHOD #16
- */
-export interface PBMedianWithoutNRIInputs {
-  method: 'P/B Median 5Y without NRI';
-  median_pb_ratio_5y_without_nri: number; // Median P/B ratio without NRI
   book_value_per_share_ttm_without_nri: number;
 }
 
@@ -614,6 +619,7 @@ export interface CustomMethodInputs {
 
 /**
  * Union type for all method inputs
+ * ONDA 2.2: Removed Median types (PSMedianInputs, PEMedianInputs, PBMedianInputs, PEMedianWithoutNRIInputs, PBMedianWithoutNRIInputs)
  */
 export type MethodInputs =
   | DCF20OCFInputs
@@ -621,17 +627,12 @@ export type MethodInputs =
   | DNI20Inputs
   | DFCFTerminalInputs
   | PSMeanInputs
-  | PSMedianInputs
   | PEMeanInputs
-  | PEMedianInputs
   | PBMeanInputs
-  | PBMedianInputs
   | PEGInputs
   | PSGInputs
   | PEMeanWithoutNRIInputs
-  | PEMedianWithoutNRIInputs
   | PBMeanWithoutNRIInputs
-  | PBMedianWithoutNRIInputs
   | OracleValueInputs
   | CustomMethodInputs;
 
@@ -675,13 +676,13 @@ export interface PSGValuationResponse {
 }
 
 /**
- * FASE 3: P/E Valuation Response (Mean/Median, with/without NRI)
+ * FASE 3: P/E Valuation Response (Mean only - ONDA 2.2: Median removed)
  */
 export interface PEValuationResponse {
   ticker: string;
   iv: number;
   avgPE?: number;          // Para Mean
-  medianPE?: number;       // Para Median
+  medianPE?: number;       // @deprecated ONDA 2.2: Median methods removed (kept for backward compatibility)
   currentPrice: number;
   eps: number;
   historicalPE: number[];
@@ -691,13 +692,13 @@ export interface PEValuationResponse {
 }
 
 /**
- * FASE 3: P/S Valuation Response (Mean/Median)
+ * FASE 3: P/S Valuation Response (Mean only - ONDA 2.2: Median removed)
  */
 export interface PSValuationResponse {
   ticker: string;
   iv: number;
   avgPS?: number;          // Para Mean
-  medianPS?: number;       // Para Median
+  medianPS?: number;       // @deprecated ONDA 2.2: Median methods removed (kept for backward compatibility)
   currentPrice: number;
   salesPerShare: number;
   historicalPS: number[];
@@ -706,13 +707,13 @@ export interface PSValuationResponse {
 }
 
 /**
- * FASE 3: P/B Valuation Response (Mean/Median, with/without NRI)
+ * FASE 3: P/B Valuation Response (Mean only - ONDA 2.2: Median removed)
  */
 export interface PBValuationResponse {
   ticker: string;
   iv: number;
   avgPB?: number;          // Para Mean
-  medianPB?: number;       // Para Median
+  medianPB?: number;       // @deprecated ONDA 2.2: Median methods removed (kept for backward compatibility)
   currentPrice: number;
   bookValuePerShare: number;
   historicalPB: number[];
@@ -750,4 +751,75 @@ export interface ExtendedFMPDCFResponse {
     cashAndCashEquivalents: number;    // Cash & ST investments (millions USD)
     sharesOutstanding: number;         // Shares outstanding (millions)
   };
+}
+
+/**
+ * IV Error Response
+ *
+ * Returned when Intrinsic Value calculation is not applicable
+ * (e.g., ETFs, REITs, financial companies without traditional cash flows)
+ */
+export interface IVErrorResponse {
+  error: string;                  // Error code (e.g., 'IV_NOT_APPLICABLE')
+  message: string;                // User-friendly error message
+  reason?: string;                // Detailed explanation
+  alternative_methods?: string[]; // Suggested alternative valuation approaches
+}
+
+/**
+ * ONDA 1.1: Analyst Estimate Types
+ *
+ * Types for FMP Analyst Estimates API integration
+ * Used to fetch real analyst consensus EPS growth rates
+ */
+
+/**
+ * Analyst Estimate from FMP API
+ */
+export interface AnalystEstimate {
+  symbol: string;
+  date: string; // "2025-09-30" (quarter end date)
+  estimatedRevenueAvg: number;
+  estimatedRevenueHigh: number;
+  estimatedRevenueLow: number;
+  estimatedEbitdaAvg: number;
+  estimatedEbitdaHigh: number;
+  estimatedEbitdaLow: number;
+  estimatedEbitAvg: number;
+  estimatedEbitHigh: number;
+  estimatedEbitLow: number;
+  estimatedNetIncomeAvg: number;
+  estimatedNetIncomeHigh: number;
+  estimatedNetIncomeLow: number;
+  estimatedSgaExpenseAvg: number;
+  estimatedSgaExpenseHigh: number;
+  estimatedSgaExpenseLow: number;
+  estimatedEpsAvg: number;
+  estimatedEpsHigh: number;
+  estimatedEpsLow: number;
+  numberAnalystsEstimatedRevenue: number;
+  numberAnalystsEstimatedEps: number;
+}
+
+/**
+ * Growth Rate Source Metadata
+ */
+export interface GrowthRateSource {
+  dataSource: 'analyst' | 'historical' | 'default';
+  confidence: 'high' | 'medium' | 'low';
+  analystCount?: number;
+}
+
+/**
+ * Growth Rate Calculation Result
+ */
+export interface GrowthRateResult {
+  ticker: string;
+  growth_rate: number;           // Year 1-5 EPS CAGR (decimal, e.g., 0.1007 = 10.07%)
+  current_eps: number;            // Current year EPS estimate
+  future_eps: number;             // Year 5 EPS estimate
+  analyst_count: number;          // Number of analysts in consensus
+  confidence: 'high' | 'medium' | 'low';
+  data_source: 'analyst' | 'historical' | 'default';
+  as_of: string;                  // ISO date
 }

@@ -35,7 +35,8 @@ describe('P/S and P/B Multiples - Type Contracts (TDD)', () => {
       expect(mockResponse.as_of).toMatch(/^\d{4}-\d{2}-\d{2}$/);
     });
 
-    it('should have required fields for medianPS (Median)', () => {
+    // ONDA 2.2: Median methods removed - test kept for backward compatibility
+    it.skip('should have required fields for medianPS (Median - DEPRECATED)', () => {
       const mockResponse: PSValuationResponse = {
         ticker: 'MSFT',
         iv: 425.0,
@@ -70,7 +71,8 @@ describe('P/S and P/B Multiples - Type Contracts (TDD)', () => {
       expect(mockResponse.excludeNRI).toBe(false);
     });
 
-    it('should have required fields for medianPB with excludeNRI: false', () => {
+    // ONDA 2.2: Median methods removed - test kept for backward compatibility
+    it.skip('should have required fields for medianPB with excludeNRI: false (DEPRECATED)', () => {
       const mockResponse: PBValuationResponse = {
         ticker: 'GOOGL',
         iv: 165.0,
@@ -104,7 +106,8 @@ describe('P/S and P/B Multiples - Type Contracts (TDD)', () => {
       expect(mockResponse.excludeNRI).toBe(true);
     });
 
-    it('should have required fields for medianPB with excludeNRI: true (without NRI)', () => {
+    // ONDA 2.2: Median methods removed - test kept for backward compatibility
+    it.skip('should have required fields for medianPB with excludeNRI: true (without NRI - DEPRECATED)', () => {
       const mockResponse: PBValuationResponse = {
         ticker: 'AAPL',
         iv: 182.25,

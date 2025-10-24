@@ -21,6 +21,7 @@ import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/h
  */
 export interface ValuationMethod {
   name: string; // Method name (e.g., "AlfaValue™", "DCF-20 (FCF)")
+  method_id: string; // Frontend identifier (kebab-case, e.g., "peg", "pe-mean")
   iv: number; // Intrinsic value calculated by this method
   discount_pct: number; // (IV - Price) / Price * 100
   category: 'proprietary' | 'dcf' | 'multiples' | 'growth'; // Method category

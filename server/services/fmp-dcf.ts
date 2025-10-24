@@ -16,6 +16,7 @@
 import axios from 'axios';
 import { redisCacheService } from '../cache/redis-cache-service';
 import { logger } from '../lib/logger';
+import type { GrowthRates } from '../utils/growth-rate-estimator';
 
 const FMP_BASE_URL = 'https://financialmodelingprep.com';
 const FMP_API_KEY = process.env.FMP_API_KEY || '';
@@ -48,6 +49,10 @@ export interface ExternalDCFResponse {
     cashAndCashEquivalents: number;
     sharesOutstanding: number;
   };
+  // Growth rates used in calculation (optional, for cache consistency verification)
+  growth_rate_y1_5?: number;      // Year 1-5 growth rate (decimal)
+  growth_rate_y6_10?: number;     // Year 6-10 growth rate (decimal)
+  growth_rate_y11_20?: number;    // Year 11-20 growth rate (decimal)
 }
 
 /**
@@ -125,8 +130,11 @@ export class FMPDCFService {
    * FMP Endpoint: /discounted-cash-flow
    *
    * Standard 10-year DCF projection based on free cash flow
+   *
+   * @param ticker - Stock ticker symbol
+   * @param growthRates - Optional growth rates to include in response (for cache consistency)
    */
-  async getDCF_FCF_EXT(ticker: string): Promise<ExternalDCFResponse | null> {
+  async getDCF_FCF_EXT(ticker: string, growthRates?: GrowthRates): Promise<ExternalDCFResponse | null> {
     const upperTicker = ticker.toUpperCase();
     const cacheKey = CACHE_KEYS.DCF_FCF + upperTicker;
 
@@ -172,12 +180,20 @@ export class FMPDCFService {
       confidence: 'HIGH',
       as_of: new Date().toISOString().split('T')[0],
       inputs: {
-        freeCashFlow: cashFlow?.freeCashFlow || 0,
-        totalDebt: balanceSheet?.totalDebt || 0,
-        cashAndCashEquivalents: balanceSheet?.cashAndCashEquivalents || 0,
-        sharesOutstanding: profile?.sharesOutstanding || 0,
+        // FIX: Normalize to millions (FMP returns absolute USD values)
+        freeCashFlow: (cashFlow?.freeCashFlow || 0) / 1_000_000,
+        totalDebt: (balanceSheet?.totalDebt || 0) / 1_000_000,
+        cashAndCashEquivalents: (balanceSheet?.cashAndCashEquivalents || 0) / 1_000_000,
+        sharesOutstanding: (profile?.sharesOutstanding || 0) / 1_000_000,
       },
     };
+
+    // Include growth rates if provided (for cache consistency verification)
+    if (growthRates) {
+      response.growth_rate_y1_5 = growthRates.year1To5;
+      response.growth_rate_y6_10 = growthRates.year6To10;
+      response.growth_rate_y11_20 = growthRates.year11To20;
+    }
 
     // Cache for 24 hours
     await redisCacheService.set(cacheKey, response, CACHE_TTL);
@@ -191,8 +207,11 @@ export class FMPDCFService {
    * FMP Endpoint: /levered-discounted-cash-flow
    *
    * Levered DCF considering debt and interest payments
+   *
+   * @param ticker - Stock ticker symbol
+   * @param growthRates - Optional growth rates to include in response (for cache consistency)
    */
-  async getDCF_FCFE_EXT(ticker: string): Promise<ExternalDCFResponse | null> {
+  async getDCF_FCFE_EXT(ticker: string, growthRates?: GrowthRates): Promise<ExternalDCFResponse | null> {
     const upperTicker = ticker.toUpperCase();
     const cacheKey = CACHE_KEYS.DCF_FCFE + upperTicker;
 
@@ -240,12 +259,20 @@ export class FMPDCFService {
       confidence: 'HIGH',
       as_of: new Date().toISOString().split('T')[0],
       inputs: {
-        freeCashFlow: cashFlow?.freeCashFlow || 0,
-        totalDebt: balanceSheet?.totalDebt || 0,
-        cashAndCashEquivalents: balanceSheet?.cashAndCashEquivalents || 0,
-        sharesOutstanding: profile?.sharesOutstanding || 0,
+        // FIX: Normalize to millions (FMP returns absolute USD values)
+        freeCashFlow: (cashFlow?.freeCashFlow || 0) / 1_000_000,
+        totalDebt: (balanceSheet?.totalDebt || 0) / 1_000_000,
+        cashAndCashEquivalents: (balanceSheet?.cashAndCashEquivalents || 0) / 1_000_000,
+        sharesOutstanding: (profile?.sharesOutstanding || 0) / 1_000_000,
       },
     };
+
+    // Include growth rates if provided (for cache consistency verification)
+    if (growthRates) {
+      response.growth_rate_y1_5 = growthRates.year1To5;
+      response.growth_rate_y6_10 = growthRates.year6To10;
+      response.growth_rate_y11_20 = growthRates.year11To20;
+    }
 
     // Cache for 24 hours
     await redisCacheService.set(cacheKey, response, CACHE_TTL);
@@ -259,8 +286,11 @@ export class FMPDCFService {
    * FMP Endpoint: /discounted-cash-flow (with terminal value emphasis)
    *
    * Terminal value DCF using perpetual growth rate
+   *
+   * @param ticker - Stock ticker symbol
+   * @param growthRates - Optional growth rates to include in response (for cache consistency)
    */
-  async getDCF_TERM_EXT(ticker: string): Promise<ExternalDCFResponse | null> {
+  async getDCF_TERM_EXT(ticker: string, growthRates?: GrowthRates): Promise<ExternalDCFResponse | null> {
     const upperTicker = ticker.toUpperCase();
     const cacheKey = CACHE_KEYS.DCF_TERM_FCF + upperTicker;
 
@@ -310,12 +340,20 @@ export class FMPDCFService {
       confidence: 'MED', // Medium confidence due to terminal value uncertainty
       as_of: new Date().toISOString().split('T')[0],
       inputs: {
-        freeCashFlow: cashFlow?.freeCashFlow || 0,
-        totalDebt: balanceSheet?.totalDebt || 0,
-        cashAndCashEquivalents: balanceSheet?.cashAndCashEquivalents || 0,
-        sharesOutstanding: profile?.sharesOutstanding || 0,
+        // FIX: Normalize to millions (FMP returns absolute USD values)
+        freeCashFlow: (cashFlow?.freeCashFlow || 0) / 1_000_000,
+        totalDebt: (balanceSheet?.totalDebt || 0) / 1_000_000,
+        cashAndCashEquivalents: (balanceSheet?.cashAndCashEquivalents || 0) / 1_000_000,
+        sharesOutstanding: (profile?.sharesOutstanding || 0) / 1_000_000,
       },
     };
+
+    // Include growth rates if provided (for cache consistency verification)
+    if (growthRates) {
+      response.growth_rate_y1_5 = growthRates.year1To5;
+      response.growth_rate_y6_10 = growthRates.year6To10;
+      response.growth_rate_y11_20 = growthRates.year11To20;
+    }
 
     // Cache for 24 hours
     await redisCacheService.set(cacheKey, response, CACHE_TTL);
@@ -329,8 +367,11 @@ export class FMPDCFService {
    * FMP Endpoint: /levered-discounted-cash-flow (with terminal value)
    *
    * Terminal value DCF for levered cash flows
+   *
+   * @param ticker - Stock ticker symbol
+   * @param growthRates - Optional growth rates to include in response (for cache consistency)
    */
-  async getDCF_TERM_FCFE_EXT(ticker: string): Promise<ExternalDCFResponse | null> {
+  async getDCF_TERM_FCFE_EXT(ticker: string, growthRates?: GrowthRates): Promise<ExternalDCFResponse | null> {
     const upperTicker = ticker.toUpperCase();
     const cacheKey = CACHE_KEYS.DCF_TERM_FCFE + upperTicker;
 
@@ -381,12 +422,20 @@ export class FMPDCFService {
       confidence: 'MED',
       as_of: new Date().toISOString().split('T')[0],
       inputs: {
-        freeCashFlow: cashFlow?.freeCashFlow || 0,
-        totalDebt: balanceSheet?.totalDebt || 0,
-        cashAndCashEquivalents: balanceSheet?.cashAndCashEquivalents || 0,
-        sharesOutstanding: profile?.sharesOutstanding || 0,
+        // FIX: Normalize to millions (FMP returns absolute USD values)
+        freeCashFlow: (cashFlow?.freeCashFlow || 0) / 1_000_000,
+        totalDebt: (balanceSheet?.totalDebt || 0) / 1_000_000,
+        cashAndCashEquivalents: (balanceSheet?.cashAndCashEquivalents || 0) / 1_000_000,
+        sharesOutstanding: (profile?.sharesOutstanding || 0) / 1_000_000,
       },
     };
+
+    // Include growth rates if provided (for cache consistency verification)
+    if (growthRates) {
+      response.growth_rate_y1_5 = growthRates.year1To5;
+      response.growth_rate_y6_10 = growthRates.year6To10;
+      response.growth_rate_y11_20 = growthRates.year11To20;
+    }
 
     // Cache for 24 hours
     await redisCacheService.set(cacheKey, response, CACHE_TTL);

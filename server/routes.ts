@@ -18,6 +18,7 @@ import aiAnalysisRouter from "./routes/ai-analysis";
 import portfoliosRouter from "./routes/portfolios";
 import earningsCalendarRouter from "./routes/earnings-calendar";
 import diagnosticRouter from "./routes/diagnostic";
+import diagnosticsRouter from "./routes/diagnostics"; // ONDA 4.1: ETF detection diagnostics
 import cachedDataRouter from "./routes/cached-data";
 import logsRouter from "./routes/logs";
 import usageMetricsRouter from "./routes/usage-metrics";
@@ -114,7 +115,10 @@ export async function registerRoutes(app: Express): Promise<void> {
   
   // Diagnostic endpoint for debugging production issues (no auth required)
   app.use("/api/diagnostic", diagnosticRouter);
-  
+
+  // ONDA 4.1: ETF detection and stock classification diagnostics
+  app.use("/api/diagnostics", diagnosticsRouter);
+
   // Logs management routes (protected by admin auth in production)
   app.use("/api/logs", process.env.NODE_ENV === 'production' ? adminSecurityMiddleware : (req: any, res: any, next: any) => next(), logsRouter);
   

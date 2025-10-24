@@ -122,6 +122,11 @@ import { ttfbMiddleware } from './middleware/ttfb-middleware';
 import { upstashRateLimiters } from './middleware/upstash-rate-limit';
 // ROADMAP V4: Import Supabase authentication middleware
 import { requireAuth, requireAdmin, optionalAuth } from './middleware/supabase-auth';
+// Import bandwidth protection middleware
+import { bandwidthProtection } from './middleware/bandwidth-protection';
+import bandwidthRoutes from './routes/bandwidth-monitoring';
+// ONDA 7: Import warming worker monitoring routes
+import warmingMonitoringRoutes from './routes/monitoring-warming';
 
 // Import Finnhub realtime worker
 // DISABLED: To reduce API usage and prevent hitting rate limits
@@ -572,8 +577,18 @@ async function initializeMarketDataServices() {
       console.log('✅ Static assets configured for /assets route');
     }
 
+    // Bandwidth protection (before IV/market-data routes)
+    app.use('/api/iv', bandwidthProtection);
+    app.use('/api/market-data', bandwidthProtection);
+
     // CRITICAL: Register API routes BEFORE Vite to prevent interception
     await registerRoutes(app);
+
+    // Bandwidth monitoring routes
+    app.use('/api/bandwidth', bandwidthRoutes);
+
+    // ONDA 7: Warming worker monitoring routes
+    app.use('/api/monitoring/warming', warmingMonitoringRoutes);
 
     // Back-compat aliases and stubs to avoid 404 noise
     app.get('/api/api/intrinsic-values/:symbol', async (req: any, res: any) => {
@@ -831,7 +846,21 @@ async function initializeMarketDataServices() {
           console.warn('⚠️ Rate limit alert service import failed:', error);
         });
       }
-      
+
+      // ONDA 7: Initialize Warming Alerting Service
+      if (process.env.ENABLE_WARMING_ALERTS !== 'false') {
+        import('./services/warming-alerting-service').then(({ warmingAlertingService }) => {
+          try {
+            warmingAlertingService.start();
+            console.log('🔔 Warming alerting service started (monitoring: bandwidth, cache, workers, queue)');
+          } catch (error) {
+            console.warn('⚠️ Warming alerting service failed to start:', error);
+          }
+        }).catch(error => {
+          console.warn('⚠️ Warming alerting service import failed:', error);
+        });
+      }
+
       // FASE 2 - DIA 5: Initialize Backfill Service
       if (process.env.ENABLE_BACKFILL_SERVICE !== 'false') {
         import('./services/backfill-service').then(async ({ backfillService }) => {

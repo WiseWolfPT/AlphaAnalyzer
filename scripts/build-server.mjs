@@ -117,5 +117,20 @@ await build({
   outfile: resolve(outdir, 'workers', 'valuation-updater.cjs'),
   ...workerCommon,
 });
+await build({
+  entryPoints: [resolve(root, 'server', 'workers', 'earnings-monitor.ts')],
+  outfile: resolve(outdir, 'workers', 'earnings-monitor.cjs'),
+  ...workerCommon,
+});
+await build({
+  entryPoints: [resolve(root, 'server', 'workers', 'iv-warming-worker.ts')],
+  outfile: resolve(outdir, 'workers', 'iv-warming-worker.cjs'),
+  ...workerCommon,
+});
+await build({
+  entryPoints: [resolve(root, 'server', 'workers', 'intelligent-warming-worker.ts')],
+  outfile: resolve(outdir, 'workers', 'intelligent-warming-worker.cjs'),
+  ...workerCommon,
+});
 
 console.log('✅ Workers build complete -> dist/server/workers/*.cjs');
