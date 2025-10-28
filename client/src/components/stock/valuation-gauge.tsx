@@ -23,9 +23,13 @@ type ValuationStatus = 'strong-buy' | 'buy' | 'hold' | 'sell' | 'strong-sell';
  * Calculate valuation status and gauge position
  */
 function calculateValuationMetrics(iv: number, price: number) {
+  // Defensive programming: handle null/undefined/NaN values
+  const safeIv = iv ?? 0;
+  const safePrice = price ?? 0;
+
   // Discount percentage: (IV - Price) / Price * 100
   // Positive = Undervalued (discount), Negative = Overvalued (premium)
-  const discountPct = ((iv - price) / price) * 100;
+  const discountPct = safePrice !== 0 ? ((safeIv - safePrice) / safePrice) * 100 : 0;
 
   // Determine status based on discount/premium thresholds
   let status: ValuationStatus;
@@ -359,14 +363,14 @@ export function ValuationGauge({
           <div className="space-y-1">
             <div className="text-sm text-muted-foreground">Intrinsic Value</div>
             <div className="text-3xl font-bold text-primary">
-              ${iv.toFixed(2)}
+              ${(iv ?? 0).toFixed(2)}
             </div>
           </div>
 
           <div className="space-y-1">
             <div className="text-sm text-muted-foreground">Current Price</div>
             <div className="text-xl font-semibold">
-              ${price.toFixed(2)}
+              ${(price ?? 0).toFixed(2)}
             </div>
           </div>
         </div>
@@ -385,7 +389,7 @@ export function ValuationGauge({
           </div>
 
           <div className={cn('text-2xl font-bold', config.textColor)}>
-            {discountPct >= 0 ? '+' : ''}{discountPct.toFixed(1)}%
+            {discountPct >= 0 ? '+' : ''}{(discountPct ?? 0).toFixed(1)}%
           </div>
 
           <div className="text-sm text-muted-foreground">

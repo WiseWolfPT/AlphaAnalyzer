@@ -169,23 +169,25 @@ export default function IntrinsicValue({ symbol: urlSymbol }: IntrinsicValueProp
     if (symbolToLoad) {
       const normalizedSymbol = symbolToLoad.toUpperCase();
 
-      // Set the search query (for display purposes)
-      setSearchQuery(normalizedSymbol);
+      // CRITICAL FIX: Only update if different from current stock
+      // This prevents infinite re-renders and ensures state consistency
+      if (selectedStock?.symbol !== normalizedSymbol) {
+        // Set the search query (for display purposes)
+        setSearchQuery(normalizedSymbol);
 
-      // Create a stock object for the symbol
-      const stockFromUrl: Stock = {
-        symbol: normalizedSymbol,
-        name: normalizedSymbol, // Will be updated when data loads
-        price: 0,
-        change: 0,
-        changePercent: 0,
-        volume: 0,
-        marketCap: 0
-      };
+        // Create a stock object for the symbol
+        const stockFromUrl: Stock = {
+          symbol: normalizedSymbol,
+          name: normalizedSymbol, // Will be updated when data loads
+          price: 0,
+          change: 0,
+          changePercent: 0,
+          volume: 0,
+          marketCap: 0
+        };
 
-      setSelectedStock(stockFromUrl);
-
-      console.log(`[IntrinsicValue] Loaded symbol from URL: ${normalizedSymbol}`);
+        setSelectedStock(stockFromUrl);
+      }
     }
   }, [urlSymbol]); // Re-run when URL param changes
   
