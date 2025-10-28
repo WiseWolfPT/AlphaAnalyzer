@@ -471,6 +471,10 @@ function Router() {
         
         {/* Valuation Route */}
         <Route path="/valuation" component={IntrinsicValue} />
+        {/* Parameterized route for direct symbol access MUST come before generic route */}
+        <Route path="/intrinsic-value/:symbol">
+          {(params) => <IntrinsicValue symbol={params.symbol} />}
+        </Route>
         <Route path="/intrinsic-value" component={IntrinsicValue} />
         
         {/* Other Routes - find-stocks defined above */}

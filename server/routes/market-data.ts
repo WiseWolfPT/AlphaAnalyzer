@@ -2375,6 +2375,8 @@ router.get('/sector/growth', authService, getSectorGrowth);
  * Note: Router is mounted at /api/iv, so route is /:ticker/chart
  */
 router.get("/:ticker/chart", authService, getIVChart);
+// Convenience alias: /api/iv/:ticker (same handler as /chart)
+router.get("/:ticker", authService, getIVChart);
 
 /**
  * GET /api/macro/multiplier

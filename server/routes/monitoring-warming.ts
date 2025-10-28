@@ -23,7 +23,7 @@ import { logger } from '../lib/logger';
 const router = Router();
 
 /**
- * Valuation method IDs (14 methods total)
+ * Valuation method IDs (12 methods total)
  * Matches FASE 3 implementation - ONDA 2.2 removed median methods
  */
 const METHOD_IDS = [

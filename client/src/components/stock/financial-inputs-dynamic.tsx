@@ -136,15 +136,30 @@ export function FinancialInputsDynamic({
           <div>
             <Label htmlFor="shares">Shares Outstanding (millions)</Label>
             {isReadOnly ? (
-              <p className="text-lg font-semibold">{formatNumber(inputs.shares)}</p>
+              <>
+                <p className="text-lg font-semibold">{formatNumber(inputs.shares)}</p>
+                {/* BUG FIX #3: Warning when shares is 0 */}
+                {inputs.shares === 0 && (
+                  <p className="text-xs text-amber-600 mt-1">
+                    ⚠ Shares Outstanding is 0. Data may be unavailable.
+                  </p>
+                )}
+              </>
             ) : (
-              <Input
-                id="shares"
-                type="number"
-                value={inputs.shares}
-                onChange={(e) => onInputChange?.('shares', parseFloat(e.target.value))}
-                className="mt-1"
-              />
+              <>
+                <Input
+                  id="shares"
+                  type="number"
+                  value={inputs.shares}
+                  onChange={(e) => onInputChange?.('shares', parseFloat(e.target.value))}
+                  className="mt-1"
+                />
+                {inputs.shares === 0 && (
+                  <p className="text-xs text-amber-600 mt-1">
+                    ⚠ Please enter shares outstanding manually
+                  </p>
+                )}
+              </>
             )}
           </div>
 

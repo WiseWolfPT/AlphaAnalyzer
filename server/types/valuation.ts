@@ -356,12 +356,47 @@ export interface ValuationMethod {
 }
 
 /**
+ * FASE 3: Failed Method Tracking
+ *
+ * Tracks methods that could not be calculated and explains why.
+ * Improves transparency and helps users understand data limitations.
+ */
+export interface FailedMethod {
+  method_id: MethodId;              // Method identifier (e.g., 'pe-mean')
+  method_name: string;              // Human-readable name (e.g., 'P/E Mean 5y')
+  reason: string;                   // User-friendly explanation
+  error_code?: string;              // Optional: API_ERROR, NO_DATA, CALCULATION_ERROR
+}
+
+/**
+ * Common failure reasons for valuation methods
+ */
+export const FAILURE_REASONS = {
+  NO_DIVIDEND: 'No dividend history available',
+  NEGATIVE_EARNINGS: 'Company has negative earnings',
+  NO_FCF: 'No free cash flow data available',
+  NO_OCF: 'No operating cash flow data available',
+  NO_NET_INCOME: 'No net income data available',
+  INSUFFICIENT_DATA: 'Insufficient historical data (need 5+ years)',
+  INSUFFICIENT_GROWTH_DATA: 'Insufficient data to estimate growth rates',
+  API_ERROR: 'Data provider error',
+  CALCULATION_ERROR: 'Calculation failed due to invalid inputs',
+  REIT_INCOMPATIBLE: 'Method not applicable to REITs',
+  FINANCIAL_INCOMPATIBLE: 'Method not applicable to financial companies',
+  NEGATIVE_BOOK_VALUE: 'Company has negative book value',
+  NO_SALES: 'No revenue/sales data available',
+  ZERO_SHARES: 'Invalid shares outstanding data',
+  INVALID_RATIO: 'Historical ratio data is invalid or incomplete',
+} as const;
+
+/**
  * FASE 3: Consolidated IV Chart Response
  */
 export interface IVChartResponse {
   ticker: string;
   price: number;                    // Current market price
   methods: ValuationMethod[];       // All valuation methods
+  failedMethods: FailedMethod[];    // Methods that could not be calculated
   macro_multiplier: number;         // Applied to all IVs
   macro_sentiment: 'bearish' | 'neutral' | 'bullish';
   as_of: string;
@@ -374,14 +409,16 @@ export interface IVChartResponse {
  */
 
 /**
- * Supported method IDs for caching
+ * Supported method IDs for caching (22 methods total)
+ * REMOVED: 'dcf-fcfe-20' and 'dcf-terminal-fcfe' (FMP API returns empty array - no FCFE data available)
+ * AGENT 1E ADDITION: 3 EV/EBITDA methods (2025-10-27)
+ * AGENT 1D ADDITION: 5 REIT-specific methods (2025-10-27)
+ * AGENT 1C ADDITION: 2 P/TBV methods for banks (2025-10-27)
  */
 export type MethodId =
   | 'alfa-value'
   | 'dcf-fcf-20'
-  | 'dcf-fcfe-20'
   | 'dcf-terminal-fcf'
-  | 'dcf-terminal-fcfe'
   | 'dni-20'
   | 'pe-mean'
   | 'pe-mean-without-nri'
@@ -390,7 +427,17 @@ export type MethodId =
   | 'pb-mean-without-nri'
   | 'peg'
   | 'psg'
-  | 'dfcf-terminal';
+  | 'dfcf-terminal'
+  | 'ev-ebitda-historical'   // Historical average EV/EBITDA (last 5 years)
+  | 'ev-ebitda-sector'        // Sector average EV/EBITDA benchmark
+  | 'ev-ebitda-forward'       // Forward EBITDA estimates (if available)
+  | 'ffo-reit'                // FFO (Funds From Operations) for REITs
+  | 'affo-reit'               // AFFO (Adjusted FFO) for REITs
+  | 'p-ffo-mean'              // P/FFO ratio using historical mean
+  | 'p-ffo-sector'            // P/FFO ratio using sector benchmark
+  | 'dividend-yield-reit'    // Dividend discount model for REITs
+  | 'p-tbv-mean'            // Price to Tangible Book Value (historical average, banks)
+  | 'p-tbv-sector';         // Price to Tangible Book Value (sector benchmark, banks)
 
 /**
  * Generic valuation result from any method
@@ -618,8 +665,72 @@ export interface CustomMethodInputs {
 }
 
 /**
+ * AGENT 1E: EV/EBITDA Historical - METHOD #19
+ * Uses 5-year historical average EV/EBITDA multiple
+ */
+export interface EVEBITDAHistoricalInputs {
+  method: 'EV/EBITDA Historical 5Y';
+  enterprise_value_musd: number;     // Current EV in millions
+  ebitda_ttm_musd: number;           // TTM EBITDA in millions
+  current_ev_ebitda: number;         // Current EV/EBITDA ratio
+  mean_ev_ebitda_5y: number;         // 5-year mean EV/EBITDA
+  market_cap_musd: number;           // Current market cap
+  total_debt_musd: number;           // Total debt
+  cash_musd: number;                 // Cash & equivalents
+  shares_outstanding_m: number;      // Shares outstanding
+
+  // EBITDA breakdown
+  net_income_musd: number;
+  interest_expense_musd: number;
+  taxes_musd: number;
+  depreciation_amortization_musd: number;
+}
+
+/**
+ * AGENT 1E: EV/EBITDA Sector - METHOD #20
+ * Uses sector average EV/EBITDA benchmark
+ */
+export interface EVEBITDASectorInputs {
+  method: 'EV/EBITDA Sector Average';
+  enterprise_value_musd: number;     // Current EV in millions
+  ebitda_ttm_musd: number;           // TTM EBITDA in millions
+  current_ev_ebitda: number;         // Current EV/EBITDA ratio
+  sector_avg_ev_ebitda: number;      // Sector benchmark
+  sector: string;                    // Sector name
+  market_cap_musd: number;
+  total_debt_musd: number;
+  cash_musd: number;
+  shares_outstanding_m: number;
+
+  // EBITDA breakdown
+  net_income_musd: number;
+  interest_expense_musd: number;
+  taxes_musd: number;
+  depreciation_amortization_musd: number;
+}
+
+/**
+ * AGENT 1E: EV/EBITDA Forward - METHOD #21
+ * Uses forward EBITDA estimates from analysts
+ */
+export interface EVEBITDAForwardInputs {
+  method: 'EV/EBITDA Forward';
+  enterprise_value_musd: number;     // Current EV in millions
+  ebitda_forward_musd: number;       // Forward EBITDA estimate
+  current_ev_ebitda: number;         // Current EV/EBITDA ratio
+  forward_ev_ebitda: number;         // Forward EV/EBITDA ratio
+  benchmark_ev_ebitda: number;       // Fair value benchmark
+  market_cap_musd: number;
+  total_debt_musd: number;
+  cash_musd: number;
+  shares_outstanding_m: number;
+  analyst_count?: number;            // Number of analysts in consensus
+}
+
+/**
  * Union type for all method inputs
  * ONDA 2.2: Removed Median types (PSMedianInputs, PEMedianInputs, PBMedianInputs, PEMedianWithoutNRIInputs, PBMedianWithoutNRIInputs)
+ * AGENT 1E: Added EV/EBITDA methods (2025-10-27)
  */
 export type MethodInputs =
   | DCF20OCFInputs
@@ -634,7 +745,12 @@ export type MethodInputs =
   | PEMeanWithoutNRIInputs
   | PBMeanWithoutNRIInputs
   | OracleValueInputs
-  | CustomMethodInputs;
+  | CustomMethodInputs
+  | EVEBITDAHistoricalInputs
+  | EVEBITDASectorInputs
+  | EVEBITDAForwardInputs
+  | PTBVMeanInputs
+  | PTBVSectorInputs;
 
 /**
  * FASE 3: Updated ValuationMethod with inputs field
@@ -672,6 +788,41 @@ export interface PSGValuationResponse {
   psgRatio: number;
   fairPsgRatio: number;    // Default 0.2 (editável)
   confidence: ValuationConfidence;
+  as_of: string;
+}
+
+/**
+ * AGENT 1E: EV/EBITDA Valuation Response
+ * Universal valuation method applicable to ~1,200 stocks (excludes Financials/REITs)
+ */
+export interface EVEBITDAValuationResponse {
+  ticker: string;
+  iv: number | null;       // Null if not applicable (Financials/REITs/Negative EBITDA)
+  currentPrice: number;
+  enterpriseValue: number;  // Market Cap + Debt - Cash
+  ebitda: number;           // NI + Interest + Taxes + D&A
+  currentEVEBITDA: number;  // Current EV/EBITDA ratio
+  benchmarkEVEBITDA: number; // Historical mean or sector average
+  benchmarkType: 'historical' | 'sector' | 'forward';
+  sector: string;
+
+  // EV Components
+  marketCap: number;
+  totalDebt: number;
+  cashAndEquivalents: number;
+
+  // EBITDA Components
+  netIncome: number;
+  interestExpense: number;
+  taxes: number;
+  depreciationAndAmortization: number;
+
+  // Historical data (for historical method)
+  historicalEVEBITDA?: number[];
+
+  confidence: ValuationConfidence;
+  error?: string;          // Error code if calculation fails
+  message?: string;        // User-friendly error message
   as_of: string;
 }
 
@@ -823,3 +974,215 @@ export interface GrowthRateResult {
   data_source: 'analyst' | 'historical' | 'default';
   as_of: string;                  // ISO date
 }
+
+/**
+ * AGENT 1C: P/TBV Mean - METHOD #23
+ * Price to Tangible Book Value using historical 5-year average
+ * PRIMARY valuation method for Financial Services sector (banks)
+ */
+export interface PTBVMeanInputs {
+  method: 'P/TBV Mean 5Y';
+  mean_ptbv_ratio_5y: number;        // Mean P/TBV ratio (e.g., 1.35)
+  tangible_book_value_per_share: number;  // TBV per share ($97.50 for JPM)
+  historical_ptbv: number[];         // Historical P/TBV ratios
+}
+
+/**
+ * AGENT 1C: P/TBV Sector - METHOD #24
+ * Price to Tangible Book Value using sector/peer benchmark
+ * Alternative valuation method for banks when historical data is limited
+ */
+export interface PTBVSectorInputs {
+  method: 'P/TBV Sector Benchmark';
+  sector_avg_ptbv: number;           // Sector average P/TBV (1.2x for large banks)
+  tangible_book_value_per_share: number;  // TBV per share
+  bank_type: 'large' | 'regional' | 'investment';  // Bank classification
+  sector: string;                    // "Financial Services"
+}
+
+/**
+ * AGENT 1C: P/TBV Valuation Response
+ * Response type for bank valuation using Tangible Book Value
+ */
+export interface PTBVValuationResponse {
+  ticker: string;
+  iv: number;
+  currentPrice: number;
+  tangibleBookValuePerShare: number;  // TBV/share (Equity - Intangibles - Goodwill)
+  currentPTBV: number;                // Current P/TBV ratio
+  benchmarkPTBV: number;              // Historical mean or sector average
+  benchmarkType: 'historical' | 'sector';
+  sector: string;
+  
+  // TBV Components
+  totalEquity: number;               // Total shareholder equity (millions)
+  intangibleAssets: number;          // Intangible assets (millions)
+  goodwill: number;                  // Goodwill (millions)
+  tangibleBookValue: number;         // Total TBV (millions)
+  sharesOutstanding: number;         // Shares outstanding (millions)
+  
+  // Historical data (for mean method)
+  historicalPTBV?: number[];
+  
+  // Bank classification
+  bankType?: 'large' | 'regional' | 'investment';
+  
+  confidence: ValuationConfidence;
+  as_of: string;
+}
+
+/**
+ * AGENT 1D: REIT-Specific Valuation Types (2025-10-27)
+ *
+ * REITs (Real Estate Investment Trusts) require specialized valuation methods
+ * because they are legally required to distribute 90%+ of taxable income as dividends,
+ * making traditional earnings-based metrics (P/E, DCF) less meaningful.
+ *
+ * Industry standards from NAREIT (National Association of Real Estate Investment Trusts):
+ * - FFO (Funds From Operations): Core profitability metric
+ * - AFFO (Adjusted FFO): FFO minus recurring capex
+ * - P/FFO Ratio: REIT equivalent of P/E ratio
+ * - Dividend Yield: Critical for income-focused REIT investors
+ */
+
+/**
+ * REIT subsector categories with distinct valuation characteristics
+ */
+export type REITSubSector =
+  | 'data-center'     // High growth, P/FFO 20-25x (DLR, EQIX)
+  | 'cell-tower'      // Stable growth, P/FFO 18-22x (AMT, CCI)
+  | 'retail'          // Mature, P/FFO 10-14x (SPG, REG)
+  | 'residential'     // Moderate growth, P/FFO 15-20x (AVB, EQR)
+  | 'industrial'      // E-commerce tailwind, P/FFO 18-24x (PLD, DRE)
+  | 'healthcare'      // Defensive, P/FFO 12-16x (WELL, VTR)
+  | 'office'          // Challenged, P/FFO 8-12x (BXP, SLG)
+  | 'diversified';    // Mixed portfolio, P/FFO 12-18x
+
+/**
+ * FFO (Funds From Operations) Response
+ * Formula: FFO = Net Income + D&A (real estate) + Losses on Property Sale - Gains on Property Sale
+ */
+export interface FFOValuationResponse {
+  ticker: string;
+  iv: number;
+  currentPrice: number;
+  ffo: number;                    // TTM FFO in millions
+  ffoPerShare: number;            // FFO per share
+  currentPFFO: number;            // Current P/FFO ratio
+  sectorAvgPFFO: number;          // Sector average P/FFO multiple
+  subsector: REITSubSector;       // REIT subsector category
+  netIncome: number;              // TTM net income (millions)
+  depreciationAndAmortization: number; // D&A (millions)
+  confidence: ValuationConfidence;
+  as_of: string;
+}
+
+/**
+ * AFFO (Adjusted Funds From Operations) Response
+ * Formula: AFFO = FFO - Recurring Capital Expenditures - Straight-line rent adjustments
+ */
+export interface AFFOValuationResponse {
+  ticker: string;
+  iv: number;
+  currentPrice: number;
+  ffo: number;                    // TTM FFO in millions
+  recurringCapex: number;         // Estimated recurring capex (millions)
+  affo: number;                   // TTM AFFO in millions
+  affoPerShare: number;           // AFFO per share
+  currentPAFFO: number;           // Current P/AFFO ratio
+  sectorAvgPAFFO: number;         // Sector average P/AFFO multiple (typically 0.9x P/FFO)
+  subsector: REITSubSector;       // REIT subsector category
+  confidence: ValuationConfidence;
+  as_of: string;
+}
+
+/**
+ * P/FFO Mean Valuation Response (5-year historical average)
+ * Formula: IV = Mean_P/FFO_5y × FFO_per_Share_TTM
+ */
+export interface PFFOMeanValuationResponse {
+  ticker: string;
+  iv: number;
+  currentPrice: number;
+  meanPFFO5Y: number;             // Historical mean P/FFO ratio
+  ffoPerShare: number;            // Current FFO per share
+  historicalPFFO: number[];       // Last 5 years P/FFO ratios
+  currentPFFO: number;            // Current P/FFO ratio
+  subsector: REITSubSector;       // REIT subsector category
+  confidence: ValuationConfidence;
+  as_of: string;
+}
+
+/**
+ * P/FFO Sector Valuation Response (sector benchmark)
+ * Formula: IV = Sector_Avg_P/FFO × FFO_per_Share_TTM
+ */
+export interface PFFOSectorValuationResponse {
+  ticker: string;
+  iv: number;
+  currentPrice: number;
+  sectorAvgPFFO: number;          // Sector benchmark P/FFO multiple
+  ffoPerShare: number;            // Current FFO per share
+  currentPFFO: number;            // Current P/FFO ratio
+  subsector: REITSubSector;       // REIT subsector category
+  peerCount: number;              // Number of peers in sector average
+  confidence: ValuationConfidence;
+  as_of: string;
+}
+
+/**
+ * Dividend Yield Valuation Response (income-focused REIT valuation)
+ * Formula: IV = Annual_Dividend_per_Share / Required_Yield
+ */
+export interface DividendYieldValuationResponse {
+  ticker: string;
+  iv: number;
+  currentPrice: number;
+  annualDividendPerShare: number; // Annual dividend per share
+  requiredYield: number;          // Required yield (typically 5-7% for REITs)
+  currentYield: number;           // Current dividend yield
+  dividendGrowthRate: number;     // Historical dividend CAGR (5y)
+  payoutRatio: number;            // Dividend payout ratio (% of FFO)
+  subsector: REITSubSector;       // REIT subsector category
+  confidence: ValuationConfidence;
+  as_of: string;
+}
+
+/**
+ * REIT Sector P/FFO Benchmarks (as of 2025)
+ * Source: Industry research from NAREIT, alreits.com, and major equity research platforms
+ */
+export const REIT_SECTOR_BENCHMARKS: Record<REITSubSector, { pFFO: number; description: string }> = {
+  'data-center': {
+    pFFO: 22.5,
+    description: 'High growth driven by cloud computing and AI demand',
+  },
+  'cell-tower': {
+    pFFO: 20.0,
+    description: 'Stable growth from 5G deployment and wireless infrastructure',
+  },
+  'retail': {
+    pFFO: 12.0,
+    description: 'Mature sector with moderate growth, selective recovery',
+  },
+  'residential': {
+    pFFO: 17.5,
+    description: 'Moderate growth from housing demand and rent increases',
+  },
+  'industrial': {
+    pFFO: 21.0,
+    description: 'Strong growth from e-commerce and logistics demand',
+  },
+  'healthcare': {
+    pFFO: 14.0,
+    description: 'Defensive sector with stable cash flows',
+  },
+  'office': {
+    pFFO: 10.0,
+    description: 'Challenged by remote work trends and office vacancies',
+  },
+  'diversified': {
+    pFFO: 15.0,
+    description: 'Mixed portfolio across multiple REIT subsectors',
+  },
+} as const;

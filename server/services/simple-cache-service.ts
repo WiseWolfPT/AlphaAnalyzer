@@ -178,7 +178,9 @@ class SimpleCacheService {
           return this.normalizeQuote(fmpQuote, symbol);
         }
         // Edge case: dot-class tickers like BRK.B – try hyphen variant for provider quirks
-        if (symbol.includes('.')) {
+        // BUG FIX #2: Exclude exchange suffixes (.LS, .DE, .PA, etc.) from conversion
+        // Portuguese stocks (GALP.LS), German (SAP.DE), etc. must keep dots
+        if (symbol.includes('.') && !symbol.match(/\.(LS|DE|PA|AS|L|TO|SW|HK|T|AX)$/i)) {
           try {
             const altSymbol = symbol.replace('.', '-');
             const altQuote = await fmpProvider.getQuote(altSymbol);

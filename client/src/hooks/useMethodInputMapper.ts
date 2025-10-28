@@ -121,6 +121,29 @@ export function useMethodInputMapper(
       methodType?.toLowerCase().includes('dni') ||
       methodType?.toLowerCase().includes('dfcf')
     ) {
+      // BUG FIX #3: Extended field mapping for shares outstanding
+      // Different backend methods use different field names - check all possibilities
+      const shares = Number(
+        inputs.shares_outstanding_m ||
+        inputs.shares_m ||
+        inputs.sharesOutstanding ||
+        inputs.shares_outstanding ||
+        inputs.outstanding_shares_m ||
+        inputs.outstanding_shares ||
+        inputs.diluted_shares_outstanding ||
+        inputs.dilutedSharesOutstanding ||
+        inputs.shares ||
+        0
+      );
+
+      // Log warning if shares is 0 (helps debugging)
+      if (shares === 0 && process.env.NODE_ENV === 'development') {
+        console.warn(
+          `[useMethodInputMapper] Shares Outstanding is 0 for method: ${methodType}. ` +
+          `Available input fields:`, Object.keys(inputs)
+        );
+      }
+
       return {
         type: 'dcf',
         operatingCF: Number(
@@ -144,10 +167,7 @@ export function useMethodInputMapper(
             inputs.discount_rate * 100 :
             inputs.discount_rate || 0
         ),
-        shares: Number(
-          inputs.shares_outstanding_m ||
-          inputs.shares_m || 0
-        ),
+        shares: shares,
         growthY1_5: Number(
           inputs.growth_rate_y1_5 ?
             inputs.growth_rate_y1_5 * 100 :

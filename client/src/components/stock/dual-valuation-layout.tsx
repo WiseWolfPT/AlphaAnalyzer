@@ -95,13 +95,17 @@ export function DualValuationLayout({
   onLoad,
   className,
 }: DualValuationLayoutProps) {
-  const formatCurrency = (value: number) => {
+  // BUG FIX #2: Defensive programming for price formatting
+  const formatCurrency = (value: number | null | undefined) => {
+    // Handle null/undefined/NaN gracefully
+    const safeValue = typeof value === 'number' && !isNaN(value) && isFinite(value) ? value : 0;
+
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD',
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
-    }).format(value);
+    }).format(safeValue);
   };
 
   return (

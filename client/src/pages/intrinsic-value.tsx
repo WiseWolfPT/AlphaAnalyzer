@@ -73,7 +73,11 @@ interface IntrinsicCalculation {
   methods: ValuationResult[];
 }
 
-export default function IntrinsicValue() {
+interface IntrinsicValueProps {
+  symbol?: string; // Optional prop from URL params
+}
+
+export default function IntrinsicValue({ symbol: urlSymbol }: IntrinsicValueProps = {}) {
   const [selectedStock, setSelectedStock] = useState<Stock | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [isCalculating, setIsCalculating] = useState(false);
@@ -151,31 +155,39 @@ export default function IntrinsicValue() {
   const [presetKey, setPresetKey] = useState<'conservative' | 'base' | 'optimistic' | null>(null);
 
 
-  // Read symbol from URL on page load
+  // Read symbol from URL (route params or query string)
   useEffect(() => {
-    const searchParams = new URLSearchParams(window.location.search);
-    const symbolFromUrl = searchParams.get('symbol');
-    
-    if (symbolFromUrl) {
-      // Set the search query to trigger the search
-      setSearchQuery(symbolFromUrl);
-      
+    // Priority 1: Route param (from /intrinsic-value/:symbol)
+    let symbolToLoad = urlSymbol;
+
+    // Priority 2: Query string (legacy ?symbol=AAPL)
+    if (!symbolToLoad) {
+      const searchParams = new URLSearchParams(window.location.search);
+      symbolToLoad = searchParams.get('symbol') || undefined;
+    }
+
+    if (symbolToLoad) {
+      const normalizedSymbol = symbolToLoad.toUpperCase();
+
+      // Set the search query (for display purposes)
+      setSearchQuery(normalizedSymbol);
+
       // Create a stock object for the symbol
       const stockFromUrl: Stock = {
-        symbol: symbolFromUrl.toUpperCase(),
-        name: symbolFromUrl.toUpperCase(), // Will be updated when search results load
+        symbol: normalizedSymbol,
+        name: normalizedSymbol, // Will be updated when data loads
         price: 0,
         change: 0,
         changePercent: 0,
         volume: 0,
         marketCap: 0
       };
-      
+
       setSelectedStock(stockFromUrl);
-      
-      // Do not auto-calculate; we'll try cache-first and let user recalc if quiser
+
+      console.log(`[IntrinsicValue] Loaded symbol from URL: ${normalizedSymbol}`);
     }
-  }, []);
+  }, [urlSymbol]); // Re-run when URL param changes
   
   // Normalize symbol for API/provider (dot->hyphen for class shares like BRK.B)
   const normalizedSymbol = (selectedStock?.symbol || '').replace('.', '-');
@@ -322,20 +334,15 @@ export default function IntrinsicValue() {
     }
   }, [presetKey, officialIV, cachedIV, fundamentals, realtimeQuote, cachedQuote, selectedStock?.symbol]);
   
-  const { data: searchResults, error: searchError, isLoading: searchLoading } = useQuery<Stock[]>({
-    queryKey: [`/api/stocks/search?q=${encodeURIComponent(searchQuery)}`],
-    enabled: searchQuery.length > 0,
-  });
+  // REMOVED: Legacy search query (UniversalSearch now handles all search internally)
+  // No need for React Query here since UniversalSearch uses direct fetch()
 
-  // Debug search results
+  // Debug: Log when symbol changes (for direct URL navigation)
   useEffect(() => {
-    if (searchQuery) {
-      console.log('Search query:', searchQuery);
-      console.log('Search loading:', searchLoading);
-      console.log('Search error:', searchError);
-      console.log('Search results:', searchResults);
+    if (selectedStock?.symbol) {
+      console.log('[IntrinsicValue] Selected stock:', selectedStock.symbol);
     }
-  }, [searchQuery, searchResults, searchError, searchLoading]);
+  }, [selectedStock?.symbol]);
   
   // Recalculate when realtime price changes
   useEffect(() => {
@@ -847,9 +854,20 @@ export default function IntrinsicValue() {
                       // ONDA 3.2: Use effective method ID (maps "custom" to actual DCF method)
                       const effectiveMethodId = getEffectiveMethodId(selectedMethod);
                       const autoMethod = valuationChartData.methods.find(m => m.method_id === effectiveMethodId);
-                      const price = valuationChartData.price;
+
+                      // BUG FIX #2: Use realtime price with proper fallback chain
+                      // valuationChartData.price might be stale/null, prefer realtime quote
+                      const price = (
+                        realtimeQuote?.price ??
+                        cachedQuote?.price ??
+                        cachedQuote?.close ??
+                        cachedQuote?.last ??
+                        valuationChartData.price ??
+                        parseFloat(String(selectedStock.price || 0))
+                      );
+
                       const iv = autoMethod?.iv || alfaValueData.iv;
-                      const premium = ((price - iv) / iv) * 100;
+                      const premium = iv > 0 ? ((price - iv) / iv) * 100 : 0;
 
                       // Simplified: autoCalculation only needs summary data (gauges use these)
                       const autoCalculation: AutoCalculation = {

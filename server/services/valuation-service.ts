@@ -15,6 +15,7 @@ import axios from 'axios';
 import { redisCacheService } from '../cache/redis-cache-service';
 import { simpleCacheService } from './simple-cache-service';
 import { logger } from '../lib/logger';
+import { isBank, getBankType, getSectorPTBVBenchmark } from '../utils/stock-classifier';
 import {
   AlfaValueResponse,
   RiskFreeRateResponse,
@@ -43,6 +44,7 @@ import {
   PBValuationResponse,
   PEGValuationResponse,
   PSGValuationResponse,
+  PTBVValuationResponse,
 } from '../types/valuation';
 
 const FMP_BASE_URL = 'https://financialmodelingprep.com';
@@ -83,13 +85,69 @@ function lerp(a: number, b: number, t: number): number {
 }
 
 /**
+ * Helper: Safe division with fallback for zero denominators
+ * Prevents Infinity/NaN crashes when dividing by zero (BUG FIX #1: PSG/PEG)
+ *
+ * @param numerator The dividend
+ * @param denominator The divisor
+ * @param fallback Value to return if division is unsafe (default: 0)
+ * @returns Result of division or fallback if unsafe
+ *
+ * @example
+ * safeDivide(10, 2) // 5
+ * safeDivide(10, 0) // 0 (fallback)
+ * safeDivide(10, 0, null) // null
+ * safeDivide(Infinity, 5) // 0 (fallback)
+ */
+function safeDivide(numerator: number, denominator: number, fallback: number | null = 0): number | null {
+  // Check if numerator is finite
+  if (!isFinite(numerator)) {
+    return fallback;
+  }
+
+  // Check if denominator is finite and non-zero
+  if (!isFinite(denominator) || denominator === 0) {
+    return fallback;
+  }
+
+  const result = numerator / denominator;
+
+  // Final safety check: ensure result is finite
+  if (!isFinite(result)) {
+    return fallback;
+  }
+
+  return result;
+}
+
+/**
  * Helper: Calculate CAGR from array of values
+ *
+ * Handles negative FCF correctly:
+ * - All positive: Standard CAGR formula
+ * - Any negative: Return 0 (floor clamp will handle minimum growth)
+ *
+ * Rationale: CAGR is mathematically undefined for negative starting values.
+ * For declining/mature companies with negative FCF, returning 0 allows
+ * G_1_5_FLOOR (0% as of FASE 2) to set the actual floor, enabling proper
+ * valuation of companies with occasional negative cash flows.
  */
 function calculateCAGR(values: number[]): number {
   if (values.length < 2) return 0;
+
   const startValue = values[0];
   const endValue = values[values.length - 1];
-  if (startValue <= 0 || endValue <= 0) return 0;
+
+  // Check if any value in the sequence is negative or zero
+  const hasNegativeOrZero = values.some(v => v <= 0);
+
+  if (hasNegativeOrZero) {
+    // Return 0 to signal "no reliable historical growth"
+    // The G_1_5_FLOOR clamp (currently 0%) will set the actual floor
+    return 0;
+  }
+
+  // Standard CAGR formula for all-positive sequences
   const years = values.length - 1;
   return Math.pow(endValue / startValue, 1 / years) - 1;
 }
@@ -221,9 +279,11 @@ export class ValuationService {
         const marketCap = Number(quote[0].marketCap || 0);
         const price = Number(quote[0].price || 0);
         if (marketCap > 0 && price > 0 && isFinite(marketCap) && isFinite(price)) {
-          const shares = marketCap / price;
-          logger.info(`[Shares] ${ticker}: quote (marketCap/price) → ${(shares / 1e6).toFixed(2)}M`);
-          return shares / 1e6;
+          const shares = safeDivide(marketCap, price, null);
+          if (shares !== null && shares > 0) {
+            logger.info(`[Shares] ${ticker}: quote (marketCap/price) → ${(shares / 1e6).toFixed(2)}M`);
+            return shares / 1e6;
+          }
         }
         logger.warn(`[Shares] ${ticker}: quote failed (marketCap=${marketCap}, price=${price})`);
       }
@@ -1174,12 +1234,19 @@ export class ValuationService {
       const currentPrice = quote.price;
 
       // Calculate PE ratio (without NRI adjustment, using TTM EPS)
-      const peWithoutNRI = currentPrice / epsTTM;
+      const peWithoutNRI = safeDivide(currentPrice, epsTTM, 0) as number;
 
       // Calculate PEG ratio
       // NOTE: growthRate is in decimal form (e.g., 0.1007 for 10.07%)
       // PEG = PE / (Growth% ) where Growth% = growthRate * 100
-      const pegRatio = peWithoutNRI / (growthRate * 100);
+      // BUG FIX #1: safeDivide prevents Infinity/NaN when growthRate = 0 (zero-growth companies)
+      const pegRatio = safeDivide(peWithoutNRI, growthRate * 100, null) as number | null;
+
+      // DEFENSIVE: If growthRate is zero or negative, PEG method is not applicable
+      if (pegRatio === null || growthRate <= 0) {
+        logger.warn(`[ValuationService] PEG method not applicable for ${upperTicker}: growthRate=${(growthRate*100).toFixed(2)}%`);
+        return null;
+      }
 
       // Calculate intrinsic value
       // Formula: IV = Fair_PEG × (growthRate × 100) × EPS_TTM
@@ -1276,12 +1343,19 @@ export class ValuationService {
       }
 
       // Calculate P/S ratio
-      const psRatio = currentPrice / revenuePerShareTTM;
+      const psRatio = safeDivide(currentPrice, revenuePerShareTTM, 0) as number;
 
       // Calculate PSG ratio
       // PSG = P/S ÷ (Revenue Growth Rate × 100)
       // Example: If P/S = 10.7 and growth = 8.25%, PSG = 10.7 / 8.25 = 1.297
-      const psgRatio = psRatio / (revenueCAGR * 100);
+      // BUG FIX #1: safeDivide prevents Infinity/NaN when revenueCAGR = 0 (zero-growth companies)
+      const psgRatio = safeDivide(psRatio, revenueCAGR * 100, null) as number | null;
+
+      // DEFENSIVE: If revenueCAGR is zero or negative, PSG method is not applicable
+      if (psgRatio === null || revenueCAGR <= 0) {
+        logger.warn(`[ValuationService] PSG method not applicable for ${upperTicker}: revenueCAGR=${(revenueCAGR*100).toFixed(2)}%`);
+        return null;
+      }
 
       // Calculate intrinsic value
       // NOTE: revenueCAGR is already in decimal form (e.g., 0.0825 for 8.25%)
@@ -2017,7 +2091,296 @@ export class ValuationService {
       return null;
     }
   }
-}
+
+  /**
+   * AGENT 1C: Calculate P/TBV Mean (5-year historical average)
+   *
+   * Formula: IV = Mean_P/TBV_5y × Tangible_Book_Value_per_Share
+   *
+   * Tangible Book Value = Total Equity - Intangible Assets - Goodwill
+   * P/TBV Ratio = Market Price / TBV per Share
+   *
+   * This is the PRIMARY valuation method for banks because:
+   * - Banks have negative/inconsistent FCF (they ARE the cash flow)
+   * - TBV represents net worth after removing intangible assets
+   * - Major investment banks (GS, MS, JPM Research) use P/TBV as standard
+   *
+   * @param ticker - Bank ticker symbol (e.g., 'JPM', 'BAC')
+   * @returns PTBVValuationResponse or null if data unavailable
+   */
+  async calculatePTBVMean5Y(ticker: string): Promise<PTBVValuationResponse | null> {
+    const upperTicker = ticker.toUpperCase();
+    const cacheKey = VALUATION_CACHE_KEYS.IV_CALC + upperTicker + ':ptbv_mean';
+
+    // Check cache
+    const cached = await redisCacheService.get<PTBVValuationResponse>(cacheKey);
+    if (cached) {
+      logger.info(`[ValuationService] P/TBV Mean cache hit for ${upperTicker}`);
+      return cached;
+    }
+
+    try {
+      // Step 1: Verify this is a bank
+      const profileData = await fmpGet<FMPCompanyProfile[]>('/api/v3/profile/' + upperTicker);
+      if (!profileData || profileData.length === 0) {
+        logger.warn(`[ValuationService] No profile data for ${upperTicker}`);
+        return null;
+      }
+
+      const profile = profileData[0];
+      const { sector, industry } = profile;
+
+      if (!isBank(sector, industry, upperTicker)) {
+        logger.warn(`[ValuationService] ${upperTicker} is not a bank (sector: ${sector}, industry: ${industry})`);
+        return null;
+      }
+
+      logger.info(`[ValuationService] Confirmed ${upperTicker} is a bank - using P/TBV valuation`);
+
+      // Step 2: Fetch historical key metrics (last 5 years) for tangibleBookValuePerShare
+      const keyMetricsData = await fmpGet<any[]>(`/api/v3/key-metrics/${upperTicker}`, { limit: 5 });
+      if (!keyMetricsData || !Array.isArray(keyMetricsData) || keyMetricsData.length === 0) {
+        logger.warn(`[ValuationService] No key metrics data for ${upperTicker}`);
+        return null;
+      }
+
+      // Step 3: Get current tangible book value per share (TTM)
+      const keyMetricsTTM = await fmpGet<any[]>(`/api/v3/key-metrics-ttm/${upperTicker}`);
+      if (!keyMetricsTTM || !Array.isArray(keyMetricsTTM) || keyMetricsTTM.length === 0) {
+        logger.warn(`[ValuationService] No key metrics TTM for ${upperTicker}`);
+        return null;
+      }
+
+      const tangibleBookValuePerShare = Number(keyMetricsTTM[0].tangibleBookValuePerShareTTM || 0);
+      if (tangibleBookValuePerShare <= 0) {
+        logger.warn(`[ValuationService] Invalid tangible book value per share for ${upperTicker}: ${tangibleBookValuePerShare}`);
+        return null;
+      }
+
+      logger.info(`[ValuationService] ${upperTicker} TBV/share: $${tangibleBookValuePerShare.toFixed(2)}`);
+
+      // Step 4: Calculate historical P/TBV ratios
+      const historicalPTBV: number[] = [];
+
+      for (const record of keyMetricsData) {
+
+        if (tbvPerShare > 0 && priceAtDate > 0) {
+          const ptbvRatio = Number(record.ptbRatio || 0);
+          // Filter outliers (0.3x to 3.0x range is reasonable for banks)
+          if (ptbvRatio >= 0.3 && ptbvRatio <= 3.0) {
+            historicalPTBV.push(ptbvRatio);
+          }
+        }
+      }
+
+      if (historicalPTBV.length < 3) {
+        logger.warn(`[ValuationService] Insufficient P/TBV data for ${upperTicker} (${historicalPTBV.length} years)`);
+        return null;
+      }
+
+      // Step 5: Calculate mean P/TBV
+      const meanPTBV = historicalPTBV.reduce((sum, ratio) => sum + ratio, 0) / historicalPTBV.length;
+
+      logger.info(`[ValuationService] ${upperTicker} historical P/TBV ratios: [${historicalPTBV.join(', ')}]`);
+      logger.info(`[ValuationService] ${upperTicker} mean P/TBV: ${meanPTBV.toFixed(2)}x`);
+
+      // Step 6: Calculate intrinsic value
+      const iv = meanPTBV * tangibleBookValuePerShare;
+
+      if (!isFinite(iv) || iv <= 0) {
+        logger.warn(`[ValuationService] Invalid IV calculated for ${upperTicker}: ${iv}`);
+        return null;
+      }
+
+      // Step 7: Get current price and calculate current P/TBV
+      const currentPrice = await this.getCurrentPrice(upperTicker);
+      const currentPTBV = currentPrice / tangibleBookValuePerShare;
+
+      // Step 8: Get TBV components from balance sheet
+      const balanceSheetData = await fmpGet<any[]>(`/api/v3/balance-sheet-statement/${upperTicker}`, { limit: 1 });
+      let totalEquity = 0;
+      let intangibleAssets = 0;
+      let goodwill = 0;
+      let tangibleBookValue = 0;
+      let sharesOutstanding = 0;
+
+      if (balanceSheetData && balanceSheetData.length > 0) {
+        const balanceSheet = balanceSheetData[0];
+        totalEquity = (balanceSheet.totalStockholdersEquity || 0) / 1_000_000;
+        intangibleAssets = (balanceSheet.intangibleAssets || 0) / 1_000_000;
+        goodwill = (balanceSheet.goodwill || 0) / 1_000_000;
+        tangibleBookValue = totalEquity - intangibleAssets - goodwill;
+      }
+
+      // Get shares outstanding
+      const shares_m = await this.getSharesOutstanding(upperTicker);
+      sharesOutstanding = shares_m || 0;
+
+      // Step 9: Classify bank type
+      const bankType = getBankType(upperTicker, industry);
+
+      logger.info(`[ValuationService] P/TBV Mean for ${upperTicker}: Mean=${meanPTBV.toFixed(2)}x, TBV/share=$${tangibleBookValuePerShare.toFixed(2)}, IV=$${iv.toFixed(2)}, Current P/TBV=${currentPTBV.toFixed(2)}x, Bank Type=${bankType}`);
+
+      // Step 10: Build response
+      const response: PTBVValuationResponse = {
+        ticker: upperTicker,
+        iv,
+        currentPrice,
+        tangibleBookValuePerShare,
+        currentPTBV,
+        benchmarkPTBV: meanPTBV,
+        benchmarkType: 'historical',
+        sector: sector || 'Financial Services',
+        totalEquity,
+        intangibleAssets,
+        goodwill,
+        tangibleBookValue,
+        sharesOutstanding,
+        historicalPTBV,
+        bankType,
+        confidence: 'HIGH',
+        as_of: new Date().toISOString().split('T')[0],
+      };
+
+      // Cache for 24h
+      await redisCacheService.set(cacheKey, response, 86400);
+
+      return response;
+    } catch (error: any) {
+      logger.error(`[ValuationService] Error calculating P/TBV Mean for ${upperTicker}:`, error.message);
+      return null;
+    }
+  }
+
+  /**
+   * AGENT 1C: Calculate P/TBV Sector (sector benchmark)
+   *
+   * Formula: IV = Sector_Avg_P/TBV × Tangible_Book_Value_per_Share
+   *
+   * Sector benchmarks by bank type:
+   * - Large Money Center Banks (JPM, BAC, C, WFC): 1.35x
+   * - Regional Banks (USB, PNC, TFC, KEY): 1.00x
+   * - Investment Banks (GS, MS): 1.15x
+   *
+   * Sources: Goldman Sachs Equity Research, Morgan Stanley Bank Coverage, JPMorgan Banking Analysis
+   *
+   * @param ticker - Bank ticker symbol
+   * @returns PTBVValuationResponse or null if data unavailable
+   */
+  async calculatePTBVSector(ticker: string): Promise<PTBVValuationResponse | null> {
+    const upperTicker = ticker.toUpperCase();
+    const cacheKey = VALUATION_CACHE_KEYS.IV_CALC + upperTicker + ':ptbv_sector';
+
+    // Check cache
+    const cached = await redisCacheService.get<PTBVValuationResponse>(cacheKey);
+    if (cached) {
+      logger.info(`[ValuationService] P/TBV Sector cache hit for ${upperTicker}`);
+      return cached;
+    }
+
+    try {
+      // Step 1: Verify this is a bank
+      const profileData = await fmpGet<FMPCompanyProfile[]>('/api/v3/profile/' + upperTicker);
+      if (!profileData || profileData.length === 0) {
+        logger.warn(`[ValuationService] No profile data for ${upperTicker}`);
+        return null;
+      }
+
+      const profile = profileData[0];
+      const { sector, industry } = profile;
+
+      if (!isBank(sector, industry, upperTicker)) {
+        logger.warn(`[ValuationService] ${upperTicker} is not a bank (sector: ${sector}, industry: ${industry})`);
+        return null;
+      }
+
+      logger.info(`[ValuationService] Confirmed ${upperTicker} is a bank - using P/TBV sector benchmark`);
+
+      // Step 2: Get current tangible book value per share (TTM)
+      const keyMetricsTTM = await fmpGet<any[]>(`/api/v3/key-metrics-ttm/${upperTicker}`);
+      if (!keyMetricsTTM || !Array.isArray(keyMetricsTTM) || keyMetricsTTM.length === 0) {
+        logger.warn(`[ValuationService] No key metrics TTM for ${upperTicker}`);
+        return null;
+      }
+
+      const tangibleBookValuePerShare = Number(keyMetricsTTM[0].tangibleBookValuePerShareTTM || 0);
+      if (tangibleBookValuePerShare <= 0) {
+        logger.warn(`[ValuationService] Invalid tangible book value per share for ${upperTicker}: ${tangibleBookValuePerShare}`);
+        return null;
+      }
+
+      logger.info(`[ValuationService] ${upperTicker} TBV/share: $${tangibleBookValuePerShare.toFixed(2)}`);
+
+      // Step 3: Classify bank type and get sector benchmark
+      const bankType = getBankType(upperTicker, industry);
+      const sectorAvgPTBV = getSectorPTBVBenchmark(bankType);
+
+      logger.info(`[ValuationService] ${upperTicker} bank type: ${bankType}, sector benchmark P/TBV: ${sectorAvgPTBV.toFixed(2)}x`);
+
+      // Step 4: Calculate intrinsic value
+      const iv = sectorAvgPTBV * tangibleBookValuePerShare;
+
+      if (!isFinite(iv) || iv <= 0) {
+        logger.warn(`[ValuationService] Invalid IV calculated for ${upperTicker}: ${iv}`);
+        return null;
+      }
+
+      // Step 5: Get current price and calculate current P/TBV
+      const currentPrice = await this.getCurrentPrice(upperTicker);
+      const currentPTBV = currentPrice / tangibleBookValuePerShare;
+
+      // Step 6: Get TBV components from balance sheet
+      const balanceSheetData = await fmpGet<any[]>(`/api/v3/balance-sheet-statement/${upperTicker}`, { limit: 1 });
+      let totalEquity = 0;
+      let intangibleAssets = 0;
+      let goodwill = 0;
+      let tangibleBookValue = 0;
+      let sharesOutstanding = 0;
+
+      if (balanceSheetData && balanceSheetData.length > 0) {
+        const balanceSheet = balanceSheetData[0];
+        totalEquity = (balanceSheet.totalStockholdersEquity || 0) / 1_000_000;
+        intangibleAssets = (balanceSheet.intangibleAssets || 0) / 1_000_000;
+        goodwill = (balanceSheet.goodwill || 0) / 1_000_000;
+        tangibleBookValue = totalEquity - intangibleAssets - goodwill;
+      }
+
+      // Get shares outstanding
+      const shares_m = await this.getSharesOutstanding(upperTicker);
+      sharesOutstanding = shares_m || 0;
+
+      logger.info(`[ValuationService] P/TBV Sector for ${upperTicker}: Benchmark=${sectorAvgPTBV.toFixed(2)}x, TBV/share=$${tangibleBookValuePerShare.toFixed(2)}, IV=$${iv.toFixed(2)}, Current P/TBV=${currentPTBV.toFixed(2)}x, Bank Type=${bankType}`);
+
+      // Step 7: Build response
+      const response: PTBVValuationResponse = {
+        ticker: upperTicker,
+        iv,
+        currentPrice,
+        tangibleBookValuePerShare,
+        currentPTBV,
+        benchmarkPTBV: sectorAvgPTBV,
+        benchmarkType: 'sector',
+        sector: sector || 'Financial Services',
+        totalEquity,
+        intangibleAssets,
+        goodwill,
+        tangibleBookValue,
+        sharesOutstanding,
+        bankType,
+        confidence: 'MED',
+        as_of: new Date().toISOString().split('T')[0],
+      };
+
+      // Cache for 24h
+      await redisCacheService.set(cacheKey, response, 86400);
+
+      return response;
+    } catch (error: any) {
+      logger.error(`[ValuationService] Error calculating P/TBV Sector for ${upperTicker}:`, error.message);
+      return null;
+    }
+  }
+  }
 
 // Export singleton instance
 export const valuationService = new ValuationService();

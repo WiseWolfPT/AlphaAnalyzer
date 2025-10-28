@@ -1,7 +1,7 @@
 /**
  * Intelligent Warming Worker - ONDA 7
  *
- * Priority-based, bandwidth-aware cache warming for all 1,493 stocks × 14 methods.
+ * Priority-based, bandwidth-aware cache warming for all 1,493 stocks × 12 methods.
  *
  * Architecture:
  * 1. Priority Queue (Redis sorted sets)
@@ -11,7 +11,7 @@
  *
  * Coverage:
  * - 50 tasks × 12 cycles/hour × 24 hours = 14,400 tasks/day
- * - Universe: 1,493 stocks × 14 methods = 20,902 methods
+ * - Universe: 1,493 stocks × 12 methods = 17,916 methods (FCFE removed)
  * - Daily Coverage: 68.9% (prioritized: S&P 100 = 100%, S&P 500 = 80%, Extended = 60% weekly)
  */
 
@@ -35,7 +35,7 @@ const WARMING_CYCLE_INTERVAL_MS = parseInt(process.env.WARMING_CYCLE_INTERVAL_MS
 const WARMING_RATE_LIMIT_MS = parseInt(process.env.WARMING_RATE_LIMIT_MS || '250', 10); // 4 calls/sec
 const WORKER_HEALTH_PORT = parseInt(process.env.WORKER_HEALTH_PORT || '3006', 10);
 
-// Valuation method IDs (14 methods - ONDA 7)
+// Valuation method IDs (12 methods - ONDA 7)
 // Mapping to actual MethodId types used by method-cache-service
 const METHOD_IDS: MethodId[] = [
   'alfa-value',              // Proprietary AlfaValue method

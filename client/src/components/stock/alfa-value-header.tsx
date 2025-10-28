@@ -88,6 +88,34 @@ export function AlfaValueHeader({ ticker }: AlfaValueHeaderProps) {
     );
   }
 
+  // BUG FIX #1: Handle null/0 intrinsic value (common for banks and financial institutions)
+  // Banks cannot be valued using DCF because they have negative/irregular free cash flows
+  const isInvalidIV = !data.iv || data.iv <= 0;
+
+  if (isInvalidIV) {
+    return (
+      <Card className="border-amber-500/20 bg-gradient-to-r from-amber-500/5 to-transparent">
+        <CardContent className="p-6">
+          <Alert className="border-amber-500/20">
+            <Info className="h-4 w-4 text-amber-600" />
+            <AlertDescription className="text-amber-700">
+              <strong>DCF Valuation Not Applicable</strong>
+              <p className="mt-2">
+                Intrinsic value cannot be calculated using DCF for {ticker}.
+                This is common for financial institutions (banks, insurance companies)
+                which have negative or irregular free cash flows.
+              </p>
+              <p className="mt-2 text-sm">
+                <strong>Recommended alternative methods:</strong> P/TBV (Price-to-Tangible Book Value),
+                P/B (Price-to-Book), or P/E (Price-to-Earnings) multiples.
+              </p>
+            </AlertDescription>
+          </Alert>
+        </CardContent>
+      </Card>
+    );
+  }
+
   const formatCurrency = (value: number) =>
     new Intl.NumberFormat('en-US', {
       style: 'currency',

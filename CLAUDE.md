@@ -69,11 +69,11 @@ Scripts:
 API Endpoints:
 - `GET /api/monitoring/warming/overview` - Dashboard completo
 - `GET /api/monitoring/warming/cache-heatmap?limit=100` - Cobertura por stock
-- `GET /api/monitoring/warming/method-coverage` - Cobertura por método (14 métodos)
+- `GET /api/monitoring/warming/method-coverage` - Cobertura por método (12 métodos (FCFE removed))
 - `GET /api/monitoring/warming/real-time` - SSE stream (atualizações 5s)
 
 Métricas Rastreadas:
-- **Cache Coverage:** % de 1,493 stocks × 14 métodos de valorização cached
+- **Cache Coverage:** % de 1,493 stocks × 12 métodos (FCFE removed) de valorização cached
 - **Cache Hotness:** Hot (<1h), Warm (1-12h), Cold (12-24h), Stale (>24h)
 - **Bandwidth:** Uso diário vs budget (682.67 MB/dia = 20 GB/mês)
 - **API Calls:** Rastreamento de chamadas FMP (rate limit: 4 req/s)

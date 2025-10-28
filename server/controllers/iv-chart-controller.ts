@@ -1,11 +1,13 @@
 /**
  * IV Chart Controller - FASE 3 + ONDA 1.2
  *
- * Consolidates all valuation methods (10+) for charting and comparison:
- * - 1 Proprietary: AlfaValue"
- * - 4 DCF External: FMP benchmarks (NOW with dynamic growth rates)
- * - 3 Multiples: P/E, P/S, P/B Mean 5y
+ * Consolidates all valuation methods (12 total) for charting and comparison:
+ * - 1 Proprietary: AlfaValue™
+ * - 2 DCF External: FMP benchmarks (dynamic growth rates)
+ * - 7 Multiples: P/E, P/S, P/B Mean 5y (with/without NRI variants)
  * - 2 Growth: PEG, PSG
+ *
+ * REMOVED: 2 FCFE methods (FMP API returns empty array - no data available)
  *
  * Applies macro multiplier to all IVs and calculates discount percentages
  *
@@ -20,13 +22,16 @@ import { logger } from '../lib/logger';
 import { redisCacheService } from '../cache/redis-cache-service';
 import { methodCacheService } from '../services/method-cache-service';
 import { estimateGrowthRates } from '../utils/growth-rate-estimator';
-import { isETF, getETFReason } from '../utils/stock-classifier';
+import { isETF, getETFReason, isREIT } from '../utils/stock-classifier';
+import { reitValuationService } from '../services/valuation-service-reit';
 import axios from 'axios';
 import {
   IVChartResponse,
   ValuationMethod,
   DCFBaseMetric,
   MethodId,
+  FailedMethod,
+  FAILURE_REASONS,
 } from '../types/valuation';
 
 const FMP_BASE_URL = 'https://financialmodelingprep.com';
@@ -130,15 +135,16 @@ export async function getIVChart(req: Request, res: Response): Promise<void> {
       }
     }
 
-    // 6. Calculate all 14 methods in parallel using method-level cache (ONDA 7)
-    logger.info(`[IV-Chart] Using method-level cache for ${ticker}`);
+    // 6. Calculate all 19 methods in parallel using method-level cache (ONDA 7)
+    // REMOVED: dcf-fcfe-20 and dcf-terminal-fcfe (FMP API returns empty array - no FCFE data)
+    // AGENT 1C: Added p-tbv-mean and p-tbv-sector for banks (Financial Services)
+    // AGENT 1D: Added 5 REIT methods for Real Estate sector
+    logger.info(`[IV-Chart] Using method-level cache for ${ticker} (19 methods)`);
 
     const methodIds: MethodId[] = [
       'alfa-value',
       'dcf-fcf-20',
-      'dcf-fcfe-20',
       'dcf-terminal-fcf',
-      'dcf-terminal-fcfe',
       'dni-20',
       'pe-mean',
       'pe-mean-without-nri',
@@ -148,14 +154,19 @@ export async function getIVChart(req: Request, res: Response): Promise<void> {
       'peg',
       'psg',
       'dfcf-terminal',
+      'p-tbv-mean',      // AGENT 1C: P/TBV historical mean (banks)
+      'p-tbv-sector',    // AGENT 1C: P/TBV sector benchmark (banks)
+      'ffo-reit',        // AGENT 1D: FFO (Funds From Operations) for REITs
+      'affo-reit',       // AGENT 1D: AFFO (Adjusted FFO) for REITs
+      'p-ffo-mean',      // AGENT 1D: P/FFO historical mean for REITs
+      'p-ffo-sector',    // AGENT 1D: P/FFO sector benchmark for REITs
+      'dividend-yield-reit', // AGENT 1D: Dividend discount model for REITs
     ];
 
     const [
       alfaValue,
       dcfFCF,
-      dcfFCFE,
       dcfTermFCF,
-      dcfTermFCFE,
       dni20,
       peMean,
       peMeanNoNRI,
@@ -165,18 +176,26 @@ export async function getIVChart(req: Request, res: Response): Promise<void> {
       peg,
       psg,
       dfcfTerminal,
+      ptbvMean,      // AGENT 1C: P/TBV Mean 5Y
+      ptbvSector,    // AGENT 1C: P/TBV Sector
+      ffoREIT,       // AGENT 1D: FFO for REITs
+      affoREIT,      // AGENT 1D: AFFO for REITs
+      pFFOMean,      // AGENT 1D: P/FFO Mean for REITs
+      pFFOSector,    // AGENT 1D: P/FFO Sector for REITs
+      dividendYieldREIT, // AGENT 1D: Dividend Yield for REITs
     ] = await Promise.allSettled(
       methodIds.map((id: MethodId) => methodCacheService.warmMethod(ticker, id).then(result => {
-        // Attach growth rates for DCF methods
-        if (['dcf-fcf-20', 'dcf-fcfe-20', 'dcf-terminal-fcf', 'dcf-terminal-fcfe'].includes(id)) {
+        // Attach growth rates for DCF methods (FCFE removed)
+        if (['dcf-fcf-20', 'dcf-terminal-fcf'].includes(id)) {
           if (result) (result as any).growthRates = growthRates;
         }
         return result;
       }))
     );
 
-    // 4. Build methods array
+    // 4. Build methods array + track failures
     const methods: ValuationMethod[] = [];
+    const failedMethods: FailedMethod[] = [];
 
     /**
      * Extract method-specific inputs from valuation data
@@ -214,10 +233,9 @@ export async function getIVChart(req: Request, res: Response): Promise<void> {
           };
 
         case 'DCF-20 FCF FMP':
-        case 'DCF-20 FCFE FMP':
           return {
             method: 'dcf-20',
-            based_on: methodName.includes('FCFE') ? 'fcfe' : 'fcf',
+            based_on: 'fcf',
             // ✅ ATUALIZADO para usar ExtendedFMPDCFResponse.inputs
             fcf_ttm_musd: data.inputs?.freeCashFlow || 0,
             total_debt_musd: data.inputs?.totalDebt || 0,
@@ -259,26 +277,6 @@ export async function getIVChart(req: Request, res: Response): Promise<void> {
           return {
             method: 'dcf-20-terminal',
             based_on: 'fcf',
-            // ✅ ATUALIZADO para usar ExtendedFMPDCFResponse.inputs
-            fcf_ttm_musd: data.inputs?.freeCashFlow || 0,
-            total_debt_musd: data.inputs?.totalDebt || 0,
-            cash_musd: data.inputs?.cashAndCashEquivalents || 0,
-            discount_rate: 0.0627,  // ✅ CAPM conservador (Rf=1%, MRP=4.8%)
-            shares_outstanding_m: data.inputs?.sharesOutstanding || 0,
-            // ✅ ONDA 1.2 FIX: Growth rates now dynamic from estimator
-            growth_rate_y1_5: data.growthRates?.year1To5 || 0,
-            growth_rate_y6_10: data.growthRates?.year6To10 || 0,
-            growth_rate_y11_20: data.growthRates?.year11To20 || 0,
-            data_source: data.growthRates?.dataSource || 'default',
-            confidence: data.growthRates?.confidence || 'low',
-            deduct_debt: true,
-            add_cash: true,
-          };
-
-        case 'DCF Terminal FCFE FMP':
-          return {
-            method: 'dcf-20-terminal',
-            based_on: 'fcfe',
             // ✅ ATUALIZADO para usar ExtendedFMPDCFResponse.inputs
             fcf_ttm_musd: data.inputs?.freeCashFlow || 0,
             total_debt_musd: data.inputs?.totalDebt || 0,
@@ -365,6 +363,102 @@ export async function getIVChart(req: Request, res: Response): Promise<void> {
             psg_ratio: data.psgRatio || 0,
           };
 
+        case 'P/TBV Mean 5Y':  // AGENT 1C: Banks valuation
+          return {
+            method: 'p-tbv-mean',
+            mean_ptbv_ratio_5y: data.benchmarkPTBV || 0,
+            tangible_book_value_per_share: data.tangibleBookValuePerShare || 0,
+            current_price: data.currentPrice || 0,
+            current_ptbv: data.currentPTBV || 0,
+            // Historical ratios (read-only)
+            ptbv_ratios: data.historicalPTBV || [],
+            // TBV components
+            total_equity_musd: (data.totalEquity || 0) / 1_000_000,
+            intangible_assets_musd: (data.intangibleAssets || 0) / 1_000_000,
+            goodwill_musd: (data.goodwill || 0) / 1_000_000,
+            tangible_book_value_musd: (data.tangibleBookValue || 0) / 1_000_000,
+            shares_outstanding_m: (data.sharesOutstanding || 0) / 1_000_000,
+          };
+
+        case 'P/TBV Sector':  // AGENT 1C: Banks sector benchmark
+          return {
+            method: 'p-tbv-sector',
+            sector_avg_ptbv: data.benchmarkPTBV || 0,
+            tangible_book_value_per_share: data.tangibleBookValuePerShare || 0,
+            current_price: data.currentPrice || 0,
+            current_ptbv: data.currentPTBV || 0,
+            sector: data.sector || 'Financial Services',
+            bank_type: data.bankType || 'large',
+            // TBV components
+            total_equity_musd: (data.totalEquity || 0) / 1_000_000,
+            intangible_assets_musd: (data.intangibleAssets || 0) / 1_000_000,
+            goodwill_musd: (data.goodwill || 0) / 1_000_000,
+            tangible_book_value_musd: (data.tangibleBookValue || 0) / 1_000_000,
+            shares_outstanding_m: (data.sharesOutstanding || 0) / 1_000_000,
+          };
+
+        case 'FFO (REITs)':  // AGENT 1D: REITs FFO valuation
+          return {
+            method: 'ffo-reit',
+            ffo_per_share: data.ffoPerShare || 0,
+            sector_avg_p_ffo: data.sectorAvgPFFO || 0,
+            current_p_ffo: data.currentPFFO || 0,
+            current_price: data.currentPrice || 0,
+            subsector: data.subsector || 'diversified',
+            // FFO components
+            net_income_musd: data.netIncome || 0,
+            depreciation_amortization_musd: data.depreciationAndAmortization || 0,
+            ffo_musd: data.ffo || 0,
+          };
+
+        case 'AFFO (REITs)':  // AGENT 1D: REITs AFFO valuation
+          return {
+            method: 'affo-reit',
+            affo_per_share: data.affoPerShare || 0,
+            sector_avg_p_affo: data.sectorAvgPAFFO || 0,
+            current_p_affo: data.currentPAFFO || 0,
+            current_price: data.currentPrice || 0,
+            subsector: data.subsector || 'diversified',
+            // AFFO components
+            ffo_musd: data.ffo || 0,
+            recurring_capex_musd: data.recurringCapex || 0,
+            affo_musd: data.affo || 0,
+          };
+
+        case 'P/FFO Mean':  // AGENT 1D: REITs historical P/FFO
+          return {
+            method: 'p-ffo-mean',
+            mean_p_ffo_5y: data.meanPFFO5Y || 0,
+            ffo_per_share: data.ffoPerShare || 0,
+            current_price: data.currentPrice || 0,
+            current_p_ffo: data.currentPFFO || 0,
+            subsector: data.subsector || 'diversified',
+            // Historical P/FFO ratios
+            historical_p_ffo: data.historicalPFFO || [],
+          };
+
+        case 'P/FFO Sector':  // AGENT 1D: REITs sector benchmark
+          return {
+            method: 'p-ffo-sector',
+            sector_avg_p_ffo: data.sectorAvgPFFO || 0,
+            ffo_per_share: data.ffoPerShare || 0,
+            current_price: data.currentPrice || 0,
+            current_p_ffo: data.currentPFFO || 0,
+            subsector: data.subsector || 'diversified',
+          };
+
+        case 'Dividend Yield (REITs)':  // AGENT 1D: REITs dividend discount
+          return {
+            method: 'dividend-yield-reit',
+            annual_dividend_per_share: data.annualDividendPerShare || 0,
+            required_yield: data.requiredYield || 0,
+            current_yield: data.currentYield || 0,
+            current_price: data.currentPrice || 0,
+            subsector: data.subsector || 'diversified',
+            dividend_growth_rate: data.dividendGrowthRate || 0,
+            payout_ratio: data.payoutRatio || 0,
+          };
+
         default:
           return null;
       }
@@ -386,9 +480,7 @@ export async function getIVChart(req: Request, res: Response): Promise<void> {
         'DFCF Terminal': 'dfcf-terminal',
         'DFCF-20 (FMP)': 'dfcf-20',
         'DCF-20 FCF FMP': 'dcf-20-fcf',
-        'DCF-20 FCFE FMP': 'dcf-20-fcfe',
         'DCF Terminal FCF FMP': 'dcf-terminal-fcf',
-        'DCF Terminal FCFE FMP': 'dcf-terminal-fcfe',
         'P/E Mean 5Y': 'pe-mean',
         'P/E Mean 5y': 'pe-mean',
         'P/E Mean 5Y (without NRI)': 'pe-mean-without-nri',
@@ -401,45 +493,136 @@ export async function getIVChart(req: Request, res: Response): Promise<void> {
         'P/B Mean without NRI': 'pb-mean-without-nri',
         'PEG Ratio': 'peg',
         'PSG Ratio': 'psg',
+        'P/TBV Mean 5Y': 'p-tbv-mean',       // AGENT 1C: Banks
+        'P/TBV Sector': 'p-tbv-sector',      // AGENT 1C: Banks
       };
       return mapping[methodName] || methodName.toLowerCase().replace(/\s+/g, '-');
     }
 
-    // Helper to add method
+    // Helper to add method with failure tracking
     const addMethod = (
       result: PromiseSettledResult<any>,
       name: string,
+      methodId: MethodId,
       category: 'proprietary' | 'dcf' | 'multiples' | 'growth',
       formula: string,
       source: 'internal' | 'fmp' | 'hybrid',
       extractIV: (data: any) => number | null
     ) => {
-      if (result.status === 'fulfilled' && result.value) {
-        const rawIV = extractIV(result.value);
-        if (rawIV && rawIV > 0 && isFinite(rawIV)) {
-          const adjustedIV = macroService.applyMultiplier(rawIV, macroMultiplier);
-          const discount_pct = ((adjustedIV - price) / price) * 100;
+      try {
+        if (result.status === 'fulfilled' && result.value) {
+          const rawIV = extractIV(result.value);
+          if (rawIV && rawIV > 0 && isFinite(rawIV)) {
+            const adjustedIV = macroService.applyMultiplier(rawIV, macroMultiplier);
+            const discount_pct = ((adjustedIV - price) / price) * 100;
 
-          methods.push({
-            name,
-            method_id: getMethodId(name),  // ✅ FASE 3.2 FIX: Frontend lookup ID
-            category,
-            iv: adjustedIV,
-            discount_pct,
-            formula,
-            confidence: result.value.confidence || 'MED',
-            source,
-            as_of: result.value.as_of || new Date().toISOString().split('T')[0],
-            inputs: getInputsForMethod(name, result.value, ticker),  // ✅ FASE 3 FIX
+            methods.push({
+              name,
+              method_id: getMethodId(name),  // ✅ FASE 3.2 FIX: Frontend lookup ID
+              category,
+              iv: adjustedIV,
+              discount_pct,
+              formula,
+              confidence: result.value.confidence || 'MED',
+              source,
+              as_of: result.value.as_of || new Date().toISOString().split('T')[0],
+              inputs: getInputsForMethod(name, result.value, ticker),  // ✅ FASE 3 FIX
+            });
+          } else {
+            // Method returned invalid/zero IV
+            failedMethods.push({
+              method_id: methodId,
+              method_name: name,
+              reason: determineFailureReason(name, result.value, sector),
+              error_code: 'NO_DATA',
+            });
+          }
+        } else if (result.status === 'rejected') {
+          // Promise rejected (API error, network error, etc.)
+          failedMethods.push({
+            method_id: methodId,
+            method_name: name,
+            reason: result.reason?.message || FAILURE_REASONS.API_ERROR,
+            error_code: 'API_ERROR',
+          });
+        } else {
+          // Fulfilled but returned null/undefined
+          failedMethods.push({
+            method_id: methodId,
+            method_name: name,
+            reason: FAILURE_REASONS.INSUFFICIENT_DATA,
+            error_code: 'NO_DATA',
           });
         }
+      } catch (error: any) {
+        // Catch any unexpected errors in processing
+        failedMethods.push({
+          method_id: methodId,
+          method_name: name,
+          reason: error.message || FAILURE_REASONS.CALCULATION_ERROR,
+          error_code: 'CALCULATION_ERROR',
+        });
       }
     };
 
-    // Add all methods
+    /**
+     * Determine specific failure reason based on method type and data
+     */
+    const determineFailureReason = (methodName: string, data: any, sector?: string): string => {
+      // REIT-specific incompatibilities
+      if (sector === 'Real Estate') {
+        if (methodName.includes('P/E')) return FAILURE_REASONS.REIT_INCOMPATIBLE;
+        if (methodName.includes('P/B')) return FAILURE_REASONS.REIT_INCOMPATIBLE;
+        if (methodName.includes('PEG')) return FAILURE_REASONS.REIT_INCOMPATIBLE;
+      }
+
+      // Method-specific reasons
+      if (methodName.includes('DDM') || methodName.includes('Dividend')) {
+        return FAILURE_REASONS.NO_DIVIDEND;
+      }
+
+      if (methodName.includes('P/E') || methodName.includes('PEG')) {
+        if (data?.eps !== undefined && data.eps <= 0) {
+          return FAILURE_REASONS.NEGATIVE_EARNINGS;
+        }
+        return FAILURE_REASONS.INSUFFICIENT_DATA;
+      }
+
+      if (methodName.includes('FCF') || methodName.includes('DFCF')) {
+        return FAILURE_REASONS.NO_FCF;
+      }
+
+      if (methodName.includes('OCF')) {
+        return FAILURE_REASONS.NO_OCF;
+      }
+
+      if (methodName.includes('DNI') || methodName.includes('Net Income')) {
+        if (data?.netIncome !== undefined && data.netIncome <= 0) {
+          return FAILURE_REASONS.NEGATIVE_EARNINGS;
+        }
+        return FAILURE_REASONS.NO_NET_INCOME;
+      }
+
+      if (methodName.includes('P/B')) {
+        if (data?.bookValuePerShare !== undefined && data.bookValuePerShare <= 0) {
+          return FAILURE_REASONS.NEGATIVE_BOOK_VALUE;
+        }
+        return FAILURE_REASONS.INSUFFICIENT_DATA;
+      }
+
+      if (methodName.includes('P/S') || methodName.includes('PSG')) {
+        return FAILURE_REASONS.NO_SALES;
+      }
+
+      // Generic fallback
+      return FAILURE_REASONS.INSUFFICIENT_DATA;
+    };
+
+    // Add all methods (with MethodId for failure tracking)
     addMethod(
       alfaValue,
       'AlfaValue™',
+      'alfa-value',
       'proprietary',
       'FCF → PV(g1-5, g6-10, g11-20, DR) + Cash - Debt',
       'internal',
@@ -449,6 +632,7 @@ export async function getIVChart(req: Request, res: Response): Promise<void> {
     addMethod(
       dcfFCF,
       'DCF-20 FCF FMP',
+      'dcf-fcf-20',
       'dcf',
       'FMP 10y FCF projection (unlevered)',
       'fmp',
@@ -456,17 +640,9 @@ export async function getIVChart(req: Request, res: Response): Promise<void> {
     );
 
     addMethod(
-      dcfFCFE,
-      'DCF-20 FCFE FMP',
-      'dcf',
-      'FMP 10y FCFE projection (levered)',
-      'fmp',
-      (data) => data.dcf
-    );
-
-    addMethod(
       dcfTermFCF,
       'DCF Terminal FCF FMP',
+      'dcf-terminal-fcf',
       'dcf',
       'FMP Terminal Value (Gordon Growth)',
       'fmp',
@@ -474,17 +650,9 @@ export async function getIVChart(req: Request, res: Response): Promise<void> {
     );
 
     addMethod(
-      dcfTermFCFE,
-      'DCF Terminal FCFE FMP',
-      'dcf',
-      'FMP Terminal Value Levered',
-      'fmp',
-      (data) => data.dcf
-    );
-
-    addMethod(
       peMean,
       'P/E Mean 5y',
+      'pe-mean',
       'multiples',
       'Mean(P/E���������) � EPS_TTM',
       'internal',
@@ -494,6 +662,7 @@ export async function getIVChart(req: Request, res: Response): Promise<void> {
     addMethod(
       psMean,
       'P/S Mean 5y',
+      'ps-mean',
       'multiples',
       'Mean(P/S���������) � Sales_per_Share_TTM',
       'internal',
@@ -503,6 +672,7 @@ export async function getIVChart(req: Request, res: Response): Promise<void> {
     addMethod(
       pbMean,
       'P/B Mean 5y',
+      'pb-mean',
       'multiples',
       'Mean(P/B���������) � Book_Value_per_Share_TTM',
       'internal',
@@ -512,6 +682,7 @@ export async function getIVChart(req: Request, res: Response): Promise<void> {
     addMethod(
       pbMeanNoNRI,
       'P/B Mean without NRI',
+      'pb-mean-without-nri',
       'multiples',
       'Mean(P/B_5y_adj) × Adjusted_BVPS_TTM',
       'internal',
@@ -521,6 +692,7 @@ export async function getIVChart(req: Request, res: Response): Promise<void> {
     addMethod(
       peg,
       'PEG Ratio',
+      'peg',
       'growth',
       'Fair_PEG (1.5) � Growth% � EPS_TTM',
       'internal',
@@ -530,6 +702,7 @@ export async function getIVChart(req: Request, res: Response): Promise<void> {
     addMethod(
       psg,
       'PSG Ratio',
+      'psg',
       'growth',
       'Fair_PSG (0.2) � Revenue_CAGR_3y � Sales_per_Share_TTM',
       'internal',
@@ -540,6 +713,7 @@ export async function getIVChart(req: Request, res: Response): Promise<void> {
     addMethod(
       dni20,
       'DNI-20 NI',
+      'dni-20',
       'dcf',
       'Σ(NI_t / (1 + WACC)^t) + Cash - Debt',
       'internal',
@@ -549,6 +723,7 @@ export async function getIVChart(req: Request, res: Response): Promise<void> {
     addMethod(
       peMeanNoNRI,
       'P/E Mean without NRI',
+      'pe-mean-without-nri',
       'multiples',
       'Mean(P/E_5y_adj) × Adjusted_EPS_TTM',
       'internal',
@@ -558,13 +733,86 @@ export async function getIVChart(req: Request, res: Response): Promise<void> {
     addMethod(
       dfcfTerminal,
       'DFCF Terminal',
+      'dfcf-terminal',
       'dcf',
       '3-Stage DCF: PV(Stage1) + PV(Stage2) + PV(Terminal) + Cash - Debt',
       'internal',
       (data) => data?.iv ?? data  // Support both new rich object and legacy number
     );
 
-    // 5. Build response
+    // AGENT 1C: P/TBV Methods for Banks (Financial Services sector)
+    addMethod(
+      ptbvMean,
+      'P/TBV Mean 5Y',
+      'p-tbv-mean',
+      'multiples',
+      'Mean(P/TBV_5y) × Tangible_Book_Value_per_Share',
+      'internal',
+      (data) => data.iv
+    );
+
+    addMethod(
+      ptbvSector,
+      'P/TBV Sector',
+      'p-tbv-sector',
+      'multiples',
+      'Sector_Avg_P/TBV × Tangible_Book_Value_per_Share',
+      'internal',
+      (data) => data.iv
+    );
+
+    // AGENT 1D: REIT Methods for Real Estate sector
+    addMethod(
+      ffoREIT,
+      'FFO (REITs)',
+      'ffo-reit',
+      'multiples',
+      'Sector_Avg_P/FFO × FFO_per_Share (NAREIT standard)',
+      'internal',
+      (data) => data.iv
+    );
+
+    addMethod(
+      affoREIT,
+      'AFFO (REITs)',
+      'affo-reit',
+      'multiples',
+      'Sector_Avg_P/AFFO × AFFO_per_Share (adjusted for recurring capex)',
+      'internal',
+      (data) => data.iv
+    );
+
+    addMethod(
+      pFFOMean,
+      'P/FFO Mean',
+      'p-ffo-mean',
+      'multiples',
+      'Mean(P/FFO_5y) × FFO_per_Share',
+      'internal',
+      (data) => data.iv
+    );
+
+    addMethod(
+      pFFOSector,
+      'P/FFO Sector',
+      'p-ffo-sector',
+      'multiples',
+      'Sector_Avg_P/FFO × FFO_per_Share (REIT subsector benchmark)',
+      'internal',
+      (data) => data.iv
+    );
+
+    addMethod(
+      dividendYieldREIT,
+      'Dividend Yield (REITs)',
+      'dividend-yield-reit',
+      'multiples',
+      'Annual_Dividend ÷ Required_Yield (dividend discount model)',
+      'internal',
+      (data) => data.iv
+    );
+
+    // 5. Build response with failedMethods transparency
     const response: IVChartResponse = {
       ticker,
       price,
@@ -573,12 +821,16 @@ export async function getIVChart(req: Request, res: Response): Promise<void> {
         const order = { proprietary: 0, dcf: 1, multiples: 2, growth: 3 };
         return order[a.category] - order[b.category];
       }),
+      failedMethods,
       macro_multiplier: macroMultiplier,
       macro_sentiment: macroSentiment,
       as_of: new Date().toISOString().split('T')[0],
     };
 
-    logger.info(`[IVChart] ${ticker}: Generated ${methods.length} methods`);
+    logger.info(
+      `[IVChart] ${ticker}: Generated ${methods.length} methods ` +
+      `(${failedMethods.length} failed, ${methods.length + failedMethods.length} total)`
+    );
 
     // Save to Redis cache with 24h TTL
     try {
