@@ -305,9 +305,9 @@ describe('ValuationService - CAGR Calculation Tests', () => {
       // Act
       const result = await service.getAlfaValue('FAST25');
 
-      // Assert: g1_5 should be close to 25% or clamped to ceiling (30%)
+      // Assert: g1_5 should be close to 25% or clamped to ceiling (50%)
       expect(result.assumptions.g_1_5).toBeGreaterThan(0.20);
-      expect(result.assumptions.g_1_5).toBeLessThanOrEqual(VALUATION_CLAMPS.G_1_5.max); // 30% ceiling
+      expect(result.assumptions.g_1_5).toBeLessThanOrEqual(VALUATION_CLAMPS.G_1_5.max); // 50% ceiling (UPDATED: was 30%)
     });
   });
 

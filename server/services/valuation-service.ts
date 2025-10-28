@@ -2792,6 +2792,15 @@ export class ValuationService {
       return null;
     }
   }
+
+  /**
+   * FASE 2C: Calculate High-Growth DCF (8-year projection)
+   * Delegates to standalone growth-dcf-8y-method.ts implementation
+   */
+  async calculateGrowthDCF8Y(ticker: string): Promise<import('../types/valuation').GrowthDCF8YResponse | null> {
+    const { calculateGrowthDCF8Y } = await import('./growth-dcf-8y-method');
+    return calculateGrowthDCF8Y(ticker, this);
+  }
   }
 
 // Export singleton instance

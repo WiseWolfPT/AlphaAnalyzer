@@ -170,9 +170,9 @@ describe('ValuationService - Unit Tests', () => {
         // Act
         const result = await service.getAlfaValue('ROCKET');
 
-        // Assert: g1_5 should be clamped to ceiling (30%)
+        // Assert: g1_5 should be clamped to ceiling (50%)
         expect(result.assumptions.g_1_5).toBeLessThanOrEqual(VALUATION_CLAMPS.G_1_5.max);
-        expect(result.assumptions.g_1_5).toBe(VALUATION_CLAMPS.G_1_5.max); // Should be exactly 30%
+        expect(result.assumptions.g_1_5).toBe(VALUATION_CLAMPS.G_1_5.max); // Should be exactly 50% (UPDATED: was 30%)
       });
 
       it('should allow normal growth within range', async () => {

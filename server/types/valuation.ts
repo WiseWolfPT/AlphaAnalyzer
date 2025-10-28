@@ -354,7 +354,7 @@ export const VALUATION_DEFAULTS = {
  * for hyper-growth companies following big fintech/hedge fund practices.
  */
 export const VALUATION_CLAMPS = {
-  G_1_5: { min: 0.05, max: 0.50 },      // 5% to 50% (UPDATED: was 30%)
+  G_1_5: { min: -0.10, max: 0.50 },     // -10% to 50% (UPDATED: was 30%)
   G_6_10: { min: 0.02, max: 0.20 },     // 2% to 20%
   G_11_20: { min: 0.03, max: 0.05 },    // 3% to 5%
   DR: { min: 0.05, max: 0.15 },         // 5% to 15%

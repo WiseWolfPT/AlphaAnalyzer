@@ -58,7 +58,7 @@ describe('AlfaValue™ Growth Rate Calculations', () => {
   });
 
   describe('g1_5: Historical FCF CAGR (Years 1-5)', () => {
-    const G_1_5_MAX = 0.30; // 30% cap
+    const G_1_5_MAX = 0.50; // 50% cap (UPDATED: was 30%)
 
     it('should calculate positive CAGR correctly', () => {
       // Arrange: 5 years of growing FCF (100M → 200M = ~15% CAGR)
