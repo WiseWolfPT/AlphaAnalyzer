@@ -1,0 +1,291 @@
+
+  /**
+   * AGENT 1C: Calculate P/TBV Mean (5-year historical average)
+   *
+   * Formula: IV = Mean_P/TBV_5y × Tangible_Book_Value_per_Share
+   *
+   * Tangible Book Value = Total Equity - Intangible Assets - Goodwill
+   * P/TBV Ratio = Market Price / TBV per Share
+   *
+   * This is the PRIMARY valuation method for banks because:
+   * - Banks have negative/inconsistent FCF (they ARE the cash flow)
+   * - TBV represents net worth after removing intangible assets
+   * - Major investment banks (GS, MS, JPM Research) use P/TBV as standard
+   *
+   * @param ticker - Bank ticker symbol (e.g., 'JPM', 'BAC')
+   * @returns PTBVValuationResponse or null if data unavailable
+   */
+  async calculatePTBVMean5Y(ticker: string): Promise<PTBVValuationResponse | null> {
+    const upperTicker = ticker.toUpperCase();
+    const cacheKey = VALUATION_CACHE_KEYS.IV_CALC + upperTicker + ':ptbv_mean';
+
+    // Check cache
+    const cached = await redisCacheService.get<PTBVValuationResponse>(cacheKey);
+    if (cached) {
+      logger.info(`[ValuationService] P/TBV Mean cache hit for ${upperTicker}`);
+      return cached;
+    }
+
+    try {
+      // Step 1: Verify this is a bank
+      const profileData = await fmpGet<FMPCompanyProfile[]>('/api/v3/profile/' + upperTicker);
+      if (!profileData || profileData.length === 0) {
+        logger.warn(`[ValuationService] No profile data for ${upperTicker}`);
+        return null;
+      }
+
+      const profile = profileData[0];
+      const { sector, industry } = profile;
+
+      if (!isBank(sector, industry, upperTicker)) {
+        logger.warn(`[ValuationService] ${upperTicker} is not a bank (sector: ${sector}, industry: ${industry})`);
+        return null;
+      }
+
+      logger.info(`[ValuationService] Confirmed ${upperTicker} is a bank - using P/TBV valuation`);
+
+      // Step 2: Fetch historical key metrics (last 5 years) for tangibleBookValuePerShare
+      const keyMetricsData = await fmpGet<any[]>(`/api/v3/key-metrics/${upperTicker}`, { limit: 5 });
+      if (!keyMetricsData || !Array.isArray(keyMetricsData) || keyMetricsData.length === 0) {
+        logger.warn(`[ValuationService] No key metrics data for ${upperTicker}`);
+        return null;
+      }
+
+      // Step 3: Get current tangible book value per share (TTM)
+      const keyMetricsTTM = await fmpGet<any[]>(`/api/v3/key-metrics-ttm/${upperTicker}`);
+      if (!keyMetricsTTM || !Array.isArray(keyMetricsTTM) || keyMetricsTTM.length === 0) {
+        logger.warn(`[ValuationService] No key metrics TTM for ${upperTicker}`);
+        return null;
+      }
+
+      const tangibleBookValuePerShare = Number(keyMetricsTTM[0].tangibleBookValuePerShareTTM || 0);
+      if (tangibleBookValuePerShare <= 0) {
+        logger.warn(`[ValuationService] Invalid tangible book value per share for ${upperTicker}: ${tangibleBookValuePerShare}`);
+        return null;
+      }
+
+      logger.info(`[ValuationService] ${upperTicker} TBV/share: $${tangibleBookValuePerShare.toFixed(2)}`);
+
+      // Step 4: Calculate historical P/TBV ratios
+      const historicalPTBV: number[] = [];
+
+      for (const record of keyMetricsData) {
+        const tbvPerShare = Number(record.tangibleBookValuePerShare || 0);
+        const priceAtDate = Number(record.stockPrice || 0);
+
+        if (tbvPerShare > 0 && priceAtDate > 0) {
+          const ptbvRatio = priceAtDate / tbvPerShare;
+          // Filter outliers (0.3x to 3.0x range is reasonable for banks)
+          if (ptbvRatio >= 0.3 && ptbvRatio <= 3.0) {
+            historicalPTBV.push(ptbvRatio);
+          }
+        }
+      }
+
+      if (historicalPTBV.length < 3) {
+        logger.warn(`[ValuationService] Insufficient P/TBV data for ${upperTicker} (${historicalPTBV.length} years)`);
+        return null;
+      }
+
+      // Step 5: Calculate mean P/TBV
+      const meanPTBV = historicalPTBV.reduce((sum, ratio) => sum + ratio, 0) / historicalPTBV.length;
+
+      logger.info(`[ValuationService] ${upperTicker} historical P/TBV ratios: [${historicalPTBV.join(', ')}]`);
+      logger.info(`[ValuationService] ${upperTicker} mean P/TBV: ${meanPTBV.toFixed(2)}x`);
+
+      // Step 6: Calculate intrinsic value
+      const iv = meanPTBV * tangibleBookValuePerShare;
+
+      if (!isFinite(iv) || iv <= 0) {
+        logger.warn(`[ValuationService] Invalid IV calculated for ${upperTicker}: ${iv}`);
+        return null;
+      }
+
+      // Step 7: Get current price and calculate current P/TBV
+      const currentPrice = await this.getCurrentPrice(upperTicker);
+      const currentPTBV = currentPrice / tangibleBookValuePerShare;
+
+      // Step 8: Get TBV components from balance sheet
+      const balanceSheetData = await fmpGet<any[]>(`/api/v3/balance-sheet-statement/${upperTicker}`, { limit: 1 });
+      let totalEquity = 0;
+      let intangibleAssets = 0;
+      let goodwill = 0;
+      let tangibleBookValue = 0;
+      let sharesOutstanding = 0;
+
+      if (balanceSheetData && balanceSheetData.length > 0) {
+        const balanceSheet = balanceSheetData[0];
+        totalEquity = (balanceSheet.totalStockholdersEquity || 0) / 1_000_000;
+        intangibleAssets = (balanceSheet.intangibleAssets || 0) / 1_000_000;
+        goodwill = (balanceSheet.goodwill || 0) / 1_000_000;
+        tangibleBookValue = totalEquity - intangibleAssets - goodwill;
+      }
+
+      // Get shares outstanding
+      const shares_m = await this.getSharesOutstanding(upperTicker);
+      sharesOutstanding = shares_m || 0;
+
+      // Step 9: Classify bank type
+      const bankType = getBankType(upperTicker, industry);
+
+      logger.info(`[ValuationService] P/TBV Mean for ${upperTicker}: Mean=${meanPTBV.toFixed(2)}x, TBV/share=$${tangibleBookValuePerShare.toFixed(2)}, IV=$${iv.toFixed(2)}, Current P/TBV=${currentPTBV.toFixed(2)}x, Bank Type=${bankType}`);
+
+      // Step 10: Build response
+      const response: PTBVValuationResponse = {
+        ticker: upperTicker,
+        iv,
+        currentPrice,
+        tangibleBookValuePerShare,
+        currentPTBV,
+        benchmarkPTBV: meanPTBV,
+        benchmarkType: 'historical',
+        sector: sector || 'Financial Services',
+        totalEquity,
+        intangibleAssets,
+        goodwill,
+        tangibleBookValue,
+        sharesOutstanding,
+        historicalPTBV,
+        bankType,
+        confidence: 'HIGH',
+        as_of: new Date().toISOString().split('T')[0],
+      };
+
+      // Cache for 24h
+      await redisCacheService.set(cacheKey, response, 86400);
+
+      return response;
+    } catch (error: any) {
+      logger.error(`[ValuationService] Error calculating P/TBV Mean for ${upperTicker}:`, error.message);
+      return null;
+    }
+  }
+
+  /**
+   * AGENT 1C: Calculate P/TBV Sector (sector benchmark)
+   *
+   * Formula: IV = Sector_Avg_P/TBV × Tangible_Book_Value_per_Share
+   *
+   * Sector benchmarks by bank type:
+   * - Large Money Center Banks (JPM, BAC, C, WFC): 1.35x
+   * - Regional Banks (USB, PNC, TFC, KEY): 1.00x
+   * - Investment Banks (GS, MS): 1.15x
+   *
+   * Sources: Goldman Sachs Equity Research, Morgan Stanley Bank Coverage, JPMorgan Banking Analysis
+   *
+   * @param ticker - Bank ticker symbol
+   * @returns PTBVValuationResponse or null if data unavailable
+   */
+  async calculatePTBVSector(ticker: string): Promise<PTBVValuationResponse | null> {
+    const upperTicker = ticker.toUpperCase();
+    const cacheKey = VALUATION_CACHE_KEYS.IV_CALC + upperTicker + ':ptbv_sector';
+
+    // Check cache
+    const cached = await redisCacheService.get<PTBVValuationResponse>(cacheKey);
+    if (cached) {
+      logger.info(`[ValuationService] P/TBV Sector cache hit for ${upperTicker}`);
+      return cached;
+    }
+
+    try {
+      // Step 1: Verify this is a bank
+      const profileData = await fmpGet<FMPCompanyProfile[]>('/api/v3/profile/' + upperTicker);
+      if (!profileData || profileData.length === 0) {
+        logger.warn(`[ValuationService] No profile data for ${upperTicker}`);
+        return null;
+      }
+
+      const profile = profileData[0];
+      const { sector, industry } = profile;
+
+      if (!isBank(sector, industry, upperTicker)) {
+        logger.warn(`[ValuationService] ${upperTicker} is not a bank (sector: ${sector}, industry: ${industry})`);
+        return null;
+      }
+
+      logger.info(`[ValuationService] Confirmed ${upperTicker} is a bank - using P/TBV sector benchmark`);
+
+      // Step 2: Get current tangible book value per share (TTM)
+      const keyMetricsTTM = await fmpGet<any[]>(`/api/v3/key-metrics-ttm/${upperTicker}`);
+      if (!keyMetricsTTM || !Array.isArray(keyMetricsTTM) || keyMetricsTTM.length === 0) {
+        logger.warn(`[ValuationService] No key metrics TTM for ${upperTicker}`);
+        return null;
+      }
+
+      const tangibleBookValuePerShare = Number(keyMetricsTTM[0].tangibleBookValuePerShareTTM || 0);
+      if (tangibleBookValuePerShare <= 0) {
+        logger.warn(`[ValuationService] Invalid tangible book value per share for ${upperTicker}: ${tangibleBookValuePerShare}`);
+        return null;
+      }
+
+      logger.info(`[ValuationService] ${upperTicker} TBV/share: $${tangibleBookValuePerShare.toFixed(2)}`);
+
+      // Step 3: Classify bank type and get sector benchmark
+      const bankType = getBankType(upperTicker, industry);
+      const sectorAvgPTBV = getSectorPTBVBenchmark(bankType);
+
+      logger.info(`[ValuationService] ${upperTicker} bank type: ${bankType}, sector benchmark P/TBV: ${sectorAvgPTBV.toFixed(2)}x`);
+
+      // Step 4: Calculate intrinsic value
+      const iv = sectorAvgPTBV * tangibleBookValuePerShare;
+
+      if (!isFinite(iv) || iv <= 0) {
+        logger.warn(`[ValuationService] Invalid IV calculated for ${upperTicker}: ${iv}`);
+        return null;
+      }
+
+      // Step 5: Get current price and calculate current P/TBV
+      const currentPrice = await this.getCurrentPrice(upperTicker);
+      const currentPTBV = currentPrice / tangibleBookValuePerShare;
+
+      // Step 6: Get TBV components from balance sheet
+      const balanceSheetData = await fmpGet<any[]>(`/api/v3/balance-sheet-statement/${upperTicker}`, { limit: 1 });
+      let totalEquity = 0;
+      let intangibleAssets = 0;
+      let goodwill = 0;
+      let tangibleBookValue = 0;
+      let sharesOutstanding = 0;
+
+      if (balanceSheetData && balanceSheetData.length > 0) {
+        const balanceSheet = balanceSheetData[0];
+        totalEquity = (balanceSheet.totalStockholdersEquity || 0) / 1_000_000;
+        intangibleAssets = (balanceSheet.intangibleAssets || 0) / 1_000_000;
+        goodwill = (balanceSheet.goodwill || 0) / 1_000_000;
+        tangibleBookValue = totalEquity - intangibleAssets - goodwill;
+      }
+
+      // Get shares outstanding
+      const shares_m = await this.getSharesOutstanding(upperTicker);
+      sharesOutstanding = shares_m || 0;
+
+      logger.info(`[ValuationService] P/TBV Sector for ${upperTicker}: Benchmark=${sectorAvgPTBV.toFixed(2)}x, TBV/share=$${tangibleBookValuePerShare.toFixed(2)}, IV=$${iv.toFixed(2)}, Current P/TBV=${currentPTBV.toFixed(2)}x, Bank Type=${bankType}`);
+
+      // Step 7: Build response
+      const response: PTBVValuationResponse = {
+        ticker: upperTicker,
+        iv,
+        currentPrice,
+        tangibleBookValuePerShare,
+        currentPTBV,
+        benchmarkPTBV: sectorAvgPTBV,
+        benchmarkType: 'sector',
+        sector: sector || 'Financial Services',
+        totalEquity,
+        intangibleAssets,
+        goodwill,
+        tangibleBookValue,
+        sharesOutstanding,
+        bankType,
+        confidence: 'MED',
+        as_of: new Date().toISOString().split('T')[0],
+      };
+
+      // Cache for 24h
+      await redisCacheService.set(cacheKey, response, 86400);
+
+      return response;
+    } catch (error: any) {
+      logger.error(`[ValuationService] Error calculating P/TBV Sector for ${upperTicker}:`, error.message);
+      return null;
+    }
+  }

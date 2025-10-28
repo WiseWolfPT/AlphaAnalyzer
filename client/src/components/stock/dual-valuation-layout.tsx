@@ -143,7 +143,7 @@ export function DualValuationLayout({
                   'font-bold text-lg',
                   autoCalculation.premium >= 0 ? 'text-red-500' : 'text-green-500'
                 )}>
-                  {autoCalculation.premium.toFixed(2)}%
+                  {(autoCalculation.premium ?? 0).toFixed(2)}%
                 </span>
               </div>
             </div>
@@ -210,7 +210,7 @@ export function DualValuationLayout({
                   'font-bold text-lg',
                   myCalculation.premium >= 0 ? 'text-red-500' : 'text-green-500'
                 )}>
-                  {myCalculation.premium.toFixed(2)}%
+                  {(myCalculation.premium ?? 0).toFixed(2)}%
                 </span>
               </div>
             </div>

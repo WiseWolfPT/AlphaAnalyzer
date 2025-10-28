@@ -10,6 +10,7 @@
     "build": "vite build --outDir dist/public",
     "build:server": "node ./scripts/build-server.mjs",
     "build:full": "npm run build && npm run build:server",
+    "validate:bundle": "bash scripts/validate-bundle.sh",
     "start": "NODE_ENV=production SERVE_STATIC=true node dist/server/index.js",
     "start:pm2": "pm2 start ecosystem.config.cjs --env production",
     "check": "tsc --noEmit",
@@ -57,7 +58,6 @@
     "init-transcripts": "bash scripts/init-transcripts-system.sh",
     "security:check-rls": "tsx scripts/security/check-rls.ts"
   },
-  
   "dependencies": {
     "@anthropic-ai/sdk": "^0.56.0",
     "@dnd-kit/core": "^6.3.1",
@@ -65,6 +65,7 @@
     "@dnd-kit/utilities": "^3.2.2",
     "@hookform/resolvers": "^3.10.0",
     "@jridgewell/trace-mapping": "^0.3.25",
+    "@msgpack/msgpack": "^3.0.0",
     "@radix-ui/react-accordion": "^1.2.11",
     "@radix-ui/react-alert-dialog": "^1.1.14",
     "@radix-ui/react-aspect-ratio": "^1.1.7",
@@ -120,6 +121,7 @@
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "csrf": "^3.1.0",
+    "csv-parse": "^6.1.0",
     "date-fns": "^4.1.0",
     "dotenv": "^16.6.1",
     "drizzle-orm": "^0.39.3",
@@ -219,7 +221,6 @@
     "vite-bundle-analyzer": "^1.0.0",
     "vitest": "^3.2.4"
   },
-  
   "optionalDependencies": {
     "bufferutil": "^4.0.8"
   },

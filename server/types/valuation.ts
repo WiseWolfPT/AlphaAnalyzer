@@ -145,6 +145,29 @@ export interface DFCFTerminalResponse {
 }
 
 /**
+ * FASE 2C: High-Growth DCF (8-year) Response
+ *
+ * Specialized DCF model for high-growth stocks (NVDA, TSLA, AMZN, GOOGL)
+ * Uses 8-year projection instead of 20-year to focus on near-term visibility
+ */
+export interface GrowthDCF8YResponse {
+  ticker: string;
+  iv: number;
+  fcf: number;
+  totalDebt: number;
+  cash: number;
+  wacc: number;
+  sharesOutstanding: number;
+  growthY1_5: number;      // High growth phase (up to 50%)
+  growthY6_8: number;       // Transition phase
+  terminalGrowth: number;   // Terminal growth (3-5%)
+  stage1Years: number;      // 5 years
+  stage2Years: number;      // 3 years
+  confidence: ValuationConfidence;
+  as_of: string;
+}
+
+/**
  * Risk-free rate response
  */
 export interface RiskFreeRateResponse {
@@ -324,9 +347,14 @@ export const VALUATION_DEFAULTS = {
 
 /**
  * Clamp ranges for safety
+ *
+ * FASE 2C UPDATE (2025-10-28): Adjusted G_1_5 max to 0.50 (50%)
+ * Rationale: High-growth tech stocks (NVDA, TSLA) can sustain 30-40%+ growth
+ * for 5-8 years in their expansion phase. Previous 30% cap was too conservative
+ * for hyper-growth companies following big fintech/hedge fund practices.
  */
 export const VALUATION_CLAMPS = {
-  G_1_5: { min: 0.05, max: 0.30 },      // 5% to 30%
+  G_1_5: { min: 0.05, max: 0.50 },      // 5% to 50% (UPDATED: was 30%)
   G_6_10: { min: 0.02, max: 0.20 },     // 2% to 20%
   G_11_20: { min: 0.03, max: 0.05 },    // 3% to 5%
   DR: { min: 0.05, max: 0.15 },         // 5% to 15%
@@ -437,7 +465,10 @@ export type MethodId =
   | 'p-ffo-sector'            // P/FFO ratio using sector benchmark
   | 'dividend-yield-reit'    // Dividend discount model for REITs
   | 'p-tbv-mean'            // Price to Tangible Book Value (historical average, banks)
-  | 'p-tbv-sector';         // Price to Tangible Book Value (sector benchmark, banks)
+  | 'p-tbv-sector'          // Price to Tangible Book Value (sector benchmark, banks)
+  | 'growth-dcf-8y'         // High-Growth DCF (8-year projection for growth stocks)
+  | 'graham-number'         // Benjamin Graham's intrinsic value formula (value stocks)
+  | 'ddm';                  // Dividend Discount Model (Gordon Growth Model, dividend aristocrats)
 
 /**
  * Generic valuation result from any method
@@ -750,7 +781,9 @@ export type MethodInputs =
   | EVEBITDASectorInputs
   | EVEBITDAForwardInputs
   | PTBVMeanInputs
-  | PTBVSectorInputs;
+  | PTBVSectorInputs
+  | GrahamNumberInputs
+  | DDMInputs;
 
 /**
  * FASE 3: Updated ValuationMethod with inputs field
@@ -1186,3 +1219,65 @@ export const REIT_SECTOR_BENCHMARKS: Record<REITSubSector, { pFFO: number; descr
     description: 'Mixed portfolio across multiple REIT subsectors',
   },
 } as const;
+
+/**
+ * SUB-FASE 2D: Value Stocks Methods (2025-10-28)
+ *
+ * Specialized valuation methods for value investing following Benjamin Graham
+ * and Warren Buffett principles. Focus on dividend aristocrats and stable,
+ * predictable cash flows.
+ */
+
+/**
+ * Graham Number Valuation Response
+ * Formula: IV = sqrt(22.5 × EPS × Book Value Per Share)
+ * Named after Benjamin Graham, pioneer of value investing
+ */
+export interface GrahamNumberValuationResponse {
+  ticker: string;
+  iv: number;
+  currentPrice: number;
+  eps: number;                     // TTM Earnings Per Share
+  bookValuePerShare: number;       // Book Value Per Share
+  grahamNumber: number;            // Calculated intrinsic value
+  confidence: ValuationConfidence;
+  as_of: string;
+}
+
+/**
+ * Graham Number Inputs
+ */
+export interface GrahamNumberInputs {
+  method: 'Graham Number';
+  eps_ttm: number;                 // Earnings per share
+  book_value_per_share: number;    // Book value per share
+}
+
+/**
+ * DDM (Dividend Discount Model) Valuation Response
+ * Formula: IV = Dividend / (Discount Rate - Growth Rate)
+ * Gordon Growth Model for dividend-paying stocks
+ */
+export interface DDMValuationResponse {
+  ticker: string;
+  iv: number;
+  currentPrice: number;
+  annualDividend: number;          // Annual dividend per share
+  dividendGrowthRate: number;      // Historical dividend growth rate (CAGR 5y)
+  discountRate: number;            // Required rate of return
+  payoutRatio: number;             // Dividend / EPS (sustainability check)
+  confidence: ValuationConfidence;
+  warning?: string;                // Warning if payout ratio > 80%
+  as_of: string;
+}
+
+/**
+ * DDM Inputs
+ */
+export interface DDMInputs {
+  method: 'DDM';
+  annual_dividend: number;         // Annual dividend per share
+  dividend_growth_rate: number;    // Growth rate (%)
+  discount_rate: number;           // Required return (%)
+  payout_ratio: number;            // Dividend / EPS (%)
+}

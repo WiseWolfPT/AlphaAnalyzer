@@ -207,6 +207,13 @@ export class MethodCacheService {
       case 'dividend-yield-reit':
         return await reitValuationService.calculateDividendYield(upperTicker) as any as ValuationResult;
 
+      // SUB-FASE 2D: Value stocks methods (Graham Number, DDM)
+      case 'graham-number':
+        return await valuationService.calculateGrahamNumber(upperTicker) as any as ValuationResult;
+
+      case 'ddm':
+        return await valuationService.calculateDDM(upperTicker) as any as ValuationResult;
+
       default:
         throw new Error(`Unsupported method ID: ${methodId}`);
     }

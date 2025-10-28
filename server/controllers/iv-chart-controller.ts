@@ -139,7 +139,8 @@ export async function getIVChart(req: Request, res: Response): Promise<void> {
     // REMOVED: dcf-fcfe-20 and dcf-terminal-fcfe (FMP API returns empty array - no FCFE data)
     // AGENT 1C: Added p-tbv-mean and p-tbv-sector for banks (Financial Services)
     // AGENT 1D: Added 5 REIT methods for Real Estate sector
-    logger.info(`[IV-Chart] Using method-level cache for ${ticker} (19 methods)`);
+    // SUB-FASE 2D: Added graham-number and ddm for value stocks
+    logger.info(`[IV-Chart] Using method-level cache for ${ticker} (21 methods)`);
 
     const methodIds: MethodId[] = [
       'alfa-value',
@@ -161,6 +162,8 @@ export async function getIVChart(req: Request, res: Response): Promise<void> {
       'p-ffo-mean',      // AGENT 1D: P/FFO historical mean for REITs
       'p-ffo-sector',    // AGENT 1D: P/FFO sector benchmark for REITs
       'dividend-yield-reit', // AGENT 1D: Dividend discount model for REITs
+      'graham-number',   // SUB-FASE 2D: Benjamin Graham's intrinsic value formula
+      'ddm',             // SUB-FASE 2D: Dividend Discount Model (Gordon Growth Model)
     ];
 
     const [
@@ -183,6 +186,8 @@ export async function getIVChart(req: Request, res: Response): Promise<void> {
       pFFOMean,      // AGENT 1D: P/FFO Mean for REITs
       pFFOSector,    // AGENT 1D: P/FFO Sector for REITs
       dividendYieldREIT, // AGENT 1D: Dividend Yield for REITs
+      grahamNumber,  // SUB-FASE 2D: Graham Number
+      ddm,           // SUB-FASE 2D: DDM
     ] = await Promise.allSettled(
       methodIds.map((id: MethodId) => methodCacheService.warmMethod(ticker, id).then(result => {
         // Attach growth rates for DCF methods (FCFE removed)
@@ -457,6 +462,25 @@ export async function getIVChart(req: Request, res: Response): Promise<void> {
             subsector: data.subsector || 'diversified',
             dividend_growth_rate: data.dividendGrowthRate || 0,
             payout_ratio: data.payoutRatio || 0,
+          };
+
+        case 'Graham Number':  // SUB-FASE 2D: Benjamin Graham's formula
+          return {
+            method: 'Graham Number',
+            eps_ttm: data.eps || 0,
+            book_value_per_share: data.bookValuePerShare || 0,
+            current_price: data.currentPrice || 0,
+          };
+
+        case 'DDM':  // SUB-FASE 2D: Dividend Discount Model
+          return {
+            method: 'DDM',
+            annual_dividend: data.annualDividend || 0,
+            dividend_growth_rate: data.dividendGrowthRate || 0,
+            discount_rate: data.discountRate || 0.10,
+            payout_ratio: data.payoutRatio || 0,
+            current_price: data.currentPrice || 0,
+            warning: data.warning,
           };
 
         default:
@@ -808,6 +832,27 @@ export async function getIVChart(req: Request, res: Response): Promise<void> {
       'dividend-yield-reit',
       'multiples',
       'Annual_Dividend ÷ Required_Yield (dividend discount model)',
+      'internal',
+      (data) => data.iv
+    );
+
+    // SUB-FASE 2D: Value stocks methods
+    addMethod(
+      grahamNumber,
+      'Graham Number',
+      'graham-number',
+      'multiples',
+      '√(22.5 × EPS × Book_Value_per_Share) - Benjamin Graham formula',
+      'internal',
+      (data) => data.iv
+    );
+
+    addMethod(
+      ddm,
+      'DDM',
+      'ddm',
+      'multiples',
+      'Dividend ÷ (Discount_Rate - Growth_Rate) - Gordon Growth Model',
       'internal',
       (data) => data.iv
     );

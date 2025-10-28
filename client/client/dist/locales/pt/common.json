@@ -1,0 +1,27 @@
+{
+  "navigation": {
+    "dashboard": "Dashboard",
+    "watchlist": "Watchlist",
+    "portfolio": "Portfolio", 
+    "charts": "Charts",
+    "settings": "Configurações",
+    "help": "Ajuda",
+    "my_account": "Minha Conta",
+    "log_out": "Sair"
+  },
+  "actions": {
+    "add": "Adicionar",
+    "remove": "Remover", 
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "login": "Entrar",
+    "register": "Registar"
+  },
+  "general": {
+    "account_management": "Gestão de Conta",
+    "mobile": "Telemóvel"
+  },
+  "currency_selector": {
+    "label": "Moeda"
+  }
+}

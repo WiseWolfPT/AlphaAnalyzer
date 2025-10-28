@@ -1,0 +1,8 @@
+{
+  "usd": "Dólar Americano",
+  "eur": "Euro",
+  "currency_symbol": {
+    "USD": "$",
+    "EUR": "€"
+  }
+}

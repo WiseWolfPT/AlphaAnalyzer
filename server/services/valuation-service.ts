@@ -16,6 +16,8 @@ import { redisCacheService } from '../cache/redis-cache-service';
 import { simpleCacheService } from './simple-cache-service';
 import { logger } from '../lib/logger';
 import { isBank, getBankType, getSectorPTBVBenchmark } from '../utils/stock-classifier';
+import { fetchFinancialStatementsWithFallback, fetchAllStatementsWithFallback, getStatementQuality } from '../utils/financial-statements-fallback';
+import { getSectorDefaults } from '../utils/sector-defaults';
 import {
   AlfaValueResponse,
   RiskFreeRateResponse,
@@ -954,48 +956,99 @@ export class ValuationService {
     }
 
     try {
+      // Get current price first (needed for sector fallback)
+      const currentPrice = await this.getCurrentPrice(upperTicker);
+      if (!currentPrice || currentPrice <= 0) {
+        logger.warn(`[ValuationService] Invalid current price for ${upperTicker}`);
+        return null;
+      }
+
+      // Fetch company profile to get sector (for fallback)
+      let sector: string | null = null;
+      try {
+        const profileData = await fmpGet<FMPCompanyProfile[]>('/api/v3/profile/' + upperTicker);
+        if (profileData && Array.isArray(profileData) && profileData.length > 0) {
+          sector = profileData[0].sector;
+        }
+      } catch (error: any) {
+        logger.warn(`[ValuationService] Could not fetch profile for ${upperTicker}, sector fallback unavailable`);
+      }
+
       // Fetch historical ratios (last 5 years)
       const ratiosData = await fmpGet<any[]>(`/api/v3/ratios/${upperTicker}`, { limit: 5 });
+
+      let meanPE: number;
+      let peRatios: number[] = [];
+      let usedSectorFallback = false;
+
       if (!ratiosData || !Array.isArray(ratiosData) || ratiosData.length === 0) {
-        logger.warn(`[ValuationService] No ratios data for ${upperTicker}`);
-        return null;
+        logger.warn(`[ValuationService] No ratios data for ${upperTicker}, attempting sector fallback`);
+
+        // Use sector default P/E
+        const sectorDefaults = getSectorDefaults(sector);
+        if (!sectorDefaults) {
+          logger.warn(`[ValuationService] No sector defaults available for ${upperTicker}`);
+          return null;
+        }
+
+        meanPE = sectorDefaults.peRatio;
+        usedSectorFallback = true;
+        logger.info(`[ValuationService] Using sector default P/E for ${upperTicker}: ${sector} = ${meanPE.toFixed(2)}`);
+      } else {
+        // Extract P/E ratios
+        peRatios = ratiosData
+          .map(r => Number(r.priceEarningsRatio || 0))
+          .filter(pe => pe > 0 && pe < 100); // Filter outliers
+
+        if (peRatios.length < 3) {
+          // Not enough historical data, use sector fallback
+          logger.warn(`[ValuationService] Insufficient P/E data for ${upperTicker} (${peRatios.length} years), using sector fallback`);
+
+          const sectorDefaults = getSectorDefaults(sector);
+          if (!sectorDefaults) {
+            logger.warn(`[ValuationService] No sector defaults available for ${upperTicker}`);
+            return null;
+          }
+
+          meanPE = sectorDefaults.peRatio;
+          usedSectorFallback = true;
+          logger.info(`[ValuationService] Using sector default P/E for ${upperTicker}: ${sector} = ${meanPE.toFixed(2)}`);
+        } else {
+          // Calculate mean P/E from historical data
+          meanPE = peRatios.reduce((sum, pe) => sum + pe, 0) / peRatios.length;
+        }
       }
-
-      // Extract P/E ratios
-      const peRatios = ratiosData
-        .map(r => Number(r.priceEarningsRatio || 0))
-        .filter(pe => pe > 0 && pe < 100); // Filter outliers
-
-      if (peRatios.length < 3) {
-        logger.warn(`[ValuationService] Insufficient P/E data for ${upperTicker} (${peRatios.length} years)`);
-        return null;
-      }
-
-      // Calculate mean P/E
-      const meanPE = peRatios.reduce((sum, pe) => sum + pe, 0) / peRatios.length;
 
       // Get current EPS (TTM)
+      let epsTTM: number;
+
       const keyMetricsTTM = await fmpGet<any[]>(`/api/v3/key-metrics-ttm/${upperTicker}`);
       if (!keyMetricsTTM || !Array.isArray(keyMetricsTTM) || keyMetricsTTM.length === 0) {
-        logger.warn(`[ValuationService] No key metrics TTM for ${upperTicker}`);
-        return null;
-      }
+        logger.warn(`[ValuationService] No key metrics TTM for ${upperTicker}, estimating EPS from P/E`);
 
-      const epsTTM = Number(keyMetricsTTM[0].netIncomePerShareTTM || 0);
-      if (epsTTM <= 0) {
-        logger.warn(`[ValuationService] Invalid EPS TTM for ${upperTicker}: ${epsTTM}`);
-        return null;
+        // Estimate EPS from current price and mean P/E
+        epsTTM = currentPrice / meanPE;
+        usedSectorFallback = true;
+      } else {
+        const rawEPS = Number(keyMetricsTTM[0].netIncomePerShareTTM || 0);
+        if (rawEPS <= 0) {
+          logger.warn(`[ValuationService] Invalid EPS TTM for ${upperTicker}: ${rawEPS}, estimating from P/E`);
+
+          // Estimate EPS from current price and mean P/E
+          epsTTM = currentPrice / meanPE;
+          usedSectorFallback = true;
+        } else {
+          epsTTM = rawEPS;
+        }
       }
 
       // Calculate intrinsic value
       const iv = meanPE * epsTTM;
 
       if (!isFinite(iv) || iv <= 0) {
+        logger.warn(`[ValuationService] Invalid IV calculated for ${upperTicker}: ${iv}`);
         return null;
       }
-
-      // Get current price
-      const currentPrice = await this.getCurrentPrice(upperTicker);
 
       // Build response
       const response: PEValuationResponse = {
@@ -1006,11 +1059,14 @@ export class ValuationService {
         eps: epsTTM,
         historicalPE: peRatios,
         excludeNRI: false,
-        confidence: 'MED',
+        confidence: usedSectorFallback ? 'LOW' : 'MED',
         as_of: new Date().toISOString().split('T')[0],
       };
 
-      logger.info(`[ValuationService] P/E Mean for ${upperTicker}: Mean=${meanPE.toFixed(2)}, EPS=${epsTTM.toFixed(2)}, IV=$${iv.toFixed(2)}`);
+      logger.info(
+        `[ValuationService] P/E Mean for ${upperTicker}: Mean=${meanPE.toFixed(2)}, EPS=${epsTTM.toFixed(2)}, IV=$${iv.toFixed(2)}` +
+        (usedSectorFallback ? ` [SECTOR FALLBACK: ${sector}]` : '')
+      );
 
       // Cache for 24h
       await redisCacheService.set(cacheKey, response, 86400);
@@ -1038,50 +1094,104 @@ export class ValuationService {
     }
 
     try {
+      // Get current price first (needed for sector fallback)
+      const currentPrice = await this.getCurrentPrice(upperTicker);
+      if (!currentPrice || currentPrice <= 0) {
+        logger.warn(`[ValuationService] Invalid current price for ${upperTicker}`);
+        return null;
+      }
+
+      // Fetch company profile to get sector (for fallback)
+      let sector: string | null = null;
+      try {
+        const profileData = await fmpGet<FMPCompanyProfile[]>('/api/v3/profile/' + upperTicker);
+        if (profileData && Array.isArray(profileData) && profileData.length > 0) {
+          sector = profileData[0].sector;
+        }
+      } catch (error: any) {
+        logger.warn(`[ValuationService] Could not fetch profile for ${upperTicker}, sector fallback unavailable`);
+      }
+
       // Fetch historical ratios (last 5 years)
       const ratiosData = await fmpGet<any[]>(`/api/v3/ratios/${upperTicker}`, { limit: 5 });
+
+      let avgPS: number;
+      let psRatios: number[] = [];
+      let usedSectorFallback = false;
+
       if (!ratiosData || !Array.isArray(ratiosData) || ratiosData.length === 0) {
-        logger.warn(`[ValuationService] No ratios data for ${upperTicker}`);
-        return null;
+        logger.warn(`[ValuationService] No ratios data for ${upperTicker}, attempting sector fallback`);
+
+        // Use sector default P/S
+        const sectorDefaults = getSectorDefaults(sector);
+        if (!sectorDefaults) {
+          logger.warn(`[ValuationService] No sector defaults available for ${upperTicker}`);
+          return null;
+        }
+
+        avgPS = sectorDefaults.psRatio;
+        usedSectorFallback = true;
+        logger.info(`[ValuationService] Using sector default P/S for ${upperTicker}: ${sector} = ${avgPS.toFixed(2)}`);
+      } else {
+        // Extract P/S ratios
+        psRatios = ratiosData
+          .map(r => Number(r.priceToSalesRatio || 0))
+          .filter(ps => ps > 0 && ps < 50); // Filter outliers
+
+        if (psRatios.length < 3) {
+          // Not enough historical data, use sector fallback
+          logger.warn(`[ValuationService] Insufficient P/S data for ${upperTicker} (${psRatios.length} years), using sector fallback`);
+
+          const sectorDefaults = getSectorDefaults(sector);
+          if (!sectorDefaults) {
+            logger.warn(`[ValuationService] No sector defaults available for ${upperTicker}`);
+            return null;
+          }
+
+          avgPS = sectorDefaults.psRatio;
+          usedSectorFallback = true;
+          logger.info(`[ValuationService] Using sector default P/S for ${upperTicker}: ${sector} = ${avgPS.toFixed(2)}`);
+        } else {
+          // Calculate mean P/S from historical data
+          avgPS = psRatios.reduce((sum, ps) => sum + ps, 0) / psRatios.length;
+        }
       }
-
-      // Extract P/S ratios
-      const psRatios = ratiosData
-        .map(r => Number(r.priceToSalesRatio || 0))
-        .filter(ps => ps > 0 && ps < 50); // Filter outliers
-
-      if (psRatios.length < 3) {
-        logger.warn(`[ValuationService] Insufficient P/S data for ${upperTicker} (${psRatios.length} years)`);
-        return null;
-      }
-
-      // Calculate mean P/S
-      const avgPS = psRatios.reduce((sum, ps) => sum + ps, 0) / psRatios.length;
 
       // Get current Sales per Share (TTM)
+      let salesPerShare: number;
+
       const keyMetricsTTM = await fmpGet<any[]>(`/api/v3/key-metrics-ttm/${upperTicker}`);
       if (!keyMetricsTTM || !Array.isArray(keyMetricsTTM) || keyMetricsTTM.length === 0) {
-        logger.warn(`[ValuationService] No key metrics TTM for ${upperTicker}`);
-        return null;
-      }
+        logger.warn(`[ValuationService] No key metrics TTM for ${upperTicker}, estimating sales/share from P/S`);
 
-      const salesPerShare = Number(keyMetricsTTM[0].revenuePerShareTTM || 0);
-      if (salesPerShare <= 0) {
-        logger.warn(`[ValuationService] Invalid revenue per share TTM for ${upperTicker}: ${salesPerShare}`);
-        return null;
-      }
+        // Estimate Sales/Share from current price and mean P/S
+        salesPerShare = currentPrice / avgPS;
+        usedSectorFallback = true;
+      } else {
+        const rawSalesPerShare = Number(keyMetricsTTM[0].revenuePerShareTTM || 0);
+        if (rawSalesPerShare <= 0) {
+          logger.warn(`[ValuationService] Invalid revenue per share TTM for ${upperTicker}: ${rawSalesPerShare}, estimating from P/S`);
 
-      // Get current price
-      const currentPrice = await this.getCurrentPrice(upperTicker);
+          // Estimate Sales/Share from current price and mean P/S
+          salesPerShare = currentPrice / avgPS;
+          usedSectorFallback = true;
+        } else {
+          salesPerShare = rawSalesPerShare;
+        }
+      }
 
       // Calculate intrinsic value
       const iv = avgPS * salesPerShare;
 
       if (!isFinite(iv) || iv <= 0) {
+        logger.warn(`[ValuationService] Invalid IV calculated for ${upperTicker}: ${iv}`);
         return null;
       }
 
-      logger.info(`[ValuationService] P/S Mean for ${upperTicker}: Mean=${avgPS.toFixed(2)}, SPS=${salesPerShare.toFixed(2)}, IV=$${iv.toFixed(2)}`);
+      logger.info(
+        `[ValuationService] P/S Mean for ${upperTicker}: Mean=${avgPS.toFixed(2)}, SPS=${salesPerShare.toFixed(2)}, IV=$${iv.toFixed(2)}` +
+        (usedSectorFallback ? ` [SECTOR FALLBACK: ${sector}]` : '')
+      );
 
       // Build rich response object
       const response: PSValuationResponse = {
@@ -1091,7 +1201,7 @@ export class ValuationService {
         currentPrice,
         salesPerShare,
         historicalPS: psRatios,
-        confidence: 'MED',
+        confidence: usedSectorFallback ? 'LOW' : 'MED',
         as_of: new Date().toISOString().split('T')[0],
       };
 
@@ -1121,50 +1231,104 @@ export class ValuationService {
     }
 
     try {
+      // Get current price first (needed for sector fallback)
+      const currentPrice = await this.getCurrentPrice(upperTicker);
+      if (!currentPrice || currentPrice <= 0) {
+        logger.warn(`[ValuationService] Invalid current price for ${upperTicker}`);
+        return null;
+      }
+
+      // Fetch company profile to get sector (for fallback)
+      let sector: string | null = null;
+      try {
+        const profileData = await fmpGet<FMPCompanyProfile[]>('/api/v3/profile/' + upperTicker);
+        if (profileData && Array.isArray(profileData) && profileData.length > 0) {
+          sector = profileData[0].sector;
+        }
+      } catch (error: any) {
+        logger.warn(`[ValuationService] Could not fetch profile for ${upperTicker}, sector fallback unavailable`);
+      }
+
       // Fetch historical ratios (last 5 years)
       const ratiosData = await fmpGet<any[]>(`/api/v3/ratios/${upperTicker}`, { limit: 5 });
+
+      let avgPB: number;
+      let pbRatios: number[] = [];
+      let usedSectorFallback = false;
+
       if (!ratiosData || !Array.isArray(ratiosData) || ratiosData.length === 0) {
-        logger.warn(`[ValuationService] No ratios data for ${upperTicker}`);
-        return null;
+        logger.warn(`[ValuationService] No ratios data for ${upperTicker}, attempting sector fallback`);
+
+        // Use sector default P/B
+        const sectorDefaults = getSectorDefaults(sector);
+        if (!sectorDefaults) {
+          logger.warn(`[ValuationService] No sector defaults available for ${upperTicker}`);
+          return null;
+        }
+
+        avgPB = sectorDefaults.pbRatio;
+        usedSectorFallback = true;
+        logger.info(`[ValuationService] Using sector default P/B for ${upperTicker}: ${sector} = ${avgPB.toFixed(2)}`);
+      } else {
+        // Extract P/B ratios
+        pbRatios = ratiosData
+          .map(r => Number(r.priceToBookRatio || 0))
+          .filter(pb => pb > 0 && pb < 150); // Filter extreme outliers (allows tech stocks)
+
+        if (pbRatios.length < 3) {
+          // Not enough historical data, use sector fallback
+          logger.warn(`[ValuationService] Insufficient P/B data for ${upperTicker} (${pbRatios.length} years), using sector fallback`);
+
+          const sectorDefaults = getSectorDefaults(sector);
+          if (!sectorDefaults) {
+            logger.warn(`[ValuationService] No sector defaults available for ${upperTicker}`);
+            return null;
+          }
+
+          avgPB = sectorDefaults.pbRatio;
+          usedSectorFallback = true;
+          logger.info(`[ValuationService] Using sector default P/B for ${upperTicker}: ${sector} = ${avgPB.toFixed(2)}`);
+        } else {
+          // Calculate mean P/B from historical data
+          avgPB = pbRatios.reduce((sum, pb) => sum + pb, 0) / pbRatios.length;
+        }
       }
-
-      // Extract P/B ratios
-      const pbRatios = ratiosData
-        .map(r => Number(r.priceToBookRatio || 0))
-        .filter(pb => pb > 0 && pb < 150); // Filter extreme outliers (allows tech stocks)
-
-      if (pbRatios.length < 3) {
-        logger.warn(`[ValuationService] Insufficient P/B data for ${upperTicker} (${pbRatios.length} years)`);
-        return null;
-      }
-
-      // Calculate mean P/B
-      const avgPB = pbRatios.reduce((sum, pb) => sum + pb, 0) / pbRatios.length;
 
       // Get current Book Value per Share (TTM)
+      let bookValuePerShare: number;
+
       const keyMetricsTTM = await fmpGet<any[]>(`/api/v3/key-metrics-ttm/${upperTicker}`);
       if (!keyMetricsTTM || !Array.isArray(keyMetricsTTM) || keyMetricsTTM.length === 0) {
-        logger.warn(`[ValuationService] No key metrics TTM for ${upperTicker}`);
-        return null;
-      }
+        logger.warn(`[ValuationService] No key metrics TTM for ${upperTicker}, estimating book value from P/B`);
 
-      const bookValuePerShare = Number(keyMetricsTTM[0].bookValuePerShareTTM || 0);
-      if (bookValuePerShare <= 0) {
-        logger.warn(`[ValuationService] Invalid book value per share TTM for ${upperTicker}: ${bookValuePerShare}`);
-        return null;
-      }
+        // Estimate Book Value/Share from current price and mean P/B
+        bookValuePerShare = currentPrice / avgPB;
+        usedSectorFallback = true;
+      } else {
+        const rawBookValue = Number(keyMetricsTTM[0].bookValuePerShareTTM || 0);
+        if (rawBookValue <= 0) {
+          logger.warn(`[ValuationService] Invalid book value per share TTM for ${upperTicker}: ${rawBookValue}, estimating from P/B`);
 
-      // Get current price
-      const currentPrice = await this.getCurrentPrice(upperTicker);
+          // Estimate Book Value/Share from current price and mean P/B
+          bookValuePerShare = currentPrice / avgPB;
+          usedSectorFallback = true;
+        } else {
+          bookValuePerShare = rawBookValue;
+        }
+      }
 
       // Calculate intrinsic value
       const iv = avgPB * bookValuePerShare;
 
       if (!isFinite(iv) || iv <= 0) {
+        logger.warn(`[ValuationService] Invalid IV calculated for ${upperTicker}: ${iv}`);
         return null;
       }
 
-      logger.info(`[ValuationService] P/B Mean for ${upperTicker}: Mean=${avgPB.toFixed(2)}, BVPS=${bookValuePerShare.toFixed(2)}, IV=$${iv.toFixed(2)}`);
+      logger.info(
+        `[ValuationService] P/B Mean for ${upperTicker}: Mean=${avgPB.toFixed(2)}, BVPS=${bookValuePerShare.toFixed(2)}, IV=$${iv.toFixed(2)}` +
+        (usedSectorFallback ? ` [SECTOR FALLBACK: ${sector}]` : '')
+      );
 
       // Build rich response object
       const response: PBValuationResponse = {
@@ -1175,7 +1339,7 @@ export class ValuationService {
         bookValuePerShare,
         historicalPB: pbRatios,
         excludeNRI: false,  // Normal version
-        confidence: 'MED',
+        confidence: usedSectorFallback ? 'LOW' : 'MED',
         as_of: new Date().toISOString().split('T')[0],
       };
 
@@ -1411,40 +1575,55 @@ export class ValuationService {
     }
 
     try {
-      // Get Net Income data (last 5 years)
-      const incomeData = await fmpGet<any[]>(`/api/v3/income-statement/${upperTicker}`, {
-        period: 'annual',
-        limit: 5,
-      });
+      // SUB-FASE 3A: Get Net Income data with Annual → Quarterly → TTM fallback
+      const incomeStatement = await fetchFinancialStatementsWithFallback(upperTicker, 'income');
 
-      if (!incomeData || !Array.isArray(incomeData) || incomeData.length === 0) {
-        logger.warn(`[ValuationService] No income data for ${upperTicker}`);
+      if (!incomeStatement || !incomeStatement.netIncome) {
+        logger.warn(`[ValuationService] No income data for ${upperTicker} (tried annual + quarterly fallback)`);
         return null;
       }
 
-      // Extract Net Income historical data
-      const ni_5y = incomeData
-        .map((stmt) => (stmt.netIncome || 0) / 1_000_000)
-        .reverse();
+      // For historical data, we need to fetch full array
+      // If we got TTM from quarterly, fetch additional historical data if available
+      let ni_5y: number[];
+
+      if (incomeStatement.source === 'annual') {
+        // We have annual data, fetch historical
+        const historicalIncome = await fmpGet<any[]>(`/api/v3/income-statement/${upperTicker}`, {
+          period: 'annual',
+          limit: 5,
+        });
+
+        if (historicalIncome && historicalIncome.length > 0) {
+          ni_5y = historicalIncome
+            .map((stmt) => (stmt.netIncome || 0) / 1_000_000)
+            .reverse();
+        } else {
+          // Fallback: use TTM value repeated
+          ni_5y = [incomeStatement.netIncome / 1_000_000];
+        }
+      } else {
+        // quarterly-ttm: use TTM value (can't calculate historical CAGR reliably)
+        logger.info(`[ValuationService] ${upperTicker}: Using TTM net income from quarterly data (${incomeStatement.quartersUsed} quarters)`);
+        ni_5y = [incomeStatement.netIncome / 1_000_000];
+      }
 
       const ni_ttm = ni_5y[ni_5y.length - 1];
 
-      if (ni_ttm <= 0 || ni_5y.some(v => v <= 0)) {
-        logger.warn(`[ValuationService] Invalid Net Income for ${upperTicker}`);
+      if (ni_ttm <= 0) {
+        logger.warn(`[ValuationService] Invalid Net Income for ${upperTicker}: ${ni_ttm}`);
         return null;
       }
 
-      // Get balance sheet data for cash and debt
-      const balanceSheetData = await fmpGet<FMPFinancialStatement[]>(
-        `/api/v3/balance-sheet-statement/${upperTicker}`,
-        { limit: 1 }
-      );
+      // SUB-FASE 3A: Get balance sheet data with fallback
+      const balanceSheet = await fetchFinancialStatementsWithFallback(upperTicker, 'balance');
 
-      if (!balanceSheetData || balanceSheetData.length === 0) {
+      if (!balanceSheet) {
+        logger.warn(`[ValuationService] No balance sheet data for ${upperTicker}`);
         return null;
       }
 
-      const latestBalanceSheet = balanceSheetData[0];
+      const latestBalanceSheet = balanceSheet;
       const cash = ((latestBalanceSheet.cashAndCashEquivalents || 0) +
         (latestBalanceSheet.shortTermInvestments || 0)) / 1_000_000;
       const debt = (latestBalanceSheet.totalDebt || 0) / 1_000_000;
@@ -2377,6 +2556,239 @@ export class ValuationService {
       return response;
     } catch (error: any) {
       logger.error(`[ValuationService] Error calculating P/TBV Sector for ${upperTicker}:`, error.message);
+      return null;
+    }
+  }
+
+  /**
+   * SUB-FASE 2D: Graham Number Method
+   *
+   * Calculate intrinsic value using Benjamin Graham's formula:
+   * IV = sqrt(22.5 × EPS × Book Value Per Share)
+   *
+   * This conservative valuation method is best for:
+   * - Value stocks with positive earnings
+   * - Companies with tangible assets (positive book value)
+   * - Stable, predictable businesses
+   *
+   * @param ticker Stock symbol
+   * @returns Graham Number valuation or null
+   */
+  async calculateGrahamNumber(ticker: string): Promise<import('../types/valuation').GrahamNumberValuationResponse | null> {
+    const upperTicker = ticker.toUpperCase();
+    const cacheKey = VALUATION_CACHE_KEYS.IV_CALC + upperTicker + ':graham_number';
+
+    // Check cache
+    const cached = await redisCacheService.get<import('../types/valuation').GrahamNumberValuationResponse>(cacheKey);
+    if (cached) {
+      logger.info(`[ValuationService] Graham Number cache hit for ${upperTicker}`);
+      return cached;
+    }
+
+    try {
+      logger.info(`[ValuationService] Calculating Graham Number for ${upperTicker}`);
+
+      // Step 1: Get current price
+      const currentPrice = await this.getCurrentPrice(upperTicker);
+      if (!currentPrice || currentPrice <= 0) {
+        logger.warn(`[ValuationService] Invalid current price for ${upperTicker}`);
+        return null;
+      }
+
+      // Step 2: Get EPS (TTM)
+      const keyMetricsTTM = await fmpGet<any[]>(`/api/v3/key-metrics-ttm/${upperTicker}`);
+      if (!keyMetricsTTM || !Array.isArray(keyMetricsTTM) || keyMetricsTTM.length === 0) {
+        logger.warn(`[ValuationService] No key metrics TTM for ${upperTicker}`);
+        return null;
+      }
+
+      const eps = Number(keyMetricsTTM[0].netIncomePerShareTTM || 0);
+      if (eps <= 0) {
+        logger.warn(`[ValuationService] Graham Number requires positive EPS - ${upperTicker} has ${eps}`);
+        return null;
+      }
+
+      // Step 3: Get Book Value Per Share
+      const bookValuePerShare = Number(keyMetricsTTM[0].bookValuePerShareTTM || 0);
+      if (bookValuePerShare <= 0) {
+        logger.warn(`[ValuationService] Graham Number requires positive book value - ${upperTicker} has ${bookValuePerShare}`);
+        return null;
+      }
+
+      // Step 4: Calculate Graham Number
+      // Formula: sqrt(22.5 × EPS × BVPS)
+      const grahamNumber = Math.sqrt(22.5 * eps * bookValuePerShare);
+
+      logger.info(
+        `[ValuationService] ${upperTicker} Graham Number: $${grahamNumber.toFixed(2)} ` +
+        `(EPS: $${eps.toFixed(2)}, BVPS: $${bookValuePerShare.toFixed(2)})`
+      );
+
+      // Step 5: Determine confidence
+      // High confidence if both EPS and BVPS are robust (> $1)
+      const confidence: import('../types/valuation').ValuationConfidence =
+        (eps >= 1 && bookValuePerShare >= 1) ? 'HIGH' :
+        (eps >= 0.5 && bookValuePerShare >= 0.5) ? 'MED' : 'LOW';
+
+      const response: import('../types/valuation').GrahamNumberValuationResponse = {
+        ticker: upperTicker,
+        iv: grahamNumber,
+        currentPrice,
+        eps,
+        bookValuePerShare,
+        grahamNumber,
+        confidence,
+        as_of: new Date().toISOString().split('T')[0],
+      };
+
+      // Cache for 24h
+      await redisCacheService.set(cacheKey, response, 86400);
+
+      return response;
+    } catch (error: any) {
+      logger.error(`[ValuationService] Error calculating Graham Number for ${upperTicker}:`, error.message);
+      return null;
+    }
+  }
+
+  /**
+   * SUB-FASE 2D: Dividend Discount Model (DDM) - Gordon Growth Model
+   *
+   * Calculate intrinsic value using perpetual dividend growth:
+   * IV = Dividend / (Discount Rate - Growth Rate)
+   *
+   * Includes payout ratio check for sustainability:
+   * - Payout Ratio < 80%: Sustainable dividend
+   * - Payout Ratio > 80%: Warning issued, less confident
+   *
+   * Best for:
+   * - Dividend aristocrats (25+ years of dividend growth)
+   * - Stable, mature companies with consistent dividends
+   * - Income-focused value investing
+   *
+   * @param ticker Stock symbol
+   * @returns DDM valuation or null
+   */
+  async calculateDDM(ticker: string): Promise<import('../types/valuation').DDMValuationResponse | null> {
+    const upperTicker = ticker.toUpperCase();
+    const cacheKey = VALUATION_CACHE_KEYS.IV_CALC + upperTicker + ':ddm';
+
+    // Check cache
+    const cached = await redisCacheService.get<import('../types/valuation').DDMValuationResponse>(cacheKey);
+    if (cached) {
+      logger.info(`[ValuationService] DDM cache hit for ${upperTicker}`);
+      return cached;
+    }
+
+    try {
+      logger.info(`[ValuationService] Calculating DDM for ${upperTicker}`);
+
+      // Step 1: Get current price
+      const currentPrice = await this.getCurrentPrice(upperTicker);
+      if (!currentPrice || currentPrice <= 0) {
+        logger.warn(`[ValuationService] Invalid current price for ${upperTicker}`);
+        return null;
+      }
+
+      // Step 2: Get dividend history (last 5 years for CAGR)
+      const dividendData = await fmpGet<any[]>(`/api/v3/historical-price-full/stock_dividend/${upperTicker}`, { limit: 5 });
+
+      if (!dividendData || !Array.isArray(dividendData) || dividendData.length === 0) {
+        logger.warn(`[ValuationService] No dividend history for ${upperTicker} - DDM not applicable`);
+        return null;
+      }
+
+      // Calculate annual dividend (sum of last 4 quarters)
+      const recentDividends = dividendData.slice(0, 4);
+      const annualDividend = recentDividends.reduce((sum, d) => sum + Number(d.dividend || 0), 0);
+
+      if (annualDividend <= 0) {
+        logger.warn(`[ValuationService] No positive dividends for ${upperTicker}`);
+        return null;
+      }
+
+      // Step 3: Calculate dividend growth rate (5-year CAGR)
+      let dividendGrowthRate = 0.05; // Default 5% if insufficient data
+
+      if (dividendData.length >= 5) {
+        const oldestDividend = Number(dividendData[dividendData.length - 1].dividend || 0);
+        const newestDividend = Number(dividendData[0].dividend || 0);
+
+        if (oldestDividend > 0 && newestDividend > 0) {
+          const years = 5;
+          dividendGrowthRate = Math.pow(newestDividend / oldestDividend, 1 / years) - 1;
+
+          // Clamp growth rate to reasonable range (0% to 15%)
+          dividendGrowthRate = Math.max(0, Math.min(0.15, dividendGrowthRate));
+        }
+      }
+
+      // Step 4: Get EPS for payout ratio check
+      const keyMetricsTTM = await fmpGet<any[]>(`/api/v3/key-metrics-ttm/${upperTicker}`);
+      let payoutRatio = 0;
+      let eps = 0;
+
+      if (keyMetricsTTM && Array.isArray(keyMetricsTTM) && keyMetricsTTM.length > 0) {
+        eps = Number(keyMetricsTTM[0].netIncomePerShareTTM || 0);
+        if (eps > 0) {
+          payoutRatio = annualDividend / eps;
+        }
+      }
+
+      // Step 5: Set discount rate (required return)
+      // Use 10% for value stocks (8% risk-free + 2% equity premium)
+      const discountRate = 0.10;
+
+      // Step 6: Check if growth rate < discount rate (required for Gordon Growth Model)
+      if (dividendGrowthRate >= discountRate) {
+        logger.warn(`[ValuationService] Invalid DDM inputs for ${upperTicker}: growth rate (${(dividendGrowthRate * 100).toFixed(2)}%) >= discount rate (${(discountRate * 100).toFixed(2)}%)`);
+        return null;
+      }
+
+      // Step 7: Calculate intrinsic value using Gordon Growth Model
+      // IV = D / (r - g)
+      const iv = annualDividend / (discountRate - dividendGrowthRate);
+
+      // Step 8: Check payout ratio sustainability
+      let warning: string | undefined;
+      let confidence: import('../types/valuation').ValuationConfidence = 'HIGH';
+
+      if (payoutRatio > 0.80) {
+        warning = `High payout ratio (${(payoutRatio * 100).toFixed(1)}%) may be unsustainable. Dividend at risk.`;
+        confidence = 'LOW';
+        logger.warn(`[ValuationService] ${upperTicker}: ${warning}`);
+      } else if (payoutRatio > 0.60) {
+        confidence = 'MED';
+        logger.info(`[ValuationService] ${upperTicker}: Moderate payout ratio (${(payoutRatio * 100).toFixed(1)}%)`);
+      } else {
+        logger.info(`[ValuationService] ${upperTicker}: Healthy payout ratio (${(payoutRatio * 100).toFixed(1)}%)`);
+      }
+
+      logger.info(
+        `[ValuationService] ${upperTicker} DDM: $${iv.toFixed(2)} ` +
+        `(Div: $${annualDividend.toFixed(2)}, Growth: ${(dividendGrowthRate * 100).toFixed(2)}%, ` +
+        `Payout: ${(payoutRatio * 100).toFixed(1)}%)`
+      );
+
+      const response: import('../types/valuation').DDMValuationResponse = {
+        ticker: upperTicker,
+        iv,
+        currentPrice,
+        annualDividend,
+        dividendGrowthRate,
+        discountRate,
+        payoutRatio,
+        confidence,
+        warning,
+        as_of: new Date().toISOString().split('T')[0],
+      };
+
+      // Cache for 24h
+      await redisCacheService.set(cacheKey, response, 86400);
+
+      return response;
+    } catch (error: any) {
+      logger.error(`[ValuationService] Error calculating DDM for ${upperTicker}:`, error.message);
       return null;
     }
   }
