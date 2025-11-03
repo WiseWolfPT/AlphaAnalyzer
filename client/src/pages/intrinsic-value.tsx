@@ -5,6 +5,7 @@ import { UniversalSearch } from "@/components/universal-search";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
@@ -741,7 +742,7 @@ export default function IntrinsicValue({ symbol: urlSymbol }: IntrinsicValueProp
 
                 {showAllMethods && (
                   <CardContent className="space-y-6">
-                    {/* FASE 3.2: 15 Valuation Methods Dropdown */}
+                    {/* FASE 3.2: Dynamic Valuation Methods Dropdown (FASE 2 Fix: Dynamic based on available_methods) */}
                     <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
                       <Label htmlFor="method-selector" className="text-sm font-medium min-w-[80px]">
                         Method:
@@ -754,42 +755,149 @@ export default function IntrinsicValue({ symbol: urlSymbol }: IntrinsicValueProp
                           <SelectValue placeholder="Select valuation method" />
                         </SelectTrigger>
                         <SelectContent className="max-h-[400px]">
-                          <SelectItem value="alfavalue">AlfaValue™ (Proprietary)</SelectItem>
+                          {/* FASE 2 FIX: Render dropdown dynamically based on available_methods */}
+                          {valuationChartData?.available_methods && valuationChartData.available_methods.length > 0 ? (
+                            <>
+                              {/* Group methods by category */}
+                              {(() => {
+                                const METHOD_LABELS: Record<string, string> = {
+                                  'alfavalue': 'AlfaValue™ (Proprietary)',
+                                  'dcf-20-fcf': 'DCF-20 Free Cash Flow',
+                                  'dcf-fcf-20': 'DCF-20 Free Cash Flow', // Alias
+                                  'dcf-20-ocf': 'DCF-20 Operating Cash Flow',
+                                  'dcf-ocf-20': 'DCF-20 Operating Cash Flow', // Alias
+                                  'dcf-20-ni': 'DCF-20 Net Income',
+                                  'dcf-ni-20': 'DCF-20 Net Income', // Alias
+                                  'dni-20': 'DNI-20 Net Income',
+                                  'dfcf-terminal': 'DFCF Terminal (FMP)',
+                                  'dcf-terminal-fcf': 'DCF Terminal FCF FMP',
+                                  'dfcf-20': 'DFCF-20 (FMP)',
+                                  'growth-dcf-8y': 'Growth DCF (8-year)',
+                                  'pe-mean': 'P/E Mean 5Y',
+                                  'pe-mean-without-nri': 'P/E Mean 5Y (without NRI)',
+                                  'pe-mean-nri': 'P/E Mean 5Y (without NRI)', // Alias
+                                  'ps-mean': 'P/S Mean 5Y',
+                                  'pb-mean': 'P/B Mean 5Y',
+                                  'pb-mean-without-nri': 'P/B Mean 5Y (without NRI)',
+                                  'pb-mean-nri': 'P/B Mean 5Y (without NRI)', // Alias
+                                  'peg': 'PEG Ratio',
+                                  'psg': 'PSG Ratio',
+                                  'p-tbv-mean': 'P/TBV Mean 5Y (Banks)',
+                                  'p-tbv-sector': 'P/TBV Sector (Banks)',
+                                  'ffo-reit': 'FFO (REITs)',
+                                  'affo-reit': 'AFFO (REITs)',
+                                  'p-ffo-mean': 'P/FFO Mean (REITs)',
+                                  'p-ffo-sector': 'P/FFO Sector (REITs)',
+                                  'dividend-yield-reit': 'Dividend Yield (REITs)',
+                                  'graham-number': 'Graham Number',
+                                  'ddm': 'Dividend Discount Model',
+                                  'custom': 'Custom (DCF with selectable base)',
+                                };
 
-                          <SelectGroup>
-                            <SelectLabel className="text-xs text-muted-foreground mt-2">DCF Models</SelectLabel>
-                            <SelectItem value="dcf-20-fcf">DCF-20 Free Cash Flow</SelectItem>
-                            <SelectItem value="dcf-20-ocf">DCF-20 Operating Cash Flow</SelectItem>
-                            <SelectItem value="dcf-20-ni">DCF-20 Net Income</SelectItem>
-                            <SelectItem value="dni-20">DNI-20 Net Income</SelectItem>
-                            <SelectItem value="dfcf-terminal">DFCF Terminal (FMP)</SelectItem>
-                            <SelectItem value="dfcf-20">DFCF-20 (FMP)</SelectItem>
-                          </SelectGroup>
+                                // Group available methods
+                                const availableMethods = valuationChartData.available_methods;
+                                const proprietary = availableMethods.filter(m => m === 'alfavalue');
+                                const dcf = availableMethods.filter(m =>
+                                  m.includes('dcf-') || m.includes('dni-') || m.includes('dfcf-') || m === 'growth-dcf-8y'
+                                );
+                                const multiples = availableMethods.filter(m =>
+                                  m.includes('pe-') || m.includes('ps-') || m.includes('pb-') ||
+                                  m.includes('p-tbv') || m.includes('p-ffo') || m.includes('ffo-') ||
+                                  m.includes('affo-') || m.includes('dividend-yield') || m === 'graham-number' || m === 'ddm'
+                                );
+                                const growthAdjusted = availableMethods.filter(m => m === 'peg' || m === 'psg');
 
-                          <SelectGroup>
-                            <SelectLabel className="text-xs text-muted-foreground mt-2">Historical Multiples</SelectLabel>
-                            <SelectItem value="pe-mean">P/E Mean 5Y</SelectItem>
-                            <SelectItem value="pe-mean-nri">P/E Mean 5Y (without NRI)</SelectItem>
-                            <SelectItem value="ps-mean">P/S Mean 5Y</SelectItem>
-                            <SelectItem value="pb-mean">P/B Mean 5Y</SelectItem>
-                            <SelectItem value="pb-mean-nri">P/B Mean 5Y (without NRI)</SelectItem>
-                          </SelectGroup>
+                                return (
+                                  <>
+                                    {/* Proprietary */}
+                                    {proprietary.map(methodId => (
+                                      <SelectItem key={methodId} value={methodId}>
+                                        {METHOD_LABELS[methodId] || methodId}
+                                      </SelectItem>
+                                    ))}
 
-                          <SelectGroup>
-                            <SelectLabel className="text-xs text-muted-foreground mt-2">Growth-Adjusted</SelectLabel>
-                            <SelectItem value="peg">PEG Ratio</SelectItem>
-                            <SelectItem value="psg">PSG Ratio</SelectItem>
-                          </SelectGroup>
+                                    {/* DCF Models */}
+                                    {dcf.length > 0 && (
+                                      <SelectGroup>
+                                        <SelectLabel className="text-xs text-muted-foreground mt-2">DCF Models</SelectLabel>
+                                        {dcf.map(methodId => (
+                                          <SelectItem key={methodId} value={methodId}>
+                                            {METHOD_LABELS[methodId] || methodId}
+                                          </SelectItem>
+                                        ))}
+                                      </SelectGroup>
+                                    )}
 
-                          <SelectGroup>
-                            <SelectLabel className="text-xs text-muted-foreground mt-2">Custom</SelectLabel>
-                            <SelectItem value="custom">Custom (DCF with selectable base)</SelectItem>
-                          </SelectGroup>
+                                    {/* Historical Multiples */}
+                                    {multiples.length > 0 && (
+                                      <SelectGroup>
+                                        <SelectLabel className="text-xs text-muted-foreground mt-2">Historical Multiples</SelectLabel>
+                                        {multiples.map(methodId => (
+                                          <SelectItem key={methodId} value={methodId}>
+                                            {METHOD_LABELS[methodId] || methodId}
+                                          </SelectItem>
+                                        ))}
+                                      </SelectGroup>
+                                    )}
+
+                                    {/* Growth-Adjusted */}
+                                    {growthAdjusted.length > 0 && (
+                                      <SelectGroup>
+                                        <SelectLabel className="text-xs text-muted-foreground mt-2">Growth-Adjusted</SelectLabel>
+                                        {growthAdjusted.map(methodId => (
+                                          <SelectItem key={methodId} value={methodId}>
+                                            {METHOD_LABELS[methodId] || methodId}
+                                          </SelectItem>
+                                        ))}
+                                      </SelectGroup>
+                                    )}
+
+                                    {/* Custom (always available) */}
+                                    <SelectGroup>
+                                      <SelectLabel className="text-xs text-muted-foreground mt-2">Custom</SelectLabel>
+                                      <SelectItem value="custom">Custom (DCF with selectable base)</SelectItem>
+                                    </SelectGroup>
+                                  </>
+                                );
+                              })()}
+                            </>
+                          ) : (
+                            /* Fallback: Hardcoded dropdown if backend doesn't return available_methods */
+                            <>
+                              <SelectItem value="alfavalue">AlfaValue™ (Proprietary)</SelectItem>
+                              <SelectGroup>
+                                <SelectLabel className="text-xs text-muted-foreground mt-2">DCF Models</SelectLabel>
+                                <SelectItem value="dcf-20-fcf">DCF-20 Free Cash Flow</SelectItem>
+                                <SelectItem value="dcf-20-ocf">DCF-20 Operating Cash Flow</SelectItem>
+                                <SelectItem value="dcf-20-ni">DCF-20 Net Income</SelectItem>
+                                <SelectItem value="dni-20">DNI-20 Net Income</SelectItem>
+                                <SelectItem value="dfcf-terminal">DFCF Terminal (FMP)</SelectItem>
+                                <SelectItem value="dfcf-20">DFCF-20 (FMP)</SelectItem>
+                              </SelectGroup>
+                              <SelectGroup>
+                                <SelectLabel className="text-xs text-muted-foreground mt-2">Historical Multiples</SelectLabel>
+                                <SelectItem value="pe-mean">P/E Mean 5Y</SelectItem>
+                                <SelectItem value="pe-mean-nri">P/E Mean 5Y (without NRI)</SelectItem>
+                                <SelectItem value="ps-mean">P/S Mean 5Y</SelectItem>
+                                <SelectItem value="pb-mean">P/B Mean 5Y</SelectItem>
+                                <SelectItem value="pb-mean-nri">P/B Mean 5Y (without NRI)</SelectItem>
+                              </SelectGroup>
+                              <SelectGroup>
+                                <SelectLabel className="text-xs text-muted-foreground mt-2">Growth-Adjusted</SelectLabel>
+                                <SelectItem value="peg">PEG Ratio</SelectItem>
+                                <SelectItem value="psg">PSG Ratio</SelectItem>
+                              </SelectGroup>
+                              <SelectGroup>
+                                <SelectLabel className="text-xs text-muted-foreground mt-2">Custom</SelectLabel>
+                                <SelectItem value="custom">Custom (DCF with selectable base)</SelectItem>
+                              </SelectGroup>
+                            </>
+                          )}
                         </SelectContent>
                       </Select>
                       <Badge variant="outline" className="hidden sm:flex">
                         <Info className="h-3 w-3 mr-1" />
-                        15 Methods
+                        {valuationChartData?.available_methods?.length || 15} Methods
                       </Badge>
                     </div>
 
@@ -842,14 +950,58 @@ export default function IntrinsicValue({ symbol: urlSymbol }: IntrinsicValueProp
                     )}
 
                     {/* Error State */}
-                    {valuationChartError && (
-                      <div className="text-center py-8 text-red-500">
-                        <p>Failed to load valuation methods</p>
-                        <p className="text-sm text-muted-foreground mt-2">
-                          {valuationChartError instanceof Error ? valuationChartError.message : 'Unknown error'}
-                        </p>
-                      </div>
-                    )}
+                    {valuationChartError && (() => {
+                      // Check if this is an ETF rejection error (status 422)
+                      const errorObj = valuationChartError as any;
+                      if (errorObj?.statusCode === 422 && errorObj?.errorData?.error === 'ETF_NOT_SUPPORTED') {
+                        const etfError = errorObj.errorData;
+
+                        return (
+                          <Alert className="border-blue-200 bg-blue-50 dark:bg-blue-950/30 dark:border-blue-900">
+                            <Info className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                            <AlertTitle className="text-lg font-semibold text-blue-900 dark:text-blue-100">
+                              {etfError.message}
+                            </AlertTitle>
+                            <AlertDescription className="space-y-3 mt-2">
+                              {etfError.reason && (
+                                <p className="text-sm text-blue-800 dark:text-blue-200">
+                                  {etfError.reason}
+                                </p>
+                              )}
+
+                              {etfError.suggestion && (
+                                <p className="text-sm font-medium text-blue-900 dark:text-blue-100 mt-2">
+                                  💡 {etfError.suggestion}
+                                </p>
+                              )}
+
+                              {etfError.alternative_methods && etfError.alternative_methods.length > 0 && (
+                                <div className="mt-3 p-3 bg-white dark:bg-blue-950/50 rounded-md border border-blue-100 dark:border-blue-900">
+                                  <p className="text-sm font-semibold text-blue-900 dark:text-blue-100 mb-2">
+                                    Alternative analysis methods:
+                                  </p>
+                                  <ul className="list-disc list-inside text-sm text-blue-700 dark:text-blue-300 space-y-1">
+                                    {etfError.alternative_methods.map((method: string, i: number) => (
+                                      <li key={i}>{method}</li>
+                                    ))}
+                                  </ul>
+                                </div>
+                              )}
+                            </AlertDescription>
+                          </Alert>
+                        );
+                      }
+
+                      // Generic error display
+                      return (
+                        <div className="text-center py-8 text-red-500">
+                          <p>Failed to load valuation methods</p>
+                          <p className="text-sm text-muted-foreground mt-2">
+                            {valuationChartError instanceof Error ? valuationChartError.message : 'Unknown error'}
+                          </p>
+                        </div>
+                      );
+                    })()}
 
                     {/* FASE 3.2: Dual Column Layout (Auto vs My Calculation) */}
                     {valuationChartData && alfaValueData && (() => {

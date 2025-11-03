@@ -15,7 +15,7 @@ import axios from 'axios';
 import { redisCacheService } from '../cache/redis-cache-service';
 import { simpleCacheService } from './simple-cache-service';
 import { logger } from '../lib/logger';
-import { isBank, getBankType, getSectorPTBVBenchmark } from '../utils/stock-classifier';
+import { isBank, getBankType, getSectorPTBVBenchmark, isETF } from '../utils/stock-classifier';
 import { fetchFinancialStatementsWithFallback, fetchAllStatementsWithFallback, getStatementQuality } from '../utils/financial-statements-fallback';
 import { getSectorDefaults } from '../utils/sector-defaults';
 import {
@@ -47,7 +47,9 @@ import {
   PEGValuationResponse,
   PSGValuationResponse,
   PTBVValuationResponse,
+  GrowthDCF8YResponse,
 } from '../types/valuation';
+import { estimateGrowthRates } from '../utils/growth-rate-estimator';
 
 const FMP_BASE_URL = 'https://financialmodelingprep.com';
 const FMP_API_KEY = process.env.FMP_API_KEY || '';
@@ -643,6 +645,12 @@ export class ValuationService {
         throw new Error(`No profile data found for ${upperTicker}`);
       }
       const profile = profileData[0];
+
+      // FASE 2 DEFENSIVE CHECK: Reject ETFs at service layer (defense-in-depth)
+      // This is redundant with middleware but provides additional safety
+      if (isETF(upperTicker, profile)) {
+        throw new Error(`Cannot calculate intrinsic value for ETF: ${upperTicker}`);
+      }
 
       // Step 2: Fetch financial statements (last 5 years)
       const cashFlowData = await fmpGet<FMPFinancialStatement[]>('/api/v3/cash-flow-statement/' + upperTicker, {
@@ -2795,11 +2803,188 @@ export class ValuationService {
 
   /**
    * FASE 2C: Calculate High-Growth DCF (8-year projection)
-   * Delegates to standalone growth-dcf-8y-method.ts implementation
+   *
+   * Specialized valuation for high-growth tech stocks (NVDA, TSLA, AMZN, GOOGL)
+   * following big fintech/hedge fund best practices.
+   *
+   * Key differences from standard DCF-20:
+   * 1. 8-year projection (not 20) - focuses on near-term visibility
+   * 2. Allows higher growth rates (up to 50% for Y1-3) for hyper-growth phase
+   * 3. Three-stage model: Years 1-3 (high growth 30-50%) → Years 4-6 (transition 20-30%) → Years 7-8 (mature 10-15%)
    */
-  async calculateGrowthDCF8Y(ticker: string): Promise<import('../types/valuation').GrowthDCF8YResponse | null> {
-    const { calculateGrowthDCF8Y } = await import('./growth-dcf-8y-method');
-    return calculateGrowthDCF8Y(ticker, this);
+  async calculateGrowthDCF8Y(ticker: string): Promise<GrowthDCF8YResponse | null> {
+    const upperTicker = ticker.toUpperCase();
+    const cacheKey = VALUATION_CACHE_KEYS.IV_CALC + upperTicker + ':growth_dcf_8y';
+
+    // Check cache
+    const cached = await redisCacheService.get<GrowthDCF8YResponse>(cacheKey);
+    if (cached) {
+      logger.info(`[ValuationService] Growth DCF-8Y cache hit for ${upperTicker}`);
+      return cached;
+    }
+
+    try {
+      logger.info(`[ValuationService] Calculating Growth DCF-8Y for ${upperTicker}`);
+
+      // Step 1: Get company profile for beta and sector
+      const profileData = await fmpGet<FMPCompanyProfile[]>('/api/v3/profile/' + upperTicker);
+      if (!profileData || profileData.length === 0) {
+        logger.warn(`[ValuationService] No profile data for ${upperTicker}`);
+        return null;
+      }
+
+      const profile = profileData[0];
+      const beta = clamp(profile.beta || VALUATION_DEFAULTS.BETA, VALUATION_CLAMPS.BETA.min, VALUATION_CLAMPS.BETA.max);
+      const sector = profile.sector || 'Unknown';
+      const region: Region = 'US'; // Growth stocks are primarily US-based
+
+      // Step 2: Get FCF data using base metric helper
+      const baseMetricData = await this.getBaseMetricForDCF(upperTicker, 'fcf');
+      if (!baseMetricData) {
+        logger.warn(`[ValuationService] No FCF data for ${upperTicker}`);
+        return null;
+      }
+
+      const fcf_ttm = baseMetricData.current;
+      if (fcf_ttm <= 0 || !isFinite(fcf_ttm)) {
+        logger.warn(`[ValuationService] Invalid FCF TTM for ${upperTicker}: ${fcf_ttm}`);
+        return null;
+      }
+
+      // Step 3: Get cash, debt from balance sheet
+      const balanceSheet = await fetchFinancialStatementsWithFallback(upperTicker, 'balance');
+      if (!balanceSheet) {
+        logger.warn(`[ValuationService] No balance sheet data for ${upperTicker}`);
+        return null;
+      }
+
+      const cash = ((balanceSheet.cashAndCashEquivalents || 0) +
+        (balanceSheet.shortTermInvestments || 0)) / 1_000_000;
+      const debt = (balanceSheet.totalDebt || 0) / 1_000_000;
+
+      // Step 4: Get shares outstanding
+      const shares_m = await this.getSharesOutstanding(upperTicker);
+      if (!shares_m || shares_m <= 0) {
+        logger.warn(`[ValuationService] Invalid shares outstanding for ${upperTicker}: ${shares_m}`);
+        return null;
+      }
+
+      logger.info(`[ValuationService] ${upperTicker} inputs: FCF_TTM=${fcf_ttm.toFixed(2)}M, Cash=${cash.toFixed(2)}M, Debt=${debt.toFixed(2)}M, Shares=${shares_m.toFixed(2)}M`);
+
+      // Step 5: Calculate growth rates using growth rate estimator
+      const growthRates = await estimateGrowthRates({
+        ticker: upperTicker,
+        sector: sector
+      });
+
+      // Allow higher growth for Y1-3 (up to 50%)
+      let g1_3 = growthRates.year1To5; // Use 5Y estimate as baseline
+      g1_3 = clamp(g1_3, 0.10, 0.50); // 10% to 50%
+
+      // Transition phase Y4-6: 70% retention
+      let g4_6 = g1_3 * 0.70;
+      g4_6 = clamp(g4_6, 0.08, 0.30); // 8% to 30%
+
+      // Mature phase Y7-8: 50% retention from Y4-6
+      let g7_8 = g4_6 * 0.50;
+      g7_8 = clamp(g7_8, 0.04, 0.15); // 4% to 15%
+
+      // Terminal growth: Higher for growth stocks (3-5%)
+      const gTermData = await this.getGTerm(region);
+      const g_term = clamp(gTermData.g_term, 0.03, 0.05); // 3% to 5%
+
+      logger.info(`[ValuationService] ${upperTicker} growth rates: Y1-3=${(g1_3 * 100).toFixed(2)}%, Y4-6=${(g4_6 * 100).toFixed(2)}%, Y7-8=${(g7_8 * 100).toFixed(2)}%, Terminal=${(g_term * 100).toFixed(2)}%`);
+
+      // Step 6: Calculate WACC (CAPM)
+      const rfData = await this.getRiskFree(region);
+      const mrpData = await this.getMRP(region);
+      const wacc = clamp(rfData.rf + beta * mrpData.mrp, VALUATION_CLAMPS.DR.min, VALUATION_CLAMPS.DR.max);
+
+      logger.info(`[ValuationService] ${upperTicker} WACC: ${(wacc * 100).toFixed(2)}% (RF=${(rfData.rf * 100).toFixed(2)}%, Beta=${beta.toFixed(2)}, MRP=${(mrpData.mrp * 100).toFixed(2)}%)`);
+
+      // Step 7: 3-Stage DCF Calculation with mid-year discounting
+      // Stage 1: Years 1-3 (high growth 30-50%)
+      let stage1PV = 0;
+      let currentFCF = fcf_ttm;
+      for (let year = 1; year <= 3; year++) {
+        currentFCF *= (1 + g1_3);
+        const discountFactor = Math.pow(1 + wacc, year - 0.5); // Mid-year convention
+        stage1PV += currentFCF / discountFactor;
+      }
+
+      // Stage 2: Years 4-6 (transition 20-30%)
+      let stage2PV = 0;
+      for (let year = 4; year <= 6; year++) {
+        currentFCF *= (1 + g4_6);
+        const discountFactor = Math.pow(1 + wacc, year - 0.5);
+        stage2PV += currentFCF / discountFactor;
+      }
+
+      // Stage 3: Years 7-8 (mature 10-15%)
+      let stage3PV = 0;
+      for (let year = 7; year <= 8; year++) {
+        currentFCF *= (1 + g7_8);
+        const discountFactor = Math.pow(1 + wacc, year - 0.5);
+        stage3PV += currentFCF / discountFactor;
+      }
+
+      // Terminal Value: Beyond year 8 (perpetuity with g_term)
+      const fcf_year_9 = currentFCF * (1 + g_term);
+      const terminalValueAtYear8 = fcf_year_9 / (wacc - g_term);
+      const terminalPV = terminalValueAtYear8 / Math.pow(1 + wacc, 8);
+
+      // Total Enterprise Value
+      const enterpriseValue = stage1PV + stage2PV + stage3PV + terminalPV;
+
+      // Calculate equity value per share
+      const equityValue = enterpriseValue + cash - debt;
+      const iv = equityValue / shares_m;
+
+      // Defensive: Validate IV result
+      if (!isFinite(iv) || iv <= 0) {
+        logger.warn(`[ValuationService] ${upperTicker} - Invalid Growth DCF-8Y IV: ${iv}`);
+        return null;
+      }
+
+      logger.info(`[ValuationService] Growth DCF-8Y for ${upperTicker}: Stage1=${stage1PV.toFixed(2)}M, Stage2=${stage2PV.toFixed(2)}M, Stage3=${stage3PV.toFixed(2)}M, Terminal=${terminalPV.toFixed(2)}M, EV=${enterpriseValue.toFixed(2)}M, IV=$${iv.toFixed(2)}`);
+
+      // Step 8: Determine confidence level
+      let confidence: ValuationConfidence = 'HIGH';
+      if (beta === VALUATION_DEFAULTS.BETA || rfData.source === 'fallback' || mrpData.source === 'fallback') {
+        confidence = 'MED';
+      }
+      if (growthRates.confidence === 'low' || growthRates.dataSource === 'default') {
+        confidence = 'LOW';
+      }
+
+      // Step 9: Build response
+      const response: GrowthDCF8YResponse = {
+        ticker: upperTicker,
+        iv,
+        fcf: fcf_ttm,
+        totalDebt: debt,
+        cash,
+        wacc,
+        sharesOutstanding: shares_m,
+        growthY1_3: g1_3,
+        growthY4_6: g4_6,
+        growthY7_8: g7_8,
+        terminalGrowth: g_term,
+        stage1Years: 3,
+        stage2Years: 3,
+        stage3Years: 2,
+        confidence,
+        as_of: new Date().toISOString().split('T')[0],
+      };
+
+      // Cache for 24h
+      await redisCacheService.set(cacheKey, response, 86400);
+
+      return response;
+    } catch (error: any) {
+      logger.error(`[ValuationService] Error calculating Growth DCF-8Y for ${upperTicker}:`, error);
+      return null;
+    }
   }
   }
 

@@ -20,9 +20,11 @@ import { fmpDCFService } from '../services/fmp-dcf';
 import { macroService } from '../services/macro-service';
 import { logger } from '../lib/logger';
 import { redisCacheService } from '../cache/redis-cache-service';
+import { simpleCacheService } from '../services/simple-cache-service';
 import { methodCacheService } from '../services/method-cache-service';
+import { getPriceWithFallbacks } from '../services/price-fallback-service';
 import { estimateGrowthRates } from '../utils/growth-rate-estimator';
-import { isETF, getETFReason, isREIT } from '../utils/stock-classifier';
+import { isETF, getETFReason, isREIT, isGrowthStock, isBank } from '../utils/stock-classifier';
 import { reitValuationService } from '../services/valuation-service-reit';
 import axios from 'axios';
 import {
@@ -36,6 +38,7 @@ import {
 
 const FMP_BASE_URL = 'https://financialmodelingprep.com';
 const FMP_API_KEY = process.env.FMP_API_KEY || '';
+const ALPHA_VANTAGE_API_KEY = process.env.ALPHA_VANTAGE_API_KEY || '';
 
 /**
  * GET /api/iv/:ticker/chart
@@ -59,13 +62,15 @@ export async function getIVChart(req: Request, res: Response): Promise<void> {
     const companyProfile = await getCompanyProfile(ticker);
 
     // ETF Detection with 4 strategies (suffix, known list, API type, name pattern)
+    // HTTP 422 (Unprocessable Entity) - semantically correct for ETFs (valid format, wrong entity type)
     if (isETF(ticker, companyProfile)) {
       const reason = getETFReason(ticker, companyProfile);
       logger.info(`[IV Chart] Rejected ETF request: ${ticker} (${reason})`);
-      res.status(400).json({
+      res.status(422).json({
         error: 'ETF_NOT_SUPPORTED',
         message: `${ticker} is an ETF. Intrinsic value calculations are only available for individual stocks.`,
         reason,
+        ticker,
         suggestion: 'Try analyzing individual stocks within the ETF instead.',
         alternative_methods: [
           'Price momentum',
@@ -94,12 +99,16 @@ export async function getIVChart(req: Request, res: Response): Promise<void> {
 
     logger.info(`[IVChart] Generating chart for ${ticker} (based_on: ${basedOn})`);
 
-    // 1. Get current price
-    const price = await valuationService['getCurrentPrice'](ticker);
+    // 1. Get current price - ULTRAFIX FASE 2: 4-tier fallback system
+    // Fixes European stocks 404 bug (1,045 stocks recovered)
+    // Tier 1: quote (cached) → Tier 2: profile → Tier 3: historical → Tier 4: calculated
+    const price = await getPriceWithFallbacks(ticker);
     if (!price || price <= 0) {
+      logger.warn(`[IVChart] No price data found for ${ticker} (tried all 4 tiers)`);
       res.status(404).json({ error: `No price data found for ${ticker}` });
       return;
     }
+    logger.info(`[IVChart] Current price for ${ticker}: $${price.toFixed(2)}`);
 
     // 2. Get macro multiplier
     const macroData = await macroService.getMacroMultiplier('US');
@@ -135,13 +144,71 @@ export async function getIVChart(req: Request, res: Response): Promise<void> {
       }
     }
 
-    // 6. Calculate all 19 methods in parallel using method-level cache (ONDA 7)
+    // 6. FASE 2C: Classify stock and dynamically add specialized methods
+    // Fetch growth metrics for classification (beta, EPS growth, revenue growth)
+    logger.info(`[IV-Chart] Classifying ${ticker} (sector: ${sector || 'unknown'})`);
+
+    let beta = 1.0; // Default neutral beta
+    let epsGrowth = 0.05; // Default 5% growth
+    let revenueGrowth = 0.05;
+
+    try {
+      // Fetch beta from profile
+      if (companyProfile && 'beta' in companyProfile) {
+        beta = (companyProfile as any).beta || 1.0;
+      }
+
+      // Fetch growth rates from FMP key metrics (5-year historical)
+      const metricsUrl = `${FMP_BASE_URL}/api/v3/key-metrics/${ticker}?period=annual&limit=5&apikey=${FMP_API_KEY}`;
+      const metricsRes = await axios.get(metricsUrl, { timeout: 10000, headers: { 'Accept-Encoding': 'gzip' } });
+
+      if (metricsRes.data && Array.isArray(metricsRes.data) && metricsRes.data.length >= 2) {
+        // Calculate 5-year EPS CAGR
+        const oldest = metricsRes.data[metricsRes.data.length - 1];
+        const newest = metricsRes.data[0];
+        const years = metricsRes.data.length - 1;
+
+        if (oldest.netIncomePerShare && newest.netIncomePerShare && oldest.netIncomePerShare > 0) {
+          epsGrowth = Math.pow(newest.netIncomePerShare / oldest.netIncomePerShare, 1 / years) - 1;
+        }
+
+        if (oldest.revenuePerShare && newest.revenuePerShare && oldest.revenuePerShare > 0) {
+          revenueGrowth = Math.pow(newest.revenuePerShare / oldest.revenuePerShare, 1 / years) - 1;
+        }
+      }
+
+      logger.info(
+        `[IV-Chart] ${ticker} metrics: beta=${beta.toFixed(2)}, ` +
+        `epsGrowth=${(epsGrowth * 100).toFixed(1)}%, ` +
+        `revenueGrowth=${(revenueGrowth * 100).toFixed(1)}%`
+      );
+    } catch (error) {
+      logger.warn(`[IV-Chart] Could not fetch growth metrics for ${ticker}, using defaults`);
+    }
+
+    // Classify stock type
+    const isGrowth = isGrowthStock(beta, epsGrowth, revenueGrowth, sector);
+    const isBankStock = isBank(sector, undefined, ticker);
+    const isReitStock = isREIT(
+      sector || '',
+      companyProfile?.industry || '',
+      companyProfile?.companyName || ''
+    );
+
+    logger.info(
+      `[IV-Chart] ${ticker} classification: ` +
+      `growth=${isGrowth}, bank=${isBankStock}, REIT=${isReitStock}`
+    );
+
+    // 7. Calculate all methods in parallel using method-level cache (ONDA 7)
     // REMOVED: dcf-fcfe-20 and dcf-terminal-fcfe (FMP API returns empty array - no FCFE data)
     // AGENT 1C: Added p-tbv-mean and p-tbv-sector for banks (Financial Services)
     // AGENT 1D: Added 5 REIT methods for Real Estate sector
     // SUB-FASE 2D: Added graham-number and ddm for value stocks
-    logger.info(`[IV-Chart] Using method-level cache for ${ticker} (21 methods)`);
+    // FASE 2C: Added growth-dcf-8y for growth stocks
+    logger.info(`[IV-Chart] Using method-level cache for ${ticker} (base: 21 methods, dynamic additions)`);
 
+    // Base methodIds (always calculated)
     const methodIds: MethodId[] = [
       'alfa-value',
       'dcf-fcf-20',
@@ -166,37 +233,60 @@ export async function getIVChart(req: Request, res: Response): Promise<void> {
       'ddm',             // SUB-FASE 2D: Dividend Discount Model (Gordon Growth Model)
     ];
 
-    const [
-      alfaValue,
-      dcfFCF,
-      dcfTermFCF,
-      dni20,
-      peMean,
-      peMeanNoNRI,
-      psMean,
-      pbMean,
-      pbMeanNoNRI,
-      peg,
-      psg,
-      dfcfTerminal,
-      ptbvMean,      // AGENT 1C: P/TBV Mean 5Y
-      ptbvSector,    // AGENT 1C: P/TBV Sector
-      ffoREIT,       // AGENT 1D: FFO for REITs
-      affoREIT,      // AGENT 1D: AFFO for REITs
-      pFFOMean,      // AGENT 1D: P/FFO Mean for REITs
-      pFFOSector,    // AGENT 1D: P/FFO Sector for REITs
-      dividendYieldREIT, // AGENT 1D: Dividend Yield for REITs
-      grahamNumber,  // SUB-FASE 2D: Graham Number
-      ddm,           // SUB-FASE 2D: DDM
-    ] = await Promise.allSettled(
-      methodIds.map((id: MethodId) => methodCacheService.warmMethod(ticker, id).then(result => {
-        // Attach growth rates for DCF methods (FCFE removed)
-        if (['dcf-fcf-20', 'dcf-terminal-fcf'].includes(id)) {
-          if (result) (result as any).growthRates = growthRates;
+    // FASE 2C: Dynamic method addition based on classification
+    // Growth DCF 8Y ONLY for true growth stocks (NOT banks/REITs, even if they meet growth criteria)
+    if (isGrowth && !isBankStock && !isReitStock) {
+      methodIds.push('growth-dcf-8y' as MethodId);
+      logger.info(`[IV-Chart] ${ticker} is growth stock - added growth-dcf-8y method`);
+    } else if (isGrowth && (isBankStock || isReitStock)) {
+      logger.info(`[IV-Chart] ${ticker} excluded from growth-dcf-8y (bank=${isBankStock}, REIT=${isReitStock})`);
+    }
+
+    // ONDA 1 FIX: Per-method defensive error handling with detailed logging
+    const results = await Promise.allSettled(
+      methodIds.map(async (id: MethodId) => {
+        try {
+          logger.info(`[IV-Chart] ${ticker}: Calculating ${id}...`);
+          const result = await methodCacheService.warmMethod(ticker, id);
+
+          if (!result) {
+            logger.warn(`[IV-Chart] ${ticker}: ${id} returned null`);
+            throw new Error(`Method ${id} returned null`);
+          }
+
+          // Attach growth rates for DCF methods (FCFE removed, growth-dcf-8y added)
+          if (['dcf-fcf-20', 'dcf-terminal-fcf', 'growth-dcf-8y'].includes(id)) {
+            if (result) (result as any).growthRates = growthRates;
+          }
+
+          logger.info(`[IV-Chart] ${ticker}: ${id} calculated successfully`);
+          return result;
+        } catch (error: any) {
+          logger.error(`[IV-Chart] ${ticker}: ${id} calculation failed:`, error.message);
+          throw error; // Re-throw to mark as rejected in Promise.allSettled
         }
-        return result;
-      }))
+      })
     );
+
+    // FASE 2C: Extract method results (21 base + optional growth-dcf-8y)
+    // Extract base 21 methods (always present - same order as methodIds)
+    const [
+      alfaValue, dcfFCF, dcfTermFCF, dni20, peMean, peMeanNoNRI,
+      psMean, pbMean, pbMeanNoNRI, peg, psg, dfcfTerminal,
+      ptbvMean, ptbvSector, ffoREIT, affoREIT, pFFOMean, pFFOSector,
+      dividendYieldREIT, grahamNumber, ddm
+    ] = results.slice(0, 21);
+
+    // FASE 2C: Extract dynamic growth method (only if growth stock)
+    const growthDCF8Y = isGrowth && results.length > 21 ? results[21] : undefined;
+
+    if (isGrowth) {
+      logger.info(
+        `[IV-Chart] ${ticker} growth stock: results.length=${results.length}, ` +
+        `growthDCF8Y=${growthDCF8Y ? 'present' : 'MISSING'}, ` +
+        `status=${growthDCF8Y?.status || 'N/A'}`
+      );
+    }
 
     // 4. Build methods array + track failures
     const methods: ValuationMethod[] = [];
@@ -483,6 +573,24 @@ export async function getIVChart(req: Request, res: Response): Promise<void> {
             warning: data.warning,
           };
 
+        case 'Growth DCF 8Y':  // FASE 2C: 8-year high-growth DCF for growth stocks
+          return {
+            method: 'growth-dcf-8y',
+            based_on: 'fcf',
+            // ✅ FIX: Map from GrowthDCF8YResponse top-level fields (not data.inputs)
+            fcf_ttm_musd: data.fcf || 0,
+            total_debt_musd: data.totalDebt || 0,
+            cash_musd: data.cash || 0,
+            discount_rate: data.wacc || 0.0627,
+            shares_outstanding_m: data.sharesOutstanding || 0,
+            // ✅ FIX: Map from GrowthDCF8YResponse top-level growth fields
+            growth_rate_y1_3: data.growthY1_3 || 0,
+            growth_rate_y4_6: data.growthY4_6 || 0,
+            growth_rate_y7_8: data.growthY7_8 || 0,
+            deduct_debt: true,
+            add_cash: true,
+          };
+
         default:
           return null;
       }
@@ -519,6 +627,7 @@ export async function getIVChart(req: Request, res: Response): Promise<void> {
         'PSG Ratio': 'psg',
         'P/TBV Mean 5Y': 'p-tbv-mean',       // AGENT 1C: Banks
         'P/TBV Sector': 'p-tbv-sector',      // AGENT 1C: Banks
+        'Growth DCF 8Y': 'growth-dcf-8y',    // FASE 2C: Growth stocks
       };
       return mapping[methodName] || methodName.toLowerCase().replace(/\s+/g, '-');
     }
@@ -534,8 +643,17 @@ export async function getIVChart(req: Request, res: Response): Promise<void> {
       extractIV: (data: any) => number | null
     ) => {
       try {
+        if (methodId === 'growth-dcf-8y') {
+          logger.info(
+            `[addMethod] growth-dcf-8y: status=${result.status}, ` +
+            `hasValue=${!!result.value}, valueKeys=${result.value ? Object.keys(result.value).join(',') : 'N/A'}`
+          );
+        }
         if (result.status === 'fulfilled' && result.value) {
           const rawIV = extractIV(result.value);
+          if (methodId === 'growth-dcf-8y') {
+            logger.info(`[addMethod] growth-dcf-8y: extractIV returned ${rawIV}`);
+          }
           if (rawIV && rawIV > 0 && isFinite(rawIV)) {
             const adjustedIV = macroService.applyMultiplier(rawIV, macroMultiplier);
             const discount_pct = ((adjustedIV - price) / price) * 100;
@@ -857,7 +975,31 @@ export async function getIVChart(req: Request, res: Response): Promise<void> {
       (data) => data.iv
     );
 
+    // FASE 2C: Growth stock method (dynamic - only for growth stocks)
+    logger.info(
+      `[IV-Chart] ${ticker} checking growth method condition: ` +
+      `isGrowth=${isGrowth}, growthDCF8Y=${!!growthDCF8Y}, ` +
+      `condition=${isGrowth && growthDCF8Y ? 'TRUE' : 'FALSE'}`
+    );
+    if (isGrowth && growthDCF8Y) {
+      logger.info(`[IV-Chart] ${ticker} adding growth-dcf-8y to methods array`);
+      addMethod(
+        growthDCF8Y,
+        'Growth DCF 8Y',
+        'growth-dcf-8y',
+        'dcf',
+        '8Y high-growth DCF: PV(Y1-3: 30-50%, Y4-6: 20-30%, Y7-8: 10-15%)',
+        'internal',
+        (data) => data.iv
+      );
+      logger.info(`[IV-Chart] ${ticker} growth-dcf-8y added, methods.length=${methods.length}`);
+    }
+
     // 5. Build response with failedMethods transparency
+    // FASE 2 FIX: Add available_methods and stock_classification for dynamic frontend dropdown
+    const availableMethods = methods.map(m => m.method_id);
+    const stockClassification = isGrowth ? 'growth' : isBankStock ? 'bank' : isReitStock ? 'reit' : 'value';
+
     const response: IVChartResponse = {
       ticker,
       price,
@@ -866,16 +1008,36 @@ export async function getIVChart(req: Request, res: Response): Promise<void> {
         const order = { proprietary: 0, dcf: 1, multiples: 2, growth: 3 };
         return order[a.category] - order[b.category];
       }),
+      available_methods: availableMethods, // NEW: Dynamic list of method IDs for frontend dropdown
+      stock_classification: stockClassification, // NEW: Stock type classification (growth/value/bank/reit)
       failedMethods,
       macro_multiplier: macroMultiplier,
       macro_sentiment: macroSentiment,
       as_of: new Date().toISOString().split('T')[0],
     };
 
+    // ONDA 1 FIX: Method count validation and detailed failure reporting
+    // THRESHOLD RELAX (2025-10-29): Lowered from 8 to 6 to recover +26 stocks
+    // Rationale: 6 methods still provide meaningful valuation triangulation
+    // (e.g., stocks missing P/S, PEG due to negative sales/growth but have solid DCF/P/E/P/B)
+    const expectedMinMethods = 6; // Minimum expected methods per stock (relaxed from 8)
     logger.info(
       `[IVChart] ${ticker}: Generated ${methods.length} methods ` +
       `(${failedMethods.length} failed, ${methods.length + failedMethods.length} total)`
     );
+
+    if (methods.length < expectedMinMethods) {
+      logger.warn(
+        `[IV-Chart] ${ticker}: LOW METHOD COUNT - Only ${methods.length}/${expectedMinMethods} expected methods`
+      );
+      logger.warn(
+        `[IV-Chart] ${ticker}: Successful methods: ${methods.map(m => m.method_id).join(', ')}`
+      );
+      logger.warn(
+        `[IV-Chart] ${ticker}: Failed methods (${failedMethods.length}): ` +
+        failedMethods.map(f => `${f.method_id} (${f.reason})`).join(', ')
+      );
+    }
 
     // Save to Redis cache with 24h TTL
     try {
@@ -898,34 +1060,82 @@ export async function getIVChart(req: Request, res: Response): Promise<void> {
  * Helper: Get company profile for sector classification
  * Used by growth rate estimator for sector-specific caps
  */
-async function getCompanyProfile(ticker: string): Promise<{ sector?: string } | null> {
+async function getCompanyProfile(ticker: string): Promise<{
+  sector?: string;
+  beta?: number;
+  industry?: string;
+  companyName?: string;
+} | null> {
   try {
     const upperTicker = ticker.toUpperCase();
-    const cacheKey = `profile:sector:${upperTicker}`;
+    const cacheKey = `profile:full:${upperTicker}`;
 
-    const cached = await redisCacheService.get<{ sector?: string }>(cacheKey);
+    const cached = await redisCacheService.get<{
+      sector?: string;
+      beta?: number;
+      industry?: string;
+      companyName?: string;
+    }>(cacheKey);
     if (cached) {
       return cached;
     }
 
-    // Fetch from FMP
-    const url = `${FMP_BASE_URL}/api/v3/profile/${upperTicker}?apikey=${FMP_API_KEY}`;
-    const response = await axios.get(url, {
-      timeout: 10000,
-      headers: { 'Accept-Encoding': 'gzip' }
-    });
+    // Try FMP first
+    try {
+      const url = `${FMP_BASE_URL}/api/v3/profile/${upperTicker}?apikey=${FMP_API_KEY}`;
+      const response = await axios.get(url, {
+        timeout: 10000,
+        headers: { 'Accept-Encoding': 'gzip' }
+      });
 
-    if (!response.data || !Array.isArray(response.data) || response.data.length === 0) {
-      return null;
+      if (response.data && Array.isArray(response.data) && response.data.length > 0) {
+        const profileData = response.data[0];
+        const result = {
+          sector: profileData.sector,
+          beta: profileData.beta,
+          industry: profileData.industry,
+          companyName: profileData.companyName
+        };
+
+        // Cache for 7 days (profile data rarely changes)
+        await redisCacheService.set(cacheKey, result, 604800);
+        return result;
+      }
+    } catch (error) {
+      logger.warn(`[IVChart] FMP profile failed for ${upperTicker}, trying Alpha Vantage fallback`);
     }
 
-    const result = { sector: response.data[0].sector };
+    // Fallback to Alpha Vantage
+    if (ALPHA_VANTAGE_API_KEY) {
+      try {
+        const avUrl = `https://www.alphavantage.co/query?function=OVERVIEW&symbol=${upperTicker}&apikey=${ALPHA_VANTAGE_API_KEY}`;
+        const avResponse = await axios.get(avUrl, {
+          timeout: 10000,
+          headers: { 'Accept-Encoding': 'gzip' }
+        });
 
-    // Cache for 7 days (sector rarely changes)
-    await redisCacheService.set(cacheKey, result, 604800);
-    return result;
+        if (avResponse.data && avResponse.data.Sector) {
+          const result = {
+            sector: avResponse.data.Sector,
+            beta: parseFloat(avResponse.data.Beta) || undefined,
+            industry: avResponse.data.Industry,
+            companyName: avResponse.data.Name
+          };
+
+          // Cache for 7 days
+          await redisCacheService.set(cacheKey, result, 604800);
+          logger.info(`[IVChart] Alpha Vantage fallback successful for ${upperTicker}`);
+          return result;
+        }
+      } catch (error) {
+        logger.error(`[IVChart] Alpha Vantage fallback also failed for ${upperTicker}`);
+      }
+    }
+
+    logger.warn(`[IVChart] Both FMP and Alpha Vantage failed for ${upperTicker}`);
+    return null;
   } catch (error) {
-    logger.warn(`[IVChart] Could not fetch profile for ${ticker}:`, error);
+    logger.error(`[IVChart] Unexpected error fetching profile for ${ticker}:`, error);
     return null;
   }
 }

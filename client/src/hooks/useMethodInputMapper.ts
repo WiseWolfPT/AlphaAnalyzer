@@ -107,6 +107,70 @@ export function useMethodInputMapper(
     // Determine method category from inputs.method field
     const methodType = inputs.method;
 
+    // FASE 2 FIX: Special handling for Growth DCF 8Y method (different growth period structure)
+    if (methodType === 'growth-dcf-8y' || selectedMethod === 'growth-dcf-8y') {
+      // Growth DCF 8Y uses Y1-3, Y4-6, Y7-8 periods instead of Y1-5, Y6-10, Y11-20
+      // Map to frontend display (we'll show them as Y1-5, Y6-10, Y11-20 for consistency)
+      const shares = Number(
+        inputs.shares_outstanding_m ||
+        inputs.shares_m ||
+        inputs.sharesOutstanding ||
+        inputs.shares_outstanding ||
+        inputs.outstanding_shares_m ||
+        inputs.outstanding_shares ||
+        inputs.diluted_shares_outstanding ||
+        inputs.dilutedSharesOutstanding ||
+        inputs.shares ||
+        0
+      );
+
+      return {
+        type: 'dcf',
+        operatingCF: Number(
+          inputs.fcf_ttm_musd ||
+          inputs.base_value ||
+          inputs.operating_cf ||
+          inputs.ocf_ttm_musd ||
+          inputs.net_income_ttm_musd || 0
+        ),
+        totalDebt: Number(
+          inputs.total_debt_musd ||
+          inputs.debt_musd || 0
+        ),
+        cash: Number(
+          inputs.cash_musd ||
+          inputs.cash || 0
+        ),
+        discountRate: Number(
+          inputs.discount_rate ?
+            inputs.discount_rate * 100 :
+            inputs.discount_rate || 0
+        ),
+        shares: shares,
+        // Map Growth DCF 8Y growth periods to display format
+        growthY1_5: Number(
+          inputs.growth_rate_y1_3 ?
+            inputs.growth_rate_y1_3 * 100 :
+            inputs.g1_3 ?
+              inputs.g1_3 * 100 : 0
+        ), // Y1-3 growth → display as Y1-5
+        growthY6_10: Number(
+          inputs.growth_rate_y4_6 ?
+            inputs.growth_rate_y4_6 * 100 :
+            inputs.g4_6 ?
+              inputs.g4_6 * 100 : 0
+        ), // Y4-6 growth → display as Y6-10
+        growthY11_20: Number(
+          inputs.growth_rate_y7_8 ?
+            inputs.growth_rate_y7_8 * 100 :
+            inputs.g7_8 ?
+              inputs.g7_8 * 100 : 0
+        ), // Y7-8 growth → display as Y11-20
+        deductDebt: inputs.deduct_debt !== false, // Default true
+        addCash: inputs.add_cash !== false, // Default true
+      };
+    }
+
     // DCF Methods: alfavalue, dcf-20, dfcf-terminal, dni-20, dfcf-20
     if (
       methodType === 'alfavalue' ||

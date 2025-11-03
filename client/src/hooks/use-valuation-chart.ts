@@ -15,8 +15,10 @@ export interface ValuationChartResponse {
   price: number; // Current stock price
   as_of: string; // YYYY-MM-DD
   methods: ValuationMethod[]; // Array of all valuation methods
-  recommended_method: string; // Name of recommended method (e.g., "AlfaValue™")
-  confidence: 'HIGH' | 'MED' | 'LOW'; // Overall confidence
+  available_methods?: string[]; // NEW (FASE 2): Dynamic list of available method IDs
+  stock_classification?: 'growth' | 'value' | 'bank' | 'reit'; // NEW (FASE 2): Stock type
+  recommended_method?: string; // Name of recommended method (e.g., "AlfaValue™")
+  confidence?: 'HIGH' | 'MED' | 'LOW'; // Overall confidence
   metadata?: {
     calculation_time_ms: number;
     methods_count: number;
@@ -104,6 +106,15 @@ export function useValuationChart(
       const response = await fetch(`/api/iv/${ticker}/chart?${params}`);
 
       if (!response.ok) {
+        // Handle 422 ETF rejection with structured error data
+        if (response.status === 422) {
+          const errorData = await response.json();
+          // Attach error data to the Error object so components can access it
+          const error = new Error(errorData.message || 'ETF not supported') as any;
+          error.statusCode = 422;
+          error.errorData = errorData;
+          throw error;
+        }
         if (response.status === 404) {
           throw new Error(`Valuation chart data not available for ${ticker}`);
         }

@@ -206,7 +206,7 @@ export async function calculateGrowthDCF8Y(
 
     return response;
   } catch (error: any) {
-    logger.error(`[ValuationService] Error calculating Growth DCF-8Y for ${upperTicker}:`, error.message);
+    logger.error(`[ValuationService] Error calculating Growth DCF-8Y for ${upperTicker}:`, error);
     return null;
   }
 }

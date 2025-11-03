@@ -424,6 +424,8 @@ export interface IVChartResponse {
   ticker: string;
   price: number;                    // Current market price
   methods: ValuationMethod[];       // All valuation methods
+  available_methods?: string[];     // NEW (FASE 2): Dynamic list of available method IDs
+  stock_classification?: 'growth' | 'value' | 'bank' | 'reit'; // NEW (FASE 2): Stock type
   failedMethods: FailedMethod[];    // Methods that could not be calculated
   macro_multiplier: number;         // Applied to all IVs
   macro_sentiment: 'bearish' | 'neutral' | 'bullish';
