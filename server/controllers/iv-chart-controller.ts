@@ -26,6 +26,7 @@ import { getPriceWithFallbacks } from '../services/price-fallback-service';
 import { estimateGrowthRates } from '../utils/growth-rate-estimator';
 import { isETF, getETFReason, isREIT, isGrowthStock, isBank } from '../utils/stock-classifier';
 import { reitValuationService } from '../services/valuation-service-reit';
+import { fmpRateLimiter } from '../middleware/fmp-rate-limiter';
 import axios from 'axios';
 import {
   IVChartResponse,
@@ -41,6 +42,46 @@ const FMP_API_KEY = process.env.FMP_API_KEY || '';
 const ALPHA_VANTAGE_API_KEY = process.env.ALPHA_VANTAGE_API_KEY || '';
 
 /**
+ * Normalize ticker format for FMP API compatibility
+ * FMP uses hyphens for share classes (BRK-B, BF-A), not dots
+ *
+ * Examples:
+ * - BRK.B → BRK-B (Berkshire Hathaway Class B)
+ * - BF.A → BF-A (Brown-Forman Class A)
+ * - ASML.AS → ASML.AS (European exchange suffix preserved)
+ * - BMW.F → BMW.F (Frankfurt exchange preserved)
+ * - ABI.BR → ABI.BR (Brussels exchange preserved)
+ * - AAPL → AAPL (unchanged)
+ */
+function normalizeTickerFormat(symbol: string): string {
+  const upper = symbol.toUpperCase();
+
+  // Known exchange suffixes to preserve (don't convert . to -)
+  const exchangeSuffixes = [
+    'AS', 'L', 'PA', 'DE', 'LS', 'SW', 'HK', 'TO', 'V',  // Existing
+    'F', 'BR', 'MC', 'MI', 'ST', 'HE', 'CO', 'OL', 'VI'  // NEW (Frankfurt, Brussels, Madrid, Milan, Stockholm, Helsinki, Copenhagen, Oslo, Vienna)
+  ];
+
+  // Check if has exchange suffix
+  const suffixMatch = upper.match(/\.([A-Z]+)$/);
+  if (suffixMatch) {
+    const suffix = suffixMatch[1];
+
+    // If exchange suffix, preserve it
+    if (exchangeSuffixes.includes(suffix)) {
+      return upper;
+    }
+
+    // Otherwise convert to hyphen (share class: BRK.B → BRK-B)
+    if (suffix.length === 1) {
+      return upper.replace(/\.([A-Z])$/, '-$1');
+    }
+  }
+
+  return upper;
+}
+
+/**
  * GET /api/iv/:ticker/chart
  *
  * Returns consolidated valuation methods with macro adjustment
@@ -50,7 +91,7 @@ const ALPHA_VANTAGE_API_KEY = process.env.ALPHA_VANTAGE_API_KEY || '';
  */
 export async function getIVChart(req: Request, res: Response): Promise<void> {
   try {
-    const ticker = req.params.ticker?.toUpperCase();
+    const ticker = normalizeTickerFormat(req.params.ticker || '');
     const basedOn = (req.query.based_on as DCFBaseMetric) || 'fcf';
 
     if (!ticker) {
@@ -95,6 +136,30 @@ export async function getIVChart(req: Request, res: Response): Promise<void> {
     } catch (cacheError) {
       // Cache error shouldn't block the request, just log and continue
       logger.error(`[IV Chart] Cache read error for ${ticker}:`, cacheError);
+    }
+
+    // P0 FIX: FMP Rate Limiter - Check budget before expensive calculations
+    // Each IV calculation makes ~12 FMP calls (profile, financials, metrics, DCF, etc.)
+    // Budget: 200 calls/min to prevent 429 errors and rate exhaustion
+    try {
+      logger.info(`[IV Chart] Checking FMP rate limit budget for ${ticker}`);
+      await fmpRateLimiter.checkBudget(12); // Estimate 12 FMP calls per IV
+      const stats = fmpRateLimiter.getStats();
+      logger.info(`[IV Chart] FMP budget check passed for ${ticker}`, {
+        used: stats.currentUsed,
+        budget: stats.currentBudget,
+        utilization: fmpRateLimiter.getUtilization().toFixed(1) + '%',
+      });
+    } catch (rateLimitError: any) {
+      logger.error(`[IV Chart] FMP rate limit exceeded for ${ticker}:`, rateLimitError.message);
+      res.status(429).json({
+        error: 'RATE_LIMIT_EXCEEDED',
+        message: 'FMP API rate limit exceeded. Please try again in a moment.',
+        ticker,
+        retryAfter: Math.ceil(fmpRateLimiter.getTimeUntilReset() / 1000), // seconds
+        stats: fmpRateLimiter.getStats(),
+      });
+      return;
     }
 
     logger.info(`[IVChart] Generating chart for ${ticker} (based_on: ${basedOn})`);
@@ -233,6 +298,23 @@ export async function getIVChart(req: Request, res: Response): Promise<void> {
       'ddm',             // SUB-FASE 2D: Dividend Discount Model (Gordon Growth Model)
     ];
 
+    // AGENT 4 FIX (P0.4): Block DCF methods for banks - negative FCF makes DCF meaningless
+    // Banks use alternative financing (deposits, interbank lending) not traditional FCF
+    if (isBankStock) {
+      // Remove all DCF methods: dcf-fcf-20, dcf-terminal-fcf, dni-20, dfcf-terminal
+      const dcfMethods = ['dcf-fcf-20', 'dcf-terminal-fcf', 'dni-20', 'dfcf-terminal'];
+      const filteredMethods = methodIds.filter(m => !dcfMethods.includes(m));
+      const removedCount = methodIds.length - filteredMethods.length;
+
+      logger.info(
+        `[IV-Chart] ${ticker} is a bank - blocking ${removedCount} DCF methods (inappropriate for financial institutions): ` +
+        `${dcfMethods.filter(m => methodIds.includes(m as MethodId)).join(', ')}`
+      );
+
+      methodIds.length = 0;
+      methodIds.push(...filteredMethods);
+    }
+
     // FASE 2C: Dynamic method addition based on classification
     // Growth DCF 8Y ONLY for true growth stocks (NOT banks/REITs, even if they meet growth criteria)
     if (isGrowth && !isBankStock && !isReitStock) {
@@ -268,23 +350,47 @@ export async function getIVChart(req: Request, res: Response): Promise<void> {
       })
     );
 
-    // FASE 2C: Extract method results (21 base + optional growth-dcf-8y)
-    // Extract base 21 methods (always present - same order as methodIds)
-    const [
-      alfaValue, dcfFCF, dcfTermFCF, dni20, peMean, peMeanNoNRI,
-      psMean, pbMean, pbMeanNoNRI, peg, psg, dfcfTerminal,
-      ptbvMean, ptbvSector, ffoREIT, affoREIT, pFFOMean, pFFOSector,
-      dividendYieldREIT, grahamNumber, ddm
-    ] = results.slice(0, 21);
+    // AGENT 4 FIX: Map results by methodId instead of by index
+    // This allows dynamic filtering (e.g., removing DCF methods for banks)
+    // Build a map: methodId -> result
+    const resultMap = new Map<MethodId, PromiseSettledResult<any>>();
+    methodIds.forEach((methodId, index) => {
+      resultMap.set(methodId, results[index]);
+    });
 
-    // FASE 2C: Extract dynamic growth method (only if growth stock)
-    const growthDCF8Y = isGrowth && results.length > 21 ? results[21] : undefined;
+    // FASE 2C: Extract method results using resultMap (handles variable method counts)
+    const alfaValue = resultMap.get('alfa-value');
+    const dcfFCF = resultMap.get('dcf-fcf-20');
+    const dcfTermFCF = resultMap.get('dcf-terminal-fcf');
+    const dni20 = resultMap.get('dni-20');
+    const peMean = resultMap.get('pe-mean');
+    const peMeanNoNRI = resultMap.get('pe-mean-without-nri');
+    const psMean = resultMap.get('ps-mean');
+    const pbMean = resultMap.get('pb-mean');
+    const pbMeanNoNRI = resultMap.get('pb-mean-without-nri');
+    const peg = resultMap.get('peg');
+    const psg = resultMap.get('psg');
+    const dfcfTerminal = resultMap.get('dfcf-terminal');
+    const ptbvMean = resultMap.get('p-tbv-mean');
+    const ptbvSector = resultMap.get('p-tbv-sector');
+    const ffoREIT = resultMap.get('ffo-reit');
+    const affoREIT = resultMap.get('affo-reit');
+    const pFFOMean = resultMap.get('p-ffo-mean');
+    const pFFOSector = resultMap.get('p-ffo-sector');
+    const dividendYieldREIT = resultMap.get('dividend-yield-reit');
+    const grahamNumber = resultMap.get('graham-number');
+    const ddm = resultMap.get('ddm');
+    const growthDCF8Y = resultMap.get('growth-dcf-8y');
 
-    if (isGrowth) {
+    if (isBankStock && (dcfFCF || dcfTermFCF || dni20 || dfcfTerminal)) {
       logger.info(
-        `[IV-Chart] ${ticker} growth stock: results.length=${results.length}, ` +
-        `growthDCF8Y=${growthDCF8Y ? 'present' : 'MISSING'}, ` +
-        `status=${growthDCF8Y?.status || 'N/A'}`
+        `[IV-Chart] ${ticker} bank: Confirmed DCF methods filtered out (expected: all null)`
+      );
+    }
+
+    if (isGrowth && growthDCF8Y) {
+      logger.info(
+        `[IV-Chart] ${ticker} growth stock: growthDCF8Y present, status=${growthDCF8Y?.status || 'N/A'}`
       );
     }
 
@@ -997,8 +1103,41 @@ export async function getIVChart(req: Request, res: Response): Promise<void> {
 
     // 5. Build response with failedMethods transparency
     // FASE 2 FIX: Add available_methods and stock_classification for dynamic frontend dropdown
-    const availableMethods = methods.map(m => m.method_id);
-    const stockClassification = isGrowth ? 'growth' : isBankStock ? 'bank' : isReitStock ? 'reit' : 'value';
+    // P0 FIX #3 (2025-11-04): Derive available_methods from methodIds (attempted), not methods (successful)
+    // BUG: When all methods fail, methods.length=0 → available_methods=[] (broken UX)
+    // FIX: Use methodIds array which contains ALL attempted methods (before filtering)
+    const availableMethods = methodIds.map(id => {
+      // Map MethodId to frontend method_id format (same as getMethodId helper)
+      const mapping: Record<string, string> = {
+        'alfa-value': 'alfavalue',
+        'dcf-fcf-20': 'dcf-20-fcf',
+        'dcf-terminal-fcf': 'dcf-terminal-fcf',
+        'dni-20': 'dni-20',
+        'pe-mean': 'pe-mean',
+        'pe-mean-without-nri': 'pe-mean-without-nri',
+        'ps-mean': 'ps-mean',
+        'pb-mean': 'pb-mean',
+        'pb-mean-without-nri': 'pb-mean-without-nri',
+        'peg': 'peg',
+        'psg': 'psg',
+        'dfcf-terminal': 'dfcf-terminal',
+        'p-tbv-mean': 'p-tbv-mean',
+        'p-tbv-sector': 'p-tbv-sector',
+        'ffo-reit': 'ffo-reit',
+        'affo-reit': 'affo-reit',
+        'p-ffo-mean': 'p-ffo-mean',
+        'p-ffo-sector': 'p-ffo-sector',
+        'dividend-yield-reit': 'dividend-yield-reit',
+        'graham-number': 'graham-number',
+        'ddm': 'ddm',
+        'growth-dcf-8y': 'growth-dcf-8y',
+      };
+      return mapping[id] || id;
+    });
+    // CRITICAL FIX: Classification order - check most specific categories FIRST
+    // Wrong order (growth first): JPM (bank with growth) → misclassified as 'growth'
+    // Correct order (specific to general): bank → REIT → growth → value
+    const stockClassification = isBankStock ? 'bank' : isReitStock ? 'reit' : isGrowth ? 'growth' : 'value';
 
     const response: IVChartResponse = {
       ticker,
