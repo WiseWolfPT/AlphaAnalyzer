@@ -1,0 +1,106 @@
+ALFALYZER STOCK UNIVERSE - QUICK REFERENCE
+==========================================
+Generated: 2025-10-26
+
+TOTAL STOCKS: 1,493
+TESTED (FASE 2): 55 (3.68%)
+UNTESTED: 1,438 (96.32%)
+
+CRITICAL GAPS
+=============
+Portuguese stocks: 0/36 (0.0%) - IMMEDIATE ACTION REQUIRED
+REITs: 0/33 (0.0%) - Need FFO validation
+Real Estate sector: 0/31 (0.0%)
+Basic Materials sector: 0/20 (0.0%)
+EURONEXT exchange: 0/336 (0.0%)
+
+TOP 5 EXCHANGES
+===============
+1. N/A: 490 stocks (32.8%) - DATA QUALITY ISSUE
+2. EURONEXT: 336 stocks (22.5%)
+3. AMEX: 245 stocks (16.4%)
+4. XETRA: 155 stocks (10.4%)
+5. LSE: 153 stocks (10.2%)
+
+TOP 5 SECTORS (with data)
+==========================
+1. Technology: 95 stocks (14.7% tested)
+2. Industrials: 78 stocks (7.7% tested)
+3. Financial Services: 64 stocks (3.1% tested)
+4. Healthcare: 58 stocks (13.8% tested)
+5. Consumer Cyclical: 52 stocks (7.7% tested)
+
+STOCK TYPES
+===========
+Common Stocks: 676 (~8% tested)
+EURONEXT: 304 (0% tested)
+LSE: 150 (0% tested)
+Portuguese: 36 (0% tested) - CRITICAL
+REITs: 33 (0% tested) - CRITICAL
+ETFs: 6 (excluded from IV)
+
+PORTUGUESE STOCKS (TOP 10)
+===========================
+1. GALP.LS - Galp Energia (Energy)
+2. EDP.LS - Energias de Portugal (Utilities)
+3. JMT.LS - Jerónimo Martins (Consumer Defensive)
+4. NOS.LS - NOS SGPS (Communication)
+5. BCP.LS - Banco Comercial Português (Financials)
+6. CTT.LS - CTT Correios (Industrials)
+7. ALTRI.LS - Altri SGPS (Basic Materials)
+8. COR.LS - Corticeira Amorim (Basic Materials)
+9. EDPR.LS - EDP Renováveis (Utilities)
+10. EGL.LS - Mota-Engil SGPS (Industrials)
+
+MAJOR REITs (TOP 10)
+====================
+1. AMT - American Tower
+2. EQIX - Equinix
+3. DLR - Digital Realty
+4. CCI - Crown Castle
+5. ARE - Alexandria Real Estate
+6. AVB - AvalonBay Communities
+7. EQR - Equity Residential
+8. VTR - Ventas
+9. WELL - Welltower
+10. MAA - Mid-America Apartments
+
+KNOWN ISSUES
+============
+1. NFLX incorrectly flagged as ETF (bug in stock-classifier.ts)
+2. 490 stocks with exchange=N/A (need enrichment)
+3. 940 stocks with sector=N/A (need enrichment)
+4. No market_cap data in schema (need column + enrichment)
+
+PERFORMANCE METRICS
+===================
+Full universe warming: 20,902 IV calculations (1,493 × 14 methods)
+Time required: ~87 minutes (at 4 req/s FMP limit)
+Bandwidth per warm: ~627 MB
+Monthly (daily warm): ~18.8 GB (94% of 20 GB FMP limit)
+
+PRIORITY ACTIONS
+================
+1. Fix NFLX ETF detection bug
+2. Validate all 36 Portuguese stocks (100% coverage)
+3. Test 10 major REITs for FFO handling
+4. Enrich 490 stocks with missing exchange data
+5. Add market_cap column to schema
+6. Implement tiered warming (daily refresh sustainable)
+
+DATA FILES
+==========
+- stock_universe_complete.csv (1,493 rows)
+- priority_1_us_stocks.json (28 stocks)
+- priority_2_pt_stocks.json (36 stocks - CRITICAL)
+- priority_3_reits.json (33 stocks - CRITICAL)
+- STOCK_UNIVERSE_ANALYSIS_REPORT.md (full analysis)
+- STOCK_UNIVERSE_INVENTORY.md (this summary)
+
+NEXT STEPS
+==========
+1. Review with stakeholders
+2. Execute Phase 1 validation (Portuguese + REITs + bug fixes)
+3. Monitor bandwidth during validation
+4. Adjust warming strategy based on results
+

@@ -1,0 +1,285 @@
+{
+  "timestamp": "2025-11-05T18:30:00Z",
+  "server_info": {
+    "host": "128.140.45.28",
+    "url": "https://128.140.45.28.sslip.io",
+    "deployment_path": "/home/teste 1",
+    "node_version": "v20.19.4",
+    "uptime_seconds": 19960.84,
+    "uptime_hours": 5.55,
+    "memory_usage_mb": 173.95
+  },
+  "pm2_status": {
+    "total_processes": 7,
+    "online": 6,
+    "stopped": 1,
+    "processes": {
+      "alfalyzer": {
+        "status": "online",
+        "pid": 3503902,
+        "uptime_hours": 5,
+        "restarts": 9,
+        "memory_mb": 167.1,
+        "cpu_percent": 0
+      },
+      "intelligent-warming-worker": {
+        "status": "online",
+        "pid": 3510808,
+        "uptime_hours": 5,
+        "restarts": 3,
+        "memory_mb": 87.0,
+        "cpu_percent": 0
+      },
+      "iv-warming-worker": {
+        "status": "online",
+        "pid": 3510489,
+        "uptime_hours": 5,
+        "restarts": 3,
+        "memory_mb": 73.4,
+        "cpu_percent": 0
+      },
+      "earnings-monitor": {
+        "status": "online",
+        "pid": 3314424,
+        "uptime_days": 2,
+        "restarts": 1,
+        "memory_mb": 106.1,
+        "cpu_percent": 0
+      },
+      "price-worker": {
+        "status": "online",
+        "pid": 3536656,
+        "uptime_minutes": 30,
+        "restarts": 39,
+        "memory_mb": 82.4,
+        "cpu_percent": 0
+      },
+      "transcripts-worker": {
+        "status": "online",
+        "pid": 3314401,
+        "uptime_days": 2,
+        "restarts": 2,
+        "memory_mb": 109.4,
+        "cpu_percent": 0
+      },
+      "valuation-updater": {
+        "status": "stopped",
+        "pid": 0,
+        "uptime": 0,
+        "restarts": 0,
+        "memory_mb": 0,
+        "cpu_percent": 0
+      }
+    }
+  },
+  "deployed_bundle": {
+    "file": "/home/teste 1/dist/server/index.cjs",
+    "size_mb": 1.5,
+    "md5_hash": "3e197670a79743962c462b9168e5f88a",
+    "last_modified": "2025-11-05 13:21:36",
+    "deployed_hours_ago": 5.15
+  },
+  "deployed_features": {
+    "batch_fmp_provider": true,
+    "batch_quotes_method": true,
+    "batch_financial_data": false,
+    "token_bucket_limiter": false,
+    "cache_batch_optimization": true,
+    "batch_valuation_service": false,
+    "batch_warming_worker": true,
+    "notes": {
+      "batch_quotes": "DEPLOYED - Found 5 occurrences of getBatchQuotes in index.cjs",
+      "batch_financial": "NOT FOUND - No getBatchFinancialData method in bundle",
+      "token_bucket": "NOT FOUND - No TokenBucketRateLimiter class in bundle",
+      "warming_worker": "PARTIAL - Worker has getBatchQuotes (5 occurrences) but NO TokenBucketRateLimiter"
+    }
+  },
+  "health_status": {
+    "overall": "healthy",
+    "server": true,
+    "database": true,
+    "redis": true,
+    "apis": {
+      "alphaVantage": true,
+      "finnhub": true,
+      "fmp": true,
+      "twelveData": false
+    }
+  },
+  "recent_errors": {
+    "http_429_count": 37,
+    "http_429_source": "intelligent-warming-worker (FMP rate limiting)",
+    "critical_errors": [
+      "Request failed with status code 429 (FMP rate limit exceeded)",
+      "No profile data found for UNP (due to 429 errors)",
+      "No data found for JMT-LS (Portuguese stock symbol not supported)",
+      "No data found for EDP-LS (Portuguese stock symbol not supported)",
+      "Invalid IV calculation for SO, ORCL, NEE, LLY, JPM, INTC, DUK, DE (negative values)",
+      "timeout of 10000ms exceeded for CVX, CRM, CL ratios endpoint"
+    ],
+    "portuguese_stocks_failing": [
+      "NOS-LS",
+      "JMT-LS",
+      "ALTRI-LS",
+      "EDP-LS",
+      "GALP-LS"
+    ],
+    "stocks_with_invalid_iv": [
+      "SO",
+      "ORCL",
+      "NEE",
+      "LLY",
+      "JPM",
+      "INTC",
+      "DUK",
+      "DE"
+    ],
+    "slow_responses": [
+      "4791ms for GET /AMZN/chart",
+      "1251ms for GET /NVDA/chart",
+      "1788ms for GET /TSLA/chart"
+    ]
+  },
+  "cache_metrics": {
+    "redis": {
+      "status": "healthy",
+      "connected": true,
+      "memory_usage_mb": 11.71,
+      "total_keys": 1485,
+      "hits": 10328295,
+      "misses": 101049651,
+      "hit_rate_percent": 9.27,
+      "cache_errors": 157,
+      "connection_errors": 0
+    },
+    "simple_cache_service": {
+      "hits": 5808,
+      "misses": 1673,
+      "hit_rate_percent": 77.63,
+      "top_stocks_cached": [
+        "FTNT (520 hits)",
+        "AAPL (396 hits)",
+        "MSFT (389 hits)",
+        "GOOGL (387 hits)",
+        "AMZN (331 hits)",
+        "META (329 hits)",
+        "TSLA (330 hits)",
+        "NVDA (334 hits)"
+      ]
+    }
+  },
+  "intelligent_warming_worker": {
+    "status": "ACTIVE (but hitting rate limits)",
+    "cycle": 62,
+    "last_cycle_stats": {
+      "success": 26,
+      "failed": 0,
+      "skipped_fmp_validation": 24,
+      "duration_ms": 8855,
+      "bandwidth_mb": 1.52
+    },
+    "queue": {
+      "size": 0,
+      "completed": 862,
+      "failed": 412,
+      "average_priority": 0
+    },
+    "bandwidth_usage": {
+      "daily_budget_mb": 682.67,
+      "used_mb": 104.71,
+      "used_percent": 15.34,
+      "calls_today": 1787,
+      "average_call_size_kb": 30,
+      "status": "OK"
+    },
+    "rate_limiting": {
+      "http_429_errors": 37,
+      "affected_stocks": [
+        "MDT",
+        "UNP",
+        "TXN",
+        "PLD",
+        "AMD"
+      ],
+      "issue": "NO TOKEN BUCKET RATE LIMITER - Worker is overwhelming FMP API"
+    }
+  },
+  "api_performance": {
+    "cache_hits_serving_fast": true,
+    "average_response_time_cached": "5-15ms",
+    "slow_responses": {
+      "AMZN": "4791ms (cache miss)",
+      "NVDA": "1251ms (cache miss)",
+      "TSLA": "1788ms (cache miss)"
+    },
+    "fmp_timeouts": [
+      "CVX ratios endpoint (10s timeout)",
+      "CRM ratios endpoint (10s timeout)",
+      "CL key-metrics endpoint (10s timeout)"
+    ]
+  },
+  "critical_findings": {
+    "missing_batch_optimization": {
+      "severity": "HIGH",
+      "issue": "No TokenBucketRateLimiter deployed - rate limiting is uncontrolled",
+      "impact": "37 HTTP 429 errors from FMP, causing data gaps and failed IV calculations",
+      "recommendation": "Deploy batch FMP provider with token bucket rate limiter ASAP"
+    },
+    "fmp_rate_limit_exceeded": {
+      "severity": "CRITICAL",
+      "issue": "Intelligent warming worker is hitting FMP rate limits (429 errors)",
+      "affected_features": [
+        "IV calculations failing for 8+ stocks",
+        "Profile data unavailable during rate limiting",
+        "Cascade failures in valuation service"
+      ],
+      "recommendation": "Implement proper rate limiting with token bucket (4 req/s max)"
+    },
+    "low_redis_hit_rate": {
+      "severity": "MEDIUM",
+      "issue": "Redis hit rate is only 9.27% (10.3M hits vs 101M misses)",
+      "impact": "Excessive cache misses leading to more API calls than necessary",
+      "recommendation": "Investigate cache eviction policy and TTL settings"
+    },
+    "batch_financial_data_missing": {
+      "severity": "MEDIUM",
+      "issue": "No getBatchFinancialData method found in deployed bundle",
+      "impact": "Cannot batch financial statements, balance sheets, cash flow data",
+      "recommendation": "Deploy batch financial data methods to reduce API calls"
+    }
+  },
+  "deployment_verification": {
+    "last_deployment": "2025-11-05 13:21:36 UTC",
+    "deployment_age_hours": 5.15,
+    "bundle_integrity": "OK (md5 verified)",
+    "worker_files_present": {
+      "earnings-monitor.cjs": "249 KB",
+      "intelligent-warming-worker.cjs": "276 KB",
+      "iv-warming-worker.cjs": "221 KB",
+      "price-worker.cjs": "46 KB",
+      "transcripts-worker.cjs": "97 KB",
+      "valuation-updater.cjs": "203 KB"
+    }
+  },
+  "recommendations": {
+    "immediate": [
+      "Deploy TokenBucketRateLimiter to control FMP API rate (4 req/s max)",
+      "Deploy getBatchFinancialData method to batch financial data fetches",
+      "Fix Portuguese stock symbols (add proper exchange suffix handling)",
+      "Investigate and fix negative IV calculations for 8 stocks"
+    ],
+    "short_term": [
+      "Improve Redis hit rate (currently 9.27%, target >80%)",
+      "Add timeout handling for FMP ratios endpoint (currently failing at 10s)",
+      "Implement exponential backoff for 429 errors",
+      "Add circuit breaker for FMP API when rate limits exceeded"
+    ],
+    "monitoring": [
+      "Set up alerts for HTTP 429 errors",
+      "Track FMP bandwidth usage vs daily budget",
+      "Monitor Redis eviction rate and memory usage",
+      "Track IV calculation success rate by stock"
+    ]
+  },
+  "summary": "Production is STABLE but NOT OPTIMIZED. Main API (alfalyzer) is serving cached requests fast (5-15ms), but intelligent-warming-worker is hitting FMP rate limits (37 HTTP 429 errors) because TokenBucketRateLimiter is NOT deployed. Batch methods (getBatchQuotes) are present but batch financial data methods are missing. Redis hit rate is critically low (9.27%). Immediate action needed: Deploy rate limiting and batch optimization features to prevent continued FMP throttling."
+}

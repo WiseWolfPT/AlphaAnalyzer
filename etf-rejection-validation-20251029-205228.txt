@@ -1,0 +1,6 @@
+==================================================
+FASE 3 - Production ETF Rejection Validation
+==================================================
+Base URL: https://128.140.45.28.sslip.io
+Timestamp: Wed Oct 29 20:52:28 WET 2025
+

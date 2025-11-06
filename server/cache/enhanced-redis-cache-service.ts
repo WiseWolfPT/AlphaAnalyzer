@@ -15,6 +15,7 @@
 
 import Redis from 'ioredis';
 import * as msgpack from '@msgpack/msgpack';
+import { LRUCache } from 'lru-cache';
 import { logger } from '../lib/logger.js';
 import { validateTTL } from '../security/input-validation';
 
@@ -70,8 +71,6 @@ export class EnhancedRedisCacheService {
 
   constructor() {
     // Initialize L1 cache (10MB limit, ~1000 items)
-    // Use runtime require to avoid ESM/CJS bundling issues with lru-cache v11
-    const { LRUCache } = require('lru-cache');
     this.l1Cache = new LRUCache({
       max: 1000, // Max items
       maxSize: 10 * 1024 * 1024, // 10MB

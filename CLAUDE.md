@@ -554,6 +554,94 @@ DELETE /api/watchlists/:id
    price ? price.toFixed(2) : '0.00'
    ```
 
+## ETF EXCLUSION POLICY (FASE 2 - 2025-10-29)
+
+**Rule:** Intrinsic value calculations are ONLY for individual stocks, NOT for:
+- ETFs (Exchange-Traded Funds)
+- Mutual funds
+- Closed-end funds (CEFs)
+- Index funds
+
+**Why:** ETFs are baskets of stocks and have no intrinsic business value (they track underlying holdings). Valuation methods like DCF, DDM, and PE ratios are meaningless for ETFs.
+
+**Implementation:**
+- **Middleware:** `server/middleware/etf-validator.ts` (applies to all IV routes)
+- **Returns:** HTTP 422 (Unprocessable Entity) with structured error
+- **Detection:** 4-layer strategy:
+  1. Suffix detection (`.ETF`, `-ETF`, `.ETP`, `_ETF`)
+  2. Known ETF list (140+ popular ETFs: SPY, QQQ, ARKK, etc.)
+  3. Company profile type check (FMP API: `type=etf` or `isEtf=true`)
+  4. Name pattern matching (provider + indicator combinations)
+
+**Protected Endpoints:**
+- `/api/iv/:ticker/chart` - IV chart endpoint
+- `/api/iv/:ticker/main` - AlfaValue™ calculation
+- `/api/iv/:ticker` - IV chart alias
+- `/api/cache/intrinsic-values/:symbol` - Cached IV data
+- `/api/cache/iv/:symbol` - Cached IV alias
+
+**Defense-in-Depth:**
+- **Layer 1:** Middleware validation (routes)
+- **Layer 2:** Controller validation (iv-chart-controller.ts line 63-81)
+- **Layer 3:** Service validation (valuation-service.ts line 649-653)
+
+**Known ETFs (Curated List):** 140+ in `server/data/known-etfs.ts`
+- Equity: SPY, QQQ, IWM, VTI, VOO, DIA
+- Sector: XLF, XLE, XLK, XLV, XLP, XLI, XLU
+- Thematic: ARKK, ICLN, TAN, QCLN
+- International: EEM, VWO, EFA, IEMG
+- Fixed Income: AGG, BND, LQD, TLT
+- Commodities: GLD, SLV, USO, DBC
+
+**False Positives:**
+If a stock is incorrectly rejected as ETF, add to `STOCK_EXCEPTIONS` in `server/utils/stock-classifier.ts`:
+
+```typescript
+const STOCK_EXCEPTIONS = [
+  'NFLX', // Netflix (fixed: name contains "flix" not "flix fund")
+  // Add more exceptions here if needed
+];
+```
+
+**Testing:**
+```bash
+# Test ETF rejection
+bash scripts/test-etf-rejection.sh
+
+# Test specific endpoint
+curl -i https://128.140.45.28.sslip.io/api/iv/SPY/chart
+# Expected: HTTP 422 with error message
+
+# Test valid stock
+curl -i https://128.140.45.28.sslip.io/api/iv/AAPL/chart
+# Expected: HTTP 200 with IV data
+```
+
+**Error Response Format:**
+```json
+{
+  "error": "ETF_NOT_SUPPORTED",
+  "message": "SPY is an ETF. Intrinsic value calculations are only available for individual stocks.",
+  "reason": "Known ETF list (140+ popular ETFs)",
+  "ticker": "SPY",
+  "suggestion": "Try analyzing individual stocks within the ETF instead.",
+  "alternative_methods": [
+    "Price momentum analysis",
+    "Relative strength comparison",
+    "Expense ratio analysis",
+    "Tracking error measurement",
+    "Holdings analysis"
+  ],
+  "documentation": "https://docs.alfalyzer.com/why-no-etf-valuation"
+}
+```
+
+**Documentation:**
+- Middleware: `server/middleware/etf-validator.ts`
+- Stock Classifier: `server/utils/stock-classifier.ts`
+- Known ETFs List: `server/data/known-etfs.ts`
+- Test Script: `scripts/test-etf-rejection.sh`
+
 ## KNOWN ISSUES & SOLUTIONS
 
 ### ✅ RESOLVED: Prices showing $0.00 (2025-09-07)

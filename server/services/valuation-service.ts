@@ -184,6 +184,46 @@ async function fmpGet<T>(endpoint: string, params: Record<string, any> = {}): Pr
   }
 }
 
+/**
+ * Normalize ticker format for FMP API compatibility
+ * FMP uses hyphens for share classes (BRK-B, BF-A), not dots
+ *
+ * Examples:
+ * - BRK.B → BRK-B (Berkshire Hathaway Class B)
+ * - BF.A → BF-A (Brown-Forman Class A)
+ * - ASML.AS → ASML.AS (European exchange suffix preserved)
+ * - BMW.F → BMW.F (Frankfurt exchange preserved)
+ * - ABI.BR → ABI.BR (Brussels exchange preserved)
+ * - AAPL → AAPL (unchanged)
+ */
+function normalizeTickerFormat(symbol: string): string {
+  const upper = symbol.toUpperCase();
+
+  // Known exchange suffixes to preserve (don't convert . to -)
+  const exchangeSuffixes = [
+    'AS', 'L', 'PA', 'DE', 'LS', 'SW', 'HK', 'TO', 'V',  // Existing
+    'F', 'BR', 'MC', 'MI', 'ST', 'HE', 'CO', 'OL', 'VI'  // NEW (Frankfurt, Brussels, Madrid, Milan, Stockholm, Helsinki, Copenhagen, Oslo, Vienna)
+  ];
+
+  // Check if has exchange suffix
+  const suffixMatch = upper.match(/\.([A-Z]+)$/);
+  if (suffixMatch) {
+    const suffix = suffixMatch[1];
+
+    // If exchange suffix, preserve it
+    if (exchangeSuffixes.includes(suffix)) {
+      return upper;
+    }
+
+    // Otherwise convert to hyphen (share class: BRK.B → BRK-B)
+    if (suffix.length === 1) {
+      return upper.replace(/\.([A-Z])$/, '-$1');
+    }
+  }
+
+  return upper;
+}
+
 export class ValuationService {
   /**
    * Get current stock price from FMP
@@ -626,7 +666,7 @@ export class ValuationService {
    * 5. Calculate equity value and IV per share
    */
   async getAlfaValue(ticker: string): Promise<AlfaValueResponse> {
-    const upperTicker = ticker.toUpperCase();
+    const upperTicker = normalizeTickerFormat(ticker);
     const cacheKey = VALUATION_CACHE_KEYS.IV_CALC + upperTicker;
 
     // Check cache first
@@ -953,7 +993,7 @@ export class ValuationService {
    * Uses historical P/E ratios from last 5 years and current earnings
    */
   async calculatePEMean5Y(ticker: string): Promise<PEValuationResponse | null> {
-    const upperTicker = ticker.toUpperCase();
+    const upperTicker = normalizeTickerFormat(ticker);
     const cacheKey = VALUATION_CACHE_KEYS.IV_CALC + upperTicker + ':pe_mean';
 
     // Check cache
@@ -1091,7 +1131,7 @@ export class ValuationService {
    * Formula: IV = Mean_PS_5y × Sales_per_Share_TTM
    */
   async calculatePSMean5Y(ticker: string): Promise<PSValuationResponse | null> {
-    const upperTicker = ticker.toUpperCase();
+    const upperTicker = normalizeTickerFormat(ticker);
     const cacheKey = VALUATION_CACHE_KEYS.IV_CALC + upperTicker + ':ps_mean';
 
     // Check cache
@@ -1228,7 +1268,7 @@ export class ValuationService {
    * Formula: IV = Mean_PB_5y × Book_Value_per_Share_TTM
    */
   async calculatePBMean5Y(ticker: string): Promise<PBValuationResponse | null> {
-    const upperTicker = ticker.toUpperCase();
+    const upperTicker = normalizeTickerFormat(ticker);
     const cacheKey = VALUATION_CACHE_KEYS.IV_CALC + upperTicker + ':pb_mean';
 
     // Check cache
@@ -1367,7 +1407,7 @@ export class ValuationService {
    * Fair PEG benchmark: 1.5 (market standard)
    */
   async calculatePEG(ticker: string): Promise<PEGValuationResponse | null> {
-    const upperTicker = ticker.toUpperCase();
+    const upperTicker = normalizeTickerFormat(ticker);
     const cacheKey = VALUATION_CACHE_KEYS.IV_CALC + upperTicker + ':peg';
 
     // Check cache
@@ -1462,7 +1502,7 @@ export class ValuationService {
    * Fair PSG benchmark: 0.2 (market standard)
    */
   async calculatePSG(ticker: string): Promise<PSGValuationResponse | null> {
-    const upperTicker = ticker.toUpperCase();
+    const upperTicker = normalizeTickerFormat(ticker);
     const cacheKey = VALUATION_CACHE_KEYS.IV_CALC + upperTicker + ':psg';
 
     // Check cache
@@ -1572,7 +1612,7 @@ export class ValuationService {
    * Formula: IV = Σ(NI_t / (1 + WACC)^t) + (Cash - Debt) / Shares
    */
   async calculateDNI20(ticker: string): Promise<DNI20Response | null> {
-    const upperTicker = ticker.toUpperCase();
+    const upperTicker = normalizeTickerFormat(ticker);
     const cacheKey = VALUATION_CACHE_KEYS.IV_CALC + upperTicker + ':dni20';
 
     // Check cache
@@ -1756,7 +1796,7 @@ export class ValuationService {
    * Formula: IV = Mean_PB_without_NRI_5y × Adjusted_BVPS_TTM
    */
   async calculatePBMeanWithoutNRI(ticker: string): Promise<PBValuationResponse | null> {
-    const upperTicker = ticker.toUpperCase();
+    const upperTicker = normalizeTickerFormat(ticker);
     const cacheKey = VALUATION_CACHE_KEYS.IV_CALC + upperTicker + ':pb_mean_no_nri';
 
     // Check cache
@@ -1872,7 +1912,7 @@ export class ValuationService {
    * Formula: IV = Mean_PE_without_NRI_5y × Adjusted_EPS_TTM
    */
   async calculatePEMeanWithoutNRI(ticker: string): Promise<PEValuationResponse | null> {
-    const upperTicker = ticker.toUpperCase();
+    const upperTicker = normalizeTickerFormat(ticker);
     const cacheKey = VALUATION_CACHE_KEYS.IV_CALC + upperTicker + ':pe_mean_no_nri';
 
     // Check cache
@@ -1982,7 +2022,7 @@ export class ValuationService {
    * Formula: IV = (FCF × (1 + g_term)) / (WACC - g_term) + (Cash - Debt) / Shares
    */
   async calculateDFCFTerminal(ticker: string): Promise<DFCFTerminalResponse | null> {
-    const upperTicker = ticker.toUpperCase();
+    const upperTicker = normalizeTickerFormat(ticker);
     const cacheKey = VALUATION_CACHE_KEYS.IV_CALC + upperTicker + ':dfcf_terminal';
 
     // Check cache
@@ -2179,7 +2219,7 @@ export class ValuationService {
     ticker: string,
     basedOn: 'fcf' | 'ocf' | 'ni' = 'fcf'
   ): Promise<{ current: number; historical: number[] } | null> {
-    const upperTicker = ticker.toUpperCase();
+    const upperTicker = normalizeTickerFormat(ticker);
     const cacheKey = `${VALUATION_CACHE_KEYS.IV_CALC}${upperTicker}:base_${basedOn}`;
 
     // Check cache
@@ -2296,7 +2336,7 @@ export class ValuationService {
    * @returns PTBVValuationResponse or null if data unavailable
    */
   async calculatePTBVMean5Y(ticker: string): Promise<PTBVValuationResponse | null> {
-    const upperTicker = ticker.toUpperCase();
+    const upperTicker = normalizeTickerFormat(ticker);
     const cacheKey = VALUATION_CACHE_KEYS.IV_CALC + upperTicker + ':ptbv_mean';
 
     // Check cache
@@ -2455,7 +2495,7 @@ export class ValuationService {
    * @returns PTBVValuationResponse or null if data unavailable
    */
   async calculatePTBVSector(ticker: string): Promise<PTBVValuationResponse | null> {
-    const upperTicker = ticker.toUpperCase();
+    const upperTicker = normalizeTickerFormat(ticker);
     const cacheKey = VALUATION_CACHE_KEYS.IV_CALC + upperTicker + ':ptbv_sector';
 
     // Check cache
@@ -2583,7 +2623,7 @@ export class ValuationService {
    * @returns Graham Number valuation or null
    */
   async calculateGrahamNumber(ticker: string): Promise<import('../types/valuation').GrahamNumberValuationResponse | null> {
-    const upperTicker = ticker.toUpperCase();
+    const upperTicker = normalizeTickerFormat(ticker);
     const cacheKey = VALUATION_CACHE_KEYS.IV_CALC + upperTicker + ':graham_number';
 
     // Check cache
@@ -2678,7 +2718,7 @@ export class ValuationService {
    * @returns DDM valuation or null
    */
   async calculateDDM(ticker: string): Promise<import('../types/valuation').DDMValuationResponse | null> {
-    const upperTicker = ticker.toUpperCase();
+    const upperTicker = normalizeTickerFormat(ticker);
     const cacheKey = VALUATION_CACHE_KEYS.IV_CALC + upperTicker + ':ddm';
 
     // Check cache
@@ -2757,6 +2797,12 @@ export class ValuationService {
       // IV = D / (r - g)
       const iv = annualDividend / (discountRate - dividendGrowthRate);
 
+      // AGENT 14 FIX: Validate IV result before proceeding
+      if (!isFinite(iv) || iv <= 0) {
+        logger.warn(`[ValuationService] ${upperTicker} - Invalid DDM IV: ${iv} (dividend: ${annualDividend}, discount: ${discountRate}, growth: ${dividendGrowthRate})`);
+        return null;
+      }
+
       // Step 8: Check payout ratio sustainability
       let warning: string | undefined;
       let confidence: import('../types/valuation').ValuationConfidence = 'HIGH';
@@ -2772,10 +2818,11 @@ export class ValuationService {
         logger.info(`[ValuationService] ${upperTicker}: Healthy payout ratio (${(payoutRatio * 100).toFixed(1)}%)`);
       }
 
+      // AGENT 14 FIX: Safe logging with defensive .toFixed() usage
       logger.info(
-        `[ValuationService] ${upperTicker} DDM: $${iv.toFixed(2)} ` +
-        `(Div: $${annualDividend.toFixed(2)}, Growth: ${(dividendGrowthRate * 100).toFixed(2)}%, ` +
-        `Payout: ${(payoutRatio * 100).toFixed(1)}%)`
+        `[ValuationService] ${upperTicker} DDM: $${(iv ?? 0).toFixed(2)} ` +
+        `(Div: $${(annualDividend ?? 0).toFixed(2)}, Growth: ${((dividendGrowthRate ?? 0) * 100).toFixed(2)}%, ` +
+        `Payout: ${((payoutRatio ?? 0) * 100).toFixed(1)}%)`
       );
 
       const response: import('../types/valuation').DDMValuationResponse = {
@@ -2813,7 +2860,7 @@ export class ValuationService {
    * 3. Three-stage model: Years 1-3 (high growth 30-50%) → Years 4-6 (transition 20-30%) → Years 7-8 (mature 10-15%)
    */
   async calculateGrowthDCF8Y(ticker: string): Promise<GrowthDCF8YResponse | null> {
-    const upperTicker = ticker.toUpperCase();
+    const upperTicker = normalizeTickerFormat(ticker);
     const cacheKey = VALUATION_CACHE_KEYS.IV_CALC + upperTicker + ':growth_dcf_8y';
 
     // Check cache

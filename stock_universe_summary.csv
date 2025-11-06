@@ -1,0 +1,33 @@
+category,name,count,percentage
+Exchange,N/A,490,32.8%
+Exchange,EURONEXT,336,22.5%
+Exchange,AMEX,245,16.4%
+Exchange,XETRA,155,10.4%
+Exchange,LSE,153,10.2%
+Exchange,BME,62,4.2%
+Exchange,NASDAQ,25,1.7%
+Exchange,NYSE,21,1.4%
+Exchange,EURONEXT Lisbon,4,0.3%
+Exchange,NYSEARCA,1,0.1%
+Exchange,OTC,1,0.1%
+Sector,Technology,95,17.2%
+Sector,Industrials,78,14.1%
+Sector,Financial Services,64,11.6%
+Sector,Healthcare,58,10.5%
+Sector,Consumer Cyclical,52,9.4%
+Sector,Consumer Defensive,36,6.5%
+Sector,Utilities,34,6.2%
+Sector,Real Estate,31,5.6%
+Sector,Communication Services,28,5.1%
+Sector,Energy,25,4.5%
+Sector,Basic Materials,20,3.6%
+Sector,Financials,11,2.0%
+Sector,Consumer Discretionary,11,2.0%
+Sector,Health Care,4,0.7%
+Sector,Consumer Staples,4,0.7%
+Sector,ETF,1,0.2%
+Type,COMMON,1268,84.9%
+Type,LSE,150,10.0%
+Type,PT_STOCK,36,2.4%
+Type,REIT,33,2.2%
+Type,ETF,6,0.4%

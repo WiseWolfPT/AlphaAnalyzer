@@ -1,0 +1,2363 @@
+{
+  "summary": {
+    "tested": 100,
+    "pass": 86,
+    "partial": 14,
+    "fail": 0,
+    "passRate": 86,
+    "grade": "B",
+    "productionReady": "CONDITIONAL",
+    "duration": 0.6,
+    "rateLimitHits": 0
+  },
+  "sectorResults": {
+    "Technology": {
+      "pass": 13,
+      "partial": 2,
+      "fail": 0,
+      "total": 15
+    },
+    "Financials": {
+      "pass": 9,
+      "partial": 1,
+      "fail": 0,
+      "total": 10
+    },
+    "Real Estate": {
+      "pass": 9,
+      "partial": 1,
+      "fail": 0,
+      "total": 10
+    },
+    "Healthcare": {
+      "pass": 9,
+      "partial": 1,
+      "fail": 0,
+      "total": 10
+    },
+    "Consumer": {
+      "pass": 9,
+      "partial": 1,
+      "fail": 0,
+      "total": 10
+    },
+    "Energy": {
+      "pass": 8,
+      "partial": 2,
+      "fail": 0,
+      "total": 10
+    },
+    "Utilities": {
+      "pass": 8,
+      "partial": 2,
+      "fail": 0,
+      "total": 10
+    },
+    "Industrials": {
+      "pass": 8,
+      "partial": 2,
+      "fail": 0,
+      "total": 10
+    },
+    "Materials": {
+      "pass": 8,
+      "partial": 2,
+      "fail": 0,
+      "total": 10
+    },
+    "Communication": {
+      "pass": 5,
+      "partial": 0,
+      "fail": 0,
+      "total": 5
+    }
+  },
+  "detailedResults": [
+    {
+      "symbol": "AAPL",
+      "sector": "Technology",
+      "status": "PASS",
+      "httpStatus": 200,
+      "methodCount": 12,
+      "intrinsicValue": 159.27524962912068,
+      "errors": [],
+      "warnings": [],
+      "methods": [
+        "AlfaValue™",
+        "DCF-20 FCF FMP",
+        "DCF Terminal FCF FMP",
+        "DNI-20 NI",
+        "DFCF Terminal",
+        "P/E Mean 5y",
+        "P/S Mean 5y",
+        "P/B Mean 5y",
+        "Dividend Yield (REITs)",
+        "Graham Number",
+        "PEG Ratio",
+        "PSG Ratio"
+      ]
+    },
+    {
+      "symbol": "MSFT",
+      "sector": "Technology",
+      "status": "PASS",
+      "httpStatus": 200,
+      "methodCount": 14,
+      "intrinsicValue": 363.3244302184397,
+      "errors": [],
+      "warnings": [],
+      "methods": [
+        "AlfaValue™",
+        "DCF-20 FCF FMP",
+        "DCF Terminal FCF FMP",
+        "DNI-20 NI",
+        "DFCF Terminal",
+        "P/E Mean 5y",
+        "P/S Mean 5y",
+        "P/B Mean 5y",
+        "P/B Mean without NRI",
+        "P/E Mean without NRI",
+        "Dividend Yield (REITs)",
+        "Graham Number",
+        "PEG Ratio",
+        "PSG Ratio"
+      ]
+    },
+    {
+      "symbol": "GOOGL",
+      "sector": "Technology",
+      "status": "PASS",
+      "httpStatus": 200,
+      "methodCount": 15,
+      "intrinsicValue": 187.02574142597314,
+      "errors": [],
+      "warnings": [],
+      "methods": [
+        "AlfaValue™",
+        "DCF-20 FCF FMP",
+        "DCF Terminal FCF FMP",
+        "DNI-20 NI",
+        "DFCF Terminal",
+        "Growth DCF 8Y",
+        "P/E Mean 5y",
+        "P/S Mean 5y",
+        "P/B Mean 5y",
+        "P/B Mean without NRI",
+        "P/E Mean without NRI",
+        "Dividend Yield (REITs)",
+        "Graham Number",
+        "PEG Ratio",
+        "PSG Ratio"
+      ]
+    },
+    {
+      "symbol": "NVDA",
+      "sector": "Technology",
+      "status": "PASS",
+      "httpStatus": 200,
+      "methodCount": 15,
+      "intrinsicValue": 152.3257736115148,
+      "errors": [],
+      "warnings": [],
+      "methods": [
+        "AlfaValue™",
+        "DCF-20 FCF FMP",
+        "DCF Terminal FCF FMP",
+        "DNI-20 NI",
+        "DFCF Terminal",
+        "Growth DCF 8Y",
+        "P/E Mean 5y",
+        "P/S Mean 5y",
+        "P/B Mean 5y",
+        "P/B Mean without NRI",
+        "P/E Mean without NRI",
+        "Dividend Yield (REITs)",
+        "Graham Number",
+        "PEG Ratio",
+        "PSG Ratio"
+      ]
+    },
+    {
+      "symbol": "META",
+      "sector": "Technology",
+      "status": "PASS",
+      "httpStatus": 200,
+      "methodCount": 15,
+      "intrinsicValue": 536.7183926156162,
+      "errors": [],
+      "warnings": [],
+      "methods": [
+        "AlfaValue™",
+        "DCF-20 FCF FMP",
+        "DCF Terminal FCF FMP",
+        "DNI-20 NI",
+        "DFCF Terminal",
+        "Growth DCF 8Y",
+        "P/E Mean 5y",
+        "P/S Mean 5y",
+        "P/B Mean 5y",
+        "P/B Mean without NRI",
+        "P/E Mean without NRI",
+        "Dividend Yield (REITs)",
+        "Graham Number",
+        "PEG Ratio",
+        "PSG Ratio"
+      ]
+    },
+    {
+      "symbol": "TSLA",
+      "sector": "Technology",
+      "status": "PASS",
+      "httpStatus": 200,
+      "methodCount": 14,
+      "intrinsicValue": 62.54658835927521,
+      "errors": [],
+      "warnings": [],
+      "methods": [
+        "AlfaValue™",
+        "DCF-20 FCF FMP",
+        "DCF Terminal FCF FMP",
+        "DNI-20 NI",
+        "DFCF Terminal",
+        "Growth DCF 8Y",
+        "P/E Mean 5y",
+        "P/S Mean 5y",
+        "P/B Mean 5y",
+        "P/B Mean without NRI",
+        "P/E Mean without NRI",
+        "Graham Number",
+        "PEG Ratio",
+        "PSG Ratio"
+      ]
+    },
+    {
+      "symbol": "AMZN",
+      "sector": "Technology",
+      "status": "PASS",
+      "httpStatus": 200,
+      "methodCount": 13,
+      "intrinsicValue": 92.18733170904166,
+      "errors": [],
+      "warnings": [],
+      "methods": [
+        "AlfaValue™",
+        "DCF-20 FCF FMP",
+        "DCF Terminal FCF FMP",
+        "DNI-20 NI",
+        "DFCF Terminal",
+        "Growth DCF 8Y",
+        "P/E Mean 5y",
+        "P/S Mean 5y",
+        "P/B Mean 5y",
+        "P/B Mean without NRI",
+        "P/E Mean without NRI",
+        "Graham Number",
+        "PSG Ratio"
+      ]
+    },
+    {
+      "symbol": "NFLX",
+      "sector": "Technology",
+      "status": "PASS",
+      "httpStatus": 200,
+      "methodCount": 13,
+      "intrinsicValue": 400.3293156439194,
+      "errors": [],
+      "warnings": [],
+      "methods": [
+        "AlfaValue™",
+        "DCF-20 FCF FMP",
+        "DCF Terminal FCF FMP",
+        "DNI-20 NI",
+        "DFCF Terminal",
+        "Growth DCF 8Y",
+        "P/E Mean 5y",
+        "P/S Mean 5y",
+        "P/B Mean 5y",
+        "P/B Mean without NRI",
+        "P/E Mean without NRI",
+        "Graham Number",
+        "PSG Ratio"
+      ]
+    },
+    {
+      "symbol": "CRM",
+      "sector": "Technology",
+      "status": "PARTIAL",
+      "httpStatus": 200,
+      "methodCount": 1,
+      "intrinsicValue": 251.44,
+      "errors": [],
+      "warnings": [
+        "Only 1 methods (threshold: 6)"
+      ],
+      "methods": [
+        "P/S Mean 5y"
+      ]
+    },
+    {
+      "symbol": "ADBE",
+      "sector": "Technology",
+      "status": "PASS",
+      "httpStatus": 200,
+      "methodCount": 12,
+      "intrinsicValue": 348.19567521834074,
+      "errors": [],
+      "warnings": [],
+      "methods": [
+        "AlfaValue™",
+        "DCF-20 FCF FMP",
+        "DCF Terminal FCF FMP",
+        "DNI-20 NI",
+        "DFCF Terminal",
+        "Growth DCF 8Y",
+        "P/E Mean 5y",
+        "P/S Mean 5y",
+        "P/B Mean 5y",
+        "Graham Number",
+        "PEG Ratio",
+        "PSG Ratio"
+      ]
+    },
+    {
+      "symbol": "ORCL",
+      "sector": "Technology",
+      "status": "PASS",
+      "httpStatus": 200,
+      "methodCount": 11,
+      "intrinsicValue": 44.22557167209281,
+      "errors": [],
+      "warnings": [],
+      "methods": [
+        "DCF-20 FCF FMP",
+        "DCF Terminal FCF FMP",
+        "DNI-20 NI",
+        "P/E Mean 5y",
+        "P/S Mean 5y",
+        "P/B Mean 5y",
+        "P/B Mean without NRI",
+        "P/E Mean without NRI",
+        "Dividend Yield (REITs)",
+        "Graham Number",
+        "PSG Ratio"
+      ]
+    },
+    {
+      "symbol": "INTC",
+      "sector": "Technology",
+      "status": "PARTIAL",
+      "httpStatus": 200,
+      "methodCount": 5,
+      "intrinsicValue": 29.768094190943586,
+      "errors": [],
+      "warnings": [
+        "Only 5 methods (threshold: 6)"
+      ],
+      "methods": [
+        "P/E Mean 5y",
+        "P/S Mean 5y",
+        "P/B Mean 5y",
+        "P/B Mean without NRI",
+        "Graham Number"
+      ]
+    },
+    {
+      "symbol": "AMD",
+      "sector": "Technology",
+      "status": "PASS",
+      "httpStatus": 200,
+      "methodCount": 14,
+      "intrinsicValue": 63.1924476659635,
+      "errors": [],
+      "warnings": [],
+      "methods": [
+        "AlfaValue™",
+        "DCF-20 FCF FMP",
+        "DCF Terminal FCF FMP",
+        "DNI-20 NI",
+        "DFCF Terminal",
+        "Growth DCF 8Y",
+        "P/E Mean 5y",
+        "P/S Mean 5y",
+        "P/B Mean 5y",
+        "P/B Mean without NRI",
+        "P/E Mean without NRI",
+        "Graham Number",
+        "PEG Ratio",
+        "PSG Ratio"
+      ]
+    },
+    {
+      "symbol": "QCOM",
+      "sector": "Technology",
+      "status": "PASS",
+      "httpStatus": 200,
+      "methodCount": 12,
+      "intrinsicValue": 220.9670296809503,
+      "errors": [],
+      "warnings": [],
+      "methods": [
+        "AlfaValue™",
+        "DCF-20 FCF FMP",
+        "DCF Terminal FCF FMP",
+        "DNI-20 NI",
+        "DFCF Terminal",
+        "P/E Mean 5y",
+        "P/S Mean 5y",
+        "P/B Mean 5y",
+        "Dividend Yield (REITs)",
+        "Graham Number",
+        "PEG Ratio",
+        "PSG Ratio"
+      ]
+    },
+    {
+      "symbol": "CSCO",
+      "sector": "Technology",
+      "status": "PASS",
+      "httpStatus": 200,
+      "methodCount": 11,
+      "intrinsicValue": 52.72877057173591,
+      "errors": [],
+      "warnings": [],
+      "methods": [
+        "AlfaValue™",
+        "DCF-20 FCF FMP",
+        "DCF Terminal FCF FMP",
+        "DNI-20 NI",
+        "DFCF Terminal",
+        "P/E Mean 5y",
+        "P/S Mean 5y",
+        "P/B Mean 5y",
+        "Dividend Yield (REITs)",
+        "Graham Number",
+        "PSG Ratio"
+      ]
+    },
+    {
+      "symbol": "JPM",
+      "sector": "Financials",
+      "status": "PASS",
+      "httpStatus": 200,
+      "methodCount": 12,
+      "intrinsicValue": 239.00588666759984,
+      "errors": [],
+      "warnings": [
+        "Bank missing P/TBV method"
+      ],
+      "methods": [
+        "DCF-20 FCF FMP",
+        "DCF Terminal FCF FMP",
+        "DNI-20 NI",
+        "P/E Mean 5y",
+        "P/S Mean 5y",
+        "P/B Mean 5y",
+        "P/B Mean without NRI",
+        "P/E Mean without NRI",
+        "P/TBV Sector",
+        "Dividend Yield (REITs)",
+        "Graham Number",
+        "PSG Ratio"
+      ]
+    },
+    {
+      "symbol": "BAC",
+      "sector": "Financials",
+      "status": "PASS",
+      "httpStatus": 200,
+      "methodCount": 11,
+      "intrinsicValue": 44.262109914475474,
+      "errors": [],
+      "warnings": [
+        "Bank missing P/TBV method"
+      ],
+      "methods": [
+        "DCF-20 FCF FMP",
+        "DCF Terminal FCF FMP",
+        "P/E Mean 5y",
+        "P/S Mean 5y",
+        "P/B Mean 5y",
+        "P/B Mean without NRI",
+        "P/E Mean without NRI",
+        "P/TBV Sector",
+        "Dividend Yield (REITs)",
+        "Graham Number",
+        "PSG Ratio"
+      ]
+    },
+    {
+      "symbol": "GS",
+      "sector": "Financials",
+      "status": "PASS",
+      "httpStatus": 200,
+      "methodCount": 11,
+      "intrinsicValue": 490.9324868340086,
+      "errors": [],
+      "warnings": [
+        "Bank missing P/TBV method"
+      ],
+      "methods": [
+        "AlfaValue™",
+        "DNI-20 NI",
+        "P/E Mean 5y",
+        "P/S Mean 5y",
+        "P/B Mean 5y",
+        "P/B Mean without NRI",
+        "P/E Mean without NRI",
+        "P/TBV Sector",
+        "Dividend Yield (REITs)",
+        "Graham Number",
+        "PSG Ratio"
+      ]
+    },
+    {
+      "symbol": "MS",
+      "sector": "Financials",
+      "status": "PARTIAL",
+      "httpStatus": 200,
+      "methodCount": 3,
+      "intrinsicValue": 165.67,
+      "errors": [],
+      "warnings": [
+        "Only 3 methods (threshold: 6)"
+      ],
+      "methods": [
+        "P/E Mean 5y",
+        "P/S Mean 5y",
+        "P/B Mean 5y"
+      ]
+    },
+    {
+      "symbol": "WFC",
+      "sector": "Financials",
+      "status": "PASS",
+      "httpStatus": 200,
+      "methodCount": 14,
+      "intrinsicValue": 60.32815240972472,
+      "errors": [],
+      "warnings": [
+        "Bank missing P/TBV method"
+      ],
+      "methods": [
+        "AlfaValue™",
+        "DCF-20 FCF FMP",
+        "DCF Terminal FCF FMP",
+        "DNI-20 NI",
+        "DFCF Terminal",
+        "P/E Mean 5y",
+        "P/S Mean 5y",
+        "P/B Mean 5y",
+        "P/B Mean without NRI",
+        "P/E Mean without NRI",
+        "P/TBV Sector",
+        "Dividend Yield (REITs)",
+        "Graham Number",
+        "PSG Ratio"
+      ]
+    },
+    {
+      "symbol": "C",
+      "sector": "Financials",
+      "status": "PASS",
+      "httpStatus": 200,
+      "methodCount": 10,
+      "intrinsicValue": 68.97481569441243,
+      "errors": [],
+      "warnings": [
+        "Bank missing P/TBV method"
+      ],
+      "methods": [
+        "DNI-20 NI",
+        "P/E Mean 5y",
+        "P/S Mean 5y",
+        "P/B Mean 5y",
+        "P/B Mean without NRI",
+        "P/E Mean without NRI",
+        "P/TBV Sector",
+        "Dividend Yield (REITs)",
+        "Graham Number",
+        "PSG Ratio"
+      ]
+    },
+    {
+      "symbol": "USB",
+      "sector": "Financials",
+      "status": "PASS",
+      "httpStatus": 200,
+      "methodCount": 13,
+      "intrinsicValue": 55.33959164557425,
+      "errors": [],
+      "warnings": [
+        "Bank missing P/TBV method"
+      ],
+      "methods": [
+        "AlfaValue™",
+        "DNI-20 NI",
+        "DFCF Terminal",
+        "P/E Mean 5y",
+        "P/S Mean 5y",
+        "P/B Mean 5y",
+        "P/B Mean without NRI",
+        "P/E Mean without NRI",
+        "P/TBV Sector",
+        "Dividend Yield (REITs)",
+        "Graham Number",
+        "PEG Ratio",
+        "PSG Ratio"
+      ]
+    },
+    {
+      "symbol": "PNC",
+      "sector": "Financials",
+      "status": "PASS",
+      "httpStatus": 200,
+      "methodCount": 10,
+      "intrinsicValue": 218.37319502314972,
+      "errors": [],
+      "warnings": [
+        "Bank missing P/TBV method"
+      ],
+      "methods": [
+        "DCF-20 FCF FMP",
+        "DCF Terminal FCF FMP",
+        "P/E Mean 5y",
+        "P/S Mean 5y",
+        "P/B Mean 5y",
+        "P/B Mean without NRI",
+        "P/TBV Sector",
+        "Dividend Yield (REITs)",
+        "Graham Number",
+        "PSG Ratio"
+      ]
+    },
+    {
+      "symbol": "TFC",
+      "sector": "Financials",
+      "status": "PASS",
+      "httpStatus": 200,
+      "methodCount": 14,
+      "intrinsicValue": 44.707550670654555,
+      "errors": [],
+      "warnings": [
+        "Bank missing P/TBV method"
+      ],
+      "methods": [
+        "AlfaValue™",
+        "DCF-20 FCF FMP",
+        "DCF Terminal FCF FMP",
+        "DNI-20 NI",
+        "DFCF Terminal",
+        "P/E Mean 5y",
+        "P/S Mean 5y",
+        "P/B Mean 5y",
+        "P/B Mean without NRI",
+        "P/E Mean without NRI",
+        "P/TBV Sector",
+        "Dividend Yield (REITs)",
+        "Graham Number",
+        "PSG Ratio"
+      ]
+    },
+    {
+      "symbol": "COF",
+      "sector": "Financials",
+      "status": "PASS",
+      "httpStatus": 200,
+      "methodCount": 8,
+      "intrinsicValue": 196.97470499116125,
+      "errors": [],
+      "warnings": [
+        "Bank missing P/TBV method"
+      ],
+      "methods": [
+        "P/E Mean 5y",
+        "P/S Mean 5y",
+        "P/B Mean 5y",
+        "P/B Mean without NRI",
+        "P/E Mean without NRI",
+        "P/TBV Sector",
+        "Dividend Yield (REITs)",
+        "PSG Ratio"
+      ]
+    },
+    {
+      "symbol": "AMT",
+      "sector": "Real Estate",
+      "status": "PASS",
+      "httpStatus": 200,
+      "methodCount": 17,
+      "intrinsicValue": 140.30288975710718,
+      "errors": [],
+      "warnings": [],
+      "methods": [
+        "AlfaValue™",
+        "DCF-20 FCF FMP",
+        "DCF Terminal FCF FMP",
+        "DFCF Terminal",
+        "P/E Mean 5y",
+        "P/S Mean 5y",
+        "P/B Mean 5y",
+        "P/B Mean without NRI",
+        "P/E Mean without NRI",
+        "FFO (REITs)",
+        "AFFO (REITs)",
+        "P/FFO Mean",
+        "P/FFO Sector",
+        "Dividend Yield (REITs)",
+        "Graham Number",
+        "PEG Ratio",
+        "PSG Ratio"
+      ]
+    },
+    {
+      "symbol": "PLD",
+      "sector": "Real Estate",
+      "status": "PASS",
+      "httpStatus": 200,
+      "methodCount": 18,
+      "intrinsicValue": 142.87434807731918,
+      "errors": [],
+      "warnings": [],
+      "methods": [
+        "AlfaValue™",
+        "DCF-20 FCF FMP",
+        "DCF Terminal FCF FMP",
+        "DNI-20 NI",
+        "DFCF Terminal",
+        "P/E Mean 5y",
+        "P/S Mean 5y",
+        "P/B Mean 5y",
+        "P/B Mean without NRI",
+        "P/E Mean without NRI",
+        "FFO (REITs)",
+        "AFFO (REITs)",
+        "P/FFO Mean",
+        "P/FFO Sector",
+        "Dividend Yield (REITs)",
+        "Graham Number",
+        "PEG Ratio",
+        "PSG Ratio"
+      ]
+    },
+    {
+      "symbol": "EQIX",
+      "sector": "Real Estate",
+      "status": "PASS",
+      "httpStatus": 200,
+      "methodCount": 13,
+      "intrinsicValue": 432.8456435419571,
+      "errors": [],
+      "warnings": [],
+      "methods": [
+        "DNI-20 NI",
+        "P/E Mean 5y",
+        "P/S Mean 5y",
+        "P/B Mean 5y",
+        "P/B Mean without NRI",
+        "P/E Mean without NRI",
+        "FFO (REITs)",
+        "AFFO (REITs)",
+        "P/FFO Mean",
+        "P/FFO Sector",
+        "Dividend Yield (REITs)",
+        "Graham Number",
+        "PSG Ratio"
+      ]
+    },
+    {
+      "symbol": "PSA",
+      "sector": "Real Estate",
+      "status": "PASS",
+      "httpStatus": 200,
+      "methodCount": 17,
+      "intrinsicValue": 295.4538762151411,
+      "errors": [],
+      "warnings": [],
+      "methods": [
+        "DCF-20 FCF FMP",
+        "DCF Terminal FCF FMP",
+        "DNI-20 NI",
+        "DFCF Terminal",
+        "P/E Mean 5y",
+        "P/S Mean 5y",
+        "P/B Mean 5y",
+        "P/B Mean without NRI",
+        "P/E Mean without NRI",
+        "FFO (REITs)",
+        "AFFO (REITs)",
+        "P/FFO Mean",
+        "P/FFO Sector",
+        "Dividend Yield (REITs)",
+        "Graham Number",
+        "PEG Ratio",
+        "PSG Ratio"
+      ]
+    },
+    {
+      "symbol": "CCI",
+      "sector": "Real Estate",
+      "status": "PARTIAL",
+      "httpStatus": 200,
+      "methodCount": 5,
+      "intrinsicValue": 93.625,
+      "errors": [],
+      "warnings": [
+        "Only 5 methods (threshold: 6)"
+      ],
+      "methods": [
+        "DCF-20 FCF FMP",
+        "DCF Terminal FCF FMP",
+        "P/E Mean 5y",
+        "P/S Mean 5y",
+        "P/B Mean 5y"
+      ]
+    },
+    {
+      "symbol": "DLR",
+      "sector": "Real Estate",
+      "status": "PASS",
+      "httpStatus": 200,
+      "methodCount": 12,
+      "intrinsicValue": 72.1464342183838,
+      "errors": [],
+      "warnings": [],
+      "methods": [
+        "AlfaValue™",
+        "DFCF Terminal",
+        "P/E Mean 5y",
+        "P/S Mean 5y",
+        "P/B Mean 5y",
+        "P/E Mean without NRI",
+        "FFO (REITs)",
+        "AFFO (REITs)",
+        "P/FFO Mean",
+        "P/FFO Sector",
+        "Dividend Yield (REITs)",
+        "PSG Ratio"
+      ]
+    },
+    {
+      "symbol": "SPG",
+      "sector": "Real Estate",
+      "status": "PASS",
+      "httpStatus": 200,
+      "methodCount": 18,
+      "intrinsicValue": 136.64437486191474,
+      "errors": [],
+      "warnings": [],
+      "methods": [
+        "AlfaValue™",
+        "DCF-20 FCF FMP",
+        "DCF Terminal FCF FMP",
+        "DNI-20 NI",
+        "DFCF Terminal",
+        "P/E Mean 5y",
+        "P/S Mean 5y",
+        "P/B Mean 5y",
+        "P/B Mean without NRI",
+        "P/E Mean without NRI",
+        "FFO (REITs)",
+        "AFFO (REITs)",
+        "P/FFO Mean",
+        "P/FFO Sector",
+        "Dividend Yield (REITs)",
+        "Graham Number",
+        "PEG Ratio",
+        "PSG Ratio"
+      ]
+    },
+    {
+      "symbol": "O",
+      "sector": "Real Estate",
+      "status": "PASS",
+      "httpStatus": 200,
+      "methodCount": 15,
+      "intrinsicValue": 53.42438456246195,
+      "errors": [],
+      "warnings": [],
+      "methods": [
+        "DNI-20 NI",
+        "DFCF Terminal",
+        "P/E Mean 5y",
+        "P/S Mean 5y",
+        "P/B Mean 5y",
+        "P/B Mean without NRI",
+        "P/E Mean without NRI",
+        "FFO (REITs)",
+        "AFFO (REITs)",
+        "P/FFO Mean",
+        "P/FFO Sector",
+        "Dividend Yield (REITs)",
+        "Graham Number",
+        "PEG Ratio",
+        "PSG Ratio"
+      ]
+    },
+    {
+      "symbol": "WELL",
+      "sector": "Real Estate",
+      "status": "PASS",
+      "httpStatus": 200,
+      "methodCount": 17,
+      "intrinsicValue": 98.84743930610982,
+      "errors": [],
+      "warnings": [],
+      "methods": [
+        "AlfaValue™",
+        "DCF-20 FCF FMP",
+        "DCF Terminal FCF FMP",
+        "DFCF Terminal",
+        "P/E Mean 5y",
+        "P/S Mean 5y",
+        "P/B Mean 5y",
+        "P/B Mean without NRI",
+        "P/E Mean without NRI",
+        "FFO (REITs)",
+        "AFFO (REITs)",
+        "P/FFO Mean",
+        "P/FFO Sector",
+        "Dividend Yield (REITs)",
+        "Graham Number",
+        "PEG Ratio",
+        "PSG Ratio"
+      ]
+    },
+    {
+      "symbol": "AVB",
+      "sector": "Real Estate",
+      "status": "PASS",
+      "httpStatus": 200,
+      "methodCount": 17,
+      "intrinsicValue": 177.58000000000004,
+      "errors": [],
+      "warnings": [],
+      "methods": [
+        "AlfaValue™",
+        "DCF-20 FCF FMP",
+        "DCF Terminal FCF FMP",
+        "DNI-20 NI",
+        "DFCF Terminal",
+        "P/E Mean 5y",
+        "P/S Mean 5y",
+        "P/B Mean 5y",
+        "P/B Mean without NRI",
+        "P/E Mean without NRI",
+        "FFO (REITs)",
+        "AFFO (REITs)",
+        "P/FFO Sector",
+        "Dividend Yield (REITs)",
+        "Graham Number",
+        "PEG Ratio",
+        "PSG Ratio"
+      ]
+    },
+    {
+      "symbol": "JNJ",
+      "sector": "Healthcare",
+      "status": "PASS",
+      "httpStatus": 200,
+      "methodCount": 13,
+      "intrinsicValue": 188.92865481581885,
+      "errors": [],
+      "warnings": [],
+      "methods": [
+        "AlfaValue™",
+        "DCF-20 FCF FMP",
+        "DCF Terminal FCF FMP",
+        "DNI-20 NI",
+        "DFCF Terminal",
+        "P/E Mean 5y",
+        "P/S Mean 5y",
+        "P/B Mean 5y",
+        "P/B Mean without NRI",
+        "P/E Mean without NRI",
+        "Dividend Yield (REITs)",
+        "Graham Number",
+        "PSG Ratio"
+      ]
+    },
+    {
+      "symbol": "UNH",
+      "sector": "Healthcare",
+      "status": "PASS",
+      "httpStatus": 200,
+      "methodCount": 12,
+      "intrinsicValue": 567.9509794121183,
+      "errors": [],
+      "warnings": [],
+      "methods": [
+        "AlfaValue™",
+        "DNI-20 NI",
+        "DFCF Terminal",
+        "P/E Mean 5y",
+        "P/S Mean 5y",
+        "P/B Mean 5y",
+        "P/B Mean without NRI",
+        "P/E Mean without NRI",
+        "Dividend Yield (REITs)",
+        "Graham Number",
+        "PEG Ratio",
+        "PSG Ratio"
+      ]
+    },
+    {
+      "symbol": "LLY",
+      "sector": "Healthcare",
+      "status": "PASS",
+      "httpStatus": 200,
+      "methodCount": 11,
+      "intrinsicValue": 486.81877919009025,
+      "errors": [],
+      "warnings": [],
+      "methods": [
+        "DCF-20 FCF FMP",
+        "DCF Terminal FCF FMP",
+        "DNI-20 NI",
+        "P/E Mean 5y",
+        "P/S Mean 5y",
+        "P/B Mean 5y",
+        "P/B Mean without NRI",
+        "P/E Mean without NRI",
+        "Dividend Yield (REITs)",
+        "Graham Number",
+        "PSG Ratio"
+      ]
+    },
+    {
+      "symbol": "ABBV",
+      "sector": "Healthcare",
+      "status": "PASS",
+      "httpStatus": 200,
+      "methodCount": 11,
+      "intrinsicValue": 156.14651856867945,
+      "errors": [],
+      "warnings": [],
+      "methods": [
+        "AlfaValue™",
+        "DCF-20 FCF FMP",
+        "DCF Terminal FCF FMP",
+        "DFCF Terminal",
+        "P/E Mean 5y",
+        "P/S Mean 5y",
+        "P/B Mean 5y",
+        "P/E Mean without NRI",
+        "Dividend Yield (REITs)",
+        "PEG Ratio",
+        "PSG Ratio"
+      ]
+    },
+    {
+      "symbol": "MRK",
+      "sector": "Healthcare",
+      "status": "PARTIAL",
+      "httpStatus": 200,
+      "methodCount": 2,
+      "intrinsicValue": 86.89,
+      "errors": [],
+      "warnings": [
+        "Only 2 methods (threshold: 6)"
+      ],
+      "methods": [
+        "P/E Mean 5y",
+        "P/S Mean 5y"
+      ]
+    },
+    {
+      "symbol": "TMO",
+      "sector": "Healthcare",
+      "status": "PASS",
+      "httpStatus": 200,
+      "methodCount": 6,
+      "intrinsicValue": 563.23,
+      "errors": [],
+      "warnings": [],
+      "methods": [
+        "DCF-20 FCF FMP",
+        "DCF Terminal FCF FMP",
+        "P/E Mean 5y",
+        "P/S Mean 5y",
+        "P/B Mean 5y",
+        "PSG Ratio"
+      ]
+    },
+    {
+      "symbol": "ABT",
+      "sector": "Healthcare",
+      "status": "PASS",
+      "httpStatus": 200,
+      "methodCount": 13,
+      "intrinsicValue": 158.86625976811314,
+      "errors": [],
+      "warnings": [],
+      "methods": [
+        "AlfaValue™",
+        "DCF-20 FCF FMP",
+        "DCF Terminal FCF FMP",
+        "DNI-20 NI",
+        "DFCF Terminal",
+        "P/E Mean 5y",
+        "P/S Mean 5y",
+        "P/B Mean 5y",
+        "P/B Mean without NRI",
+        "P/E Mean without NRI",
+        "Dividend Yield (REITs)",
+        "Graham Number",
+        "PEG Ratio"
+      ]
+    },
+    {
+      "symbol": "DHR",
+      "sector": "Healthcare",
+      "status": "PASS",
+      "httpStatus": 200,
+      "methodCount": 12,
+      "intrinsicValue": 189.3952115191717,
+      "errors": [],
+      "warnings": [],
+      "methods": [
+        "AlfaValue™",
+        "DCF-20 FCF FMP",
+        "DCF Terminal FCF FMP",
+        "DNI-20 NI",
+        "DFCF Terminal",
+        "P/E Mean 5y",
+        "P/S Mean 5y",
+        "P/B Mean 5y",
+        "P/B Mean without NRI",
+        "P/E Mean without NRI",
+        "Dividend Yield (REITs)",
+        "Graham Number"
+      ]
+    },
+    {
+      "symbol": "BMY",
+      "sector": "Healthcare",
+      "status": "PASS",
+      "httpStatus": 200,
+      "methodCount": 7,
+      "intrinsicValue": 39.73110019855896,
+      "errors": [],
+      "warnings": [],
+      "methods": [
+        "P/E Mean 5y",
+        "P/S Mean 5y",
+        "P/B Mean 5y",
+        "P/B Mean without NRI",
+        "P/E Mean without NRI",
+        "Graham Number",
+        "PSG Ratio"
+      ]
+    },
+    {
+      "symbol": "AMGN",
+      "sector": "Healthcare",
+      "status": "PASS",
+      "httpStatus": 200,
+      "methodCount": 6,
+      "intrinsicValue": 224.55495000000002,
+      "errors": [],
+      "warnings": [],
+      "methods": [
+        "P/E Mean 5y",
+        "P/S Mean 5y",
+        "P/B Mean 5y",
+        "Dividend Yield (REITs)",
+        "Graham Number",
+        "PSG Ratio"
+      ]
+    },
+    {
+      "symbol": "WMT",
+      "sector": "Consumer",
+      "status": "PASS",
+      "httpStatus": 200,
+      "methodCount": 13,
+      "intrinsicValue": 42.48178520041308,
+      "errors": [],
+      "warnings": [],
+      "methods": [
+        "AlfaValue™",
+        "DCF-20 FCF FMP",
+        "DCF Terminal FCF FMP",
+        "DNI-20 NI",
+        "DFCF Terminal",
+        "P/E Mean 5y",
+        "P/S Mean 5y",
+        "P/B Mean 5y",
+        "P/B Mean without NRI",
+        "P/E Mean without NRI",
+        "Dividend Yield (REITs)",
+        "Graham Number",
+        "PSG Ratio"
+      ]
+    },
+    {
+      "symbol": "PG",
+      "sector": "Consumer",
+      "status": "PASS",
+      "httpStatus": 200,
+      "methodCount": 13,
+      "intrinsicValue": 162.27874419268915,
+      "errors": [],
+      "warnings": [],
+      "methods": [
+        "AlfaValue™",
+        "DCF-20 FCF FMP",
+        "DCF Terminal FCF FMP",
+        "DNI-20 NI",
+        "DFCF Terminal",
+        "P/E Mean 5y",
+        "P/S Mean 5y",
+        "P/B Mean 5y",
+        "P/B Mean without NRI",
+        "P/E Mean without NRI",
+        "Dividend Yield (REITs)",
+        "Graham Number",
+        "PSG Ratio"
+      ]
+    },
+    {
+      "symbol": "KO",
+      "sector": "Consumer",
+      "status": "PASS",
+      "httpStatus": 200,
+      "methodCount": 8,
+      "intrinsicValue": 56.884033977433596,
+      "errors": [],
+      "warnings": [],
+      "methods": [
+        "P/E Mean 5y",
+        "P/S Mean 5y",
+        "P/B Mean 5y",
+        "P/B Mean without NRI",
+        "P/E Mean without NRI",
+        "Dividend Yield (REITs)",
+        "Graham Number",
+        "PSG Ratio"
+      ]
+    },
+    {
+      "symbol": "PEP",
+      "sector": "Consumer",
+      "status": "PASS",
+      "httpStatus": 200,
+      "methodCount": 14,
+      "intrinsicValue": 162.03798347587303,
+      "errors": [],
+      "warnings": [],
+      "methods": [
+        "AlfaValue™",
+        "DCF-20 FCF FMP",
+        "DCF Terminal FCF FMP",
+        "DNI-20 NI",
+        "DFCF Terminal",
+        "P/E Mean 5y",
+        "P/S Mean 5y",
+        "P/B Mean 5y",
+        "P/B Mean without NRI",
+        "P/E Mean without NRI",
+        "Dividend Yield (REITs)",
+        "Graham Number",
+        "PEG Ratio",
+        "PSG Ratio"
+      ]
+    },
+    {
+      "symbol": "COST",
+      "sector": "Consumer",
+      "status": "PASS",
+      "httpStatus": 200,
+      "methodCount": 14,
+      "intrinsicValue": 491.3281027063972,
+      "errors": [],
+      "warnings": [],
+      "methods": [
+        "AlfaValue™",
+        "DCF-20 FCF FMP",
+        "DCF Terminal FCF FMP",
+        "DNI-20 NI",
+        "DFCF Terminal",
+        "P/E Mean 5y",
+        "P/S Mean 5y",
+        "P/B Mean 5y",
+        "P/B Mean without NRI",
+        "P/E Mean without NRI",
+        "Dividend Yield (REITs)",
+        "Graham Number",
+        "PEG Ratio",
+        "PSG Ratio"
+      ]
+    },
+    {
+      "symbol": "HD",
+      "sector": "Consumer",
+      "status": "PASS",
+      "httpStatus": 200,
+      "methodCount": 11,
+      "intrinsicValue": 152.49999999999997,
+      "errors": [],
+      "warnings": [],
+      "methods": [
+        "AlfaValue™",
+        "DCF-20 FCF FMP",
+        "DCF Terminal FCF FMP",
+        "DNI-20 NI",
+        "DFCF Terminal",
+        "P/E Mean 5y",
+        "P/S Mean 5y",
+        "P/B Mean 5y",
+        "Dividend Yield (REITs)",
+        "Graham Number",
+        "PSG Ratio"
+      ]
+    },
+    {
+      "symbol": "MCD",
+      "sector": "Consumer",
+      "status": "PARTIAL",
+      "httpStatus": 200,
+      "methodCount": 1,
+      "intrinsicValue": 302.24,
+      "errors": [],
+      "warnings": [
+        "Only 1 methods (threshold: 6)"
+      ],
+      "methods": [
+        "P/S Mean 5y"
+      ]
+    },
+    {
+      "symbol": "NKE",
+      "sector": "Consumer",
+      "status": "PASS",
+      "httpStatus": 200,
+      "methodCount": 12,
+      "intrinsicValue": 58.32752427392899,
+      "errors": [],
+      "warnings": [],
+      "methods": [
+        "AlfaValue™",
+        "DCF-20 FCF FMP",
+        "DCF Terminal FCF FMP",
+        "DNI-20 NI",
+        "DFCF Terminal",
+        "P/E Mean 5y",
+        "P/S Mean 5y",
+        "P/B Mean 5y",
+        "P/B Mean without NRI",
+        "P/E Mean without NRI",
+        "Dividend Yield (REITs)",
+        "Graham Number"
+      ]
+    },
+    {
+      "symbol": "SBUX",
+      "sector": "Consumer",
+      "status": "PASS",
+      "httpStatus": 200,
+      "methodCount": 11,
+      "intrinsicValue": 96.89279468986784,
+      "errors": [],
+      "warnings": [],
+      "methods": [
+        "AlfaValue™",
+        "DCF-20 FCF FMP",
+        "DCF Terminal FCF FMP",
+        "DNI-20 NI",
+        "DFCF Terminal",
+        "P/E Mean 5y",
+        "P/S Mean 5y",
+        "P/B Mean 5y",
+        "Dividend Yield (REITs)",
+        "PEG Ratio",
+        "PSG Ratio"
+      ]
+    },
+    {
+      "symbol": "TGT",
+      "sector": "Consumer",
+      "status": "PASS",
+      "httpStatus": 200,
+      "methodCount": 13,
+      "intrinsicValue": 166.19817039734033,
+      "errors": [],
+      "warnings": [],
+      "methods": [
+        "AlfaValue™",
+        "DCF-20 FCF FMP",
+        "DCF Terminal FCF FMP",
+        "DNI-20 NI",
+        "DFCF Terminal",
+        "P/E Mean 5y",
+        "P/S Mean 5y",
+        "P/B Mean 5y",
+        "P/B Mean without NRI",
+        "P/E Mean without NRI",
+        "Dividend Yield (REITs)",
+        "Graham Number",
+        "PSG Ratio"
+      ]
+    },
+    {
+      "symbol": "XOM",
+      "sector": "Energy",
+      "status": "PASS",
+      "httpStatus": 200,
+      "methodCount": 11,
+      "intrinsicValue": 100.21674352728071,
+      "errors": [],
+      "warnings": [],
+      "methods": [
+        "AlfaValue™",
+        "DNI-20 NI",
+        "DFCF Terminal",
+        "P/E Mean 5y",
+        "P/S Mean 5y",
+        "P/B Mean 5y",
+        "P/B Mean without NRI",
+        "P/E Mean without NRI",
+        "Dividend Yield (REITs)",
+        "Graham Number",
+        "PSG Ratio"
+      ]
+    },
+    {
+      "symbol": "CVX",
+      "sector": "Energy",
+      "status": "PASS",
+      "httpStatus": 200,
+      "methodCount": 12,
+      "intrinsicValue": 143.6864105450124,
+      "errors": [],
+      "warnings": [],
+      "methods": [
+        "AlfaValue™",
+        "DNI-20 NI",
+        "DFCF Terminal",
+        "P/E Mean 5y",
+        "P/S Mean 5y",
+        "P/B Mean 5y",
+        "P/B Mean without NRI",
+        "P/E Mean without NRI",
+        "Dividend Yield (REITs)",
+        "Graham Number",
+        "PEG Ratio",
+        "PSG Ratio"
+      ]
+    },
+    {
+      "symbol": "COP",
+      "sector": "Energy",
+      "status": "PASS",
+      "httpStatus": 200,
+      "methodCount": 12,
+      "intrinsicValue": 96.2587380772053,
+      "errors": [],
+      "warnings": [],
+      "methods": [
+        "AlfaValue™",
+        "DNI-20 NI",
+        "DFCF Terminal",
+        "P/E Mean 5y",
+        "P/S Mean 5y",
+        "P/B Mean 5y",
+        "P/B Mean without NRI",
+        "P/E Mean without NRI",
+        "Dividend Yield (REITs)",
+        "Graham Number",
+        "PEG Ratio",
+        "PSG Ratio"
+      ]
+    },
+    {
+      "symbol": "SLB",
+      "sector": "Energy",
+      "status": "PASS",
+      "httpStatus": 200,
+      "methodCount": 14,
+      "intrinsicValue": 62.0044744479725,
+      "errors": [],
+      "warnings": [],
+      "methods": [
+        "AlfaValue™",
+        "DCF-20 FCF FMP",
+        "DCF Terminal FCF FMP",
+        "DNI-20 NI",
+        "DFCF Terminal",
+        "P/E Mean 5y",
+        "P/S Mean 5y",
+        "P/B Mean 5y",
+        "P/B Mean without NRI",
+        "P/E Mean without NRI",
+        "Dividend Yield (REITs)",
+        "Graham Number",
+        "PEG Ratio",
+        "PSG Ratio"
+      ]
+    },
+    {
+      "symbol": "EOG",
+      "sector": "Energy",
+      "status": "PASS",
+      "httpStatus": 200,
+      "methodCount": 12,
+      "intrinsicValue": 121.8421854720103,
+      "errors": [],
+      "warnings": [],
+      "methods": [
+        "AlfaValue™",
+        "DNI-20 NI",
+        "DFCF Terminal",
+        "P/E Mean 5y",
+        "P/S Mean 5y",
+        "P/B Mean 5y",
+        "P/B Mean without NRI",
+        "P/E Mean without NRI",
+        "Dividend Yield (REITs)",
+        "Graham Number",
+        "PEG Ratio",
+        "PSG Ratio"
+      ]
+    },
+    {
+      "symbol": "PSX",
+      "sector": "Energy",
+      "status": "PASS",
+      "httpStatus": 200,
+      "methodCount": 13,
+      "intrinsicValue": 98.33333333333334,
+      "errors": [],
+      "warnings": [],
+      "methods": [
+        "AlfaValue™",
+        "DCF-20 FCF FMP",
+        "DCF Terminal FCF FMP",
+        "DNI-20 NI",
+        "DFCF Terminal",
+        "P/E Mean 5y",
+        "P/S Mean 5y",
+        "P/B Mean 5y",
+        "P/B Mean without NRI",
+        "P/E Mean without NRI",
+        "Dividend Yield (REITs)",
+        "Graham Number",
+        "PSG Ratio"
+      ]
+    },
+    {
+      "symbol": "VLO",
+      "sector": "Energy",
+      "status": "PARTIAL",
+      "httpStatus": 200,
+      "methodCount": 0,
+      "intrinsicValue": 0,
+      "errors": [],
+      "warnings": [
+        "Only 0 methods (threshold: 6)"
+      ],
+      "methods": []
+    },
+    {
+      "symbol": "MPC",
+      "sector": "Energy",
+      "status": "PARTIAL",
+      "httpStatus": 200,
+      "methodCount": 3,
+      "intrinsicValue": 195.12,
+      "errors": [],
+      "warnings": [
+        "Only 3 methods (threshold: 6)"
+      ],
+      "methods": [
+        "P/E Mean 5y",
+        "P/S Mean 5y",
+        "P/B Mean 5y"
+      ]
+    },
+    {
+      "symbol": "OXY",
+      "sector": "Energy",
+      "status": "PASS",
+      "httpStatus": 200,
+      "methodCount": 12,
+      "intrinsicValue": 48.72099126795924,
+      "errors": [],
+      "warnings": [],
+      "methods": [
+        "AlfaValue™",
+        "DNI-20 NI",
+        "DFCF Terminal",
+        "P/E Mean 5y",
+        "P/S Mean 5y",
+        "P/B Mean 5y",
+        "P/B Mean without NRI",
+        "P/E Mean without NRI",
+        "Dividend Yield (REITs)",
+        "Graham Number",
+        "PEG Ratio",
+        "PSG Ratio"
+      ]
+    },
+    {
+      "symbol": "HAL",
+      "sector": "Energy",
+      "status": "PASS",
+      "httpStatus": 200,
+      "methodCount": 10,
+      "intrinsicValue": 33.54286042586366,
+      "errors": [],
+      "warnings": [],
+      "methods": [
+        "DCF-20 FCF FMP",
+        "DCF Terminal FCF FMP",
+        "P/E Mean 5y",
+        "P/S Mean 5y",
+        "P/B Mean 5y",
+        "P/B Mean without NRI",
+        "P/E Mean without NRI",
+        "Dividend Yield (REITs)",
+        "Graham Number",
+        "PSG Ratio"
+      ]
+    },
+    {
+      "symbol": "NEE",
+      "sector": "Utilities",
+      "status": "PASS",
+      "httpStatus": 200,
+      "methodCount": 10,
+      "intrinsicValue": 97.58356300283194,
+      "errors": [],
+      "warnings": [],
+      "methods": [
+        "DNI-20 NI",
+        "DFCF Terminal",
+        "P/E Mean 5y",
+        "P/S Mean 5y",
+        "P/B Mean 5y",
+        "P/B Mean without NRI",
+        "P/E Mean without NRI",
+        "Dividend Yield (REITs)",
+        "Graham Number",
+        "PSG Ratio"
+      ]
+    },
+    {
+      "symbol": "DUK",
+      "sector": "Utilities",
+      "status": "PARTIAL",
+      "httpStatus": 200,
+      "methodCount": 2,
+      "intrinsicValue": 124.24,
+      "errors": [],
+      "warnings": [
+        "Only 2 methods (threshold: 6)"
+      ],
+      "methods": [
+        "P/S Mean 5y",
+        "P/B Mean 5y"
+      ]
+    },
+    {
+      "symbol": "SO",
+      "sector": "Utilities",
+      "status": "PASS",
+      "httpStatus": 200,
+      "methodCount": 9,
+      "intrinsicValue": 79.25197673947554,
+      "errors": [],
+      "warnings": [],
+      "methods": [
+        "DNI-20 NI",
+        "P/E Mean 5y",
+        "P/S Mean 5y",
+        "P/B Mean 5y",
+        "P/B Mean without NRI",
+        "P/E Mean without NRI",
+        "Dividend Yield (REITs)",
+        "Graham Number",
+        "PSG Ratio"
+      ]
+    },
+    {
+      "symbol": "D",
+      "sector": "Utilities",
+      "status": "PASS",
+      "httpStatus": 200,
+      "methodCount": 8,
+      "intrinsicValue": 67.10811523788144,
+      "errors": [],
+      "warnings": [],
+      "methods": [
+        "P/E Mean 5y",
+        "P/S Mean 5y",
+        "P/B Mean 5y",
+        "P/B Mean without NRI",
+        "P/E Mean without NRI",
+        "Dividend Yield (REITs)",
+        "Graham Number",
+        "PSG Ratio"
+      ]
+    },
+    {
+      "symbol": "AEP",
+      "sector": "Utilities",
+      "status": "PARTIAL",
+      "httpStatus": 200,
+      "methodCount": 0,
+      "intrinsicValue": 0,
+      "errors": [],
+      "warnings": [
+        "Only 0 methods (threshold: 6)"
+      ],
+      "methods": []
+    },
+    {
+      "symbol": "EXC",
+      "sector": "Utilities",
+      "status": "PASS",
+      "httpStatus": 200,
+      "methodCount": 8,
+      "intrinsicValue": 40.771538804292334,
+      "errors": [],
+      "warnings": [],
+      "methods": [
+        "P/E Mean 5y",
+        "P/S Mean 5y",
+        "P/B Mean 5y",
+        "P/B Mean without NRI",
+        "P/E Mean without NRI",
+        "Dividend Yield (REITs)",
+        "Graham Number",
+        "PSG Ratio"
+      ]
+    },
+    {
+      "symbol": "SRE",
+      "sector": "Utilities",
+      "status": "PASS",
+      "httpStatus": 200,
+      "methodCount": 8,
+      "intrinsicValue": 83.23384063203179,
+      "errors": [],
+      "warnings": [],
+      "methods": [
+        "DNI-20 NI",
+        "P/E Mean 5y",
+        "P/S Mean 5y",
+        "P/B Mean 5y",
+        "P/B Mean without NRI",
+        "P/E Mean without NRI",
+        "Dividend Yield (REITs)",
+        "Graham Number"
+      ]
+    },
+    {
+      "symbol": "XEL",
+      "sector": "Utilities",
+      "status": "PASS",
+      "httpStatus": 200,
+      "methodCount": 9,
+      "intrinsicValue": 64.99117831265049,
+      "errors": [],
+      "warnings": [],
+      "methods": [
+        "DNI-20 NI",
+        "P/E Mean 5y",
+        "P/S Mean 5y",
+        "P/B Mean 5y",
+        "P/B Mean without NRI",
+        "P/E Mean without NRI",
+        "Dividend Yield (REITs)",
+        "Graham Number",
+        "PSG Ratio"
+      ]
+    },
+    {
+      "symbol": "ED",
+      "sector": "Utilities",
+      "status": "PASS",
+      "httpStatus": 200,
+      "methodCount": 9,
+      "intrinsicValue": 96.25446925277508,
+      "errors": [],
+      "warnings": [],
+      "methods": [
+        "DNI-20 NI",
+        "P/E Mean 5y",
+        "P/S Mean 5y",
+        "P/B Mean 5y",
+        "P/B Mean without NRI",
+        "P/E Mean without NRI",
+        "Dividend Yield (REITs)",
+        "Graham Number",
+        "PSG Ratio"
+      ]
+    },
+    {
+      "symbol": "ES",
+      "sector": "Utilities",
+      "status": "PASS",
+      "httpStatus": 200,
+      "methodCount": 6,
+      "intrinsicValue": 61.87583333333333,
+      "errors": [],
+      "warnings": [],
+      "methods": [
+        "P/E Mean 5y",
+        "P/S Mean 5y",
+        "P/B Mean 5y",
+        "Dividend Yield (REITs)",
+        "Graham Number",
+        "PSG Ratio"
+      ]
+    },
+    {
+      "symbol": "CAT",
+      "sector": "Industrials",
+      "status": "PASS",
+      "httpStatus": 200,
+      "methodCount": 14,
+      "intrinsicValue": 285.25611846377734,
+      "errors": [],
+      "warnings": [],
+      "methods": [
+        "AlfaValue™",
+        "DCF-20 FCF FMP",
+        "DCF Terminal FCF FMP",
+        "DNI-20 NI",
+        "DFCF Terminal",
+        "P/E Mean 5y",
+        "P/S Mean 5y",
+        "P/B Mean 5y",
+        "P/B Mean without NRI",
+        "P/E Mean without NRI",
+        "Dividend Yield (REITs)",
+        "Graham Number",
+        "PEG Ratio",
+        "PSG Ratio"
+      ]
+    },
+    {
+      "symbol": "BA",
+      "sector": "Industrials",
+      "status": "PARTIAL",
+      "httpStatus": 200,
+      "methodCount": 4,
+      "intrinsicValue": 213.62,
+      "errors": [],
+      "warnings": [
+        "Only 4 methods (threshold: 6)"
+      ],
+      "methods": [
+        "P/E Mean 5y",
+        "P/S Mean 5y",
+        "P/B Mean 5y",
+        "PSG Ratio"
+      ]
+    },
+    {
+      "symbol": "GE",
+      "sector": "Industrials",
+      "status": "PASS",
+      "httpStatus": 200,
+      "methodCount": 9,
+      "intrinsicValue": 65.43698196613103,
+      "errors": [],
+      "warnings": [],
+      "methods": [
+        "DCF-20 FCF FMP",
+        "DCF Terminal FCF FMP",
+        "P/E Mean 5y",
+        "P/S Mean 5y",
+        "P/B Mean 5y",
+        "P/B Mean without NRI",
+        "P/E Mean without NRI",
+        "Dividend Yield (REITs)",
+        "Graham Number"
+      ]
+    },
+    {
+      "symbol": "HON",
+      "sector": "Industrials",
+      "status": "PASS",
+      "httpStatus": 200,
+      "methodCount": 13,
+      "intrinsicValue": 182.90509821798847,
+      "errors": [],
+      "warnings": [],
+      "methods": [
+        "AlfaValue™",
+        "DCF-20 FCF FMP",
+        "DCF Terminal FCF FMP",
+        "DNI-20 NI",
+        "DFCF Terminal",
+        "P/E Mean 5y",
+        "P/S Mean 5y",
+        "P/B Mean 5y",
+        "P/B Mean without NRI",
+        "P/E Mean without NRI",
+        "Dividend Yield (REITs)",
+        "Graham Number",
+        "PSG Ratio"
+      ]
+    },
+    {
+      "symbol": "UPS",
+      "sector": "Industrials",
+      "status": "PASS",
+      "httpStatus": 200,
+      "methodCount": 13,
+      "intrinsicValue": 136.2857820713094,
+      "errors": [],
+      "warnings": [],
+      "methods": [
+        "AlfaValue™",
+        "DCF-20 FCF FMP",
+        "DCF Terminal FCF FMP",
+        "DNI-20 NI",
+        "DFCF Terminal",
+        "P/E Mean 5y",
+        "P/S Mean 5y",
+        "P/B Mean 5y",
+        "P/B Mean without NRI",
+        "P/E Mean without NRI",
+        "Dividend Yield (REITs)",
+        "Graham Number",
+        "PEG Ratio"
+      ]
+    },
+    {
+      "symbol": "RTX",
+      "sector": "Industrials",
+      "status": "PARTIAL",
+      "httpStatus": 200,
+      "methodCount": 5,
+      "intrinsicValue": 176.52,
+      "errors": [],
+      "warnings": [
+        "Only 5 methods (threshold: 6)"
+      ],
+      "methods": [
+        "DCF-20 FCF FMP",
+        "DCF Terminal FCF FMP",
+        "P/E Mean 5y",
+        "P/S Mean 5y",
+        "P/B Mean 5y"
+      ]
+    },
+    {
+      "symbol": "LMT",
+      "sector": "Industrials",
+      "status": "PASS",
+      "httpStatus": 200,
+      "methodCount": 7,
+      "intrinsicValue": 486.45,
+      "errors": [],
+      "warnings": [],
+      "methods": [
+        "DCF-20 FCF FMP",
+        "DCF Terminal FCF FMP",
+        "P/E Mean 5y",
+        "P/S Mean 5y",
+        "P/B Mean 5y",
+        "Dividend Yield (REITs)",
+        "Graham Number"
+      ]
+    },
+    {
+      "symbol": "MMM",
+      "sector": "Industrials",
+      "status": "PASS",
+      "httpStatus": 200,
+      "methodCount": 12,
+      "intrinsicValue": 62.92622311146682,
+      "errors": [],
+      "warnings": [],
+      "methods": [
+        "AlfaValue™",
+        "DCF-20 FCF FMP",
+        "DCF Terminal FCF FMP",
+        "DNI-20 NI",
+        "DFCF Terminal",
+        "P/E Mean 5y",
+        "P/S Mean 5y",
+        "P/B Mean 5y",
+        "P/B Mean without NRI",
+        "P/E Mean without NRI",
+        "Dividend Yield (REITs)",
+        "Graham Number"
+      ]
+    },
+    {
+      "symbol": "DE",
+      "sector": "Industrials",
+      "status": "PASS",
+      "httpStatus": 200,
+      "methodCount": 12,
+      "intrinsicValue": 311.1616086646968,
+      "errors": [],
+      "warnings": [],
+      "methods": [
+        "DCF-20 FCF FMP",
+        "DCF Terminal FCF FMP",
+        "DNI-20 NI",
+        "DFCF Terminal",
+        "P/E Mean 5y",
+        "P/S Mean 5y",
+        "P/B Mean 5y",
+        "P/B Mean without NRI",
+        "P/E Mean without NRI",
+        "Dividend Yield (REITs)",
+        "Graham Number",
+        "PSG Ratio"
+      ]
+    },
+    {
+      "symbol": "EMR",
+      "sector": "Industrials",
+      "status": "PASS",
+      "httpStatus": 200,
+      "methodCount": 6,
+      "intrinsicValue": 100.11193027738118,
+      "errors": [],
+      "warnings": [],
+      "methods": [
+        "DCF-20 FCF FMP",
+        "DCF Terminal FCF FMP",
+        "P/E Mean 5y",
+        "P/S Mean 5y",
+        "P/B Mean 5y",
+        "Graham Number"
+      ]
+    },
+    {
+      "symbol": "LIN",
+      "sector": "Materials",
+      "status": "PASS",
+      "httpStatus": 200,
+      "methodCount": 14,
+      "intrinsicValue": 333.39693864618926,
+      "errors": [],
+      "warnings": [],
+      "methods": [
+        "AlfaValue™",
+        "DCF-20 FCF FMP",
+        "DCF Terminal FCF FMP",
+        "DNI-20 NI",
+        "DFCF Terminal",
+        "P/E Mean 5y",
+        "P/S Mean 5y",
+        "P/B Mean 5y",
+        "P/B Mean without NRI",
+        "P/E Mean without NRI",
+        "Dividend Yield (REITs)",
+        "Graham Number",
+        "PEG Ratio",
+        "PSG Ratio"
+      ]
+    },
+    {
+      "symbol": "APD",
+      "sector": "Materials",
+      "status": "PARTIAL",
+      "httpStatus": 200,
+      "methodCount": 5,
+      "intrinsicValue": 251.44999999999996,
+      "errors": [],
+      "warnings": [
+        "Only 5 methods (threshold: 6)"
+      ],
+      "methods": [
+        "P/E Mean 5y",
+        "P/S Mean 5y",
+        "P/B Mean 5y",
+        "Dividend Yield (REITs)",
+        "Graham Number"
+      ]
+    },
+    {
+      "symbol": "SHW",
+      "sector": "Materials",
+      "status": "PASS",
+      "httpStatus": 200,
+      "methodCount": 6,
+      "intrinsicValue": 277.2516094611583,
+      "errors": [],
+      "warnings": [],
+      "methods": [
+        "DCF-20 FCF FMP",
+        "DCF Terminal FCF FMP",
+        "P/E Mean 5y",
+        "P/S Mean 5y",
+        "P/B Mean 5y",
+        "Graham Number"
+      ]
+    },
+    {
+      "symbol": "ECL",
+      "sector": "Materials",
+      "status": "PASS",
+      "httpStatus": 200,
+      "methodCount": 7,
+      "intrinsicValue": 151.2877816289774,
+      "errors": [],
+      "warnings": [],
+      "methods": [
+        "DCF-20 FCF FMP",
+        "DCF Terminal FCF FMP",
+        "P/E Mean 5y",
+        "P/S Mean 5y",
+        "P/B Mean 5y",
+        "Dividend Yield (REITs)",
+        "Graham Number"
+      ]
+    },
+    {
+      "symbol": "NEM",
+      "sector": "Materials",
+      "status": "PARTIAL",
+      "httpStatus": 200,
+      "methodCount": 5,
+      "intrinsicValue": 80.62,
+      "errors": [],
+      "warnings": [
+        "Only 5 methods (threshold: 6)"
+      ],
+      "methods": [
+        "P/E Mean 5y",
+        "P/S Mean 5y",
+        "P/B Mean 5y",
+        "Dividend Yield (REITs)",
+        "Graham Number"
+      ]
+    },
+    {
+      "symbol": "FCX",
+      "sector": "Materials",
+      "status": "PASS",
+      "httpStatus": 200,
+      "methodCount": 15,
+      "intrinsicValue": 43.42329214095154,
+      "errors": [],
+      "warnings": [],
+      "methods": [
+        "AlfaValue™",
+        "DCF-20 FCF FMP",
+        "DCF Terminal FCF FMP",
+        "DNI-20 NI",
+        "DFCF Terminal",
+        "Growth DCF 8Y",
+        "P/E Mean 5y",
+        "P/S Mean 5y",
+        "P/B Mean 5y",
+        "P/B Mean without NRI",
+        "P/E Mean without NRI",
+        "Dividend Yield (REITs)",
+        "Graham Number",
+        "PEG Ratio",
+        "PSG Ratio"
+      ]
+    },
+    {
+      "symbol": "DOW",
+      "sector": "Materials",
+      "status": "PASS",
+      "httpStatus": 200,
+      "methodCount": 6,
+      "intrinsicValue": 52.919280418798934,
+      "errors": [],
+      "warnings": [],
+      "methods": [
+        "P/E Mean 5y",
+        "P/S Mean 5y",
+        "P/B Mean 5y",
+        "P/B Mean without NRI",
+        "P/E Mean without NRI",
+        "Dividend Yield (REITs)"
+      ]
+    },
+    {
+      "symbol": "DD",
+      "sector": "Materials",
+      "status": "PASS",
+      "httpStatus": 200,
+      "methodCount": 11,
+      "intrinsicValue": 48.72132553444002,
+      "errors": [],
+      "warnings": [],
+      "methods": [
+        "AlfaValue™",
+        "DCF-20 FCF FMP",
+        "DCF Terminal FCF FMP",
+        "DNI-20 NI",
+        "DFCF Terminal",
+        "P/E Mean 5y",
+        "P/S Mean 5y",
+        "P/B Mean 5y",
+        "P/B Mean without NRI",
+        "P/E Mean without NRI",
+        "Dividend Yield (REITs)"
+      ]
+    },
+    {
+      "symbol": "ALB",
+      "sector": "Materials",
+      "status": "PASS",
+      "httpStatus": 200,
+      "methodCount": 6,
+      "intrinsicValue": 159.616164212868,
+      "errors": [],
+      "warnings": [],
+      "methods": [
+        "P/E Mean 5y",
+        "P/S Mean 5y",
+        "P/B Mean 5y",
+        "P/B Mean without NRI",
+        "Dividend Yield (REITs)",
+        "PSG Ratio"
+      ]
+    },
+    {
+      "symbol": "PPG",
+      "sector": "Materials",
+      "status": "PASS",
+      "httpStatus": 200,
+      "methodCount": 10,
+      "intrinsicValue": 99.13,
+      "errors": [],
+      "warnings": [],
+      "methods": [
+        "AlfaValue™",
+        "DCF-20 FCF FMP",
+        "DCF Terminal FCF FMP",
+        "DNI-20 NI",
+        "DFCF Terminal",
+        "P/E Mean 5y",
+        "P/S Mean 5y",
+        "P/B Mean 5y",
+        "P/E Mean without NRI",
+        "Dividend Yield (REITs)"
+      ]
+    },
+    {
+      "symbol": "DIS",
+      "sector": "Communication",
+      "status": "PASS",
+      "httpStatus": 200,
+      "methodCount": 12,
+      "intrinsicValue": 108.78397597961447,
+      "errors": [],
+      "warnings": [],
+      "methods": [
+        "AlfaValue™",
+        "DCF-20 FCF FMP",
+        "DCF Terminal FCF FMP",
+        "DNI-20 NI",
+        "DFCF Terminal",
+        "P/E Mean 5y",
+        "P/S Mean 5y",
+        "P/B Mean 5y",
+        "Dividend Yield (REITs)",
+        "Graham Number",
+        "PEG Ratio",
+        "PSG Ratio"
+      ]
+    },
+    {
+      "symbol": "CMCSA",
+      "sector": "Communication",
+      "status": "PASS",
+      "httpStatus": 200,
+      "methodCount": 12,
+      "intrinsicValue": 55.46292728013439,
+      "errors": [],
+      "warnings": [],
+      "methods": [
+        "AlfaValue™",
+        "DNI-20 NI",
+        "DFCF Terminal",
+        "P/E Mean 5y",
+        "P/S Mean 5y",
+        "P/B Mean 5y",
+        "P/B Mean without NRI",
+        "P/E Mean without NRI",
+        "Dividend Yield (REITs)",
+        "Graham Number",
+        "PEG Ratio",
+        "PSG Ratio"
+      ]
+    },
+    {
+      "symbol": "T",
+      "sector": "Communication",
+      "status": "PASS",
+      "httpStatus": 200,
+      "methodCount": 11,
+      "intrinsicValue": 22.2,
+      "errors": [],
+      "warnings": [],
+      "methods": [
+        "AlfaValue™",
+        "DCF-20 FCF FMP",
+        "DCF Terminal FCF FMP",
+        "DFCF Terminal",
+        "P/E Mean 5y",
+        "P/S Mean 5y",
+        "P/B Mean 5y",
+        "P/B Mean without NRI",
+        "P/E Mean without NRI",
+        "Dividend Yield (REITs)",
+        "Graham Number"
+      ]
+    },
+    {
+      "symbol": "VZ",
+      "sector": "Communication",
+      "status": "PASS",
+      "httpStatus": 200,
+      "methodCount": 13,
+      "intrinsicValue": 54.45,
+      "errors": [],
+      "warnings": [],
+      "methods": [
+        "AlfaValue™",
+        "DCF-20 FCF FMP",
+        "DCF Terminal FCF FMP",
+        "DNI-20 NI",
+        "DFCF Terminal",
+        "P/E Mean 5y",
+        "P/S Mean 5y",
+        "P/B Mean 5y",
+        "P/B Mean without NRI",
+        "P/E Mean without NRI",
+        "Dividend Yield (REITs)",
+        "Graham Number",
+        "PSG Ratio"
+      ]
+    },
+    {
+      "symbol": "TMUS",
+      "sector": "Communication",
+      "status": "PASS",
+      "httpStatus": 200,
+      "methodCount": 11,
+      "intrinsicValue": 151.5751011640379,
+      "errors": [],
+      "warnings": [],
+      "methods": [
+        "AlfaValue™",
+        "DNI-20 NI",
+        "DFCF Terminal",
+        "P/E Mean 5y",
+        "P/S Mean 5y",
+        "P/B Mean 5y",
+        "P/B Mean without NRI",
+        "P/E Mean without NRI",
+        "Dividend Yield (REITs)",
+        "Graham Number",
+        "PSG Ratio"
+      ]
+    }
+  ]
+}

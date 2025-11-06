@@ -9,6 +9,7 @@ import { Router, Request, Response } from 'express';
 import { z } from 'zod';
 import { simpleCacheService } from '../services/simple-cache-service';
 import { logger } from '../lib/logger';
+import { validateNotETF } from '../middleware/etf-validator';
 
 const router = Router();
 
@@ -513,8 +514,9 @@ router.get('/historical/:symbol/:period', async (req: Request, res: Response) =>
 /**
  * GET /api/cache/intrinsic-values/:symbol
  * Read-only intrinsic value from cache/DB (no calculation)
+ * Protected by ETF validation middleware (FASE 2)
  */
-router.get('/intrinsic-values/:symbol', async (req: Request, res: Response) => {
+router.get('/intrinsic-values/:symbol', validateNotETF, async (req: Request, res: Response) => {
   try {
     const validation = symbolSchema.safeParse({ symbol: req.params.symbol });
     if (!validation.success) {
@@ -550,8 +552,8 @@ router.get('/intrinsic-values/:symbol', async (req: Request, res: Response) => {
   }
 });
 
-// Alias endpoint for intrinsic values cache
-router.get('/iv/:symbol', async (req: Request, res: Response) => {
+// Alias endpoint for intrinsic values cache (FASE 2: ETF protected)
+router.get('/iv/:symbol', validateNotETF, async (req: Request, res: Response) => {
   const symbolParam = req.params.symbol;
   try {
     const validation = symbolSchema.safeParse({ symbol: symbolParam });

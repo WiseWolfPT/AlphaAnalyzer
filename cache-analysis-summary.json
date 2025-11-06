@@ -1,0 +1,285 @@
+{
+  "analysis_date": "2025-10-23T15:30:00Z",
+  "environment": "production",
+  "redis_host": "127.0.0.1:6379",
+  "cache_configured": true,
+
+  "current_state": {
+    "redis_memory_used": "6.05 MB",
+    "redis_memory_limit": "256 MB",
+    "total_keys": 1618,
+    "valuation_keys": 73,
+    "quote_keys": 1485,
+    "cache_hit_rate": 42.93,
+    "cache_miss_rate": 57.07,
+    "total_requests": 254561,
+    "cache_hits": 109271,
+    "cache_misses": 145290
+  },
+
+  "ttl_configuration": {
+    "valuation_iv": {
+      "seconds": 86400,
+      "human": "24 hours",
+      "status": "OPTIMAL",
+      "rationale": "Earnings reports are quarterly, 24h provides optimal balance"
+    },
+    "fmp_dcf": {
+      "seconds": 86400,
+      "human": "24 hours",
+      "status": "OPTIMAL"
+    },
+    "risk_free_rate": {
+      "seconds": 86400,
+      "human": "24 hours",
+      "status": "OPTIMAL"
+    },
+    "market_risk_premium": {
+      "seconds": 2678400,
+      "human": "31 days",
+      "status": "OPTIMAL"
+    },
+    "terminal_growth": {
+      "seconds": 31536000,
+      "human": "365 days",
+      "status": "OPTIMAL"
+    },
+    "sector_growth": {
+      "seconds": 2592000,
+      "human": "30 days",
+      "status": "OPTIMAL"
+    },
+    "realtime_quotes": {
+      "seconds": 60,
+      "human": "1 minute",
+      "status": "OPTIMAL"
+    },
+    "company_profile": {
+      "seconds": 86400,
+      "human": "24 hours",
+      "status": "OPTIMAL"
+    }
+  },
+
+  "cache_key_patterns": [
+    "iv:calc:{TICKER}",
+    "iv:calc:{TICKER}:pe_mean",
+    "iv:calc:{TICKER}:pe_median",
+    "iv:calc:{TICKER}:ps_mean",
+    "iv:calc:{TICKER}:ps_median",
+    "iv:calc:{TICKER}:pb_mean",
+    "iv:calc:{TICKER}:pb_median",
+    "iv:calc:{TICKER}:peg",
+    "iv:calc:{TICKER}:psg",
+    "iv:calc:{TICKER}:dni20",
+    "iv:calc:{TICKER}:dfcf_terminal",
+    "fmp:dcf:fcf:{TICKER}",
+    "fmp:dcf:fcfe:{TICKER}",
+    "fmp:dcf:term_fcf:{TICKER}",
+    "fmp:dcf:term_fcfe:{TICKER}"
+  ],
+
+  "fmp_api_rate_limits": {
+    "professional_plan": {
+      "calls_per_minute": 300,
+      "calls_per_second": 5,
+      "monthly_quota": 25000000
+    },
+    "current_usage": {
+      "scenario": "1000 concurrent users",
+      "requests_per_minute": 1000,
+      "api_calls_per_minute": 571,
+      "exceeds_limit": true,
+      "safety_margin_percent": -90.2
+    },
+    "safe_capacity": {
+      "current_hit_rate": {
+        "max_concurrent_users": 525,
+        "status": "AT_RISK"
+      },
+      "target_80_hit_rate": {
+        "max_concurrent_users": 1500,
+        "status": "SAFE"
+      },
+      "optimal_90_hit_rate": {
+        "max_concurrent_users": 3000,
+        "status": "VERY_SAFE"
+      }
+    }
+  },
+
+  "issues_identified": [
+    {
+      "severity": "CRITICAL",
+      "issue": "Cache hit rate too low (42.93%)",
+      "impact": "FMP API exhaustion at 525+ concurrent users",
+      "root_cause": "No pre-warming of popular stocks (S&P 500)"
+    },
+    {
+      "severity": "HIGH",
+      "issue": "Under-populated valuation cache",
+      "impact": "Only 73 stocks cached, need 100+ for S&P 100 coverage",
+      "root_cause": "No valuation pre-warming cron job"
+    },
+    {
+      "severity": "MEDIUM",
+      "issue": "Cold cache after deployment",
+      "impact": "First users after deploy experience 4-5 sec latency",
+      "root_cause": "No post-deploy warmup script"
+    }
+  ],
+
+  "recommendations": {
+    "immediate": [
+      {
+        "priority": "CRITICAL",
+        "action": "Implement S&P 100 valuation pre-warming",
+        "implementation": "Create cron job: */30 4-20 * * 1-5",
+        "api_calls": "400 calls/30min = 13.3/min (SAFE)",
+        "expected_hit_rate": "75%+",
+        "expected_capacity": "1200 users",
+        "effort_hours": 8
+      },
+      {
+        "priority": "HIGH",
+        "action": "Lower token bucket rate limit",
+        "implementation": "Set QUOTES_CALLS_PER_MIN_BUDGET=240",
+        "rationale": "80% of FMP 300/min limit (safety buffer)",
+        "effort_hours": 1
+      },
+      {
+        "priority": "HIGH",
+        "action": "Add cache hit rate monitoring",
+        "implementation": "Update scripts/monitoring/check-slo.sh",
+        "target": "80% hit rate SLO",
+        "effort_hours": 2
+      }
+    ],
+    "short_term": [
+      {
+        "priority": "MEDIUM",
+        "action": "Implement intelligent cache warming (hot/warm sets)",
+        "hot_set": "Top 100 S&P 500 (every 30 min)",
+        "warm_set": "Next 200 S&P 500 (every 2 hours)",
+        "expected_hit_rate": "85%+",
+        "expected_capacity": "2000 users",
+        "effort_hours": 12
+      },
+      {
+        "priority": "MEDIUM",
+        "action": "Add cache monitoring dashboard",
+        "metrics": [
+          "cache_hit_rate",
+          "fmp_api_calls_per_min",
+          "valuation_cache_size",
+          "iv_calculation_latency"
+        ],
+        "effort_hours": 4
+      }
+    ],
+    "medium_term": [
+      {
+        "priority": "LOW",
+        "action": "Implement stale-while-revalidate pattern",
+        "benefit": "Serve stale cache while refreshing in background",
+        "latency_reduction": "4-5 sec -> <200ms",
+        "expected_hit_rate": "95%+",
+        "effort_hours": 6
+      },
+      {
+        "priority": "LOW",
+        "action": "Add post-deploy cache warmup",
+        "implementation": "scripts/deploy/post-deploy-warmup.sh",
+        "benefit": "Zero cold cache after deployment",
+        "effort_hours": 4
+      }
+    ],
+    "long_term": [
+      {
+        "priority": "LOW",
+        "action": "Implement two-tier cache (L1 in-memory + L2 Redis)",
+        "l1_size": "Top 500 stocks",
+        "l1_ttl": "1 hour",
+        "latency_reduction": "200ms -> <50ms",
+        "memory_increase": "6.05 MB -> 15 MB",
+        "effort_hours": 16
+      }
+    ]
+  },
+
+  "cost_benefit_analysis": {
+    "current_state": {
+      "safe_user_capacity": 525,
+      "average_latency_ms": 4500,
+      "monthly_fmp_calls": 6321216,
+      "fmp_quota_usage_percent": 25,
+      "risk": "API exhaustion at scale"
+    },
+    "with_improvements": {
+      "safe_user_capacity": 1500,
+      "increase_percent": 186,
+      "average_latency_ms": 200,
+      "latency_reduction_percent": 95,
+      "monthly_fmp_calls": 1267200,
+      "fmp_call_reduction_percent": 80,
+      "implementation_hours": 14,
+      "implementation_days": 2,
+      "roi": "INFINITE (prevents business-critical API exhaustion)"
+    }
+  },
+
+  "monitoring_slos": {
+    "cache_hit_rate": {
+      "target": "80%",
+      "current": "42.93%",
+      "status": "BELOW_TARGET"
+    },
+    "iv_cache_ttl": {
+      "target": "86400s (24h)",
+      "current": "86400s (24h)",
+      "status": "OPTIMAL"
+    },
+    "fmp_api_usage": {
+      "target": "<240 calls/min",
+      "current": "571 calls/min (at 1000 users)",
+      "status": "CRITICAL"
+    },
+    "safe_user_capacity": {
+      "target": ">1500 concurrent users",
+      "current": "525 concurrent users",
+      "status": "AT_RISK"
+    }
+  },
+
+  "sample_cache_data": {
+    "key": "fmp:dcf:fcf:AAPL",
+    "ttl_remaining_seconds": 2837,
+    "data": {
+      "ticker": "AAPL",
+      "dcf": 196.36738666735442,
+      "stock_price": 0,
+      "date": "2025-10-22",
+      "method": "DCF_FCF",
+      "source": "fmp",
+      "confidence": "HIGH",
+      "as_of": "2025-10-22",
+      "inputs": {
+        "freeCashFlow": 108807,
+        "totalDebt": 119000,
+        "cashAndCashEquivalents": 62000,
+        "sharesOutstanding": 15000
+      }
+    }
+  },
+
+  "conclusion": {
+    "cache_ttl_status": "CORRECT - 24h is optimal for valuation data",
+    "primary_issue": "Cache hit rate too low (42.93% vs 80% target)",
+    "root_cause": "No pre-warming of popular stocks",
+    "immediate_risk": "FMP API exhaustion at 525+ concurrent users",
+    "recommended_action": "Implement S&P 100 pre-warming (13.3 API calls/min)",
+    "expected_outcome": "Hit rate 75%+, safe capacity 1200+ users",
+    "implementation_effort": "14 hours (2 days)",
+    "business_impact": "CRITICAL - prevents API exhaustion and supports 186% user growth"
+  }
+}

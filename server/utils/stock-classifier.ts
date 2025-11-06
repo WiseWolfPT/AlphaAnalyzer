@@ -79,8 +79,8 @@ export function isETF(ticker: string, companyData?: CompanyProfile): boolean {
       return true;
     }
 
-    // Check for explicit ETF/fund declaration in name
-    if (name.includes('etf') || name.includes('exchange traded fund')) {
+    // Check for explicit ETF/fund declaration in name (with word boundaries to avoid false positives like "Netflix")
+    if (/\betf\b/i.test(name) || /\bexchange traded fund\b/i.test(name)) {
       return true;
     }
 
@@ -150,7 +150,7 @@ export function getETFReason(
   if (companyData?.companyName) {
     const name = companyData.companyName.toLowerCase();
 
-    if (name.includes('etf') || name.includes('exchange traded fund')) {
+    if (/\betf\b/i.test(name) || /\bexchange traded fund\b/i.test(name)) {
       return 'Name explicitly mentions ETF';
     }
 
@@ -231,7 +231,31 @@ export function getETFDetectionStats() {
 }
 
 /**
+ * Validate that ticker is a stock (throws if ETF)
+ *
+ * Use this for defensive programming at service/calculation boundaries
+ *
+ * @param ticker - Stock ticker symbol
+ * @param companyData - Optional company profile data
+ * @throws Error if ticker is classified as ETF
+ *
+ * @example
+ * assertIsStock('AAPL', profile); // OK
+ * assertIsStock('SPY', profile);  // Throws: "SPY is an ETF, not an individual stock"
+ */
+export function assertIsStock(ticker: string, companyData?: CompanyProfile): void {
+  if (isETF(ticker, companyData)) {
+    const reason = getETFReason(ticker, companyData);
+    throw new Error(
+      `${ticker.toUpperCase()} is an ETF, not an individual stock. ` +
+      `Reason: ${reason || 'ETF detected'}`
+    );
+  }
+}
+
+/**
  * AGENT 1D: REIT Detection and Classification (2025-10-27)
+ * FIXED: Bank → REIT misclassification (2025-11-04)
  *
  * REITs require specialized valuation methods (FFO/AFFO instead of DCF).
  * This module provides detection logic and subsector classification.
@@ -240,7 +264,7 @@ export function getETFDetectionStats() {
 import { REITSubSector } from '../types/valuation';
 
 /**
- * Detect if a company is a REIT
+ * Detect if a company is a REIT based on profile data
  *
  * Detection strategies:
  * 1. Sector check: "Real Estate"
@@ -254,36 +278,64 @@ import { REITSubSector } from '../types/valuation';
  */
 export function isREIT(sector: string, industry: string, companyName: string): boolean {
   // Strategy 1: Sector check
-  if (sector === 'Real Estate') {
+  if (sector && sector === 'Real Estate') {
     return true;
   }
 
-  // Strategy 2: Industry keywords
+  // Strategy 2: Industry keywords (null-safe)
   const reitIndustryKeywords = [
     'REIT',
     'Real Estate Investment Trust',
     'Property Trust',
     'Equity Trust',
   ];
-  
-  if (reitIndustryKeywords.some(keyword => industry.includes(keyword))) {
+
+  if (industry && reitIndustryKeywords.some(keyword => industry.includes(keyword))) {
     return true;
   }
 
-  // Strategy 3: Company name patterns
+  // Strategy 3: Company name patterns (null-safe)
   const reitNamePatterns = [
     /\bREIT\b/i,
     /\bTrust\b/i,
     /\bProperties\b$/i,
     /\bRealty\b/i,
     /Real Estate/i,
+    /\bStorage\b/i,  // ADD: "Public Storage"
+    /\bCommunities\b/i,  // ADD: "AvalonBay Communities"
   ];
 
-  if (reitNamePatterns.some(pattern => pattern.test(companyName))) {
+  if (companyName && reitNamePatterns.some(pattern => pattern.test(companyName))) {
     return true;
   }
 
   return false;
+}
+
+/**
+ * Detect if a company is a REIT based on available valuation methods
+ *
+ * FIXED (2025-11-04): Banks were incorrectly classified as REITs because
+ * 'dividend-yield-reit' method name contains 'reit' substring.
+ *
+ * Solution: Require explicit REIT-specific methods (FFO/AFFO/NAV) as positive evidence.
+ * The dividend-yield-reit method alone is NOT sufficient.
+ *
+ * @param methods - Array of method IDs available for the stock
+ * @returns true if REIT (has FFO/AFFO/NAV methods), false otherwise
+ *
+ * @example
+ * isREITByMethods(['ffo-reit', 'affo-reit', 'dividend-yield-reit']) // true (has FFO)
+ * isREITByMethods(['dividend-yield-reit', 'pe-mean', 'dcf-fcf-20']) // false (no FFO/AFFO)
+ */
+export function isREITByMethods(methods: string[]): boolean {
+  // Require explicit REIT-specific methods (positive evidence)
+  // FFO (Funds From Operations) and AFFO (Adjusted FFO) are ONLY used for REITs
+  const reitSpecificMethods = ['ffo', 'affo', 'p-ffo', 'nav'];
+
+  return reitSpecificMethods.some(rm =>
+    methods.some(m => m.toLowerCase().includes(rm))
+  );
 }
 
 /**
@@ -295,6 +347,11 @@ export function isREIT(sector: string, industry: string, companyName: string): b
  * @returns REIT subsector category
  */
 export function getREITSubSector(industry: string): REITSubSector {
+  // Null-safe: if industry is null/undefined, default to 'diversified'
+  if (!industry) {
+    return 'diversified';
+  }
+
   const lowerIndustry = industry.toLowerCase();
 
   // Data Center REITs (highest P/FFO multiples)
@@ -429,6 +486,7 @@ function determineREITReason(sector: string, industry: string, companyName: stri
 
 /**
  * AGENT 1C: Bank Detection Function
+ * FIXED: Bank → REIT misclassification (2025-11-04)
  *
  * Detects if a company is a bank/financial institution that should use P/TBV valuation
  * Banks have negative/inconsistent FCF because they ARE the cash flow, making DCF inappropriate.
@@ -437,6 +495,7 @@ function determineREITReason(sector: string, industry: string, companyName: stri
  * 1. Sector match: "Financial Services", "Banks", "Financials"
  * 2. Industry match: "Banks - Regional", "Banks - Diversified", "Banks - Global", "Investment Banking & Brokerage"
  * 3. Known major banks list (top 50 US/global banks)
+ * 4. Bank exceptions list (prevents false REIT classification)
  *
  * @param sector - Company sector from FMP API
  * @param industry - Company industry from FMP API
@@ -501,6 +560,24 @@ export function isBank(sector?: string, industry?: string, ticker?: string): boo
 
   return false;
 }
+
+/**
+ * Bank exceptions list - Stocks that should NEVER be classified as REITs
+ * Used by validation scripts to prevent false positives
+ *
+ * FIXED (2025-11-04): Banks have 'dividend-yield-reit' in available methods,
+ * which was triggering incorrect REIT classification in validation scripts.
+ */
+export const BANK_EXCEPTIONS = [
+  // US Money Center Banks
+  'JPM', 'BAC', 'WFC', 'C',
+  // Investment Banks
+  'GS', 'MS',
+  // Regional Banks
+  'USB', 'PNC', 'TFC', 'COF', 'KEY', 'CFG', 'FITB',
+  // Specialty Banks
+  'BK', 'SCHW', 'AXP', 'DFS', 'SYF', 'NTRS', 'STT',
+];
 
 /**
  * AGENT 1C: Bank Type Classification

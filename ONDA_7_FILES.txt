@@ -1,0 +1,151 @@
+# ONDA 7 - Intelligent Warming Scheduler
+# Complete File Listing
+# Date: 2025-10-24
+
+## Core Services (5 files)
+
+/Users/antoniofrancisco/Documents/teste 1/server/services/warming-queue-service.ts
+  Size: 11 KB
+  Purpose: Priority-based queue using Redis sorted sets
+  Key Features:
+    - ZADD/ZRANGE operations (O(log N))
+    - Task completion/failure tracking
+    - Priority boost API
+    - Daily statistics
+
+/Users/antoniofrancisco/Documents/teste 1/server/services/adaptive-warming-strategy.ts
+  Size: 9 KB
+  Purpose: Dynamic priority calculation (5 factors)
+  Key Features:
+    - Tier-based priority (S&P 100/500/Extended)
+    - User activity integration
+    - Earnings proximity boost
+    - Market hours detection
+    - Tier list management
+
+/Users/antoniofrancisco/Documents/teste 1/server/middleware/warming-throttle.ts
+  Size: 9.4 KB
+  Purpose: Bandwidth-aware throttling
+  Key Features:
+    - Daily bandwidth monitoring
+    - 85% stop threshold
+    - 70% throttle threshold
+    - API call tracking
+    - Bandwidth report generation
+
+/Users/antoniofrancisco/Documents/teste 1/server/services/analytics-service.ts
+  Size: 12 KB
+  Purpose: User activity tracking
+  Key Features:
+    - Stock views (1h/24h/7d windows)
+    - Method usage statistics
+    - Page visit tracking
+    - Top stocks API
+    - 7-day rolling window
+
+/Users/antoniofrancisco/Documents/teste 1/server/workers/intelligent-warming-worker.ts
+  Size: 11 KB
+  Purpose: Main warming loop (continuous operation)
+  Key Features:
+    - 5-minute cycle interval
+    - 50 tasks per cycle
+    - Bandwidth budget checks
+    - Rate limiting (4 calls/sec)
+    - Health server (port 3006)
+
+## Configuration (1 file)
+
+/Users/antoniofrancisco/Documents/teste 1/ecosystem.config.cjs
+  Modified: Added intelligent-warming-worker PM2 process
+  Port: 3006
+  Memory Limit: 300MB
+  ENV Vars: WARMING_BATCH_SIZE, WARMING_CYCLE_INTERVAL_MS, WARMING_RATE_LIMIT_MS
+
+## Documentation (3 files)
+
+/Users/antoniofrancisco/Documents/teste 1/docs/INTELLIGENT_WARMING_SCHEDULER.md
+  Size: 13 KB
+  Purpose: Complete reference documentation
+  Sections: Architecture, Priority Calculation, Bandwidth Management, 
+            Scheduling Strategy, Monitoring, Deployment, Troubleshooting
+
+/Users/antoniofrancisco/Documents/teste 1/docs/INTELLIGENT_WARMING_QUICKSTART.md
+  Size: 8.7 KB
+  Purpose: Quick start guide and cheat sheet
+  Sections: TL;DR, Quick Deploy, Usage, Monitoring, Configuration,
+            Troubleshooting, Commands Cheat Sheet
+
+/Users/antoniofrancisco/Documents/teste 1/ONDA_7_IMPLEMENTATION_SUMMARY.md
+  Size: 16 KB
+  Purpose: Implementation summary and deployment guide
+  Sections: Deliverables, Architecture Diagram, Key Metrics, Success Criteria,
+            Deployment Checklist, Testing Strategy, Monitoring Plan, Rollback
+
+## Testing (1 file)
+
+/Users/antoniofrancisco/Documents/teste 1/scripts/test-intelligent-warming.mjs
+  Size: 8.5 KB
+  Purpose: Automated test suite (5 tests)
+  Tests:
+    1. Redis Connection
+    2. Queue Operations
+    3. Bandwidth Tracking
+    4. Analytics Tracking
+    5. Priority Calculation
+
+## Total
+
+Files Created: 10
+Total Size: ~88 KB
+Lines of Code: ~2,800 (including comments and docs)
+
+## Dependencies
+
+Runtime:
+  - ioredis (Redis client)
+  - pg (PostgreSQL client - optional)
+
+Dev:
+  - TypeScript
+  - Node.js 20+
+
+## Environment Variables
+
+Required:
+  REDIS_HOST=localhost
+  REDIS_PORT=6379
+  REDIS_PASSWORD=alfalyzer2025redis
+  FMP_API_KEY=********
+
+Optional:
+  WARMING_BATCH_SIZE=50
+  WARMING_CYCLE_INTERVAL_MS=300000
+  WARMING_RATE_LIMIT_MS=250
+  WORKER_HEALTH_PORT=3006
+
+## Deployment Target
+
+Server: Hetzner CX22 (128.140.45.28)
+Path: /home/teste 1/
+PM2 Process: intelligent-warming-worker
+Health Endpoint: http://localhost:3006/health
+
+## Status
+
+Implementation: ✅ Complete
+Testing: ⏳ Pending local test
+Deployment: ⏳ Pending production deploy
+Documentation: ✅ Complete
+
+## Next Steps
+
+1. Run local test: node scripts/test-intelligent-warming.mjs
+2. Build server: npm run build:server
+3. Deploy: tar+scp to production
+4. Start worker: pm2 start ecosystem.config.cjs --only intelligent-warming-worker
+5. Monitor: pm2 logs intelligent-warming-worker
+
+---
+
+Generated: 2025-10-24
+Author: Backend Architect (Claude Code)

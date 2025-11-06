@@ -1,0 +1,223 @@
+================================================================================
+EARNINGS CACHE INVALIDATION FIX - QUICK REFERENCE
+================================================================================
+
+ISSUE: IV method caches NOT invalidated on earnings events
+STATUS: CRITICAL (stale IV data served to users for 24h post-earnings)
+
+LOCATION: /server/workers/earnings-monitor.ts
+
+================================================================================
+FIX SUMMARY
+================================================================================
+
+1. ADD IMPORT (after line 26)
+   ────────────────────────────
+   import { methodCacheService } from '../services/method-cache-service';
+
+2. MODIFY invalidateCache() FUNCTION (lines 230-245)
+   ────────────────────────────────────────────────
+
+   BEFORE:
+   -------
+   async function invalidateCache(symbol: string): Promise<boolean> {
+     try {
+       const redis = await getRedisCacheService();
+       const cacheKey = `fmp:analyst:estimates:${symbol.toUpperCase()}`;
+       await redis.del(cacheKey);
+       logger.info('[EarningsMonitor] Cache invalidated', { symbol });
+       return true;
+     } catch (error: any) {
+       logger.error('[EarningsMonitor] Cache invalidation failed', {
+         symbol,
+         error: error.message
+       });
+       return false;
+     }
+   }
+
+   AFTER (Option A - Selective):
+   ──────────────────────────────
+   async function invalidateCache(symbol: string): Promise<boolean> {
+     const upperSymbol = symbol.toUpperCase();
+
+     try {
+       // Step 1: Invalidate analyst estimates cache
+       const redis = await getRedisCacheService();
+       const cacheKey = `fmp:analyst:estimates:${upperSymbol}`;
+       await redis.del(cacheKey);
+
+       logger.info('[EarningsMonitor] Analyst cache invalidated', { symbol: upperSymbol });
+
+       // Step 2: Invalidate IV method caches
+       const affectedMethods = [
+         'dcf-fcf-20', 'dcf-terminal-fcf', 'dni-20',
+         'pe-mean', 'pe-mean-without-nri', 'ps-mean',
+         'pb-mean', 'pb-mean-without-nri', 'peg', 'psg',
+         'ddm', 'growth-dcf-8y'
+       ];
+
+       await methodCacheService.invalidateAffectedMethods(upperSymbol, affectedMethods);
+       logger.info('[EarningsMonitor] IV method caches invalidated', {
+         symbol: upperSymbol,
+         methodsCount: affectedMethods.length
+       });
+
+       return true;
+     } catch (error: any) {
+       logger.error('[EarningsMonitor] Cache invalidation failed', {
+         symbol: upperSymbol,
+         error: error.message
+       });
+       return false;
+     }
+   }
+
+   AFTER (Option B - Bulk, Simpler):
+   ─────────────────────────────────
+   async function invalidateCache(symbol: string): Promise<boolean> {
+     const upperSymbol = symbol.toUpperCase();
+
+     try {
+       // Invalidate analyst estimates
+       const redis = await getRedisCacheService();
+       const cacheKey = `fmp:analyst:estimates:${upperSymbol}`;
+       await redis.del(cacheKey);
+
+       // Invalidate all IV methods
+       await methodCacheService.invalidateAllMethods(upperSymbol);
+
+       logger.info('[EarningsMonitor] All caches invalidated', { symbol: upperSymbol });
+       return true;
+     } catch (error: any) {
+       logger.error('[EarningsMonitor] Cache invalidation failed', {
+         symbol: upperSymbol,
+         error: error.message
+       });
+       return false;
+     }
+   }
+
+================================================================================
+DEPLOYMENT
+================================================================================
+
+1. Update file:
+   nano server/workers/earnings-monitor.ts
+   [Add import and modify function as above]
+
+2. Build:
+   npm run build:server
+
+3. Deploy:
+   npm run deploy:server
+
+4. Restart worker:
+   ssh root@128.140.45.28 "pm2 restart earnings-monitor --update-env"
+
+5. Verify:
+   ssh root@128.140.45.28 "pm2 logs earnings-monitor --lines 20 --nostream | grep 'IV method'"
+   # Should see: "[EarningsMonitor] IV method caches invalidated"
+
+================================================================================
+VERIFICATION
+================================================================================
+
+BEFORE FIX:
+───────────
+Earnings Monitor Log:
+  - "Cache invalidated" ✅
+  - "IV method caches" ❌ (missing)
+
+Redis Keys:
+  - iv:method:AAPL:* still exist with old TTL ❌
+  - No invalidation after earnings
+
+AFTER FIX:
+──────────
+Earnings Monitor Log:
+  - "Cache invalidated" ✅
+  - "IV method caches invalidated" ✅
+
+Redis Keys:
+  - iv:method:AAPL:* deleted/reduced after earnings ✅
+  - Fresh IV calculations on user request ✅
+
+================================================================================
+TIMELINE
+================================================================================
+
+- Immediate: Deploy fix
+- T+1h: Verify next earnings cycle shows IV method invalidation in logs
+- T+1w: Monitor improved IV data freshness metrics
+
+================================================================================
+QUESTIONS & ANSWERS
+================================================================================
+
+Q: Why weren't IV methods invalidated originally?
+A: Earnings monitor was designed to only refresh analyst estimates cache.
+   IV method cache service was created later but never integrated into
+   earnings event flow.
+
+Q: Will this slow down earnings processing?
+A: Minimal impact (~50-100ms per event). Invalidation is fast Redis DEL.
+   No additional FMP API calls (they still happen in warmCache).
+
+Q: What if analyst estimates don't change for a stock?
+A: IV methods still invalidated (conservative approach). Unnecessary
+   recalculation is faster than stale data. WarmMethod() handles caching.
+
+Q: Should DDM and Graham Number be in affected methods?
+A: YES - both depend on analyst growth estimates. Added to fix.
+   REVIEW: May also want 'p-tbv-mean', 'p-tbv-sector', 'ffo-reit',
+   'affo-reit', 'p-ffo-mean', 'p-ffo-sector', 'dividend-yield-reit'
+   if they use analyst data (unclear from code).
+
+Q: How many IV methods per stock?
+A: 12 methods currently supported (FCFE methods removed)
+
+Q: Will this increase FMP API usage?
+A: No. Methods invalidated but not recalculated until user request (lazy).
+   No automatic warming of IV methods (only analyst estimates warmed).
+
+================================================================================
+ROLLBACK
+================================================================================
+
+If issues occur:
+  1. Remove import: rm line 27
+  2. Revert function: paste original invalidateCache()
+  3. Rebuild: npm run build:server
+  4. Redeploy: npm run deploy:server
+  5. Restart: pm2 restart earnings-monitor
+
+================================================================================
+FILE CHANGES SUMMARY
+================================================================================
+
+File: /server/workers/earnings-monitor.ts
+
+Changes:
+  1. Line 27 (new): Add import for methodCacheService
+  2. Lines 230-245: Replace invalidateCache() function
+
+Total Lines Changed: ~15 lines
+Total Files Modified: 1
+Breaking Changes: NONE
+Risk Level: LOW
+
+================================================================================
+NEXT STEPS
+================================================================================
+
+1. Edit file: server/workers/earnings-monitor.ts
+2. Add import at line 27
+3. Replace invalidateCache() function (choose Option A or B)
+4. Run: npm run build:server
+5. Run: npm run deploy:server
+6. Verify next earnings cycle shows IV cache invalidation
+7. Monitor user reports of IV accuracy post-earnings
+
+Questions? Check EARNINGS_CACHE_VALIDATION_REPORT.md for full details.
+================================================================================

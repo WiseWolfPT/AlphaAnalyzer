@@ -1,10 +1,10 @@
 import { useState } from 'react';
-import { TrendingUp, TrendingDown, Minus, Info } from 'lucide-react';
+import { TrendingUp, TrendingDown, Minus, Info, ExternalLink } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import {
   Dialog,
   DialogContent,
@@ -22,6 +22,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { useAlfaValue, getStatusColor, getStatusLabel, getStatusIcon } from '@/hooks/use-alfa-value';
 import { cn } from '@/lib/utils';
+import { ValuationGauge } from '@/components/stock/valuation-gauge';
 
 export interface AlfaValueHeaderProps {
   ticker: string;
@@ -73,8 +74,66 @@ export function AlfaValueHeader({ ticker }: AlfaValueHeaderProps) {
     );
   }
 
-  // Error State
+  // Error State - Check for ETF-specific error first
   if (error || !data) {
+    // Check if this is an ETF rejection error (status 422)
+    const errorObj = error as any;
+    if (errorObj?.statusCode === 422 && errorObj?.errorData?.error === 'ETF_NOT_SUPPORTED') {
+      const etfError = errorObj.errorData;
+
+      return (
+        <Card className="border-blue-500/20 bg-gradient-to-r from-blue-50/50 to-transparent dark:from-blue-950/20">
+          <CardContent className="p-6">
+            <Alert className="border-blue-200 bg-blue-50 dark:bg-blue-950/30 dark:border-blue-900">
+              <Info className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+              <AlertTitle className="text-lg font-semibold text-blue-900 dark:text-blue-100">
+                {etfError.message}
+              </AlertTitle>
+              <AlertDescription className="space-y-3 mt-2">
+                {etfError.reason && (
+                  <p className="text-sm text-blue-800 dark:text-blue-200">
+                    {etfError.reason}
+                  </p>
+                )}
+
+                {etfError.suggestion && (
+                  <p className="text-sm font-medium text-blue-900 dark:text-blue-100 mt-2">
+                    💡 {etfError.suggestion}
+                  </p>
+                )}
+
+                {etfError.alternative_methods && etfError.alternative_methods.length > 0 && (
+                  <div className="mt-3 p-3 bg-white dark:bg-blue-950/50 rounded-md border border-blue-100 dark:border-blue-900">
+                    <p className="text-sm font-semibold text-blue-900 dark:text-blue-100 mb-2">
+                      Alternative analysis methods:
+                    </p>
+                    <ul className="list-disc list-inside text-sm text-blue-700 dark:text-blue-300 space-y-1">
+                      {etfError.alternative_methods.map((method: string, i: number) => (
+                        <li key={i}>{method}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {etfError.documentation && (
+                  <a
+                    href={etfError.documentation}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 underline inline-flex items-center gap-1 mt-2"
+                  >
+                    Learn more about ETF valuation
+                    <ExternalLink className="h-3 w-3" />
+                  </a>
+                )}
+              </AlertDescription>
+            </Alert>
+          </CardContent>
+        </Card>
+      );
+    }
+
+    // Generic error (404, network errors, etc.)
     return (
       <Card className="border-red-500/20">
         <CardContent className="p-6">
@@ -356,6 +415,16 @@ export function AlfaValueHeader({ ticker }: AlfaValueHeaderProps) {
               </div>
             </DialogContent>
           </Dialog>
+        </div>
+
+        {/* Valuation Gauge - Visual feedback */}
+        <div className="mt-6 pt-6 border-t border-border/50">
+          <ValuationGauge
+            iv={data.iv}
+            price={currentPrice}
+            method="AlfaValue™"
+            className="border-0 shadow-none bg-transparent"
+          />
         </div>
       </CardContent>
     </Card>

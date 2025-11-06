@@ -1,0 +1,1012 @@
+{
+  "symbol": "O",
+  "guid": "f1aaa101-b7cb-4f95-829e-6de85a43bd1a",
+  "data": {
+    "detail": {
+      "key": "detail",
+      "status": 200,
+      "ok": true,
+      "json": {
+        "message": "GET Request successful.",
+        "result": {
+          "id": 24850,
+          "guid": "f1aaa101-b7cb-4f95-829e-6de85a43bd1a",
+          "symbol": "O",
+          "exchange": "New York Stock Exchange",
+          "sector": "Real Estate",
+          "industry": "REIT - Retail",
+          "companyName": "Realty Income Corporation",
+          "generalIndustryCode": "06",
+          "currency": "U.S. Dollar",
+          "currencyCode": "USD"
+        }
+      }
+    },
+    "symbolDetail": {
+      "key": "symbolDetail",
+      "status": 200,
+      "ok": true,
+      "json": {
+        "message": "POST Request successful.",
+        "result": [
+          {
+            "id": 24850,
+            "stockGuid": "f1aaa101-b7cb-4f95-829e-6de85a43bd1a",
+            "sector": "FINANCE",
+            "industry": "Finance",
+            "ticker": "New York Stock Exchange:O",
+            "fullName": "New York Stock Exchange:O",
+            "name": "O",
+            "description": "Realty Income Corporation",
+            "type": "stock",
+            "session": "24x7",
+            "timezone": "America/New_York",
+            "exchange": "New York Stock Exchange",
+            "minmov": 1,
+            "pricescale": 100,
+            "hasIntraday": false,
+            "visiblePlotsSet": "ohlcv",
+            "hasWeeklyAndMonthly": false,
+            "volumePrecision": 2,
+            "dataStatus": "endofday",
+            "listedExchange": "NYS",
+            "format": "price"
+          }
+        ]
+      }
+    },
+    "overviewPublic": {
+      "key": "overviewPublic",
+      "status": 200,
+      "ok": true,
+      "json": {
+        "message": "GET Request successful.",
+        "result": {
+          "id": 24850,
+          "guid": "f1aaa101-b7cb-4f95-829e-6de85a43bd1a",
+          "symbol": "O",
+          "exchange": "NYSE",
+          "price": 59.99,
+          "prevPrice": null,
+          "change": -0.23,
+          "changePercent": -0.38,
+          "earningDate": "11/03/2025 21:05:00",
+          "companyName": "Realty Income Corporation",
+          "description": null
+        }
+      }
+    },
+    "ratiosFinancial": {
+      "key": "ratiosFinancial",
+      "status": 200,
+      "ok": true,
+      "json": {
+        "message": "GET Request successful.",
+        "result": [
+          {
+            "stockId": 24850,
+            "symbol": "O",
+            "name": "Price to Earnings Ratio (TTM)",
+            "field": 2183,
+            "value": "58.7512195121951",
+            "dataType": "Number",
+            "isPercentage": false,
+            "isMil": false,
+            "updatedTime": "2005-01-03T00:00:00Z",
+            "date": "2005-01-03T00:00:00Z",
+            "section": "10"
+          },
+          {
+            "stockId": 24850,
+            "symbol": "O",
+            "name": "Price to Sales Ratio (TTM)",
+            "field": 1040,
+            "value": "9.92710646701954",
+            "dataType": "Number",
+            "isPercentage": false,
+            "isMil": false,
+            "updatedTime": "2005-01-03T00:00:00Z",
+            "date": "2005-01-03T00:00:00Z",
+            "section": "8,10"
+          },
+          {
+            "stockId": 24850,
+            "symbol": "O",
+            "name": "Projected 3-5 Years EPS Growth Rate",
+            "field": 2185,
+            "value": "18.41",
+            "dataType": "Number",
+            "isPercentage": true,
+            "isMil": false,
+            "updatedTime": null,
+            "date": null,
+            "section": null
+          },
+          {
+            "stockId": 24850,
+            "symbol": "O",
+            "name": "Dividend Yield (TTM)",
+            "field": 1014,
+            "value": "5.31255209201534",
+            "dataType": "Number",
+            "isPercentage": true,
+            "isMil": false,
+            "updatedTime": null,
+            "date": null,
+            "section": null
+          },
+          {
+            "stockId": 24850,
+            "symbol": "O",
+            "name": "Market Capitalization",
+            "field": 1031,
+            "value": "55059.50732",
+            "dataType": "Number",
+            "isPercentage": false,
+            "isMil": true,
+            "updatedTime": "2005-01-03T00:00:00Z",
+            "date": "2005-01-03T00:00:00Z",
+            "section": "5"
+          },
+          {
+            "stockId": 24850,
+            "symbol": "O",
+            "name": "Shares Outstanding (End Of Period)",
+            "field": 1053,
+            "value": "914.285",
+            "dataType": "Number",
+            "isPercentage": false,
+            "isMil": true,
+            "updatedTime": null,
+            "date": null,
+            "section": "5,9"
+          },
+          {
+            "stockId": 24850,
+            "symbol": "O",
+            "name": "Beta",
+            "field": 1005,
+            "value": "0.78117627",
+            "dataType": "Number",
+            "isPercentage": false,
+            "isMil": false,
+            "updatedTime": null,
+            "date": null,
+            "section": null
+          },
+          {
+            "stockId": 24850,
+            "symbol": "O",
+            "name": "Return on Equity (TTM)",
+            "field": 1048,
+            "value": "2.35122989255271",
+            "dataType": "Number",
+            "isPercentage": true,
+            "isMil": false,
+            "updatedTime": null,
+            "date": null,
+            "section": "7"
+          },
+          {
+            "stockId": 24850,
+            "symbol": "O",
+            "name": "Return on Invested Capital (TTM)",
+            "field": 1049,
+            "value": "1.36053917480373",
+            "dataType": "Number",
+            "isPercentage": true,
+            "isMil": false,
+            "updatedTime": null,
+            "date": null,
+            "section": "7"
+          },
+          {
+            "stockId": 24850,
+            "symbol": "O",
+            "name": "Forward Price to Earnings Ratio (Next Year)",
+            "field": 1843,
+            "value": "39.76334216226679",
+            "dataType": "Number",
+            "isPercentage": false,
+            "isMil": false,
+            "updatedTime": null,
+            "date": null,
+            "section": null
+          }
+        ]
+      }
+    },
+    "dcf": {
+      "key": "dcf",
+      "status": 200,
+      "ok": true,
+      "json": {
+        "message": "GET Request successful.",
+        "result": {
+          "operationCashFlow": 3661.616,
+          "totalDebt": 28352.031,
+          "cashandSTInvestment": 800.447,
+          "discountRate": 5.37,
+          "sharesOutstanding": 903.72,
+          "growthRateFirsttoFifthYear": 18.41,
+          "growthRateSixthToTenthYear": 4,
+          "growthRateEleventhToTwentiethYear": 4,
+          "note": null,
+          "intrinsicGuid": "00000000-0000-0000-0000-000000000000",
+          "method": 1,
+          "baseOn": 1,
+          "intrinsicValue": 96.9,
+          "stockPrice": 59.99,
+          "discountandPremium": -38.09,
+          "userId": null,
+          "stockId": null,
+          "deductFromIntrinsicValue": true,
+          "addToIntrinsicValue": true
+        }
+      }
+    },
+    "dfcf20": {
+      "key": "dfcf20",
+      "status": 200,
+      "ok": true,
+      "json": {
+        "message": "GET Request successful.",
+        "result": {
+          "freeCashFlow": 3542.673,
+          "totalDebt": 28352.031,
+          "cashandSTInvestment": 800.447,
+          "discountRate": 5.37,
+          "sharesOutstanding": 903.72,
+          "growthRateFirsttoFifthYear": 18.41,
+          "growthRateSixthToTenthYear": 4,
+          "growthRateEleventhToTwentiethYear": 4,
+          "note": null,
+          "intrinsicGuid": "00000000-0000-0000-0000-000000000000",
+          "method": 12,
+          "baseOn": 1,
+          "intrinsicValue": 92.76,
+          "stockPrice": 59.99,
+          "discountandPremium": -35.33,
+          "userId": null,
+          "stockId": null,
+          "deductFromIntrinsicValue": true,
+          "addToIntrinsicValue": true
+        }
+      }
+    },
+    "dni": {
+      "key": "dni",
+      "status": 404,
+      "ok": false,
+      "json": {
+        "isError": true,
+        "responseException": {
+          "exceptionMessage": "Request not found. The specified uri does not exist."
+        }
+      }
+    },
+    "pp": {
+      "key": "pp",
+      "status": 200,
+      "ok": true,
+      "json": {
+        "message": "GET Request successful.",
+        "result": {
+          "intrinsicGuid": "00000000-0000-0000-0000-000000000000",
+          "method": 10,
+          "baseOn": 0,
+          "intrinsicValue": 67.15,
+          "stockPrice": 59.99,
+          "discountandPremium": -10.66,
+          "userId": null,
+          "stockId": null,
+          "deductFromIntrinsicValue": false,
+          "addToIntrinsicValue": false
+        }
+      }
+    },
+    "ratios": {
+      "key": "ratios",
+      "status": 200,
+      "ok": true,
+      "json": {
+        "message": "GET Request successful.",
+        "result": [
+          {
+            "id": 1845,
+            "name": "EBITDA per Share",
+            "dataType": "Number",
+            "section": "8",
+            "subSection": null,
+            "value": "5.4955173970583678943384868698",
+            "isPercentage": false,
+            "isMil": false,
+            "growthRatePeriod": null
+          },
+          {
+            "id": 1017,
+            "name": "Earnings Yield",
+            "dataType": "Number",
+            "section": "8",
+            "subSection": null,
+            "value": "1.7792049991321",
+            "isPercentage": true,
+            "isMil": false,
+            "growthRatePeriod": null
+          },
+          {
+            "id": 2264,
+            "name": "Enterprise Value",
+            "dataType": "Number",
+            "section": "5,8",
+            "subSection": null,
+            "value": "84079.20084",
+            "isPercentage": false,
+            "isMil": true,
+            "growthRatePeriod": null
+          },
+          {
+            "id": 1024,
+            "name": "Enterprise Value to Free Cash Flow",
+            "dataType": "Number",
+            "section": "8",
+            "subSection": null,
+            "value": "23.733266050804011547213078938",
+            "isPercentage": false,
+            "isMil": false,
+            "growthRatePeriod": null
+          },
+          {
+            "id": 1022,
+            "name": "Enterprise Value to EBIT",
+            "dataType": "Number",
+            "section": "8",
+            "subSection": null,
+            "value": "33.623704793223047493134628466",
+            "isPercentage": false,
+            "isMil": false,
+            "growthRatePeriod": null
+          },
+          {
+            "id": 1023,
+            "name": "Enterprise Value to EBITDA",
+            "dataType": "Number",
+            "section": "8",
+            "subSection": null,
+            "value": "16.929651442789295316696020669",
+            "isPercentage": false,
+            "isMil": false,
+            "growthRatePeriod": null
+          },
+          {
+            "id": 1025,
+            "name": "Enterprise Value to Revenue",
+            "dataType": "Number",
+            "section": "8",
+            "subSection": null,
+            "value": "15.336933419601363628320989307",
+            "isPercentage": false,
+            "isMil": false,
+            "growthRatePeriod": null
+          },
+          {
+            "id": 1843,
+            "name": "Forward Price to Earnings Ratio (Next Year)",
+            "dataType": "Number",
+            "section": "8,10",
+            "subSection": null,
+            "value": "39.76334216226679",
+            "isPercentage": false,
+            "isMil": false,
+            "growthRatePeriod": null
+          },
+          {
+            "id": 1171,
+            "name": "Mean Price to Book (PB) Ratio",
+            "dataType": "Number",
+            "section": "8",
+            "subSection": null,
+            "value": "1.56",
+            "isPercentage": false,
+            "isMil": false,
+            "growthRatePeriod": null
+          },
+          {
+            "id": 1172,
+            "name": "Mean Price to Book (PB) Value",
+            "dataType": "Number",
+            "section": "8",
+            "subSection": null,
+            "value": "66.7992",
+            "isPercentage": false,
+            "isMil": false,
+            "growthRatePeriod": null
+          },
+          {
+            "id": 1173,
+            "name": "Mean Price to Earnings (PE) Ratio",
+            "dataType": "Number",
+            "section": "8",
+            "subSection": null,
+            "value": "60.15",
+            "isPercentage": false,
+            "isMil": false,
+            "growthRatePeriod": null
+          },
+          {
+            "id": 1175,
+            "name": "Mean Price to Earnings (PE) Value",
+            "dataType": "Number",
+            "section": "8",
+            "subSection": null,
+            "value": "60.15",
+            "isPercentage": false,
+            "isMil": false,
+            "growthRatePeriod": null
+          },
+          {
+            "id": 1174,
+            "name": "Mean Price to Earnings (PE) Ratio without NRI",
+            "dataType": "Number",
+            "section": "8",
+            "subSection": null,
+            "value": "55.12",
+            "isPercentage": false,
+            "isMil": false,
+            "growthRatePeriod": null
+          },
+          {
+            "id": 1176,
+            "name": "Mean Price to Earnings (PE) Value without NRI",
+            "dataType": "Number",
+            "section": "8",
+            "subSection": null,
+            "value": "56.7736",
+            "isPercentage": false,
+            "isMil": false,
+            "growthRatePeriod": null
+          },
+          {
+            "id": 1177,
+            "name": "Mean Price to Sales (PS) Ratio",
+            "dataType": "Number",
+            "section": "8",
+            "subSection": null,
+            "value": "12.23",
+            "isPercentage": false,
+            "isMil": false,
+            "growthRatePeriod": null
+          },
+          {
+            "id": 1178,
+            "name": "Mean Price to Sales (PS) Value",
+            "dataType": "Number",
+            "section": "8",
+            "subSection": null,
+            "value": "74.2361",
+            "isPercentage": false,
+            "isMil": false,
+            "growthRatePeriod": null
+          },
+          {
+            "id": 1179,
+            "name": "Median Price to Book (PB) Ratio",
+            "dataType": "Number",
+            "section": "8",
+            "subSection": null,
+            "value": "1.42",
+            "isPercentage": false,
+            "isMil": false,
+            "growthRatePeriod": null
+          },
+          {
+            "id": 1180,
+            "name": "Median Price to Book (PB) Value",
+            "dataType": "Number",
+            "section": "8",
+            "subSection": null,
+            "value": "60.8044",
+            "isPercentage": false,
+            "isMil": false,
+            "growthRatePeriod": null
+          },
+          {
+            "id": 1181,
+            "name": "Median Price to Earnings (PE) Ratio",
+            "dataType": "Number",
+            "section": "8",
+            "subSection": null,
+            "value": "57.32",
+            "isPercentage": false,
+            "isMil": false,
+            "growthRatePeriod": null
+          },
+          {
+            "id": 1183,
+            "name": "Median Price to Earnings (PE) Value",
+            "dataType": "Number",
+            "section": "8",
+            "subSection": null,
+            "value": "57.32",
+            "isPercentage": false,
+            "isMil": false,
+            "growthRatePeriod": null
+          },
+          {
+            "id": 1182,
+            "name": "Median Price to Earnings (PE) Ratio without NRI",
+            "dataType": "Number",
+            "section": "8",
+            "subSection": null,
+            "value": "54.39",
+            "isPercentage": false,
+            "isMil": false,
+            "growthRatePeriod": null
+          },
+          {
+            "id": 1184,
+            "name": "Median Price to Earnings (PE) Value without NRI",
+            "dataType": "Number",
+            "section": "8",
+            "subSection": null,
+            "value": "56.0217",
+            "isPercentage": false,
+            "isMil": false,
+            "growthRatePeriod": null
+          },
+          {
+            "id": 1185,
+            "name": "Median Price to Sales (PS) Ratio",
+            "dataType": "Number",
+            "section": "8",
+            "subSection": null,
+            "value": "11.62",
+            "isPercentage": false,
+            "isMil": false,
+            "growthRatePeriod": null
+          },
+          {
+            "id": 1186,
+            "name": "Median Price to Sales (PS) Value",
+            "dataType": "Number",
+            "section": "8",
+            "subSection": null,
+            "value": "70.5334",
+            "isPercentage": false,
+            "isMil": false,
+            "growthRatePeriod": null
+          },
+          {
+            "id": 1863,
+            "name": "Discounted Cash Flow 20-year (DCF-20) Value",
+            "dataType": "Number",
+            "section": "8",
+            "subSection": null,
+            "value": "96.90083090035398612578034213",
+            "isPercentage": false,
+            "isMil": false,
+            "growthRatePeriod": null
+          },
+          {
+            "id": 1865,
+            "name": "Discounted Net Income 20-year (DNI-20) Value",
+            "dataType": "Number",
+            "section": "8",
+            "subSection": null,
+            "value": "1.3748178027027190463822965102",
+            "isPercentage": false,
+            "isMil": false,
+            "growthRatePeriod": null
+          },
+          {
+            "id": 1867,
+            "name": "Discounted Free Cash Flow Terminal (DFCF-Terminal) Value",
+            "dataType": "Number",
+            "section": "8",
+            "subSection": null,
+            "value": "147.23159430881820696675961581",
+            "isPercentage": false,
+            "isMil": false,
+            "growthRatePeriod": null
+          },
+          {
+            "id": 2315,
+            "name": "Discounted Free Cash Flow 20-year (DFCF-20) Value",
+            "dataType": "Number",
+            "section": "8",
+            "subSection": null,
+            "value": "92.76279730490717049373892529",
+            "isPercentage": false,
+            "isMil": false,
+            "growthRatePeriod": null
+          },
+          {
+            "id": 2392,
+            "name": "Rule of 40",
+            "dataType": "Number",
+            "section": "8",
+            "subSection": null,
+            "value": "62.54",
+            "isPercentage": true,
+            "isMil": false,
+            "growthRatePeriod": null
+          }
+        ]
+      }
+    },
+    "ratioWidget": {
+      "key": "ratioWidget",
+      "status": 200,
+      "ok": true,
+      "json": {
+        "message": "GET Request successful.",
+        "result": [
+          {
+            "id": 2188,
+            "formula": null,
+            "description": "Price to Earnings (PE) Ratio",
+            "params": [
+              {
+                "field": "2020",
+                "value": "54.2969432314411",
+                "isBasicAvailable": false
+              },
+              {
+                "field": "2021",
+                "value": "82.6102007846757",
+                "isBasicAvailable": false
+              },
+              {
+                "field": "2022",
+                "value": "44.662723560062",
+                "isBasicAvailable": false
+              },
+              {
+                "field": "2023",
+                "value": "45.6184952729006",
+                "isBasicAvailable": false
+              },
+              {
+                "field": "2024",
+                "value": "54.5389563974267",
+                "isBasicAvailable": false
+              },
+              {
+                "field": "Current",
+                "value": "58.526829268292682926829268293",
+                "isBasicAvailable": false
+              },
+              {
+                "field": "5yrsAvg",
+                "value": "56.35",
+                "isBasicAvailable": false
+              }
+            ],
+            "isPercentage": false
+          },
+          {
+            "id": 1196,
+            "formula": null,
+            "description": "Price to Earnings (PE) Ratio without NRI",
+            "params": [
+              {
+                "field": "2020",
+                "value": "52.56174061945608870263663349",
+                "isBasicAvailable": false
+              },
+              {
+                "field": "2021",
+                "value": "82.56256487141044862184292469",
+                "isBasicAvailable": false
+              },
+              {
+                "field": "2022",
+                "value": "44.631297495074584857866591613",
+                "isBasicAvailable": false
+              },
+              {
+                "field": "2023",
+                "value": "45.571428571428571428571428571",
+                "isBasicAvailable": false
+              },
+              {
+                "field": "2024",
+                "value": "54.36132315521628498727735369",
+                "isBasicAvailable": false
+              },
+              {
+                "field": "Current",
+                "value": "58.418541240627130197682344922",
+                "isBasicAvailable": false
+              },
+              {
+                "field": "5yrsAvg",
+                "value": "55.94",
+                "isBasicAvailable": false
+              }
+            ],
+            "isPercentage": false
+          },
+          {
+            "id": 1843,
+            "formula": null,
+            "description": "Forward Price to Earnings Ratio (Next Year)",
+            "params": [
+              {
+                "field": "2020",
+                "value": "45.08430918104211",
+                "isBasicAvailable": false
+              },
+              {
+                "field": "2021",
+                "value": "43.885002779976084",
+                "isBasicAvailable": false
+              },
+              {
+                "field": "2022",
+                "value": "46.99890190174021",
+                "isBasicAvailable": false
+              },
+              {
+                "field": "2023",
+                "value": "43.33941433672657",
+                "isBasicAvailable": false
+              },
+              {
+                "field": "2024",
+                "value": "35.04388523242409",
+                "isBasicAvailable": false
+              },
+              {
+                "field": "Current",
+                "value": "35.04388523242409",
+                "isBasicAvailable": false
+              },
+              {
+                "field": "5yrsAvg",
+                "value": "42.87",
+                "isBasicAvailable": false
+              }
+            ],
+            "isPercentage": false
+          },
+          {
+            "id": 1198,
+            "formula": null,
+            "description": "Price to Earnings Growth (PEG) Ratio without NRI",
+            "params": [
+              {
+                "field": "2020",
+                "value": "13.795732446051466851085730575",
+                "isBasicAvailable": false
+              },
+              {
+                "field": "2021",
+                "value": "15.176942071950450114309361156",
+                "isBasicAvailable": false
+              },
+              {
+                "field": "2022",
+                "value": "13.283124254486483588650771313",
+                "isBasicAvailable": false
+              },
+              {
+                "field": "2023",
+                "value": "67.01680672268907563025210084",
+                "isBasicAvailable": false
+              },
+              {
+                "field": "2024",
+                "value": "8.897106899380734040470925318",
+                "isBasicAvailable": false
+              },
+              {
+                "field": "Current",
+                "value": "3.1732753938077131993481803368",
+                "isBasicAvailable": false
+              },
+              {
+                "field": "5yrsAvg",
+                "value": "23.63",
+                "isBasicAvailable": false
+              }
+            ],
+            "isPercentage": false
+          },
+          {
+            "id": 2184,
+            "formula": null,
+            "description": "Price to Sales (PS) Ratio",
+            "params": [
+              {
+                "field": "2020",
+                "value": "12.7206873961424",
+                "isBasicAvailable": false
+              },
+              {
+                "field": "2021",
+                "value": "14.2426556130217",
+                "isBasicAvailable": false
+              },
+              {
+                "field": "2022",
+                "value": "11.6148241233294",
+                "isBasicAvailable": false
+              },
+              {
+                "field": "2023",
+                "value": "9.71807277887715",
+                "isBasicAvailable": false
+              },
+              {
+                "field": "2024",
+                "value": "8.72124200782004",
+                "isBasicAvailable": false
+              },
+              {
+                "field": "Current",
+                "value": "9.889191580147818204595671105",
+                "isBasicAvailable": false
+              },
+              {
+                "field": "5yrsAvg",
+                "value": "11.4",
+                "isBasicAvailable": false
+              }
+            ],
+            "isPercentage": false
+          },
+          {
+            "id": 1210,
+            "formula": null,
+            "description": "Price to Sales Growth Ratio",
+            "params": [
+              {
+                "field": "2020",
+                "value": "1.61840806566697",
+                "isBasicAvailable": false
+              },
+              {
+                "field": "2021",
+                "value": "0.595927013097142",
+                "isBasicAvailable": false
+              },
+              {
+                "field": "2022",
+                "value": "0.524845193101193",
+                "isBasicAvailable": false
+              },
+              {
+                "field": "2023",
+                "value": "0.637250674024731",
+                "isBasicAvailable": false
+              },
+              {
+                "field": "2024",
+                "value": "0.935755580238202",
+                "isBasicAvailable": false
+              },
+              {
+                "field": "Current",
+                "value": "7.1151079136690647482014388489",
+                "isBasicAvailable": false
+              },
+              {
+                "field": "5yrsAvg",
+                "value": "0.86",
+                "isBasicAvailable": false
+              }
+            ],
+            "isPercentage": false
+          },
+          {
+            "id": 2186,
+            "formula": null,
+            "description": "Price to Book (PB) Ratio",
+            "params": [
+              {
+                "field": "2020",
+                "value": "2.04472",
+                "isBasicAvailable": false
+              },
+              {
+                "field": "2021",
+                "value": "1.68958",
+                "isBasicAvailable": false
+              },
+              {
+                "field": "2022",
+                "value": "1.45866",
+                "isBasicAvailable": false
+              },
+              {
+                "field": "2023",
+                "value": "1.31161",
+                "isBasicAvailable": false
+              },
+              {
+                "field": "2024",
+                "value": "1.22592",
+                "isBasicAvailable": false
+              },
+              {
+                "field": "Current",
+                "value": "1.4008584957782762551799539228",
+                "isBasicAvailable": false
+              },
+              {
+                "field": "5yrsAvg",
+                "value": "1.55",
+                "isBasicAvailable": false
+              }
+            ],
+            "isPercentage": false
+          }
+        ]
+      }
+    },
+    "chart": {
+      "key": "chart",
+      "status": 200,
+      "ok": true,
+      "json": {
+        "message": "GET Request successful.",
+        "result": {
+          "data": [
+            [
+              "1863",
+              96.9,
+              -38.09
+            ],
+            [
+              "2315",
+              92.76,
+              -35.33
+            ],
+            [
+              "1865",
+              1.37,
+              4263.49
+            ],
+            [
+              "1867",
+              147.23,
+              -59.25
+            ],
+            [
+              "1871",
+              67.15,
+              -10.66
+            ],
+            [
+              "1040",
+              74.24,
+              -19.19
+            ],
+            [
+              "1037",
+              66.8,
+              -10.19
+            ],
+            [
+              "1196",
+              56.77,
+              5.67
+            ],
+            [
+              "1210",
+              1.69,
+              3455.05
+            ],
+            [
+              "1198",
+              28.44,
+              110.91
+            ]
+          ],
+          "stockPrice": 59.99
+        }
+      }
+    }
+  }
+}

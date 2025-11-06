@@ -45,58 +45,103 @@ const MAX_BATCH_SIZE = 50; // FMP supports up to 50 symbols per batch
 const fmpProvider = process.env.FMP_API_KEY ? new FMPProvider(process.env.FMP_API_KEY) : null;
 const finnhubProvider = process.env.FINNHUB_API_KEY ? new FinnhubProvider(process.env.FINNHUB_API_KEY) : null;
 
+/**
+ * Normalize ticker format for FMP API compatibility
+ * FMP uses hyphens for share classes (BRK-B, BF-A), not dots
+ *
+ * Examples:
+ * - BRK.B → BRK-B (Berkshire Hathaway Class B)
+ * - BF.A → BF-A (Brown-Forman Class A)
+ * - ASML.AS → ASML.AS (European exchange suffix preserved)
+ * - BMW.F → BMW.F (Frankfurt exchange preserved)
+ * - ABI.BR → ABI.BR (Brussels exchange preserved)
+ * - AAPL → AAPL (unchanged)
+ */
+function normalizeTickerFormat(symbol: string): string {
+  const upper = symbol.toUpperCase();
+
+  // Known exchange suffixes to preserve (don't convert . to -)
+  const exchangeSuffixes = [
+    'AS', 'L', 'PA', 'DE', 'LS', 'SW', 'HK', 'TO', 'V',  // Existing
+    'F', 'BR', 'MC', 'MI', 'ST', 'HE', 'CO', 'OL', 'VI'  // NEW (Frankfurt, Brussels, Madrid, Milan, Stockholm, Helsinki, Copenhagen, Oslo, Vienna)
+  ];
+
+  // Check if has exchange suffix
+  const suffixMatch = upper.match(/\.([A-Z]+)$/);
+  if (suffixMatch) {
+    const suffix = suffixMatch[1];
+
+    // If exchange suffix, preserve it
+    if (exchangeSuffixes.includes(suffix)) {
+      return upper;
+    }
+
+    // Otherwise convert to hyphen (share class: BRK.B → BRK-B)
+    if (suffix.length === 1) {
+      return upper.replace(/\.([A-Z])$/, '-$1');
+    }
+  }
+
+  return upper;
+}
+
 class SimpleCacheService {
   /**
    * Get a single stock quote with caching
    */
   async getQuote(symbol: string): Promise<StockQuote | null> {
     try {
-      const upperSymbol = symbol.toUpperCase();
-      const cacheKey = `quote:${upperSymbol}`;
+      const normalizedSymbol = normalizeTickerFormat(symbol);
+      const cacheKey = `quote:${normalizedSymbol}`;
 
       // Check cache first
       const cached = await redisCacheService.get<StockQuote>(cacheKey);
       if (cached) {
-        console.log(`✅ Cache hit for ${upperSymbol}`);
+        console.log(`✅ Cache hit for ${normalizedSymbol}`);
         hitCounters.total++;
-        inc(hitCounters.bySymbol, upperSymbol);
+        inc(hitCounters.bySymbol, normalizedSymbol);
         return cached;
       }
 
       // Check if there's already an in-flight request for this symbol
-      const inFlight = inFlightRequests.get(upperSymbol);
+      const inFlight = inFlightRequests.get(normalizedSymbol);
       if (inFlight) {
-        console.log(`⏳ Waiting for in-flight request for ${upperSymbol}`);
+        console.log(`⏳ Waiting for in-flight request for ${normalizedSymbol}`);
         return await inFlight;
       }
 
       // Create new request and track it
-      console.log(`📡 Cache miss for ${upperSymbol}, fetching from FMP`);
-      const requestPromise = this.fetchQuoteFromAPI(upperSymbol);
-      inFlightRequests.set(upperSymbol, requestPromise);
+      console.log(`📡 Cache miss for ${normalizedSymbol}, fetching from FMP`);
+      const requestPromise = this.fetchQuoteFromAPI(normalizedSymbol);
+      inFlightRequests.set(normalizedSymbol, requestPromise);
 
       try {
         const quote = await requestPromise;
-        
-        // Cache the result if successful
-        if (quote) {
+
+        // Circuit breaker: Only cache valid quotes (price > 0)
+        if (quote && quote.price && quote.price > 0) {
           await redisCacheService.set(cacheKey, quote, CACHE_TTL);
-          console.log(`💾 Cached ${upperSymbol} for ${CACHE_TTL}s`);
+          console.log(`💾 Cached ${normalizedSymbol} for ${CACHE_TTL}s`);
+        } else if (quote) {
+          // Quote exists but price is invalid - don't cache
+          console.warn(`⚠️ Invalid quote for ${normalizedSymbol} (price: ${quote.price}), NOT caching`);
+          missCounters.total++;
+          inc(missCounters.bySymbol, normalizedSymbol);
         } else {
           // count a miss only when we truly couldn't fetch
           missCounters.total++;
-          inc(missCounters.bySymbol, upperSymbol);
+          inc(missCounters.bySymbol, normalizedSymbol);
         }
 
         return quote;
       } finally {
         // Clean up in-flight tracking
-        inFlightRequests.delete(upperSymbol);
+        inFlightRequests.delete(normalizedSymbol);
       }
     } catch (error) {
       console.error(`❌ Error getting quote for ${symbol}:`, error);
       missCounters.total++;
-      inc(missCounters.bySymbol, symbol.toUpperCase());
+      inc(missCounters.bySymbol, normalizeTickerFormat(symbol));
       return null;
     }
   }
@@ -106,14 +151,14 @@ class SimpleCacheService {
    */
   async getBatchQuotes(symbols: string[]): Promise<Record<string, StockQuote>> {
     try {
-      // Normalize symbols
-      const upperSymbols = symbols.map(s => s.toUpperCase());
+      // Normalize symbols (uppercase + convert dots to hyphens for FMP compatibility)
+      const normalizedSymbols = symbols.map(s => normalizeTickerFormat(s));
       const results: Record<string, StockQuote> = {};
       const missingSymbols: string[] = [];
 
       // Check cache for each symbol
       await Promise.all(
-        upperSymbols.map(async (symbol) => {
+        normalizedSymbols.map(async (symbol) => {
           const cacheKey = `quote:${symbol}`;
           const cached = await redisCacheService.get<StockQuote>(cacheKey);
           
@@ -324,6 +369,90 @@ class SimpleCacheService {
   /**
    * Get cache statistics
    */
+  /**
+   * Get company profile with caching
+   */
+  async getProfile(symbol: string): Promise<any | null> {
+    try {
+      const upperSymbol = symbol.toUpperCase();
+      const cacheKey = `profile:${upperSymbol}`;
+
+      // Check cache first
+      const cached = await redisCacheService.get<any>(cacheKey);
+      if (cached) {
+        console.log(`✅ Profile cache hit for ${upperSymbol}`);
+        return cached;
+      }
+
+      // Cache miss - fetch from FMP API
+      console.log(`📡 Profile cache miss for ${upperSymbol}, fetching from FMP`);
+      const profile = await this.fetchProfileFromAPI(upperSymbol);
+
+      // Cache the result if successful
+      if (profile) {
+        await redisCacheService.set(cacheKey, profile, TTL_PROFILE);
+        console.log(`💾 Cached profile for ${upperSymbol} for ${TTL_PROFILE}s (24h)`);
+      }
+
+      return profile;
+    } catch (error) {
+      console.error(`❌ Error getting profile for ${symbol}:`, error);
+      return null;
+    }
+  }
+
+  /**
+   * Fetch company profile from FMP API with circuit breaker
+   */
+  private async fetchProfileFromAPI(symbol: string): Promise<any | null> {
+    try {
+      if (!fmpProvider) {
+        console.error('❌ FMP provider not initialized (missing API key)');
+        return null;
+      }
+
+      const FMP_BASE_URL = 'https://financialmodelingprep.com';
+      const url = `${FMP_BASE_URL}/api/v3/profile/${symbol}?apikey=${process.env.FMP_API_KEY}`;
+
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json',
+        },
+      });
+
+      // Circuit breaker: Don't cache rate limit errors (HTTP 429)
+      if (response.status === 429) {
+        console.warn(`⚠️ Rate limit hit for ${symbol}, NOT caching (circuit breaker active)`);
+        return null; // Don't cache rate limit errors
+      }
+
+      if (!response.ok) {
+        console.error(`❌ FMP profile API failed for ${symbol}: ${response.status} ${response.statusText}`);
+        return null;
+      }
+
+      const data = await response.json();
+
+      // Circuit breaker: Check if response indicates rate limit error
+      if (data && data.error && typeof data.error === 'string' && data.error.toLowerCase().includes('rate limit')) {
+        console.warn(`⚠️ Rate limit error in response for ${symbol}, NOT caching`);
+        return null;
+      }
+
+      // FMP returns an array for profile endpoint
+      if (!Array.isArray(data) || data.length === 0) {
+        console.error(`❌ No profile data found for ${symbol}`);
+        return null;
+      }
+
+      return data[0]; // Return first profile object
+    } catch (error) {
+      console.error(`❌ Error fetching profile for ${symbol}:`, error);
+      return null;
+    }
+  }
+
   /**
    * Cache historical data with 2-hour TTL
    */

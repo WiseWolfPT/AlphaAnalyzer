@@ -314,6 +314,7 @@ export async function validateAgainstStockOracle() {
 }
 
 // Example: Run validation (Node.js direct execution)
-if (require.main === module) {
-  validateAgainstStockOracle().catch(console.error);
-}
+// NOTE: Disabled in ESM context - use dedicated test script instead
+// if (require.main === module) {
+//   validateAgainstStockOracle().catch(console.error);
+// }

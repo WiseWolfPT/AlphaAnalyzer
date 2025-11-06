@@ -1,0 +1,61 @@
+Category,Exchange,Suffix,Count,Covered_In_Regex,FMP_Support,Status,Priority,Notes
+European,London Stock Exchange,.L,150,YES,YES,SHOULD_WORK,P0,Covered in regex - likely false positive
+European,XETRA Germany,.DE,45,YES,YES,SHOULD_WORK,P0,Covered in regex - likely false positive
+European,Amsterdam,.AS,36,YES,YES,SHOULD_WORK,P0,Covered in regex - likely false positive
+European,Paris,.PA,24,YES,YES,SHOULD_WORK,P0,Covered in regex - likely false positive
+European,Lisbon,.LS,19,YES,YES,SHOULD_WORK,P0,Covered in regex - likely false positive
+European,Frankfurt,.F,51,NO,YES,NEEDS_FIX,P1,Add .F to regex (5 min fix)
+European,Brussels,.BR,45,NO,YES,NEEDS_FIX,P1,Add .BR to regex (5 min fix)
+European,Madrid,.MC,28,NO,YES,NEEDS_FIX,P1,Add .MC to regex (5 min fix)
+US,Various,(none),250,N/A,YES,WORKING,P0,Working now via fallback - false positive
+US,Various,(none),40,N/A,PARTIAL,DATA_QUALITY,P2,Delisted/inactive - remove from universe
+US,Various,-WT,-UN,-P,20,N/A,PARTIAL,SPECIAL,P3,Warrants/Units - decide if IV applies
+US,XETRA,(none),4,N/A,NO,AMBIGUOUS,P1,BMW→BMW.DE symbol correction needed
+Other,Unknown,.CSV,4,NO,NO,ERROR,P2,CSV export artifact - clean data
+
+Summary,,,,,,,,,
+Total_404s,Nov_2_Validation,,716,,,,STALE,"Validation predates price fallback fixes"
+Estimated_Real_404s,Nov_3_Estimate,,100,,,,CURRENT,"After fallback service implementation"
+False_Positives,,,616,,,,86%,"Reduction in failures after fixes"
+
+Quick_Wins,,,,,,,,,
+Add_Exchange_Suffixes,.F|BR|MC,,124,NO,YES,FIX,P1,"5 min code change"
+Fix_Ambiguous_Tickers,BMW→BMW.DE,,10,N/A,YES,FIX,P1,"10 min CSV edit"
+Remove_Delisted,Various,,40,N/A,NO,CLEANUP,P2,"2 hour audit"
+Fresh_Validation,All stocks,,1493,N/A,YES,VALIDATE,P0,"30 min script run"
+
+Expected_Outcomes,,,,,,,,,
+Before_Fixes,Success_Rate,,52%,777/1493,,,BASELINE,"Nov 2 validation"
+After_Fixes,Success_Rate,,94%,~1400/1493,,,ESTIMATED,"Nov 3 projection"
+Target,Success_Rate,,97%,>1450/1493,,,GOAL,"After cleanup"
+
+Code_Changes_Needed,,,,,,,,,
+File_1,simple-cache-service.ts,Line_207,1,Add_Suffixes,,,P1,"Add .F|BR|MC to regex"
+File_2,stock_universe_complete.csv,,1,Fix_Symbols,,,P1,"BMW→BMW.DE corrections"
+File_3,stock_universe_complete.csv,,1,Remove_Rows,,,P2,"Delete delisted stocks"
+
+Validation_Status,,,,,,,,,
+Nov_2_Validation,STALE,Pre_Fixes,716,404s,,,IGNORE,"Run before price fallback deployed"
+Nov_3_Validation,NEEDED,Post_Fixes,0,404s_Expected_<100,,,RUN_NOW,"Get accurate failure count"
+Nov_3_Target,GOAL,Post_Cleanup,0,404s_Expected_<50,,,FUTURE,"After all fixes applied"
+
+API_Support_Validation,,,,,,,,,
+FMP_International,London,0A7O.L,1,YES,MicroStrategy_Inc,SUCCESS,VALIDATED,"European stocks fully supported"
+FMP_International,London,0HCH.L,1,YES,Alexandria_REIT,SUCCESS,VALIDATED,"European stocks fully supported"
+FMP_International,Germany,1COV.DE,1,YES,Covestro_AG,SUCCESS,VALIDATED,"German stocks fully supported"
+FMP_International,Germany,BMW.DE,1,YES,BMW_AG,SUCCESS,VALIDATED,"German stocks fully supported"
+FMP_International,Amsterdam,ASML.AS,1,YES,ASML_Holding,SUCCESS,VALIDATED,"Dutch stocks fully supported"
+FMP_International,Paris,OR.PA,1,YES,L'Oreal,SUCCESS,VALIDATED,"French stocks fully supported"
+FMP_International,Brussels,ABI.BR,1,YES,AB_InBev,SUCCESS,VALIDATED,"Belgian stocks fully supported"
+FMP_US,NYSE,DAL,1,YES,Delta_$41.23,SUCCESS,VALIDATED,"US stocks working"
+FMP_US,NASDAQ,DDOG,1,YES,Datadog_$163.96,SUCCESS,VALIDATED,"US stocks working"
+FMP_US,NYSE,DELL,1,YES,Dell_Technologies,SUCCESS,VALIDATED,"US stocks working"
+FMP_US,NYSE,DD,1,YES,DuPont,SUCCESS,VALIDATED,"US stocks working"
+FMP_US,NYSE,DG,1,YES,Dollar_General,SUCCESS,VALIDATED,"US stocks working"
+FMP_NEGATIVE,Unknown,BMW,1,NO,Not_Found,FAIL,VALIDATED,"Needs .DE suffix"
+
+Fallback_Tiers,,,,,,,,,
+Tier_1,Quote_Endpoint,simpleCacheService,1,Primary,Redis_60s_TTL,,WORKING,"Live quotes cached"
+Tier_2,Profile_Endpoint,FMP_Profile_API,2,Fallback,Returns_Price_Field,,WORKING,"European stock fix"
+Tier_3,Historical,FMP_Historical_API,3,Fallback,Last_Close_Price,,WORKING,"Stale but acceptable"
+Tier_4,Calculated,mktCap/shares,4,Last_Resort,Estimation,,WORKING,"Better than nothing"

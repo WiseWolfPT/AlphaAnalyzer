@@ -24,6 +24,7 @@ import { config } from 'dotenv';
 import { resolve } from 'path';
 import { structuredLogger as logger } from '../services/structured-logger';
 import { fmpRateLimiter } from '../lib/rate-limiter';
+import { methodCacheService } from '../services/method-cache-service';
 
 // Load environment FIRST
 const envPath = process.env.NODE_ENV === 'production' ? '.env.production' : '.env';
@@ -228,20 +229,83 @@ function shouldRefreshCache(event: EarningsEvent): boolean {
  * Invalidate analyst estimates cache for a symbol
  */
 async function invalidateCache(symbol: string): Promise<boolean> {
+  const upperSymbol = symbol.toUpperCase();
+  const startTime = Date.now();
+  let success = false;
+
   try {
     const redis = await getRedisCacheService();
-    const cacheKey = `fmp:analyst:estimates:${symbol.toUpperCase()}`;
+    const cacheKey = `fmp:analyst:estimates:${upperSymbol}`;
     await redis.del(cacheKey);
 
-    logger.info('[EarningsMonitor] Cache invalidated', { symbol });
-    return true;
+    logger.info('[EarningsMonitor] Analyst cache invalidated', { symbol });
+    success = true;
   } catch (error: any) {
-    logger.error('[EarningsMonitor] Cache invalidation failed', {
+    logger.error('[EarningsMonitor] Analyst cache invalidation failed', {
       symbol,
       error: error.message
     });
-    return false;
   }
+
+  // Invalidate all IV method caches
+  try {
+    await methodCacheService.invalidateAllMethods(upperSymbol);
+    logger.info('[EarningsMonitor] IV method caches invalidated', {
+      symbol: upperSymbol,
+      methodsInvalidated: 12
+    });
+  } catch (error: any) {
+    logger.error('[EarningsMonitor] Failed to invalidate IV method caches', {
+      symbol: upperSymbol,
+      error: error.message
+    });
+  }
+
+  // Step 3: Proactive warming - recalculate priority methods immediately
+  // This ensures zero latency for ALL users, not just 2nd user onwards
+  try {
+    const priorityMethods: any[] = ['alfa-value', 'dcf-fcf-20', 'pe-mean'];
+
+    logger.info('[EarningsMonitor] Starting proactive IV warming', {
+      symbol: upperSymbol,
+      methods: priorityMethods.length
+    });
+
+    // Warm each priority method sequentially
+    for (const methodId of priorityMethods) {
+      try {
+        await methodCacheService.warmMethod(upperSymbol, methodId);
+        logger.debug('[EarningsMonitor] Method warmed', {
+          symbol: upperSymbol,
+          method: methodId
+        });
+      } catch (warmError: any) {
+        // Log but don't fail - warming is best-effort
+        logger.warn('[EarningsMonitor] Failed to warm method', {
+          symbol: upperSymbol,
+          method: methodId,
+          error: warmError.message
+        });
+      }
+
+      // Small delay between methods to respect rate limits (4 req/s)
+      await new Promise(resolve => setTimeout(resolve, 250));
+    }
+
+    logger.info('[EarningsMonitor] Proactive warming complete', {
+      symbol: upperSymbol,
+      methodsWarmed: priorityMethods.length,
+      durationMs: Date.now() - startTime
+    });
+  } catch (error: any) {
+    // Warming failure should not break earnings processing
+    logger.error('[EarningsMonitor] Proactive warming failed', {
+      symbol: upperSymbol,
+      error: error.message
+    });
+  }
+
+  return success;
 }
 
 /**

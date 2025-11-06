@@ -71,6 +71,15 @@ export function useAlfaValue(ticker: string) {
       const response = await fetch(`/api/iv/${ticker}/main`);
 
       if (!response.ok) {
+        // Handle 422 ETF rejection with structured error data
+        if (response.status === 422) {
+          const errorData = await response.json();
+          // Attach error data to the Error object so components can access it
+          const error = new Error(errorData.message || 'ETF not supported') as any;
+          error.statusCode = 422;
+          error.errorData = errorData;
+          throw error;
+        }
         if (response.status === 404) {
           throw new Error(`Intrinsic value data not available for ${ticker}`);
         }

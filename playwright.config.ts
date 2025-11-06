@@ -1,16 +1,33 @@
-import { defineConfig } from '@playwright/test';
+import { defineConfig, devices } from '@playwright/test';
 
 export default defineConfig({
+  testDir: './scripts/validation',
   timeout: 60_000,
-  reporter: [['list'], ['html', { outputFolder: '.playwright-report' }]],
+  fullyParallel: false,
+  retries: 1,
+  workers: 1,
+  reporter: [
+    ['list'],
+    ['html', { outputFolder: 'validation-results/report' }],
+    ['json', { outputFile: 'validation-results/test-results.json' }]
+  ],
   use: {
-    baseURL: process.env.TARGET_URL || 'http://localhost:3000',
+    baseURL: process.env.TARGET_URL || 'https://128.140.45.28.sslip.io',
     headless: true,
     ignoreHTTPSErrors: true,
     trace: 'retain-on-failure',
     screenshot: 'only-on-failure',
-    video: 'off',
+    video: 'retain-on-failure',
+    actionTimeout: 15000,
+    navigationTimeout: 15000,
   },
+  projects: [
+    {
+      name: 'chromium',
+      use: { ...devices['Desktop Chrome'] },
+    },
+  ],
+  outputDir: 'validation-results/test-artifacts',
   webServer: process.env.WEB_SERVER
     ? {
         command: 'npm run dev',

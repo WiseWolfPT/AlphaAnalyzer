@@ -199,6 +199,7 @@ module.exports = {
         // Bandwidth limits (FMP)
         FMP_MONTHLY_LIMIT_GB: '20',
         FMP_DAILY_BUDGET_MB: '666',         // ~20GB / 30 days
+        FMP_API_KEY: 'sEoOHoj4kGtqhkU7MrQl4lmeF4LwB2Bh',
         // PostgreSQL configuration
         PGHOST: '127.0.0.1',
         PGPORT: '5432',

@@ -1,0 +1,16 @@
+Method ID,Method Name,Category,Status,Required Data,FMP Endpoint,Data Available,Gaps,Root Cause,Fix Effort (Hours),Priority
+alfa-value,AlfaValue™,Proprietary,✅ Working,FCF (5y) + Debt + Cash + Shares + Sector,cash-flow-statement + balance-sheet + profile + key-metrics,✅ All Available,None,N/A,0,✅ Complete
+dcf-fcf-20,DCF-20 FCF FMP,DCF External,✅ Working,DCF value + FCF + Debt + Cash + Shares,discounted-cash-flow + cash-flow + balance-sheet + profile,✅ All Available,None,N/A,0,✅ Complete
+dcf-fcfe-20,DCF-20 FCFE FMP,DCF External,❌ Always Fails,Levered DCF value,advanced_levered_discounted_cash_flow (v4),❌ Endpoint Returns Empty,FCFE calculation logic,FMP API v4 endpoint broken/premium-only,4-6,P0 Critical
+dcf-terminal-fcf,DCF Terminal FCF,DCF External,⚠️ Questionable,Terminal value calculation,discounted-cash-flow (reused),⚠️ Arbitrary 5% markup,Real terminal value calc,Uses FCF DCF × 1.05 instead of Gordon Growth,2-3,P2 Medium
+dcf-terminal-fcfe,DCF Terminal FCFE,DCF External,❌ Always Fails,Terminal FCFE value,advanced_levered_discounted_cash_flow (v4),❌ Endpoint Returns Empty,FCFE + terminal calc,Same v4 endpoint issue + no terminal logic,4-6,P0 Critical
+dni-20,DNI-20 NI,DCF Internal,✅ Working,Net Income (5y) + Debt + Cash + Beta + Shares,income-statement + balance-sheet + profile + key-metrics,✅ All Available,Fails for loss-making companies,Returns null when NI ≤ 0,0,✅ Complete
+pe-mean,P/E Mean 5y,Multiples,✅ Working,P/E ratios (5y) + EPS TTM,ratios + key-metrics-ttm,✅ All Available,None,N/A,0,✅ Complete
+pe-mean-without-nri,P/E Mean without NRI,Multiples,⚠️ Misleading,Adjusted P/E ratios + Adjusted EPS,ratios + income-statement,❌ NRI field missing,NRI extraction logic,No actual NRI adjustment implemented,6-8,P1 High
+ps-mean,P/S Mean 5y,Multiples,✅ Working,P/S ratios (5y) + Revenue/Share TTM,ratios + key-metrics-ttm,✅ All Available,None,N/A,0,✅ Complete
+pb-mean,P/B Mean 5y,Multiples,✅ Working,P/B ratios (5y) + Book Value/Share TTM,ratios + key-metrics-ttm,✅ All Available,None,N/A,0,✅ Complete
+pb-mean-without-nri,P/B Mean without NRI,Multiples,⚠️ Misleading,Adjusted P/B + Adjusted Book Value,ratios + balance-sheet,❌ NRI adjustment missing,Book value NRI adjustment,No actual NRI adjustment for book value,6-8,P1 High
+peg,PEG Ratio,Growth,✅ Working,EPS + Growth Rate + Price,key-metrics-ttm + quote,✅ All Available,Fails for REITs (EPS=0),Division by zero when EPS ≤ 0,0 (working for normal stocks),✅ Complete
+psg,PSG Ratio,Growth,✅ Working,Revenue (4y) + Revenue/Share + Price,income-statement + key-metrics-ttm + quote,✅ All Available,None,N/A,0,✅ Complete
+dfcf-terminal,DFCF Terminal,DCF Internal,✅ Working,FCF + Debt + Cash + Beta + Shares + Growth Rates,cash-flow + balance-sheet + profile + key-metrics,✅ All Available,None,N/A,0,✅ Complete
+OVERALL,All Methods,Mixed,60% Success,Multiple endpoints per method,v3 (working) + v4 (broken),71% Available,FCFE + NRI + Timeouts + REITs,4 critical issues identified,20-25,Deploy in 2 weeks

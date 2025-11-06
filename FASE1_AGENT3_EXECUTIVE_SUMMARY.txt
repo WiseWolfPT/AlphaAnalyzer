@@ -1,0 +1,193 @@
+================================================================================
+FASE 1 - AGENT 1.3: CACHE PRE-WARMING VALIDATION - EXECUTIVE SUMMARY
+================================================================================
+Generated: 2025-11-04
+Status: ⚠️ PARTIAL PASS (44.4% coverage vs 90% target)
+
+--------------------------------------------------------------------------------
+KEY FINDINGS
+--------------------------------------------------------------------------------
+
+Overall Cache Coverage:
+  • Cached: 663/1,493 stocks (44.4%)
+  • Target: 1,344 stocks (90%)
+  • Gap: 830 stocks missing (55.6%)
+  • Method Keys: 23,551 (avg 35.5 per stock)
+
+Sample Test (180 core stocks):
+  • Cached: 136/180 (75.56%)
+  • HOT: 136 stocks (100% of cached)
+  • MISS: 44 stocks (24.44%)
+  • All cached entries fresh (<1h old)
+
+Critical Data Quality Issue:
+  • 38/136 stocks (28%) have 100% method failure
+  • Examples: AAPL, AMZN, TSLA, CSCO, AMD
+  • Root cause: Missing FMP fundamental data
+  • Impact: Cached but unusable (empty IV results)
+
+Sector Coverage (Sample):
+  ✅ Industrials: 100%
+  ✅ Communication: 100%
+  ✅ Financials: 90%
+  ✅ Consumer Staples: 90%
+  ⚠️ Technology: 67.3% (poorest)
+  ❌ Materials: 40%
+  ❌ Energy: 50%
+  ❌ Utilities: 50%
+
+Workers Status:
+  ✅ intelligent-warming-worker: ONLINE (23h uptime, 85 MB)
+  ✅ iv-warming-worker: ONLINE (23h uptime, 74 MB)
+
+--------------------------------------------------------------------------------
+ROOT CAUSES
+--------------------------------------------------------------------------------
+
+1. INCOMPLETE UNIVERSE
+   - Workers warming only 663 stocks instead of 1,493
+   - Likely: Stock universe CSV/database source incomplete
+   - Action: Verify stock list used by warming workers
+
+2. DATA QUALITY FAILURES
+   - 28% of cached stocks have all methods failing
+   - FMP API not returning fundamental data (profile, ratios)
+   - No pre-validation before caching
+   - Result: Cached but unusable entries
+
+3. SECTOR IMBALANCE
+   - Materials/Energy/Utilities under-represented
+   - Possible filtering or exclusion logic
+   - Need to investigate sector-specific issues
+
+--------------------------------------------------------------------------------
+CRITICAL ACTION ITEMS (Fix Immediately)
+--------------------------------------------------------------------------------
+
+[P0] EXPAND WARMING UNIVERSE
+  • Current: 663 stocks
+  • Target: 1,493 stocks
+  • Check: Stock universe source (CSV/database)
+  • Timeline: Day 1
+
+[P0] FIX DATA VALIDATION
+  • Problem: AAPL, AMZN, TSLA all 100% failed
+  • Add: Pre-flight FMP data check before caching
+  • Skip: Don't cache if all methods fail
+  • Timeline: Day 1-2
+
+[P0] INVESTIGATE SECTOR GAPS
+  • Materials: 40% → 90%
+  • Energy: 50% → 90%
+  • Utilities: 50% → 90%
+  • Check: Sector filtering logic
+  • Timeline: Day 2
+
+--------------------------------------------------------------------------------
+HIGH PRIORITY (This Week)
+--------------------------------------------------------------------------------
+
+[P1] IMPROVE METHOD COVERAGE
+  • Only 1/136 stocks has complete 12/12 methods
+  • Most have 2-11 methods cached
+  • Review: Method-level cache logic
+  • Timeline: Day 3
+
+[P1] RE-CACHE FAILED STOCKS
+  • AAPL, AMZN, TSLA, CSCO, AMD, UNH, LLY, ABBV...
+  • Manual trigger with data validation
+  • Flag persistent failures for investigation
+  • Timeline: Day 4
+
+[P1] CLARIFY TTL CONFIGURATION
+  • Config: 3600s (1 hour)
+  • Observed: 21k-84k seconds (6-23 hours)
+  • Verify: .env.production settings
+  • Timeline: Day 5
+
+--------------------------------------------------------------------------------
+SUCCESS CRITERIA (Re-Validation)
+--------------------------------------------------------------------------------
+
+✅ PASS:
+  • ≥1,344 stocks cached (90%+)
+  • All sectors ≥85% coverage
+  • Data quality: <5% method failure rate
+  • Method coverage: ≥80% stocks have 10+/12 methods
+
+⚠️ PARTIAL:
+  • 1,194-1,343 stocks (80-90%)
+  • Most sectors ≥70% coverage
+  • Data quality: <15% failure rate
+
+❌ FAIL:
+  • <1,194 stocks (<80%)
+  • Sectors <70% coverage
+  • Data quality: >20% failure rate
+
+Current Status: ❌ FAIL (44.4% < 80%)
+
+--------------------------------------------------------------------------------
+NEXT STEPS
+--------------------------------------------------------------------------------
+
+1. Review warming worker logs:
+   pm2 logs intelligent-warming-worker --lines 100
+   pm2 logs iv-warming-worker --lines 100
+
+2. Check stock universe source:
+   - Database: SELECT COUNT(*) FROM stocks;
+   - CSV: wc -l stock_universe_complete.csv
+   - ENV: Check WARMING_SYMBOLS or similar
+
+3. Test FMP data availability:
+   curl "https://financialmodelingprep.com/api/v3/profile/AAPL?apikey=$FMP_API_KEY"
+   # Should return profile data, not empty
+
+4. Force re-warm specific stock:
+   # (depends on warming worker API - check implementation)
+
+5. Re-run validation after fixes:
+   NODE_ENV=production node scripts/validation/validate-cache-warming.mjs
+
+--------------------------------------------------------------------------------
+FILES GENERATED
+--------------------------------------------------------------------------------
+
+1. JSON Results:
+   validation-results/FASE1_AGENT3_CACHE_WARMING_RESULTS.json
+
+2. Heatmap CSV:
+   validation-results/FASE1_AGENT3_CACHE_WARMING_RESULTS_HEATMAP.csv
+
+3. Full Report:
+   validation-results/FASE1_AGENT3_CACHE_WARMING_RESULTS_REPORT.md
+
+4. Cached Symbols List:
+   validation-results/FASE1_AGENT3_ALL_CACHED_SYMBOLS.txt (663 symbols)
+
+5. Validation Script:
+   scripts/validation/validate-cache-warming.mjs
+
+6. This Summary:
+   FASE1_AGENT3_EXECUTIVE_SUMMARY.txt
+
+7. Comprehensive Report:
+   FASE1_AGENT3_CACHE_WARMING_REPORT.md
+
+--------------------------------------------------------------------------------
+CONTACT / ESCALATION
+--------------------------------------------------------------------------------
+
+If coverage doesn't improve after fixes:
+  • Check FMP API quota/limits
+  • Review warming worker scheduling (cron jobs)
+  • Consider increasing worker concurrency
+  • Verify Redis memory limits (256 MB configured)
+
+Estimated time to 90% coverage: 3-5 days
+(Assumes no major infrastructure issues)
+
+================================================================================
+END OF EXECUTIVE SUMMARY
+================================================================================

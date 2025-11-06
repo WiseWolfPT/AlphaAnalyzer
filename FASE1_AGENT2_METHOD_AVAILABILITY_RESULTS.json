@@ -1,0 +1,921 @@
+{
+  "results": [
+    {
+      "ticker": "JPM",
+      "status": 0,
+      "error": "Cannot read properties of undefined (reading 'startsWith')",
+      "classification": "unknown",
+      "methodCount": 0,
+      "valid": false
+    },
+    {
+      "ticker": "BAC",
+      "status": 0,
+      "error": "Cannot read properties of undefined (reading 'startsWith')",
+      "classification": "unknown",
+      "methodCount": 0,
+      "valid": false
+    },
+    {
+      "ticker": "WFC",
+      "status": 0,
+      "error": "Cannot read properties of undefined (reading 'startsWith')",
+      "classification": "unknown",
+      "methodCount": 0,
+      "valid": false
+    },
+    {
+      "ticker": "GS",
+      "status": 0,
+      "error": "Cannot read properties of undefined (reading 'startsWith')",
+      "classification": "unknown",
+      "methodCount": 0,
+      "valid": false
+    },
+    {
+      "ticker": "MS",
+      "status": 0,
+      "error": "Cannot read properties of undefined (reading 'startsWith')",
+      "classification": "unknown",
+      "methodCount": 0,
+      "valid": false
+    },
+    {
+      "ticker": "C",
+      "status": 0,
+      "error": "Cannot read properties of undefined (reading 'startsWith')",
+      "classification": "unknown",
+      "methodCount": 0,
+      "valid": false
+    },
+    {
+      "ticker": "USB",
+      "classification": "value",
+      "methodCount": 0,
+      "methods": [],
+      "hasGrowthDCF": false,
+      "hasDCFMethods": false,
+      "hasDuplicates": false,
+      "status": 200,
+      "valid": false,
+      "issues": [
+        "Wrong count: 0 (expected 13-13)"
+      ]
+    },
+    {
+      "ticker": "PNC",
+      "classification": "value",
+      "methodCount": 0,
+      "methods": [],
+      "hasGrowthDCF": false,
+      "hasDCFMethods": false,
+      "hasDuplicates": false,
+      "status": 200,
+      "valid": false,
+      "issues": [
+        "Wrong count: 0 (expected 13-13)"
+      ]
+    },
+    {
+      "ticker": "TFC",
+      "classification": "value",
+      "methodCount": 0,
+      "methods": [],
+      "hasGrowthDCF": false,
+      "hasDCFMethods": false,
+      "hasDuplicates": false,
+      "status": 200,
+      "valid": false,
+      "issues": [
+        "Wrong count: 0 (expected 13-13)"
+      ]
+    },
+    {
+      "ticker": "SCHW",
+      "status": 0,
+      "error": "Cannot read properties of undefined (reading 'startsWith')",
+      "classification": "unknown",
+      "methodCount": 0,
+      "valid": false
+    },
+    {
+      "ticker": "BK",
+      "status": 0,
+      "error": "Cannot read properties of undefined (reading 'startsWith')",
+      "classification": "unknown",
+      "methodCount": 0,
+      "valid": false
+    },
+    {
+      "ticker": "STT",
+      "status": 0,
+      "error": "Cannot read properties of undefined (reading 'startsWith')",
+      "classification": "unknown",
+      "methodCount": 0,
+      "valid": false
+    },
+    {
+      "ticker": "NTRS",
+      "classification": "value",
+      "methodCount": 0,
+      "methods": [],
+      "hasGrowthDCF": false,
+      "hasDCFMethods": false,
+      "hasDuplicates": false,
+      "status": 200,
+      "valid": false,
+      "issues": [
+        "Wrong count: 0 (expected 13-13)"
+      ]
+    },
+    {
+      "ticker": "FITB",
+      "status": 0,
+      "error": "Cannot read properties of undefined (reading 'startsWith')",
+      "classification": "unknown",
+      "methodCount": 0,
+      "valid": false
+    },
+    {
+      "ticker": "RF",
+      "status": 0,
+      "error": "Cannot read properties of undefined (reading 'startsWith')",
+      "classification": "unknown",
+      "methodCount": 0,
+      "valid": false
+    },
+    {
+      "ticker": "CFG",
+      "classification": "value",
+      "methodCount": 0,
+      "methods": [],
+      "hasGrowthDCF": false,
+      "hasDCFMethods": false,
+      "hasDuplicates": false,
+      "status": 200,
+      "valid": false,
+      "issues": [
+        "Wrong count: 0 (expected 13-13)"
+      ]
+    },
+    {
+      "ticker": "KEY",
+      "status": 0,
+      "error": "Cannot read properties of undefined (reading 'startsWith')",
+      "classification": "unknown",
+      "methodCount": 0,
+      "valid": false
+    },
+    {
+      "ticker": "MTB",
+      "status": 0,
+      "error": "Cannot read properties of undefined (reading 'startsWith')",
+      "classification": "unknown",
+      "methodCount": 0,
+      "valid": false
+    },
+    {
+      "ticker": "PLD",
+      "status": 0,
+      "error": "Cannot read properties of undefined (reading 'startsWith')",
+      "classification": "unknown",
+      "methodCount": 0,
+      "valid": false
+    },
+    {
+      "ticker": "AMT",
+      "status": 0,
+      "error": "Cannot read properties of undefined (reading 'startsWith')",
+      "classification": "unknown",
+      "methodCount": 0,
+      "valid": false
+    },
+    {
+      "ticker": "EQIX",
+      "status": 0,
+      "error": "Cannot read properties of undefined (reading 'startsWith')",
+      "classification": "unknown",
+      "methodCount": 0,
+      "valid": false
+    },
+    {
+      "ticker": "PSA",
+      "classification": "value",
+      "methodCount": 0,
+      "methods": [],
+      "hasGrowthDCF": false,
+      "hasDCFMethods": false,
+      "hasDuplicates": false,
+      "status": 200,
+      "valid": false,
+      "issues": [
+        "Wrong count: 0 (expected 13-13)"
+      ]
+    },
+    {
+      "ticker": "CCI",
+      "status": 0,
+      "error": "Cannot read properties of undefined (reading 'startsWith')",
+      "classification": "unknown",
+      "methodCount": 0,
+      "valid": false
+    },
+    {
+      "ticker": "WELL",
+      "status": 0,
+      "error": "Cannot read properties of undefined (reading 'startsWith')",
+      "classification": "unknown",
+      "methodCount": 0,
+      "valid": false
+    },
+    {
+      "ticker": "SPG",
+      "status": 0,
+      "error": "Cannot read properties of undefined (reading 'startsWith')",
+      "classification": "unknown",
+      "methodCount": 0,
+      "valid": false
+    },
+    {
+      "ticker": "DLR",
+      "status": 0,
+      "error": "Cannot read properties of undefined (reading 'startsWith')",
+      "classification": "unknown",
+      "methodCount": 0,
+      "valid": false
+    },
+    {
+      "ticker": "O",
+      "status": 0,
+      "error": "Cannot read properties of undefined (reading 'startsWith')",
+      "classification": "unknown",
+      "methodCount": 0,
+      "valid": false
+    },
+    {
+      "ticker": "SBAC",
+      "status": 0,
+      "error": "Cannot read properties of undefined (reading 'startsWith')",
+      "classification": "unknown",
+      "methodCount": 0,
+      "valid": false
+    },
+    {
+      "ticker": "VICI",
+      "status": 0,
+      "error": "Cannot read properties of undefined (reading 'startsWith')",
+      "classification": "unknown",
+      "methodCount": 0,
+      "valid": false
+    },
+    {
+      "ticker": "AVB",
+      "status": 0,
+      "error": "Cannot read properties of undefined (reading 'startsWith')",
+      "classification": "unknown",
+      "methodCount": 0,
+      "valid": false
+    },
+    {
+      "ticker": "EQR",
+      "status": 0,
+      "error": "Cannot read properties of undefined (reading 'startsWith')",
+      "classification": "unknown",
+      "methodCount": 0,
+      "valid": false
+    },
+    {
+      "ticker": "VTR",
+      "status": 0,
+      "error": "Cannot read properties of undefined (reading 'startsWith')",
+      "classification": "unknown",
+      "methodCount": 0,
+      "valid": false
+    },
+    {
+      "ticker": "INVH",
+      "status": 0,
+      "error": "Cannot read properties of undefined (reading 'startsWith')",
+      "classification": "unknown",
+      "methodCount": 0,
+      "valid": false
+    },
+    {
+      "ticker": "ARE",
+      "classification": "value",
+      "methodCount": 0,
+      "methods": [],
+      "hasGrowthDCF": false,
+      "hasDCFMethods": false,
+      "hasDuplicates": false,
+      "status": 200,
+      "valid": false,
+      "issues": [
+        "Wrong count: 0 (expected 13-13)"
+      ]
+    },
+    {
+      "ticker": "MAA",
+      "classification": "value",
+      "methodCount": 0,
+      "methods": [],
+      "hasGrowthDCF": false,
+      "hasDCFMethods": false,
+      "hasDuplicates": false,
+      "status": 200,
+      "valid": false,
+      "issues": [
+        "Wrong count: 0 (expected 13-13)"
+      ]
+    },
+    {
+      "ticker": "UDR",
+      "classification": "value",
+      "methodCount": 0,
+      "methods": [],
+      "hasGrowthDCF": false,
+      "hasDCFMethods": false,
+      "hasDuplicates": false,
+      "status": 200,
+      "valid": false,
+      "issues": [
+        "Wrong count: 0 (expected 13-13)"
+      ]
+    },
+    {
+      "ticker": "NVDA",
+      "status": 0,
+      "error": "Cannot read properties of undefined (reading 'startsWith')",
+      "classification": "unknown",
+      "methodCount": 0,
+      "valid": false
+    },
+    {
+      "ticker": "TSLA",
+      "classification": "value",
+      "methodCount": 0,
+      "methods": [],
+      "hasGrowthDCF": false,
+      "hasDCFMethods": false,
+      "hasDuplicates": false,
+      "status": 200,
+      "valid": false,
+      "issues": [
+        "Wrong count: 0 (expected 13-13)"
+      ]
+    },
+    {
+      "ticker": "AMD",
+      "classification": "value",
+      "methodCount": 0,
+      "methods": [],
+      "hasGrowthDCF": false,
+      "hasDCFMethods": false,
+      "hasDuplicates": false,
+      "status": 200,
+      "valid": false,
+      "issues": [
+        "Wrong count: 0 (expected 13-13)"
+      ]
+    },
+    {
+      "ticker": "SHOP",
+      "classification": "value",
+      "methodCount": 0,
+      "methods": [],
+      "hasGrowthDCF": false,
+      "hasDCFMethods": false,
+      "hasDuplicates": false,
+      "status": 200,
+      "valid": false,
+      "issues": [
+        "Wrong count: 0 (expected 13-13)"
+      ]
+    },
+    {
+      "ticker": "DDOG",
+      "status": 0,
+      "error": "Cannot read properties of undefined (reading 'startsWith')",
+      "classification": "unknown",
+      "methodCount": 0,
+      "valid": false
+    },
+    {
+      "ticker": "CRWD",
+      "status": 0,
+      "error": "Cannot read properties of undefined (reading 'startsWith')",
+      "classification": "unknown",
+      "methodCount": 0,
+      "valid": false
+    },
+    {
+      "ticker": "NET",
+      "status": 404,
+      "error": "HTTP 404",
+      "classification": "unknown",
+      "methodCount": 0,
+      "valid": false
+    },
+    {
+      "ticker": "SNOW",
+      "status": 404,
+      "error": "HTTP 404",
+      "classification": "unknown",
+      "methodCount": 0,
+      "valid": false
+    },
+    {
+      "ticker": "PLTR",
+      "status": 404,
+      "error": "HTTP 404",
+      "classification": "unknown",
+      "methodCount": 0,
+      "valid": false
+    },
+    {
+      "ticker": "RBLX",
+      "status": 0,
+      "error": "The operation was aborted.",
+      "classification": "unknown",
+      "methodCount": 0,
+      "valid": false
+    },
+    {
+      "ticker": "COIN",
+      "status": 0,
+      "error": "Cannot read properties of undefined (reading 'startsWith')",
+      "classification": "unknown",
+      "methodCount": 0,
+      "valid": false
+    },
+    {
+      "ticker": "ABNB",
+      "status": 0,
+      "error": "Cannot read properties of undefined (reading 'startsWith')",
+      "classification": "unknown",
+      "methodCount": 0,
+      "valid": false
+    },
+    {
+      "ticker": "UBER",
+      "status": 0,
+      "error": "Cannot read properties of undefined (reading 'startsWith')",
+      "classification": "unknown",
+      "methodCount": 0,
+      "valid": false
+    },
+    {
+      "ticker": "DASH",
+      "classification": "value",
+      "methodCount": 0,
+      "methods": [],
+      "hasGrowthDCF": false,
+      "hasDCFMethods": false,
+      "hasDuplicates": false,
+      "status": 200,
+      "valid": false,
+      "issues": [
+        "Wrong count: 0 (expected 13-13)"
+      ]
+    },
+    {
+      "ticker": "MELI",
+      "classification": "value",
+      "methodCount": 0,
+      "methods": [],
+      "hasGrowthDCF": false,
+      "hasDCFMethods": false,
+      "hasDuplicates": false,
+      "status": 200,
+      "valid": false,
+      "issues": [
+        "Wrong count: 0 (expected 13-13)"
+      ]
+    },
+    {
+      "ticker": "SE",
+      "status": 0,
+      "error": "Cannot read properties of undefined (reading 'startsWith')",
+      "classification": "unknown",
+      "methodCount": 0,
+      "valid": false
+    },
+    {
+      "ticker": "AAPL",
+      "status": 0,
+      "error": "Cannot read properties of undefined (reading 'startsWith')",
+      "classification": "unknown",
+      "methodCount": 0,
+      "valid": false
+    },
+    {
+      "ticker": "MSFT",
+      "status": 0,
+      "error": "Cannot read properties of undefined (reading 'startsWith')",
+      "classification": "unknown",
+      "methodCount": 0,
+      "valid": false
+    },
+    {
+      "ticker": "GOOGL",
+      "status": 0,
+      "error": "Cannot read properties of undefined (reading 'startsWith')",
+      "classification": "unknown",
+      "methodCount": 0,
+      "valid": false
+    },
+    {
+      "ticker": "AMZN",
+      "classification": "value",
+      "methodCount": 0,
+      "methods": [],
+      "hasGrowthDCF": false,
+      "hasDCFMethods": false,
+      "hasDuplicates": false,
+      "status": 200,
+      "valid": false,
+      "issues": [
+        "Wrong count: 0 (expected 13-13)"
+      ]
+    },
+    {
+      "ticker": "META",
+      "status": 0,
+      "error": "Cannot read properties of undefined (reading 'startsWith')",
+      "classification": "unknown",
+      "methodCount": 0,
+      "valid": false
+    },
+    {
+      "ticker": "JNJ",
+      "classification": "value",
+      "methodCount": 0,
+      "methods": [],
+      "hasGrowthDCF": false,
+      "hasDCFMethods": false,
+      "hasDuplicates": false,
+      "status": 200,
+      "valid": false,
+      "issues": [
+        "Wrong count: 0 (expected 13-13)"
+      ]
+    },
+    {
+      "ticker": "V",
+      "status": 404,
+      "error": "HTTP 404",
+      "classification": "unknown",
+      "methodCount": 0,
+      "valid": false
+    },
+    {
+      "ticker": "PG",
+      "classification": "value",
+      "methodCount": 0,
+      "methods": [],
+      "hasGrowthDCF": false,
+      "hasDCFMethods": false,
+      "hasDuplicates": false,
+      "status": 200,
+      "valid": false,
+      "issues": [
+        "Wrong count: 0 (expected 13-13)"
+      ]
+    },
+    {
+      "ticker": "XOM",
+      "status": 0,
+      "error": "Cannot read properties of undefined (reading 'startsWith')",
+      "classification": "unknown",
+      "methodCount": 0,
+      "valid": false
+    },
+    {
+      "ticker": "HD",
+      "status": 0,
+      "error": "Cannot read properties of undefined (reading 'startsWith')",
+      "classification": "unknown",
+      "methodCount": 0,
+      "valid": false
+    },
+    {
+      "ticker": "CVX",
+      "classification": "value",
+      "methodCount": 0,
+      "methods": [],
+      "hasGrowthDCF": false,
+      "hasDCFMethods": false,
+      "hasDuplicates": false,
+      "status": 200,
+      "valid": false,
+      "issues": [
+        "Wrong count: 0 (expected 13-13)"
+      ]
+    },
+    {
+      "ticker": "MRK",
+      "status": 404,
+      "error": "HTTP 404",
+      "classification": "unknown",
+      "methodCount": 0,
+      "valid": false
+    },
+    {
+      "ticker": "ABBV",
+      "status": 0,
+      "error": "Cannot read properties of undefined (reading 'startsWith')",
+      "classification": "unknown",
+      "methodCount": 0,
+      "valid": false
+    },
+    {
+      "ticker": "PEP",
+      "status": 0,
+      "error": "Cannot read properties of undefined (reading 'startsWith')",
+      "classification": "unknown",
+      "methodCount": 0,
+      "valid": false
+    },
+    {
+      "ticker": "COST",
+      "status": 0,
+      "error": "Cannot read properties of undefined (reading 'startsWith')",
+      "classification": "unknown",
+      "methodCount": 0,
+      "valid": false
+    },
+    {
+      "ticker": "AVGO",
+      "status": 0,
+      "error": "Cannot read properties of undefined (reading 'startsWith')",
+      "classification": "unknown",
+      "methodCount": 0,
+      "valid": false
+    },
+    {
+      "ticker": "LLY",
+      "classification": "value",
+      "methodCount": 0,
+      "methods": [],
+      "hasGrowthDCF": false,
+      "hasDCFMethods": false,
+      "hasDuplicates": false,
+      "status": 200,
+      "valid": false,
+      "issues": [
+        "Wrong count: 0 (expected 13-13)"
+      ]
+    },
+    {
+      "ticker": "ADBE",
+      "status": 0,
+      "error": "Cannot read properties of undefined (reading 'startsWith')",
+      "classification": "unknown",
+      "methodCount": 0,
+      "valid": false
+    },
+    {
+      "ticker": "KO",
+      "classification": "value",
+      "methodCount": 0,
+      "methods": [],
+      "hasGrowthDCF": false,
+      "hasDCFMethods": false,
+      "hasDuplicates": false,
+      "status": 200,
+      "valid": false,
+      "issues": [
+        "Wrong count: 0 (expected 13-13)"
+      ]
+    },
+    {
+      "ticker": "TMO",
+      "status": 0,
+      "error": "Cannot read properties of undefined (reading 'startsWith')",
+      "classification": "unknown",
+      "methodCount": 0,
+      "valid": false
+    },
+    {
+      "ticker": "WMT",
+      "status": 404,
+      "error": "HTTP 404",
+      "classification": "unknown",
+      "methodCount": 0,
+      "valid": false
+    },
+    {
+      "ticker": "MCD",
+      "classification": "value",
+      "methodCount": 0,
+      "methods": [],
+      "hasGrowthDCF": false,
+      "hasDCFMethods": false,
+      "hasDuplicates": false,
+      "status": 200,
+      "valid": false,
+      "issues": [
+        "Wrong count: 0 (expected 13-13)"
+      ]
+    },
+    {
+      "ticker": "CSCO",
+      "status": 404,
+      "error": "HTTP 404",
+      "classification": "unknown",
+      "methodCount": 0,
+      "valid": false
+    },
+    {
+      "ticker": "ACN",
+      "status": 0,
+      "error": "Cannot read properties of undefined (reading 'startsWith')",
+      "classification": "unknown",
+      "methodCount": 0,
+      "valid": false
+    },
+    {
+      "ticker": "ABT",
+      "status": 0,
+      "error": "Cannot read properties of undefined (reading 'startsWith')",
+      "classification": "unknown",
+      "methodCount": 0,
+      "valid": false
+    },
+    {
+      "ticker": "NKE",
+      "status": 0,
+      "error": "Cannot read properties of undefined (reading 'startsWith')",
+      "classification": "unknown",
+      "methodCount": 0,
+      "valid": false
+    },
+    {
+      "ticker": "DHR",
+      "status": 0,
+      "error": "Cannot read properties of undefined (reading 'startsWith')",
+      "classification": "unknown",
+      "methodCount": 0,
+      "valid": false
+    },
+    {
+      "ticker": "CRM",
+      "status": 0,
+      "error": "Cannot read properties of undefined (reading 'startsWith')",
+      "classification": "unknown",
+      "methodCount": 0,
+      "valid": false
+    },
+    {
+      "ticker": "VZ",
+      "status": 0,
+      "error": "Cannot read properties of undefined (reading 'startsWith')",
+      "classification": "unknown",
+      "methodCount": 0,
+      "valid": false
+    },
+    {
+      "ticker": "CMCSA",
+      "status": 0,
+      "error": "Cannot read properties of undefined (reading 'startsWith')",
+      "classification": "unknown",
+      "methodCount": 0,
+      "valid": false
+    },
+    {
+      "ticker": "TXN",
+      "status": 404,
+      "error": "HTTP 404",
+      "classification": "unknown",
+      "methodCount": 0,
+      "valid": false
+    },
+    {
+      "ticker": "INTC",
+      "status": 404,
+      "error": "HTTP 404",
+      "classification": "unknown",
+      "methodCount": 0,
+      "valid": false
+    },
+    {
+      "ticker": "NEE",
+      "status": 0,
+      "error": "Cannot read properties of undefined (reading 'startsWith')",
+      "classification": "unknown",
+      "methodCount": 0,
+      "valid": false
+    },
+    {
+      "ticker": "PM",
+      "status": 0,
+      "error": "Cannot read properties of undefined (reading 'startsWith')",
+      "classification": "unknown",
+      "methodCount": 0,
+      "valid": false
+    },
+    {
+      "ticker": "DIS",
+      "status": 404,
+      "error": "HTTP 404",
+      "classification": "unknown",
+      "methodCount": 0,
+      "valid": false
+    },
+    {
+      "ticker": "ORCL",
+      "status": 0,
+      "error": "Cannot read properties of undefined (reading 'startsWith')",
+      "classification": "unknown",
+      "methodCount": 0,
+      "valid": false
+    },
+    {
+      "ticker": "UPS",
+      "status": 0,
+      "error": "Cannot read properties of undefined (reading 'startsWith')",
+      "classification": "unknown",
+      "methodCount": 0,
+      "valid": false
+    },
+    {
+      "ticker": "BMY",
+      "status": 404,
+      "error": "HTTP 404",
+      "classification": "unknown",
+      "methodCount": 0,
+      "valid": false
+    },
+    {
+      "ticker": "QCOM",
+      "status": 0,
+      "error": "Cannot read properties of undefined (reading 'startsWith')",
+      "classification": "unknown",
+      "methodCount": 0,
+      "valid": false
+    },
+    {
+      "ticker": "HON",
+      "status": 0,
+      "error": "Cannot read properties of undefined (reading 'startsWith')",
+      "classification": "unknown",
+      "methodCount": 0,
+      "valid": false
+    }
+  ],
+  "stats": {
+    "total": 92,
+    "tested": 92,
+    "valid": 0,
+    "invalid": 21,
+    "errors": 71,
+    "byClassification": {
+      "bank": {
+        "total": 0,
+        "valid": 0,
+        "avgMethods": 0,
+        "samples": []
+      },
+      "reit": {
+        "total": 0,
+        "valid": 0,
+        "avgMethods": 0,
+        "samples": []
+      },
+      "growth": {
+        "total": 0,
+        "valid": 0,
+        "avgMethods": 0,
+        "samples": []
+      },
+      "value": {
+        "total": 21,
+        "valid": 0,
+        "avgMethods": "0.00",
+        "samples": [
+          "USB",
+          "PNC",
+          "TFC",
+          "NTRS",
+          "CFG",
+          "PSA",
+          "ARE",
+          "MAA",
+          "UDR",
+          "TSLA",
+          "AMD",
+          "SHOP",
+          "DASH",
+          "MELI",
+          "AMZN",
+          "JNJ",
+          "PG",
+          "CVX",
+          "LLY",
+          "KO",
+          "MCD"
+        ]
+      }
+    }
+  }
+}

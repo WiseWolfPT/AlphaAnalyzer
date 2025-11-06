@@ -1,0 +1,36 @@
+==================================================
+FASE 3 - Production ETF Rejection Validation
+==================================================
+Base URL: https://128.140.45.28.sslip.io
+Timestamp: Wed Oct 29 20:52:39 WET 2025
+
+[SPY] PASS - HTTP 400
+[QQQ] PASS - HTTP 400
+[ARKK] PASS - HTTP 400
+[VTI] PASS - HTTP 400
+[GLD] PASS - HTTP 400
+[IWM] PASS - HTTP 400
+[TLT] PASS - HTTP 400
+[EFA] PASS - HTTP 400
+[AGG] PASS - HTTP 400
+[XLK] PASS - HTTP 400
+[AAPL] PASS - HTTP 200
+[MSFT] PASS - HTTP 200
+[GOOGL] PASS - HTTP 200
+[NFLX] FAIL - HTTP 400 (expected 200)
+Response body: {"error":"ETF_NOT_SUPPORTED","message":"NFLX is an ETF. Intrinsic value calculations are only available for individual stocks.","reason":"Name explicitly mentions ETF","suggestion":"Try analyzing individual stocks within the ETF instead.","alternative_methods":["Price momentum","Relative strength","Expense ratio analysis","Tracking error analysis"]}
+[TSLA] PASS - HTTP 200
+[AMZN] PASS - HTTP 200
+[META] PASS - HTTP 200
+[NVDA] PASS - HTTP 200
+[JPM] PASS - HTTP 200
+[O] PASS - HTTP 200
+[spy] PASS - HTTP 400
+
+==================================================
+Summary Report
+==================================================
+Total tests: 21
+Passed: 20
+Failed: 1
+Pass rate: % Pass rate: %

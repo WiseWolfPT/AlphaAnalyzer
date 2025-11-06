@@ -27,6 +27,12 @@ import usageMetricsRouter from "./routes/usage-metrics";
 import { alertsRouter } from "./routes/alerts";
 import cacheRoutes from "./routes/cache-routes";
 import notificationsRouter from "./routes/notifications";
+// AGENT 15: Data fallback monitoring
+import monitoringDataFallbacksRouter from "./routes/monitoring-data-fallbacks";
+// ONDA 7: Warming worker monitoring
+import monitoringWarmingRouter from "./routes/monitoring-warming";
+// AGENT 16: GICS sector routes
+import sectorRoutes from "./routes/sector-routes";
 // BROKEN IMPORTS - Modules don't exist yet
 // import pushNotificationsRouter from "./routes/push-notifications"; // TODO: Create this file
 // import circuitBreakerRouter from "./routes/circuit-breaker"; // TODO: Create this file
@@ -125,6 +131,15 @@ export async function registerRoutes(app: Express): Promise<void> {
   // Local usage metrics for monitoring scripts (local-only guard inside router)
   app.use('/api/monitoring/usage', usageMetricsRouter);
   app.use('/monitoring/usage', usageMetricsRouter);
+
+  // AGENT 15: Data fallback monitoring endpoints
+  app.use('/api/monitoring', monitoringDataFallbacksRouter);
+
+  // ONDA 7: Warming worker monitoring endpoints
+  app.use('/api/monitoring', monitoringWarmingRouter);
+
+  // AGENT 16: Sector routes (public access)
+  app.use('/api', sectorRoutes);
 
   // Basic API info endpoint
   app.get("/api", (req, res) => {

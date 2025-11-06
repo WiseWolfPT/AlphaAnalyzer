@@ -23,13 +23,12 @@ import { redisCacheService } from '../cache/redis-cache-service';
 import { logger } from '../lib/logger';
 import type { MethodId } from '../types/valuation';
 
-// All supported method IDs
+// All supported method IDs (12 total - ONDA 7)
+// REMOVED 'dcf-fcfe-20' and 'dcf-terminal-fcfe' (FMP API returns empty array - no FCFE data available)
 const ALL_METHOD_IDS: MethodId[] = [
   'alfa-value',
   'dcf-fcf-20',
-  'dcf-fcfe-20',
   'dcf-terminal-fcf',
-  'dcf-terminal-fcfe',
   'dni-20',
   'pe-mean',
   'pe-mean-without-nri',

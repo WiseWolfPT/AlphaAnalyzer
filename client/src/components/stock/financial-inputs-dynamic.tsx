@@ -53,7 +53,10 @@ export function FinancialInputsDynamic({
                 id="operating-cf"
                 type="number"
                 value={inputs.operatingCF}
-                onChange={(e) => onInputChange?.('operatingCF', parseFloat(e.target.value))}
+                onChange={(e) => {
+                  const value = parseFloat(e.target.value);
+                  onInputChange?.('operatingCF', isNaN(value) ? 0 : value);
+                }}
                 className="mt-1"
               />
             )}
@@ -70,7 +73,10 @@ export function FinancialInputsDynamic({
                   id="total-debt"
                   type="number"
                   value={inputs.totalDebt}
-                  onChange={(e) => onInputChange?.('totalDebt', parseFloat(e.target.value))}
+                  onChange={(e) => {
+                    const value = parseFloat(e.target.value);
+                    onInputChange?.('totalDebt', isNaN(value) ? 0 : value);
+                  }}
                   className="mt-1"
                 />
                 <div className="flex items-center mt-2">
@@ -98,7 +104,10 @@ export function FinancialInputsDynamic({
                   id="cash"
                   type="number"
                   value={inputs.cash}
-                  onChange={(e) => onInputChange?.('cash', parseFloat(e.target.value))}
+                  onChange={(e) => {
+                    const value = parseFloat(e.target.value);
+                    onInputChange?.('cash', isNaN(value) ? 0 : value);
+                  }}
                   className="mt-1"
                 />
                 <div className="flex items-center mt-2">
@@ -126,7 +135,10 @@ export function FinancialInputsDynamic({
                 type="number"
                 step="0.01"
                 value={inputs.discountRate}
-                onChange={(e) => onInputChange?.('discountRate', parseFloat(e.target.value))}
+                onChange={(e) => {
+                  const value = parseFloat(e.target.value);
+                  onInputChange?.('discountRate', isNaN(value) ? 0 : value);
+                }}
                 className="mt-1"
               />
             )}
@@ -151,7 +163,10 @@ export function FinancialInputsDynamic({
                   id="shares"
                   type="number"
                   value={inputs.shares}
-                  onChange={(e) => onInputChange?.('shares', parseFloat(e.target.value))}
+                  onChange={(e) => {
+                    const value = parseFloat(e.target.value);
+                    onInputChange?.('shares', isNaN(value) ? 0 : value);
+                  }}
                   className="mt-1"
                 />
                 {inputs.shares === 0 && (
@@ -178,7 +193,10 @@ export function FinancialInputsDynamic({
                     type="number"
                     step="0.01"
                     value={inputs.growthY1_5}
-                    onChange={(e) => onInputChange?.('growthY1_5', parseFloat(e.target.value))}
+                    onChange={(e) => {
+                      const value = parseFloat(e.target.value);
+                      onInputChange?.('growthY1_5', isNaN(value) ? 0 : value);
+                    }}
                     className="mt-1"
                   />
                 )}
@@ -194,7 +212,10 @@ export function FinancialInputsDynamic({
                     type="number"
                     step="0.01"
                     value={inputs.growthY6_10}
-                    onChange={(e) => onInputChange?.('growthY6_10', parseFloat(e.target.value))}
+                    onChange={(e) => {
+                      const value = parseFloat(e.target.value);
+                      onInputChange?.('growthY6_10', isNaN(value) ? 0 : value);
+                    }}
                     className="mt-1"
                   />
                 )}
@@ -210,7 +231,10 @@ export function FinancialInputsDynamic({
                     type="number"
                     step="0.01"
                     value={inputs.growthY11_20}
-                    onChange={(e) => onInputChange?.('growthY11_20', parseFloat(e.target.value))}
+                    onChange={(e) => {
+                      const value = parseFloat(e.target.value);
+                      onInputChange?.('growthY11_20', isNaN(value) ? 0 : value);
+                    }}
                     className="mt-1"
                   />
                 )}
@@ -241,7 +265,10 @@ export function FinancialInputsDynamic({
                 type="number"
                 step="0.01"
                 value={inputs.fairRatio}
-                onChange={(e) => onInputChange?.('fairRatio', parseFloat(e.target.value))}
+                onChange={(e) => {
+                  const value = parseFloat(e.target.value);
+                  onInputChange?.('fairRatio', isNaN(value) ? 0 : value);
+                }}
                 className="mt-1"
                 placeholder="1.5 for PEG, 0.2 for PSG"
               />

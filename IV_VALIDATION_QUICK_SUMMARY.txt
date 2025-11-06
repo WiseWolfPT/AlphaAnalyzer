@@ -1,0 +1,62 @@
+BACKEND IV MASS VALIDATION - QUICK SUMMARY
+==========================================
+
+PASS RATE: 38/100 (38%) ⚠️ CRITICAL - 57 points below target (95%)
+EXECUTION TIME: 43 seconds
+
+SECTOR BREAKDOWN:
+- Financials: 9/10 (90%) ✅
+- Technology: 12/15 (80%) ⚠️
+- Energy: 7/10 (70%) ⚠️
+- Healthcare: 5/10 (50%) ❌
+- Consumer: 4/10 (40%) ❌
+- Real Estate: 1/10 (10%) 🚨
+- Utilities: 0/10 (0%) 🚨 TOTAL FAILURE
+- Industrials: 0/10 (0%) 🚨 TOTAL FAILURE
+- Materials: 0/10 (0%) 🚨 TOTAL FAILURE
+- Communication: 0/5 (0%) 🚨 TOTAL FAILURE
+
+TOP 3 CRITICAL ISSUES:
+
+1. HTTP 404 - Missing Company Profiles (50 stocks)
+   - Entire sectors failing: Utilities, Industrials, Materials, Communication
+   - Root cause: FMP API doesn't have profile data for these stocks
+   - Fix: Implement API fallback chain (FMP → Alpha Vantage → Finnhub)
+   - Priority: P0 (blocks 50% of test universe)
+   - Est. time: 4-6 hours
+
+2. REIT Calculation Failures (9/10 REITs failing)
+   - Only PSA passing in Real Estate sector
+   - Missing FFO/AFFO-based valuation methods
+   - Fix: Implement REIT-specific calculations
+   - Priority: P0 (entire sector broken)
+   - Est. time: 6-8 hours
+
+3. Insufficient Method Count (15 stocks)
+   - Stocks returning < 8 methods (API contract violation)
+   - Examples: CRM (5), INTC (5), MS (3), PLD (4)
+   - Fix: Audit why methods are skipped, ensure all 14 standard methods attempted
+   - Priority: P1 (violates API contract)
+   - Est. time: 8-12 hours
+
+FAILED STOCKS (62 total):
+
+HTTP 404 (50): EQIX, ABT, DHR, AMGN, PG, KO, PEP, HD, MCD, NKE, SBUX, TGT,
+               PSX, VLO, MPC, OXY, HAL, NEE, DUK, SO, D, AEP, EXC, SRE, XEL,
+               ED, ES, CAT, BA, HON, UPS, RTX, LMT, MMM, DE, EMR, LIN, APD,
+               SHW, ECL, NEM, FCX, DOW, DD, ALB, PPG, DIS, CMCSA, T, VZ, TMUS
+
+Low Method Count (11): CRM(5), INTC(5), MS(3), PLD(4), CCI(5), DLR(3),
+                       SPG(5), WELL(6), AVB(5), BMY(4), MRK(2)
+
+Other: NFLX(HTTP 400), AMT(17 methods - too many), O(0 methods)
+
+RECOMMENDATION: ❌ DO NOT DEPLOY - Fix P0 issues before production release
+
+Total engineering time needed: 20-30 hours
+Target pass rate: ≥ 95% (95/100 stocks)
+
+---
+Generated: 2025-10-29
+Script: scripts/validation/validate-iv-quick.sh
+Full report: BACKEND_IV_MASS_VALIDATION_REPORT.md

@@ -1,0 +1,87 @@
+ADAPTIVE THRESHOLD ANALYSIS - 2025-10-29
+==========================================
+
+EXECUTIVE SUMMARY
+-----------------
+❌ DO NOT IMPLEMENT adaptive market-cap threshold
+✅ INSTEAD: Fix backend errors (404s) affecting 2 mega-cap stocks
+
+NEAR-MISS STOCKS ANALYSIS
+--------------------------
+Symbol | Market Cap | Status      | Methods | Real Issue
+-------|------------|-------------|---------|------------------
+RTX    | $156B      | ✅ PASS     | 11      | Already passing!
+APD    | $62B       | ✅ PASS     | 7       | Already passing!
+INTC   | $185B      | ❌ ERROR    | 0       | 404 backend bug
+NEM    | $43B       | ❌ ERROR    | 0       | 404 backend bug
+BA     | $109B      | ❌ FAIL     | 2       | Severe data gap
+CCI    | $58B       | ❌ FAIL     | 5       | REIT handling
+
+KEY FINDINGS
+------------
+1. Initial assumption WRONG: Most "near-miss" stocks already passing
+2. Real problems: Backend 404 errors (INTC, NEM) and data gaps (BA)
+3. Adaptive threshold would only help CCI (1/6 stocks) with low quality
+4. Better ROI: Fix bugs than lower quality bar
+
+THRESHOLD IMPACT MATRIX
+------------------------
+Threshold | Stocks Passing | Issues Solved | Quality Impact
+----------|---------------|---------------|----------------
+6 (current)| 2/6 (RTX,APD) | N/A          | Baseline
+5 (adaptive)| 3/6 (+CCI)   | 0 root causes| ⬇️ Lower quality
+Bug fixes  | 4-5/6        | 2-3 root causes| ✅ Same quality
+
+RECOMMENDED SOLUTIONS (Priority Order)
+---------------------------------------
+1. [HIGH] Fix Backend 404 Errors (INTC, NEM)
+   - File: server/controllers/iv-chart-controller.ts
+   - Impact: +2 mega-cap stocks ($228B combined)
+   - Risk: LOW | Complexity: LOW
+   - Time: 30 minutes
+
+2. [MEDIUM] Fix REIT Handling (CCI)
+   - File: server/utils/stock-classifier.ts
+   - Impact: +1 stock with better method coverage
+   - Risk: MEDIUM | Complexity: MEDIUM
+   - Time: 2-3 hours
+
+3. [MEDIUM] Investigate BA Data Gap
+   - Manual FMP API inspection
+   - Impact: +1 stock ($109B)
+   - Risk: LOW | Complexity: LOW
+   - Time: 15 minutes (investigation)
+
+4. [LOW] Lower Threshold to 5 (NOT RECOMMENDED)
+   - Only helps CCI (marginal quality)
+   - Doesn't fix root causes
+   - User confusion risk
+
+COST-BENEFIT ANALYSIS
+----------------------
+Adaptive Threshold:
+- Engineering cost: 1-2 hours (code + testing)
+- Recovery: 1 stock (CCI) with 5 FCF-only methods
+- Quality: LOW (missing P/E, P/B, P/S, DCF)
+- ROI: NEGATIVE (adds complexity, low value)
+
+Bug Fixes:
+- Engineering cost: 30 min (404 fixes) + 15 min (BA investigation)
+- Recovery: 2-3 mega-cap stocks ($337B+ combined market cap)
+- Quality: HIGH (same bar, better data)
+- ROI: POSITIVE (fixes crashes, high-value stocks)
+
+CONCLUSION
+----------
+Market-cap adaptive threshold is a solution looking for a problem.
+Real issue: Backend errors and data quality, not threshold level.
+
+NEXT ACTION
+-----------
+→ Investigate INTC & NEM 404 errors (30 min)
+→ Add defensive error handling
+→ Manual FMP data check for BA
+→ Defer threshold changes indefinitely
+
+Generated: 2025-10-29
+Analyst: Claude (Backend Architect)

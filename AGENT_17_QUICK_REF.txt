@@ -1,0 +1,158 @@
+═══════════════════════════════════════════════════════════════════
+  AGENT 17: PRIORITY STOCKS CURATION - QUICK REFERENCE
+═══════════════════════════════════════════════════════════════════
+
+📊 SUMMARY
+──────────────────────────────────────────────────────────────────
+Total Priority Stocks: 810
+
+  Region              Count      %
+  ─────────────────────────────────
+  US (S&P 500)         504     62.2%
+  EU (Top 150)         254     31.4%
+  China (ADRs)          52      6.4%
+
+
+🎯 KEY ACHIEVEMENTS
+──────────────────────────────────────────────────────────────────
+✅ 810 priority stocks curated
+✅ 100% GICS sector coverage (11 sectors)
+✅ Zero duplicates across regions
+✅ Portuguese stocks excluded (per user requirement)
+✅ TypeScript files with full type safety
+✅ Priority tier system (Tier 1, 2, 3)
+
+
+📂 FILES CREATED
+──────────────────────────────────────────────────────────────────
+server/data/priority-stocks/
+  ├── us-sp500.ts          (504 stocks, 11 GICS sectors)
+  ├── eu-top150.ts         (254 stocks, 14 countries)
+  └── china-adrs.ts        (52 stocks, 6 industries)
+
+server/data/
+  └── priority-stocks-index.ts  (Master index + helpers)
+
+scripts/
+  ├── fetch-sp500-data.mjs
+  └── validate-priority-stocks.mjs
+
+
+🔧 USAGE EXAMPLES
+──────────────────────────────────────────────────────────────────
+
+// Import helpers
+import {
+  isPriorityStock,
+  getPriorityStockRegion,
+  getPriorityStockSector,
+  getPriorityTier,
+  PRIORITY_TIERS,
+  PRIORITY_STOCKS_BY_SECTOR
+} from './data/priority-stocks-index';
+
+// Check if stock is priority
+if (isPriorityStock('AAPL')) {
+  console.log('Priority stock detected');
+}
+
+// Get stock metadata
+const region = getPriorityStockRegion('AAPL');   // 'US'
+const sector = getPriorityStockSector('AAPL');   // 'Information Technology'
+const tier = getPriorityTier('AAPL');            // 1
+
+// Warm by tier
+for (const symbol of PRIORITY_TIERS.tier1) {
+  await warmCache(symbol);  // 130 highest priority stocks
+}
+
+// Warm by sector
+const techStocks = PRIORITY_STOCKS_BY_SECTOR['Information Technology'];
+await warmSector(techStocks);  // 112 tech stocks
+
+
+🎚️ PRIORITY TIERS
+──────────────────────────────────────────────────────────────────
+Tier 1: 130 stocks (Top 100 US + Top 20 EU + Top 10 China)
+  → Warm every 30 seconds
+  → Highest demand, most liquid
+
+Tier 2: 270 stocks (Next 200 US + Next 50 EU + Next 20 China)
+  → Warm every 2 minutes
+  → High demand, good liquidity
+
+Tier 3: 410 stocks (Remaining)
+  → Warm every 5 minutes
+  → Moderate demand, lower liquidity
+
+
+📈 SECTOR DISTRIBUTION (Top 5)
+──────────────────────────────────────────────────────────────────
+1. Information Technology    112 stocks (13.8%)
+2. Financials                 98 stocks (12.1%)
+3. Industrials                86 stocks (10.6%)
+4. Health Care                75 stocks (9.3%)
+5. Consumer Discretionary     73 stocks (9.0%)
+
+
+🌍 REGIONAL BREAKDOWNS
+──────────────────────────────────────────────────────────────────
+
+US (504 stocks):
+  - Source: S&P 500 Index
+  - Top sectors: Tech (87), Industrials (73), Financials (70)
+
+EU (254 stocks):
+  - Countries: 14 (Germany 30, France 26, UK 24, Switzerland 15...)
+  - EXCLUDES: Portuguese stocks (EDP, GALP, NOS)
+  - Top countries: Germany, France, UK
+
+China (52 stocks):
+  - Focus: Tech, EV, Fintech
+  - Top stocks: BABA, PDD, BIDU, JD, NTES
+  - Trading: NYSE/NASDAQ ADRs
+
+
+✅ VALIDATION
+──────────────────────────────────────────────────────────────────
+Run validation:
+  $ node scripts/validate-priority-stocks.mjs
+
+Tests:
+  ✅ Stock count validation (810 total)
+  ✅ Duplicate check (0 duplicates)
+  ✅ Portuguese exclusion (0 found)
+  ✅ Symbol format validation
+
+
+🔄 MAINTENANCE
+──────────────────────────────────────────────────────────────────
+Update Frequency: Quarterly
+
+S&P 500 Updates:
+  $ node scripts/fetch-sp500-data.mjs
+
+EU/China Updates:
+  - Manual review and update in respective files
+  - Run validation after changes
+
+
+📚 INTEGRATION WITH AGENT 18
+──────────────────────────────────────────────────────────────────
+Agent 18 will use this data to:
+  1. Define sector-specific warming frequencies
+  2. Implement dynamic schedules (market hours)
+  3. Optimize bandwidth (stay under 20 GB/month)
+
+
+📖 FULL REPORT
+──────────────────────────────────────────────────────────────────
+See: AGENT_17_PRIORITY_STOCKS_REPORT.md
+
+
+═══════════════════════════════════════════════════════════════════
+Status: ✅ COMPLETE
+Agent: 17 (Priority Stocks Curation)
+Next: Agent 18 (Sector-Based Warming Frequencies)
+Date: 2025-11-05
+═══════════════════════════════════════════════════════════════════

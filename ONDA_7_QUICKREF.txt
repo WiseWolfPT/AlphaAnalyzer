@@ -1,0 +1,167 @@
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃          ONDA 7 MONITORING - QUICK REFERENCE CARD                  ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+
+📊 LIVE DASHBOARD (Real-time monitoring)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+ssh root@128.140.45.28
+cd '/home/teste 1'
+./scripts/monitoring/watch-warming.sh https://128.140.45.28.sslip.io
+
+Updates: Every 5 seconds
+Press Ctrl+C to exit
+
+Shows:
+  • Cache coverage (1,493 stocks × 14 methods)
+  • Bandwidth usage (daily/monthly)
+  • API calls tracking
+  • Worker health (4 workers)
+  • Queue metrics
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📈 DAILY REPORT (Comprehensive summary)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Auto-generated: Daily @ 00:00 UTC (via cron)
+
+View latest:
+  cat /var/log/alfalyzer/monitoring/warming-summary-$(date +%Y-%m-%d).txt
+
+Generate manually:
+  export FMP_API_KEY=sEoOHoj4kGtqhkU7MrQl4lmeF4LwB2Bh
+  ./scripts/monitoring/daily-summary-warming.sh https://128.140.45.28.sslip.io
+
+Contains:
+  • 8 comprehensive sections
+  • Method-level coverage (14 methods)
+  • Top 20 cached stocks
+  • 7-day bandwidth history
+  • Automated recommendations
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🔔 BANDWIDTH CHECK (Critical alerts)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+export FMP_API_KEY=sEoOHoj4kGtqhkU7MrQl4lmeF4LwB2Bh
+./scripts/monitoring/check-fmp-bandwidth.sh https://128.140.45.28.sslip.io
+
+Thresholds:
+  • WARNING:  >85% of monthly limit
+  • CRITICAL: >95% of monthly limit
+  
+Budget:
+  • Monthly: 20 GB
+  • Daily: 682.67 MB
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+⚙️  WORKER MANAGEMENT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Check all workers:
+  pm2 status
+
+View logs:
+  pm2 logs intelligent-warming-worker
+  pm2 logs earnings-monitor
+  pm2 logs price-worker
+  pm2 logs transcripts-worker
+
+Restart specific worker:
+  pm2 restart intelligent-warming-worker
+
+Restart all:
+  pm2 restart all
+
+Auto-restart: Hourly via cron (if /api/monitoring/warming/overview fails)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🔍 LOG LOCATIONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Daily reports:
+  /var/log/alfalyzer/monitoring/warming-summary-YYYY-MM-DD.txt
+
+Cron execution log:
+  /var/log/alfalyzer/monitoring/daily-summary.log
+
+All monitoring logs:
+  /var/log/alfalyzer/monitoring/cron.log
+
+PM2 logs:
+  ~/.pm2/logs/
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🚨 TROUBLESHOOTING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Problem: Worker offline
+  1. pm2 status
+  2. pm2 restart <worker-name>
+  3. pm2 logs <worker-name>
+
+Problem: Low cache coverage
+  1. Check worker uptime (pm2 status)
+  2. View warming worker logs
+  3. Check bandwidth usage
+  4. Verify API key valid
+
+Problem: Bandwidth alert
+  1. Check monthly usage vs 20 GB limit
+  2. Review daily trends (7-day history)
+  3. Identify top API consumers
+  4. Consider warming frequency adjustment
+
+Problem: Script errors
+  1. Check FMP_API_KEY set correctly
+  2. Verify network connectivity
+  3. Test endpoints manually:
+     curl https://128.140.45.28.sslip.io/api/monitoring/warming/overview
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📋 CRON SCHEDULE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+View crontab:
+  crontab -l
+
+ONDA 7 jobs:
+  • 0 0 * * *    Daily summary report (midnight UTC)
+  • 0 * * * *    Hourly health check + auto-restart
+
+Edit crontab:
+  crontab -e
+
+Backup before changes:
+  crontab -l > /tmp/crontab.backup.$(date +%Y%m%d)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🎯 KEY METRICS TARGETS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+24h:  Cache coverage >10%, Workers stable
+7d:   Cache coverage >50%, Zero manual interventions
+30d:  Cache coverage >75%, Bandwidth optimized
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📚 FULL DOCUMENTATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Detailed deployment log:
+  ONDA_7_DEPLOYMENT_COMPLETE.md
+
+Executive summary:
+  ONDA_7_DEPLOYMENT_SUMMARY.txt
+
+Monitoring guide:
+  scripts/monitoring/README-WARMING-MONITOR.md
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

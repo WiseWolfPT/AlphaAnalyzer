@@ -1,0 +1,208 @@
+{
+  "analysis_date": "2025-10-23",
+  "endpoint": "/api/iv/:ticker/chart",
+  "cache_status": "NEEDS_IMPROVEMENT",
+  "current_ttl": "NONE - NOT CACHED",
+  "is_cached": false,
+  "stock_specific": true,
+  "etf_excluded": false,
+  "api_calls_per_request": 27,
+  "api_calls_breakdown": {
+    "alfavalue": 9,
+    "dcf_fmp_methods": 16,
+    "multiples": 30,
+    "growth": 5,
+    "macro": 1,
+    "note": "Many calls overlap (shared endpoints), actual may be lower with batching"
+  },
+  "current_capacity": {
+    "users_per_minute": 11,
+    "daily_requests": 16000,
+    "monthly_bandwidth_gb": 1.48,
+    "percent_of_target": "1.1%"
+  },
+  "optimized_capacity": {
+    "with_basic_cache": {
+      "users_per_minute": 55,
+      "daily_requests": 80000,
+      "cache_hit_rate": "80%",
+      "improvement": "5x"
+    },
+    "with_prewarming": {
+      "users_per_minute": 79,
+      "daily_requests": 114000,
+      "cache_hit_rate": "90%",
+      "improvement": "7x"
+    }
+  },
+  "max_concurrent_users_safe": 79,
+  "target_concurrent_users": 1000,
+  "gap_to_target": "92.1%",
+  "fmp_limits": {
+    "rate_limit_calls_per_min": 300,
+    "bandwidth_cap_gb_per_month": 20,
+    "current_plan": "$14.99/month"
+  },
+  "critical_issues": [
+    {
+      "issue": "No chart-level caching",
+      "severity": "CRITICAL",
+      "impact": "27 API calls per request, 9% of rate limit consumed per user"
+    },
+    {
+      "issue": "No ETF exclusion",
+      "severity": "MEDIUM",
+      "impact": "Invalid calculations for ETFs waste API calls and confuse users"
+    },
+    {
+      "issue": "Insufficient capacity for target load",
+      "severity": "HIGH",
+      "impact": "Only 1.1% of target capacity (11 users/min vs 1000 target)"
+    }
+  ],
+  "stock_specific_validation": {
+    "status": "CONFIRMED",
+    "evidence": [
+      "All methods receive ticker parameter",
+      "Financial inputs (FCF, debt, cash) are ticker-specific",
+      "Discount rate varies by Beta (stock-specific)",
+      "Growth rates calculated from historical data per stock"
+    ],
+    "example_aapl": {
+      "fcf_ttm_musd": 110000,
+      "total_debt_musd": 111088,
+      "cash_musd": 61555,
+      "discount_rate": 0.0627,
+      "beta": 1.24
+    },
+    "example_googl": {
+      "fcf_ttm_musd": 69495,
+      "total_debt_musd": 14701,
+      "cash_musd": 110916,
+      "discount_rate": 0.0696,
+      "beta": 1.14
+    }
+  },
+  "etf_detection": {
+    "status": "NOT_IMPLEMENTED",
+    "risk": "Users can request valuations for ETFs (XLE, XLU, SPY, QQQ)",
+    "impact": "Wasted API calls, invalid results",
+    "recommendation": "Add ETF guard at controller entry point"
+  },
+  "recommendations": [
+    {
+      "priority": "CRITICAL",
+      "action": "Implement chart-level caching with 24h TTL",
+      "cache_key_pattern": "iv:chart:{TICKER}:{BASED_ON}",
+      "expected_improvement": "5x capacity increase, 0 calls on cache hit",
+      "implementation_effort": "2 hours",
+      "file": "/server/controllers/iv-chart-controller.ts"
+    },
+    {
+      "priority": "HIGH",
+      "action": "Add ETF exclusion guard",
+      "etf_list": ["SPY", "QQQ", "IWM", "DIA", "XLE", "XLF", "XLK", "XLU", "XLV", "XLY", "XLP", "XLB", "XLI", "XLRE"],
+      "expected_improvement": "Prevent invalid calculations, save API calls",
+      "implementation_effort": "30 minutes",
+      "file": "/server/controllers/iv-chart-controller.ts"
+    },
+    {
+      "priority": "HIGH",
+      "action": "Pre-warm top 100 stocks before market open",
+      "schedule": "Daily at 9:00 AM ET (13:00 UTC)",
+      "cost": "2,700 FMP calls (0.6% of daily limit)",
+      "expected_improvement": "90% cache hit rate for popular stocks",
+      "implementation_effort": "1 hour",
+      "file": "/scripts/cache-warmer-iv.sh"
+    },
+    {
+      "priority": "MEDIUM",
+      "action": "Implement stale-while-revalidate pattern",
+      "description": "Serve stale cache while refreshing in background",
+      "expected_improvement": "Sub-100ms response times, graceful degradation",
+      "implementation_effort": "3 hours",
+      "file": "/server/controllers/iv-chart-controller.ts"
+    },
+    {
+      "priority": "LOW",
+      "action": "Add cache invalidation on earnings releases",
+      "trigger": "Transcripts worker ingests new earnings call",
+      "expected_improvement": "Automatic cache freshness after earnings",
+      "implementation_effort": "2 hours",
+      "file": "/server/services/cache-invalidation-service.ts"
+    }
+  ],
+  "bandwidth_analysis": {
+    "average_response_size_kb": 247,
+    "current_monthly_usage_gb": 1.48,
+    "target_monthly_usage_gb": 4.45,
+    "fmp_cap_gb": 20,
+    "utilization_percent": 22.2,
+    "conclusion": "Bandwidth is NOT the bottleneck; rate limiting is"
+  },
+  "implementation_timeline": {
+    "phase_1_week_1": [
+      "Chart-level caching",
+      "ETF exclusion guard",
+      "Monitoring script for cache metrics"
+    ],
+    "phase_2_week_2": [
+      "Pre-warming cron job",
+      "Stale-while-revalidate pattern"
+    ],
+    "phase_3_week_3": [
+      "Cache invalidation on earnings",
+      "Prometheus metrics integration"
+    ]
+  },
+  "path_to_1000_users": {
+    "current_capacity_users_per_min": 11,
+    "with_basic_cache_users_per_min": 55,
+    "with_prewarming_users_per_min": 79,
+    "target_users_per_min": 1000,
+    "required_additional_steps": [
+      "Upgrade FMP plan to 750 calls/min ($49/month)",
+      "Implement request coalescing (deduplicate concurrent requests)",
+      "Consider CDN layer for static chart responses",
+      "Evaluate alternative providers for fallback (Alpha Vantage, Polygon)"
+    ]
+  },
+  "testing_checklist": [
+    {
+      "test": "Cold cache performance",
+      "command": "time curl http://localhost:3001/api/iv/AAPL/chart",
+      "expected": "3-5 seconds, 27 FMP calls"
+    },
+    {
+      "test": "Warm cache performance",
+      "command": "time curl http://localhost:3001/api/iv/AAPL/chart (second request)",
+      "expected": "<100ms, 0 FMP calls"
+    },
+    {
+      "test": "ETF rejection",
+      "command": "curl http://localhost:3001/api/iv/SPY/chart",
+      "expected": "400 error, 'ETF_NOT_SUPPORTED'"
+    },
+    {
+      "test": "Stock-specific data",
+      "command": "curl http://localhost:3001/api/iv/AAPL/chart | jq '.methods[0].inputs'",
+      "expected": "Different values for AAPL vs GOOGL"
+    }
+  ],
+  "metrics_to_track": {
+    "cache_hit_rate": {
+      "target": ">80%",
+      "command": "curl https://128.140.45.28.sslip.io/api/market-data/cache/stats"
+    },
+    "fmp_api_usage": {
+      "target": "<200 calls/min peak",
+      "log_file": "/var/log/alfalyzer/monitoring/slo-*.log"
+    },
+    "response_times": {
+      "target": "P95 < 500ms",
+      "command": "scripts/monitoring/check-slo.sh https://128.140.45.28.sslip.io"
+    }
+  },
+  "conclusion": "Chart-level caching is CRITICAL and must be implemented immediately. With caching + pre-warming, we can achieve 7x capacity increase (11 → 79 users/min). To reach 1000 concurrent users, FMP plan upgrade is required.",
+  "detailed_report": "INTRINSIC_VALUE_CACHE_OPTIMIZATION_REPORT.md"
+}

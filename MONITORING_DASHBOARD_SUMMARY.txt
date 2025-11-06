@@ -1,0 +1,189 @@
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                    FMP API RATE LIMIT MONITORING DASHBOARD                   ║
+║                          Status: 🔴 CRITICAL ALERT                           ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ TIMESTAMP: 2025-11-03 20:41 UTC                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃ RATE LIMIT VIOLATIONS (CRITICAL)                                          ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+
+   HTTP 429 Errors (Last 1000 log lines):  418 errors (41.8% error rate!)
+
+   ┌─────────────┬──────────┐
+   │ Time Window │ 429 Count│
+   ├─────────────┼──────────┤
+   │ Last 100    │    86    │
+   │ Last 200    │   102    │
+   │ Last 500    │   343    │
+   │ Last 1000   │   418    │
+   └─────────────┴──────────┘
+
+   🚨 VERDICT: Rate limiter is COMPLETELY FAILING
+
+   Expected: <1 error with proper rate limiting
+   Actual:   418 errors = 41,800% over budget!
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃ VALIDATION PROGRESS                                                       ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+
+   Started:    2025-11-03T20:39:40Z
+   Progress:   60/1,493 stocks (4.0%)
+   ETA:        45 minutes
+   Status:     🔴 Running but failing (429 errors)
+
+   Progress Bar:
+   [▓░░░░░░░░░░░░░░░░░░░] 4.0%
+
+   Time Elapsed:  ~2 minutes
+   Stocks/min:    ~30 stocks/min
+   Rate:          UNKNOWN (too many 429s to calculate)
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃ SYSTEM HEALTH                                                             ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+
+   API Status:        ✅ healthy
+   Redis Connected:   ⚠️  unknown (health endpoint issue)
+   Cache Size:        🔴 0 keys (CACHE NOT WORKING!)
+   Cache Memory:      🔴 0MB
+
+   Expected Cache Size: ~1,000+ keys
+   Actual:              0 keys
+
+   🚨 VERDICT: Cache service is DOWN or not initializing!
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃ PM2 PROCESSES                                                             ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+
+   ┌─────────────────────────────┬────────┬──────┬────────┬────────┐
+   │ Process                     │ Status │  CPU │  RAM   │ Uptime │
+   ├─────────────────────────────┼────────┼──────┼────────┼────────┤
+   │ alfalyzer (API)             │ online │ 3.9% │ 179 MB │  46min │
+   │ price-worker                │ online │ 4.9% │  93 MB │   2h   │
+   │ transcripts-worker          │ online │  0%  │ 102 MB │   5h   │
+   │ earnings-monitor            │ online │ 1.9% │  93 MB │   5h   │
+   │ iv-warming-worker           │ online │  0%  │  71 MB │   5h   │
+   │ intelligent-warming-worker  │ online │  1%  │  78 MB │   5h   │
+   └─────────────────────────────┴────────┴──────┴────────┴────────┘
+
+   All processes ONLINE ✅
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃ ROOT CAUSE ANALYSIS                                                       ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+
+   1. 🔴 Rate Limiter NOT Working
+      - Target: 200 calls/min (3.33/sec)
+      - Actual: Unlimited bursts causing 429s
+      - Fix: Agent 1's rate limiter code NOT deployed
+
+   2. 🔴 Cache Service DOWN
+      - Cache size: 0 keys (should be 1000+)
+      - All requests hit API fresh
+      - No cache hits = maximum API load
+
+   3. 🔴 Validation Script Design Flaw
+      - No built-in rate limiting
+      - Burst requests (4-6 APIs per stock)
+      - No delays between API calls
+
+   4. 🔴 Redis Connection Issue
+      - Health endpoint reports "unknown"
+      - Cache writes failing?
+      - Connection lost?
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃ IMMEDIATE ACTIONS REQUIRED                                                ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+
+   [ ] 1. STOP validation immediately
+       Command: ssh root@128.140.45.28 'pkill -f validate-v2.mjs'
+
+   [ ] 2. Investigate cache failure
+       - Check Redis: redis-cli ping
+       - Check cache service initialization
+       - Verify cache writes working
+
+   [ ] 3. Deploy Agent 1's rate limiter fix
+       - Coordinate with Agent 1
+       - Verify 200 calls/min enforcement
+       - Test before full validation
+
+   [ ] 4. Fix validation script
+       - Add rate limiting (delays between requests)
+       - Implement token bucket
+       - Queue requests properly
+
+   [ ] 5. Resume validation ONLY after all fixes verified
+       - Test with 10 stocks first
+       - Monitor with scripts below
+       - Ensure 0 (zero) 429 errors
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃ MONITORING COMMANDS                                                       ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+
+   Real-Time Dashboard (5s refresh):
+   $ scripts/monitoring/watch-rate-limit.sh https://128.140.45.28.sslip.io
+
+   Validation Progress Monitor:
+   $ scripts/monitoring/watch-validation.sh
+
+   Quick Snapshot:
+   $ scripts/monitoring/rate-limit-snapshot.sh https://128.140.45.28.sslip.io
+
+   Emergency Alert:
+   $ scripts/monitoring/rate-limit-alert.sh
+
+   Stop Validation:
+   $ ssh root@128.140.45.28 'pkill -f validate-v2.mjs'
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃ DEPLOYMENT STATUS                                                         ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+
+   ✅ Monitoring scripts created locally
+   ✅ Scripts deployed to production server
+   ✅ Made executable (chmod +x)
+   ✅ SSH access configured (passwordless)
+   ✅ Initial dashboard snapshot captured
+   ✅ Real-time monitoring available
+   ✅ Critical alert detected and reported
+
+   Location: /home/teste 1/scripts/monitoring/
+
+   Files:
+   - watch-rate-limit.sh      (real-time dashboard)
+   - watch-validation.sh      (validation progress)
+   - rate-limit-snapshot.sh   (one-time snapshot)
+   - rate-limit-alert.sh      (emergency alert)
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃ NEXT STEPS                                                                ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+
+   Priority 1 (CRITICAL):
+   🔴 Stop validation immediately
+   🔴 Fix cache service
+   🔴 Deploy rate limiter fix
+
+   Priority 2 (HIGH):
+   🟡 Test with small sample (10 stocks)
+   🟡 Verify 0 (zero) 429 errors
+   🟡 Monitor cache hit rate
+
+   Priority 3 (NORMAL):
+   🟢 Resume full validation (1,493 stocks)
+   🟢 Continuous monitoring with scripts
+   🟢 Generate final validation report
+
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                        END OF MONITORING DASHBOARD                           ║
+║              Report saved: RATE_LIMIT_MONITORING_REPORT.md                   ║
+╚══════════════════════════════════════════════════════════════════════════════╝

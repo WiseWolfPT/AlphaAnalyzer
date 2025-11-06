@@ -1,0 +1,121 @@
+================================================================================
+P/TBV VALUATION TEST - AGENT 1C
+Testing 5 Major Banks with P/TBV Methodology
+================================================================================
+
+================================================================================
+Testing JPM...
+================================================================================
+Company: JPMorgan Chase & Co.
+Sector: Financial Services
+Industry: Banks - Diversified
+Current Price: $302.74
+Is Bank: ✅ YES
+Bank Type: LARGE
+Sector Benchmark P/TBV: 1.35x
+Tangible Book Value/Share: $106.06
+
+⚠️ Insufficient historical data for P/TBV Mean (0 years)
+
+--- P/TBV Sector Benchmark ---
+Sector Benchmark P/TBV: 1.35x
+Intrinsic Value: $143.18
+Current P/TBV: 2.85x
+Discount: -52.70%
+Status: 🔴 OVERVALUED
+
+================================================================================
+Testing BAC...
+================================================================================
+Company: Bank of America Corporation
+Sector: Financial Services
+Industry: Banks - Diversified
+Current Price: $52.78
+Is Bank: ✅ YES
+Bank Type: LARGE
+Sector Benchmark P/TBV: 1.35x
+Tangible Book Value/Share: $31.49
+
+⚠️ Insufficient historical data for P/TBV Mean (0 years)
+
+--- P/TBV Sector Benchmark ---
+Sector Benchmark P/TBV: 1.35x
+Intrinsic Value: $42.52
+Current P/TBV: 1.68x
+Discount: -19.45%
+Status: 🔴 OVERVALUED
+
+================================================================================
+Testing C...
+================================================================================
+Company: Citigroup Inc.
+Sector: Financial Services
+Industry: Banks - Diversified
+Current Price: $100.83
+Is Bank: ✅ YES
+Bank Type: LARGE
+Sector Benchmark P/TBV: 1.35x
+Tangible Book Value/Share: $104.61
+
+⚠️ Insufficient historical data for P/TBV Mean (0 years)
+
+--- P/TBV Sector Benchmark ---
+Sector Benchmark P/TBV: 1.35x
+Intrinsic Value: $141.22
+Current P/TBV: 0.96x
+Discount: +40.06%
+Status: 🟢 UNDERVALUED
+
+================================================================================
+Testing USB...
+================================================================================
+Company: U.S. Bancorp
+Sector: Financial Services
+Industry: Banks - Regional
+Current Price: $47.90
+Is Bank: ✅ YES
+Bank Type: REGIONAL
+Sector Benchmark P/TBV: 1.00x
+Tangible Book Value/Share: $29.53
+
+⚠️ Insufficient historical data for P/TBV Mean (0 years)
+
+--- P/TBV Sector Benchmark ---
+Sector Benchmark P/TBV: 1.00x
+Intrinsic Value: $29.53
+Current P/TBV: 1.62x
+Discount: -38.35%
+Status: 🔴 OVERVALUED
+
+================================================================================
+Testing GS...
+================================================================================
+Company: The Goldman Sachs Group, Inc.
+Sector: Financial Services
+Industry: Financial - Capital Markets
+Current Price: $793.74
+Is Bank: ✅ YES
+Bank Type: INVESTMENT
+Sector Benchmark P/TBV: 1.15x
+Tangible Book Value/Share: $313.31
+
+⚠️ Insufficient historical data for P/TBV Mean (0 years)
+
+--- P/TBV Sector Benchmark ---
+Sector Benchmark P/TBV: 1.15x
+Intrinsic Value: $360.30
+Current P/TBV: 2.53x
+Discount: -54.61%
+Status: 🔴 OVERVALUED
+
+
+================================================================================
+SUMMARY REPORT
+================================================================================
+
+| Ticker | Bank Type  | TBV/Share | Mean IV | Sector IV | Current Price | Mean Discount | Sector Discount |
+|--------|-----------|-----------|---------|-----------|---------------|---------------|-----------------|
+
+✅ VALIDATION COMPLETE
+Banks tested: 5/5
+Successful valuations: 0/5

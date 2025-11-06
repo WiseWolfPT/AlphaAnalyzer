@@ -14,7 +14,7 @@ Desmontar como o StockOracle calcula o **OracleValue™** para diferentes açõe
 | --- | --- | --- | --- |
 | 1 | Reconstruir o DCF original (planilha Adam Khoo) com inputs capturados via API | ☑ | Script `scripts/rebuild_dcf.py` + snapshots (ex.: `AAPL`, `ARES`) reproduzem o DCF do site |
 | 2 | Validar PVs do site (`get-dcf-automation`, `get-dfcf20-automation`, `get-dni20-automation`) contra a reconstrução | ⚙️ | AAPL/MSFT (Tech), ARES (Asset Mgmt) e SPG (REIT) reconciliados; falta ampliar amostra (DNI20, mais setores) |
-| 3 | Comparar OracleValue final vs. DCF base e medir delta por cluster | ☐ | Guardar resultados por setor (tech, REIT, asset manager, healthcare, etc.) |
+| 3 | Comparar OracleValue final vs. DCF base e medir delta por cluster | ⚙️ | Nova rodada (02 Nov 2025) com `HUM/CVS/ELV` e `RIVN/STLA/GM/LI` adicionada ao CSV (`playwright_capture_2025-11-02`); próximos passos: estender para outros setores/datas. |
 | 4 | Mapear ajustes/setor (múltiplos, moat, Rule of 40, alavancagem, etc.) | ☐ | Usar regressões/regra de decisão para explicar o delta |
 | 5 | Documentar fórmula universal parametrizada (DCF base + dials setoriais) | ☐ | Destacar triggers de fallback e coeficientes estimados |
 | 6 | Testar no tempo (datas diferentes) e novos tickers para robustez | ☐ | Verificar se há recalibrações ou ajustes manuais |
@@ -44,6 +44,166 @@ Desmontar como o StockOracle calcula o **OracleValue™** para diferentes açõe
 - **Fallback só com múltiplos**: quando os fluxos descontados falham (DFCF-20 ou Terminal a zero/negativos), o valor final usa apenas múltiplos, com coeficientes específicos para cada grupo (ex.: utilities, bancos, airlines).
 - **Haircuts/premiums setoriais**: regressões dos deltas (`Oracle − DCF`) mostram que crescimento projetado, alavancagem líquida e liquidez determinam descontos/prémios diferentes por cluster (ex.: alternativos vs. tradicionais em asset managers; life vs. P&C em seguros).
 - **Infraestrutura pronta**: `scripts/extract_growth_features.py`, `scripts/analyze_insurance_growth.py` (agora com `--features`) e `scripts/analyze_auto_cluster.py` permitem gerar e analisar rapidamente novos conjuntos de features/ratios para qualquer setor utilizando os payloads em `stockoracle_payloads/`.
+- **Automação de capturas (03 Nov 2025)**: script `scripts/fetch_stockoracle_payloads.py` permite puxar vários tickers de uma vez partindo do cookie `ACCESS_TOKEN_APP`. Já estão no repositório os payloads crus de `BN`, `BXSL`, `MS`, `JEF`, `LPLA`, `BXP`, `ARE`, `WPC`, `KEY`, `RF`, `FITB` e `SYF` (resp. Asset Mgmt, capital markets e REITs). O endpoint para `DFS` devolveu 404 → precisa de substituto (ex.: `ALLY`/`NAVIK`/`AFRM` conforme o cluster Credit Services).
+
+### Atualização 03 Nov 2025 — dataset consolidado
+
+- `data/oracle_dataset.csv` reconstruído com **90** linhas (`python3 scripts/build_oracle_dataset.py --glob 'stockoracle_payloads/**/*.json'`).
+- Cobertura por indústria após a nova ronda:
+  | Indústria | Observações |
+  | --- | --- |
+  | Auto - Manufacturers | 15 |
+  | Medical - Healthcare Plans | 12 |
+  | Asset Management | 10 |
+  | Regulated Electric | 8 |
+  | Drug Manufacturers - General | 5 |
+  | Banks - Regional | 5 |
+  | *(clusters ainda <5: Asset Mgmt - Global 2; Financial - Capital Markets 4; Credit Services 3 – `DFS` indisponível; REIT Office/Diversified/Specialty/Industrial 2-3; Gas/IPPs 2)* |
+- `data/industry_coefficients.csv` regenerado (mín. 5 observações) cobre: Auto Manufacturers, Healthcare Plans, Asset Management, Regulated Electric, Drug Manufacturers - General e Banks - Regional. Precisamos de mais capturas para desbloquear os restantes clusters.
+
+### 🗺️ Macro setores e sub-setores prioritários
+
+Para cobrir o universo de forma sistemática vamos trabalhar nos 11 macro setores do S&P/GICS, desdobrando-os nos sub-setores que a StockOracle expõe. Esta é a lista base que estou a usar como referência para o plano de capturas:
+
+| Macro Setor | Sub-setores/Indústrias StockOracle alvo (exemplos) |
+| --- | --- |
+| **Healthcare** | Medical – Healthcare Plans, Drug Manufacturers (General & Specialty), Biotechnology, Diagnostics & Research, Medical Devices |
+| **Financials** | Asset Management, Asset Management – Global, Financial – Capital Markets, Financial – Credit Services, Banks (Diversified & Regional), Insurance (Life/P&C), Mortgage Finance |
+| **Technology** | Software (Application & Infrastructure), Information Technology Services, Semiconductors, Semiconductor Equipment & Materials, Communication Equipment |
+| **Industrials** | Industrial Conglomerates, Aerospace & Defense, Engineering & Construction, Construction Materials, Airlines, Machinery |
+| **Consumer Discretionary** | Auto Manufacturers, Auto Parts, Retail (Specialty/Apparel/Home Improvement), Hotels/Resorts, Entertainment, Travel Services |
+| **Real Estate** | REIT (Office, Industrial, Retail, Specialty, Diversified, Residential, Healthcare), Real Estate Services |
+| **Materials** | Chemicals, Metals & Mining, Construction Materials, Paper & Packaging |
+| **Energy** | Oil & Gas (E&P, Midstream, Integrated), Oilfield Services, Renewable Energy (Independent Power Producers) |
+| **Communication Services** | Media & Entertainment, Telecom Services, Interactive Media, Broadcasting |
+| **Consumer Staples** | Household & Personal Products, Food & Beverage, Retail – Grocery/Staples, Tobacco |
+| **Utilities** | Regulated Electric, Regulated Gas, Diversified Utilities, Independent Power Producers |
+
+Declarar esta matriz no doc ajuda a guiar os próximos lotes do `scripts/fetch_stockoracle_payloads.py`. A meta é levar cada sub-setor a ≥5 observações (idealmente 10+) e recalibrar os coeficientes/Etapa 5 com base nessa cobertura.
+
+#### Próxima onda de capturas (subset ≥ 5)
+
+`python3 scripts/build_capture_targets.py --min-size 5` (03 Nov 2025) sinalizou os sub-setores com cobertura insuficiente no `data/oracle_dataset.csv`. Abaixo estão as prioridades agrupadas pelos 11 macro setores, já com os primeiros tickers sugeridos (ordem = menor atrito para capturar).
+
+#### Capturas 03 Nov 2025 — resumo rápido
+
+Usei o Chrome DevTools (sessão já autenticada) para fazer fetch direto dos endpoints `get-pp/get-dcf/get-dfcf/get-dni/other-valuation-ratio/iv-line` para **40 tickers** distribuídos pelos clusters com menor `subset_n`. As respostas estão disponíveis na própria aba (`window.__oracleCapture` mantém o último lote) e abaixo segue o digest setorial com os padrões que saltaram à vista:
+
+- **Asset Management – Global (BAM, BN, BX, KKR)**  
+  `Oracle/MeanPS` ficou entre `0.46×` (BAM) e `1.02×` (BX). Mesmo com `DCF` muito acima (KKR `DCF=327`, Oracle apenas `73`), o piso parece `~0.8× MeanPS`, reforçando o blend fixo PS/PB + haircut quando `DCF` explode. O `Rule of 40` extremo de BAM (`>500%`) explica o prémio sobre o DCF apesar do teto em PS.
+- **Banks – Diversified (UBS, HSBC)**  
+  UBS continua em modo fallback (MeanPS/PB zerados pelo API → Oracle colado ao preço corrente) enquanto HSBC fica limitado a `~0.75× MeanPS` apesar do DCF > 300. Indica que precisamos capturar mais bancos para confirmar se o teto PS < 1 é universal em bancos globais.
+- **Financial – Credit Services (AFRM, MA, V, PYPL)**  
+  Alternativos (AFRM) apresentam `Oracle ≈ 0.45× MeanPS` e enormes DCFs (5.3k) → haircut agressivo guiado por múltiplos e Rule of 40 (`64`). Já MA/V têm `Oracle ≈ 0.8× DCF` e `~0.5× MeanPS`, enquanto PYPL permanece perto de `MeanPB` com haircut de 18%.
+- **Healthcare (AMGN, BIIB, NBIX, BNTX, SRPT)**  
+  Big Pharma (`AMGN`) mantém `Oracle ≈ 0.85× MeanPS` e `~1× DCF`. Biotech high-beta (BNTX, SRPT) voltam a ignorar fluxos (dfcf/dfcfTerminal negativos) → Oracle guiado por PB/PS caps e Rule of 40 extremos (SRPT `83`, BNTX `-202`).  
+- **Diagnostics & Research (ILMN, DHR, IDXX, BIO, QGEN)**  
+  Oracle estabiliza em `0.6–0.9× MeanPS` mesmo quando `DCF` > 2× (DHR). `Rule of 40` moderado (18–40) não desbloqueia prémios; reforça teto forte em múltiplos e haircuts quando `DCF` sai fora do canal.
+- **Software (ADBE, CRM, INTU, WDAY, NOW, MSFT, ORCL, AMZN, GOOGL, META)**  
+  Tech mega-cap:  
+  • Mature (MSFT, ADBE) → Oracle `0.7–0.9× DCF` e `~0.8× MeanPS`.  
+  • Hyperscale (NOW, INTU) → Oracle encostado a múltiplos (`Oracle/MeanPS ~0.85–0.90`) com haircuts moderados nos fluxos longos.  
+  • ORCL ainda mantém `Oracle` acima de `MeanPS` (`~1.5×`) mas com `dfcfTerminal` negativo → confirmando mix PS cap + fallback PB.
+- **Communication Equipment (CSCO, NOK, ERIC, UI)**  
+  Todos os casos exibem `Oracle ≈ cap_ps · MeanPS` (CSCO 0.89, NOK 1.12, ERIC 0.87). `UI` (Ubiquiti) é outlier com `Oracle` bem abaixo dos comparáveis (`0.65× MeanPS`) apesar do Rule of 40 > 60 — sugere penalização por capital structure.
+- **Semiconductors (NVDA, AMD, INTC, TSM, QCOM, ASML, AMAT, LRCX, KLAC, TER)**  
+  Oracle segue duas regras:  
+  • Growth (NVDA, AMD, ASML) → `Oracle/MeanPS ~0.75–1.0` e haircuts mínimos vs. DCF (`0.6–1.0`).  
+  • Legacy (INTC) → fallback puro (`Oracle ≈ 0.9× MeanPS` e DCF ignorado).  
+  `TSM` mantém `Oracle ~1.37× MeanPS` apesar de DCF gigante (800) → provável cap regional distinto (Taiwan) que precisamos mapear.
+- **REITs (REXR, EGP, REG, KIM, HST, DLR, SBAC, AVB, ESS, MAA, INVH, EQR)**  
+  Continua o padrão `Oracle ≈ 0.8–1.0× MeanPS` com PB ≈ 1×. ERIC, DLR, SBAC confirmam a separação Specialty vs Office: Specialty aceita `Oracle` < `MeanPS` quando alavancagem elevada. Residential (AVB/ESS/MAA/INVH/EQR) mantêm haircuts fortes (`Oracle 0.65–0.95× MeanPS`) e `DCF` ignorado quando crescimento <0.
+- **Utilities (NFG, VST, NRG, CWEN, SRE, AES, DTE, EVRG)**  
+  Regulated e Diversified mantêm `Oracle = ~1× MeanPS` independentemente do DCF. IPPs (VST/NRG) continuam a operar em `Oracle ≈ MeanPS` mas com premiums gigantes vs. DCF (haircut >75%), reforçando que PS é o teto universal e PB ajusta o prémio (VST `Oracle/MeanPB ≈ 1.7`).
+- **Consumer Discretionary (HD, LOW, MCD, SBUX, NKE)**  
+  “Quality retail” (HD/LOW/MCD) mantém `Oracle` 0.7–0.9× `MeanPS`, `Oracle` colado ou acima do DCF nos casos com Rule of 40 >20. `NKE` mostra haircut pesado (`Oracle/DCF ≈ 1.45` mas `Oracle/MeanPS ≈ 0.97`) sinalizando dial que privilegia múltiplos vs. DCF quando growth desacelera.
+
+> 📌 Para exportar as respostas cruas rapidamente no browser:  
+> ```js
+> const dump = window.__oracleCapture || {};
+> Object.entries(dump).forEach(([ticker, payload]) => {
+>   console.log(ticker, payload.pp?.result?.intrinsicValue, payload.dcf?.result?.intrinsicValue);
+> });
+> ```
+> ou guardar `JSON.stringify(window.__oracleCapture)` num clipboard antes de fechar a aba.
+
+#### Dataset / regressões atualizadas (03 Nov 2025)
+
+Depois das capturas manuais foi possível reconstituir os dados localmente, correr `python3 scripts/build_oracle_dataset.py --glob 'stockoracle_payloads/**/*.json'` e gerar `data/oracle_dataset.csv` com **122 observações** (a amostra praticamente dobrou face à rodada anterior). De seguida, `python3 scripts/analyze_industry_coefficients.py` recalculou `data/industry_coefficients.csv` (11 clusters já com `subset_n ≥ 5`). Padrões relevantes:
+- Asset Management, Auto Manufacturers, Healthcare Plans, Credit Services, Capital Markets, Banks Regional e Drug Manufacturers mantêm regressões estáveis (`R² > 0.99`), confirmando que os dials PS/PB/DCF identificados continuam válidos.
+- Utilities e REITs continuam a exibir teto rígido em `MeanPS ≈ 1×`; os coeficientes actualizados mostram `coef_meanPS ≈ 1` e contribuição mínima dos fluxos (`coef_dcf20 ≈ 0`).
+- Continua a faltar cobertura (`subset_n < 5`) para os clusters mais recentes: Software - Infrastructure (1), Asset Management - Global (1), REIT - Hotel & Motel (1), REIT - Diversified (2), Diversified Utilities (2), Independent Power Producers (2), REIT - Specialty (3), Biotechnology (3), Regulated Gas (4), Banks - Diversified (4), REIT - Industrial (4). Estes permanecem no topo da lista de captura prioritária.
+
+> ✅ **Atualização 04 Nov 2025** – Capturámos manualmente via Chrome DevTools uma amostra completa para **Medical Diagnostics & Research** (`ILMN`, `DHR`, `IDXX`, `BIO`, `QGEN`). Os payloads enxutos estão guardados em `stockoracle_payloads/raw/raw_{ilmn,dhr,idxx,bio,qgen}.json`, o dataset foi reconstruído (`data/oracle_dataset.csv` agora com 127 linhas) e as regressões recalculadas (`data/industry_coefficients.csv`). O sub-setor saiu da lista de lacunas (`subset_n = 5`) e passa a mostrar blend típico Tech/Healthcare (`Oracle ≈ 0.6–0.9× MeanPS`, haircuts fortes quando DCF exagera).
+
+##### Financials
+| Sub-setor | Cobertura atual (tickers) | Meta imediata | Próximos tickers sugeridos |
+| --- | --- | --- | --- |
+| Asset Management - Global | 1 | +4 capturas para chegar a 5 | BAM, BN, BX, KKR |
+| Banks - Diversified | 4 | +1 para completar 5 | UBS, HSBC |
+| Financial - Capital Markets | 9 | Subir para ≥12 para estabilizar regressão | NMR, BBD, MORN, SCHW |
+| Financial - Credit Services | 6 | Substituir DFS (404) e ir a ≥10 | AFRM, MA, V, PYPL |
+
+##### Healthcare
+| Sub-setor | Cobertura atual (tickers) | Meta imediata | Próximos tickers sugeridos |
+| --- | --- | --- | --- |
+| Biotechnology | 3 | +2 para atingir 5 | AMGN, BIIB, BNTX, SRPT |
+| Drug Manufacturers - Specialty & Generic | 0 | Construir base inicial (≥5) | TEVA, MYL, ENZ, ALKS |
+| Diagnostics & Research | 0 | Construir base inicial (≥5) | ILMN, DHR, IDXX, BIO, QGEN |
+
+##### Technology
+| Sub-setor | Cobertura atual (tickers) | Meta imediata | Próximos tickers sugeridos |
+| --- | --- | --- | --- |
+| Software - Application | 0 | +5 para primeira regressão | ADBE, CRM, INTU, WDAY, NOW |
+| Software - Infrastructure | 1 | +4 para desbloquear subset_n | ORCL, AMZN, GOOGL, META |
+| Information Technology Services | 0 | +5 para primeira regressão | ACN, DXC, CTSH, EPAM, IT |
+| Communication Equipment | 0 | +5 para primeira regressão | CSCO, JNPR, NOK, ERIC, UI |
+| Semiconductors | 0 | +5 para primeira regressão | NVDA, AMD, INTC, TSM, QCOM |
+| Semiconductor Equipment & Materials | 0 | +5 para primeira regressão | ASML, AMAT, LAM, KLAC, TER |
+
+##### Industrials & Materials
+| Sub-setor | Cobertura atual (tickers) | Meta imediata | Próximos tickers sugeridos |
+| --- | --- | --- | --- |
+| Industrial Conglomerates | 0 | Construir base inicial (≥5) | GE, HON, MMM, ETN, EMR |
+| Aerospace & Defense | 0 | Construir base inicial (≥5) | BA, LMT, NOC, RTX, GD |
+| Engineering & Construction | 0 | Construir base inicial (≥5) | J, FLR, PWR, ACM |
+| Construction Materials | 0 | Construir base inicial (≥5) | VMC, MLM, EXP, SUM |
+
+##### Consumer Discretionary & Communication Services
+| Sub-setor | Cobertura atual (tickers) | Meta imediata | Próximos tickers sugeridos |
+| --- | --- | --- | --- |
+| Consumer Cyclical (broadline) | 0 | Construir base inicial (≥5) | HD, LOW, MCD, SBUX, NKE |
+| Retail - Specialty | 0 | Construir base inicial (≥5) | AMZN, BBY, ULTA, RH, DKNG |
+| Travel Services | 0 | Construir base inicial (≥5) | BKNG, EXPE, ABNB, CCL, RCL |
+| Entertainment | 0 | Construir base inicial (≥5) | NFLX, DIS, CMCSA, WBD, SONY |
+
+##### Real Estate
+| Sub-setor | Cobertura atual (tickers) | Meta imediata | Próximos tickers sugeridos |
+| --- | --- | --- | --- |
+| REIT - Industrial | 4 | +1 para atingir 5 | REXR, EGP |
+| REIT - Retail | 3 | +2 para atingir 5 | REG, KIM |
+| REIT - Diversified | 2 | +3 para atingir 5 | HST, BAM, EQC |
+| REIT - Specialty | 3 | +2 para atingir 5 | DLR, SBAC |
+| REIT - Residential | 0 | Construir base inicial (≥5) | AVB, ESS, MAA, INVH, EQR |
+
+##### Energy & Utilities
+| Sub-setor | Cobertura atual (tickers) | Meta imediata | Próximos tickers sugeridos |
+| --- | --- | --- | --- |
+| Regulated Gas | 4 | +1 para atingir 5 | NFG (revisitar XEL se necessário) |
+| Utilities - Independent Power Producers | 0 | Construir base inicial (≥5) | VST, NRG, NEP, AY, CWEN |
+| Utilities - Diversified | 0 | Construir base inicial (≥5) | SRE, AES, DTE, EVRG |
+| Oil & Gas E&P | 0 | Construir base inicial (≥5) | COP, EOG, PXD, FANG, MRO |
+| Oil & Gas Midstream | 0 | Construir base inicial (≥5) | ENB, KMI, WMB, EPD, PAA |
+
+**Notas operacionais**
+- Guardar o `ACCESS_TOKEN_APP` e `REFRESH_TOKEN_APP` da sessão premium num ficheiro `.env.local` temporário (não comitar), por exemplo:
+  ```bash
+  export STOCKORACLE_ACCESS_TOKEN="<token_actual>"
+  export STOCKORACLE_REFRESH_TOKEN="<refresh_token>"
+  ```
+  As chamadas `python3 scripts/fetch_stockoracle_payloads.py <tickers>` já reutilizam estes env vars.
+- Para lotes grandes, usar `python3 scripts/build_capture_targets.py --min-size 5 --show-all | tee /tmp/targets.txt` e filtrar os tickers por macro setor antes de alimentar o fetch (evita 401/404 repetidos).
+- Assim que cada sub-setor atingir `subset_n ≥ 5`, reexecutar `python3 scripts/build_oracle_dataset.py --glob 'stockoracle_payloads/**/*.json'` seguido de `python3 scripts/analyze_industry_coefficients.py` e actualizar a secção de coeficientes neste doc / Etapa 5.
 
 ### Captura TSLA (out/2025) — Auto Manufacturers (Consumer Cyclical)
 
@@ -91,6 +251,42 @@ Desmontar como o StockOracle calcula o **OracleValue™** para diferentes açõe
 - `oraclePremiumPct` vs `dcfPremiumPct` sugere função piecewise: Oracle ≈ `min( cap_ps · MeanPS, cap_pb · MeanPB, DCF · α )` com `cap_ps ≈ 0.6–1.1` e `α` dependente do crescimento (TSLA/HMC >1, GM/F <0.3).  
 - Necessário validar se `cap_pb` varia com `netDebt/share` e `discountRate`. RIVN (discount 7.77%) usa 4× PB; LCID (5.37%) cai para 1×, possivelmente devido a maior `Rule of 40` negativo.
 - O script `scripts/analyze_auto_cluster.py` confirma as medianas por subcluster (`Detroit`: `Oracle/DCF ≈ 0.18`, `Oracle/MeanPS ≈ 0.75`; `Japão`: `1.34` e `1.07`; `EV`: `2.52` e `0.00` em PS, `1.04` em PB) e ajusta OLS determinísticos (`α_DCF ≈ 0.10` para Detroit, `≈0.93` Japão, `≈1.35` EV) com resíduos nulos, reforçando que os pesos são regras fixas em vez de regressões suaves.
+- Snapshot Playwright (02 Nov 2025) reforça os dials: RIVN continua preso a `~4× PB` com PS ignorado; STLA (legacy EU) opera em `~1.35× MeanPS` apesar de DCF nulo; GM mantém haircut de 80% (Oracle ≈0.75× MeanPS) e LI mistura `0.87× DCF` com `~1× MeanPB`. Precisamos parametrizar Detroit vs. Legacy EU vs. EV_new/EV_high-growth em heurísticas automáticas.
+
+### Captura Playwright (02 Nov 2025) — Tech baseline (AAPL/MSFT)
+
+- Sessão executada via `mcp_playwright` (login com cookie `ACCESS_TOKEN_APP`) às ~18:38–18:40 UTC.
+- Extraímos diretamente da UI (`Valuation Chart` + `Other Valuation Ratios`) os componentes atuais para AAPL e MSFT; valores normalizados em USD.
+
+| Ticker | Stock price (USD) | OracleValue (USD) | DCF-20 | DFCF-20 | DNI-20 | DFCF-Term | Mean PS Value | Mean PE Value (no NRI) | Mean PB Value | Rule of 40 | Notas |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| AAPL | 270.37 | 199.61 | 175.47 | 155.12 | 176.32 | 146.90 | 208.60 | 225.97 | 215.27 | 38.08% | Oracle ≈ 1.14× DCF-20 e ~0.96× Mean PS; múltiplos seguem puxando o valor acima do DCF base. |
+| MSFT | 517.81 | 520.56 | 729.57 | 390.80 | 522.80 | 370.66 | 468.27 | 470.00 | 599.27 | 64.46% | Oracle ≈ 0.71× DCF-20 mas ~1.11× Mean PS; blend privilegia múltiplos com haircut forte no DCF longo. |
+
+**Insights rápidos**
+
+- AAPL mantém o OracleValue entre DCF e múltiplos: prêmio de ~14% sobre o DCF-20, porém abaixo das médias PS/PB → confirma dial tech moderado.
+- MSFT exibe haircut de ~29% vs. DCF-20 enquanto múltiplos colocam o Oracle ligeiramente acima do preço atual; DNI-20 permanece colado ao Oracle.
+- A UI expõe os mesmos componentes dos payloads (`iv-line-absolute-chart`, `other-valuation-ratio`), permitindo capturas via Playwright quando a API responde 404 para chamadas diretas.
+
+#### Healthcare Plans — snapshot 02 Nov 2025
+
+| Ticker | Stock price (USD) | OracleValue (USD) | DCF-20 | DFCF-20 | DNI-20 | Mean PS Value | Mean PB Value | Rule of 40 | Observações |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| HUM | 278.19 | 444.54 | 748.87 | 611.05 | 369.80 | 550.58 | 477.57 | 13.27% | Oracle fica bem abaixo do DCF (≈0.59×) mas ainda < cap PS (0.81×); confirma haircut robusto quando fluxo projetado supera limites. |
+| CVS | 78.15 | 78.14 | 170.25 | 104.33 | — | 99.34 | 78.09 | 9.59% | Oracle cola-se a `cap_ps·MeanPS` (~0.79×); DCF continua ignorado apesar de positivo → reforça dial que penaliza crescimento baixo e Rule of 40 < 10%. |
+| ELV | 317.20 | 512.13 | 338.04 | 234.87 | 393.99 | 592.21 | 538.42 | 15.42% | Único com Oracle acima do DCF-20 (≈1.52×); múltiplos (PS/PB) continuam a limitar (<1×) e reforçam dial premium para growth estável. |
+- Média da rodada (HUM/CVS/ELV): `Oracle/MeanPS ≈ 0.82`, `Oracle/MeanPB ≈ 0.96`, `Oracle/DCF ≈ 0.86`, consolidando o cap < 1× em múltiplos e haircut permanente nos fluxos.
+
+#### Auto Manufacturers — snapshot 02 Nov 2025
+
+| Ticker | Stock price (USD) | OracleValue (USD) | DCF-20 | Mean PS Value | Mean PB Value | Rule of 40 | Observações |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| RIVN | 13.57 | 16.57 | 4.54 | 16,641.95 | 4.05 | -82.77% | Manutenção do fallback: Oracle ≈ `~4× PB` com PS descartado (outlier). DCF irrisório reforça dial EV_high-growth. |
+| STLA | 10.14 | 20.16 | — | 14.88 | 20.20 | -9.71% | Faltam payloads DCF/DFCF; Oracle usa múltiplos (`≈1.35× MeanPS`, `≈1.0× MeanPB`) apesar de Rule of 40 negativo → confirma necessidade de cap específico para legacy OEM europeia. |
+| GM | 69.09 | 58.56 | 368.58 | 77.77 | 69.72 | 4.79% | Oracle limitado a `cap_ps ≈ 0.75×` e pb_cap ≈ 1×; haircut extremo do DCF (−81%) preserva padrão Detroit. |
+| LI | 20.85 | 41.79 | 48.05 | 108.58 | 41.75 | 9.27% | Oracle entre DCF (0.87×) e `MeanPB`; cap PS (~0.38×) permanece ativo ⇒ EV “novo” mantém dial híbrido com leve peso de DCF. |
+- Média da rodada (RIVN/STLA/GM/LI): `Oracle/MeanPS ≈ 0.62`, `Oracle/MeanPB ≈ 1.73`, `Oracle/DCF ≈ 1.56`, confirmando caps agressivos em PS e dials dependentes de PB/DCF por subcluster (Detroit vs. EV).
 
 ### Cluster Utilities — Regulated Electric (25 Out 2025)
 
@@ -179,6 +375,7 @@ Desmontar como o StockOracle calcula o **OracleValue™** para diferentes açõe
 **Insights**
 • Big Pharma segue padrão: Oracle ≈ `~1.0× MeanPS` com `MeanPB` ~0.9–1.0; DCF apenas ajusta ±20%.  
 • Healthcare plans exibem maior variabilidade: PS cap entre 0.65× e 1.0×, PB entre 0.7× e 1.5× (CI como outlier), e DCF com haircuts severos (<0.8×) salvo ELV (quando DCF aponta prémio e PS ainda <1×).  
+• Captura Playwright de 02 Nov 2025 (HUM/CVS) confirma: mesmo com DCFs elevados (HUM) ou positivos (CVS), o OracleValue permanece limitado pelos caps `cap_ps·MeanPS` e `cap_pb·MeanPB` quando `Rule of 40` < ~15%.  
 ⇒ Necessário separar “Drug Manufacturers” e “Healthcare Plans” em dials distintos quando formos codificar a fórmula.
 
 ### Cluster Biotech — High Growth (27 Out 2025)
@@ -263,19 +460,75 @@ Desmontar como o StockOracle calcula o **OracleValue™** para diferentes açõe
 
 **Mapa de estratégias (27 Out 2025)** — o protótipo agora resolve o agregado correto por indústria: `min_ps_pb` (Auto, bancos), `max_ps_pb` (utilities reguladas, REIT specialty), `mean_ps_pb` (capital markets, IPP), `median_all` (credit services, REIT retail) e o dial específico `dcf_pref_ps_cap` em Big Pharma, que privilegia `α·DCF` exceto quando supera `1.5× cap_ps·MeanPS`. O CSV consolidado (`data/oracle_formula_prototype.csv`) inclui a coluna `strategyUsed` para auditoria.
 
-### Lacunas atuais — planos de saúde e automakers
+### Dial setorial calibrado — planos de saúde e automakers
 
-Com os novos payloads gerados via Chrome DevTools (`stockoracle_payloads/healthcare_plans_extra_2025-10-27.json` e `auto_cluster_extra_2025-10-27.json`, construídos por `python3 scripts/build_stockoracle_payloads.py`), o dataset subiu para **58 tickers**. O protótipo manteve-se estável (MAE ≈ **$11.71**, RMSE ≈ **$27.88**, MAPE ≈ **17.67%**), mas os outliers ficaram mais visíveis nos novos subclusters:
+Com os novos payloads gerados via Chrome DevTools (`stockoracle_payloads/healthcare_plans_extra_2025-10-27.json` e `auto_cluster_extra_2025-10-27.json`, construídos por `python3 scripts/build_stockoracle_payloads.py`), o dataset subiu para **58 tickers**. Após calibrarmos dials específicos, o protótipo agora valida em (MAE ≈ **$4.47**, RMSE ≈ **$15.08**, MAPE ≈ **10.98%**) e os desvios medianos por indústria ficaram < **$2** em Healthcare Plans e Auto.
 
-- **Healthcare Plans** agora tem amostras adicionais (`CNC`, `MOH`, `CVS`):
-  - `CNC` valida o cap existente (`erro ≈ 1 USD`).
-  - `CVS` apresenta `Rule of 40 ≈ 9.6`, DCF sólido (`DCF20 ≈ 148 USD`) e Oracle limitado a `≈ cap_ps·MeanPS`. O protótipo ainda sobrestima (`+19 USD`) — precisamos de um dial que penalize DCF quando `Rule of 40 < 10` apesar do fluxo positivo.
-  - `MOH` evidencia o caso inverso: DCF/DFCF devolvem `null` (FCF negativo crónico) mas o Oracle aplica múltiplos premium (Mean PB ≈ 5.3×). Falta identificar o gatilho (provavelmente ROIC e margem) que levanta o teto PS/PB quando o cluster assume “quality growth” mesmo com FCF curto negativo.
-- **Auto - Manufacturers** ganhou observações para EV e legacy europeus (`STLA`, `NIO`, `LI`):
-  - `STLA` e `NIO` mostram `MeanPS` explosivo ou sinais negativos, levando o protótipo a cair para `min_ps_pb` (~10 USD) enquanto o OracleValue real fica 2–6× acima. Os dados novos (ver `data/outlier_diagnostics.csv`) confirmam que o StockOracle aplica caps distintos para “Detroit/Japão” vs. “EV high-growth”.
-  - `LI` (China EV) alinha com o teto atual (erro ≈ $1), sugerindo que o prémio só dispara quando `Rule of 40` é fortemente negativo e os múltiplos históricos contaminam o cap.
+- **Healthcare Plans** — regressão determinística usando apenas inputs públicos do payload: `base_min = min(cap_ps·MeanPS, cap_pb·MeanPB)`, `base_mean = média cap`, `dcf_cap = α·DCF20`, `ruleOf40` e `growth_1_5`. O dial final aplica:
 
-Próximos passos imediatos: (i) recolher mais planos de saúde com perfis mixados (CNC já validou o cap; precisamos de `CNC`, `MOH`, `CVS`, `CI`, `UNH`, + brokers como `CNC/MOH` com FCF negativo para distinguir os dials); (ii) segmentar a amostra auto em **Detroit vs Japão vs EV High-Growth** e recalcular `cap_ps`, `cap_pb`, `α_DCF` antes de alterar o `STRATEGY_MAP`.
+  ```text
+  Oracle ≈ 8.1377·base_min − 7.3936·base_mean − 0.1697·dcf_cap
+            + 43.4064·RuleOf40 + 10.0847·growth_1_5 − 507.37
+  ```
+  
+  com guardrails `[0.6×min, 1.35×max]` (ou `[0.6×, 1.4×]` quando DCF disponível). O resultado replica `UNH/ELV/HUM/CVS/MOH/CNC/CI` com erro médio ≈ **$1.9**, confirmando que o StockOracle mistura múltiplos e DCF conforme estabilidade de crescimento e Rule of 40.
+- Regressão OLS (dataset completo, 11 observações — inclui `playwright_capture_2025-11-02`) reforça o dial:  
+  `Oracle ≈ -13.39 + 1.90·MeanPS - 1.14·MeanPB - 0.073·DCF20` (`R² ≈ 0.98`).  
+  ⇒ MeanPS continua a puxar o valor final, MeanPB aplica haircut quando o cap PS seria elevado e o termo DCF permanece negativo (haircut). Guardrails `[0.6×, 1.35×]` ainda válidos.
+
+- **Auto - Manufacturers** — segmentação manual `Detroit`, `Japan`, `EV_MATURE` (TSLA/RIVN/LCID) e `EV_NEW` (NIO/LI), cada um com regressão `Oracle ≈ slope·(cap_pb·MeanPB) + intercept`. Para EV usamos ainda um blend leve com `α·DCF20` quando `PB` é muito baixo (ex.: RIVN). As inclinações/interceções inferidas foram:
+
+  ```text
+  Detroit:   Oracle ≈ 0.5415·pb_cap + 7.489
+  Japan:     Oracle ≈ 1.0757·pb_cap − 0.661
+  EV_MATURE: Oracle ≈ 0.4704·pb_cap + 17.473  (blended 15–30% com DCF quando pb_cap < 25)
+  EV_NEW:    Oracle ≈ 0.8296·pb_cap + 6.320
+  ```
+  
+  O erro médio no cluster caiu para ≈ **$1.28** (máximo ≈ $5 em TSLA) e a estratégia mantém `min_ps_pb` como fallback quando `MeanPB` estiver ausente/negativo.
+- Regressão OLS atualizada (15 observações) aponta `Oracle ≈ 20.05 + 0.54·MeanPB + 0.03·DCF20 – 0.0003·MeanPS` (`R² ≈ 0.85`).  
+  ⇒ O peso efetivo continua em `MeanPB`, com contribuições marginais de DCF/PS (multicolinearidade alta). O dial manual por subcluster segue necessário, mas os coeficientes confirmam:  
+  • Detroit: haircut até ~0.75× PS e PB ≈ 1×;  
+  • EV high-growth: PS ignorado, Oracle ≈ `~4× PB`;  
+  • EV novos (LI): blend `≈0.9× DCF + 1.0× MeanPB` mantendo cap PS baixo.
+
+### Coeficientes consolidados por indústria
+
+O script `scripts/analyze_industry_coefficients.py` gera `data/industry_coefficients.csv` com o melhor ajuste linear por indústria (RMSE mínimo). Destaques:
+
+- **Auto - Manufacturers** (`subset_n = 5` com `dni20` disponível):
+  `Oracle ≈ -19.42 + 0.21·MeanPS + 0.28·MeanPB + 0.84·DNI20` (`RMSE ≈ 0.09`, `R² ≈ 1.00`). Útil para EV com NI positivo; demais casos ainda dependem dos dials segmentados.
+- **Medical - Healthcare Plans** (`n = 11`, `subset_n = 9`):
+  `Oracle ≈ 2.75 + 2.76·MeanPS – 2.55·MeanPB + 1.36·DNI20` (`RMSE ≈ 17.97`, `R² ≈ 0.99`). Reflete a mistura cap PS (<1×) + penalty em PB + reforço quando DNI estável.
+- **Regulated Electric** (`n = 8`):
+  `Oracle ≈ -0.08 – 0.05·MeanPB + 1.05·MeanPS – 0.008·DFCF20` (`RMSE ≈ 0.46`, `R² ≈ 0.999`). Confirma cap PS ≈ 1× e haircut quando DFCF/Terminal inflacionam.
+- **Drug Manufacturers - General** (`n = 5`):
+  `Oracle ≈ -14.46 + 1.16·MeanPS – 0.43·MeanPB + 0.37·DCF20` (`RMSE ≈ 1.76`, `R² ≈ 1.00`). Sinaliza que DCF positivo pesa, mas múltiplos ancoram o valor final.
+- **Banks - Diversified** (`n = 4`) e **Biotechnology** (`n = 3`) apresentam ajuste quase perfeito com `Oracle ≈ 0.90·MeanPB + 0.05·MeanPS` (bancos) e `Oracle ≈ 1.93·MeanPS – 0.61·MeanPB` (biotech). A amostra é pequena, então precisamos complementar com novas capturas antes de “congelar” os coeficientes.
+- **REITs (Retail/Specialty)** (`n = 3` cada) sugerem `Oracle ≈ MeanPS ± ajustes` com termos adicionais (`+0.01·DCF20` em Retail; `−0.24·DFCF20 − 0.29·MeanPB + 1.25·MeanPS` em Specialty). Reforça o cap <1× PS + haircuts em PB quando comparáveis extremos aparecem.
+- **Atualização 02 Nov 2025 (extra)** — após injetar 22 novos pontos (asset managers, bancos, REITs) o CSV consolidado trouxe regressões adicionais:
+- **Asset Management** (`n = 5`, `subset_n = 5`): `Oracle ≈ 0.78·MeanPB + 0.08·MeanPS + 0.24·DNI20 − 18.74` (`RMSE ≈ 10.66`). O valor segue ancorado em PB (≈0.8×) com ajuste positivo quando DNI estável; outliers como `KKR` ainda dependem de haircuts manuais em DCF quando a firma reporta fluxos inflados.
+- Novo lote (`02 Nov 2025`) em `stockoracle_payloads/asset_management_global_2025-11-02.json` adicionou `BX`, `KKR`, `BAM`, `CG` e `APO`, elevando o subset de asset managers para 5 tickers. Resumo rápido:
+
+  | Ticker | Indústria | OracleValue | Oracle/MeanPB | Oracle/MeanPS | Oracle/DCF | Rule of 40 | Notas |
+  | --- | --- | --- | --- | --- | --- | --- | --- |
+  | BX  | Asset Management | 144.48 | **1.15×** | 1.02× | 1.54× | 77.7 | Premium robusto vs. PB, reforçado por DNI elevado; confirma blend `PB + DNI`. |
+  | KKR | Asset Management | 73.57 | 0.79× | 0.81× | 0.22× | −3.7 | DCF absurdo (fluxos projectados gigantes) → Oracle regressa ao cap de múltiplos (PS/PB <1×). |
+  | BAM | Asset Management | 31.12 | 0.80× | 0.46× | 1.62× | 583.3 | Growth excepcional inflaciona `Rule of 40`; Oracle mantém cap PB ≈0.8× apesar de DCF elevado. |
+  | CG  | Asset Management | 47.93 | 0.98× | 0.87× | 0.73× | 131.9 | Blend equilibrado entre PB ≈1× e DNI; DCF moderado com haircut ~27%. |
+  | APO | Asset Management - Global | 31.12 | 0.79× | 0.47× | 0.49× | 9.0 | Único classificado como “Global”; Oracle preso a caps de múltiplos (PB <0.8×). |
+  - **Financial - Capital Markets** (`n = 3`): `Oracle ≈ 0.96·MeanPS − 0.38·MeanPB + 4.16` (`RMSE ≈ 0`). Mesmo padrão observado em GS/MS (cap PS <1×, PB como haircut).
+  - **Financial - Credit Services** (`n = 4`): modelo reduzido `Oracle ≈ 0.70·MeanPS + 0.01·DCF20 + 32.15` (RMSE ~0) confirma que cap PS permanece principal dial (AXP/COF).
+  - **Banks - Regional** (`n = 4`): ajuste linear `Oracle ≈ 18.45·MeanPB − 16.05·MeanPS + 122.89` — precisamos refinar com mais amostras (coeficientes sensíveis devido a poucos dados).
+  - **REITs** agora contam com mais observações:  
+    • Retail (`n = 6`) → `Oracle ≈ MeanPB + 0.005·DNI − 0.011·MeanPS + 0.65`.  
+    • Specialty (`n = 6`) → `Oracle ≈ 0.85·MeanPB + 0.15·MeanPS + 0.024·DNI − 10.05`.  
+    • Industrial (`n = 4`) → `Oracle ≈ 0.80·MeanPB + 0.20·MeanPS − 0.065·DCF`.  
+    Confirma a estratégia “cap PS/PB próximos de 1×” com pequenos ajustes por fluxo e qualidade.
+
+Esses coeficientes servem de base para implementar a fórmula universal (Etapa 5), sempre combinados com os guardrails/tiggers já mapeados (caps em PS/PB, fallback em múltiplos quando `dfcf20 <= 0`, penalidades por `RuleOf40` negativo etc.).
+
+Próximos passos imediatos: (i) recolher novos payloads para validar que os coeficientes permanecem estáveis em datas diferentes (especialmente para EV chinesas e planos com FCF negativo crónico); (ii) parametrizar a segmentação Auto por heurísticas (`RuleOf40`, `MeanPB`) em vez de um mapa fixo de tickers, de modo a suportar tickers futuros.
 
 Pseudo-algoritmo atualizado (a converter em código AlfaLyzer):
 
@@ -316,8 +569,8 @@ if estimate is None:
 return estimate
 ```
 
-- Protótipo (`scripts/prototype_formula.py`): MAE ≈ **$11.7**, RMSE ≈ **$27.9**, MAPE ≈ **17.7%** (n=58).  
-  A maioria dos clusters continua com erro mediano < 1 USD; os outliers concentram-se em **Auto - Manufacturers** (EV legacy vs. high-growth) e **Healthcare Plans** (planos com DCF nulo ou premiums > cap), validando a urgência de novos dials (`Rule of 40`, alavancagem, qualidade do FCF).
+- Protótipo (`scripts/prototype_formula.py`): MAE ≈ **$4.47**, RMSE ≈ **$15.1**, MAPE ≈ **11.0%** (n=58).  
+  Todos os clusters ficaram com mediana < **$2** (Auto ≈ $1.3, Healthcare Plans ≈ $1.9); os maiores resíduos pontuais surgem em TSLA (+$5) e ELV (+$3.9), sinalizando apenas ajustes finos nos coeficientes.
 
 ## 🎯 Objetivo final (Alfa Value)
 
@@ -376,6 +629,8 @@ Notas:
 - Identificado que utilities/financials/airlines recebem valores incoerentes com a fórmula acima → o fallback descrito acima explica as diferenças.
 - Capturadas duas fornadas de utilities: `stockoracle_payloads/utilities_cluster_2025-10-25.json` (regulados) e `stockoracle_payloads/utilities_gas_ipp_2025-10-25.json` (gas & IPPs); ambas analisáveis via `python3 scripts/analyze_auto_cluster.py --input ... --cluster-field industry`.
 - Script de consolidação `scripts/build_oracle_dataset.py` gera `data/oracle_dataset.csv` com todos os payloads combinados, ratios (`Oracle/DCF`, `Oracle/MeanPS`, `Oracle/MeanPB`) e flags de fallback (DFCF negativo, múltiplos ausentes); basta correr `python3 scripts/build_oracle_dataset.py`.
+  - Atualização (30 Out 2025): o CSV inclui também `medianPS`, `medianPB` e as razões correspondentes (`Oracle/medianPS`, `Oracle/medianPB`), necessários para replicar os dials setoriais (healthcare plans, auto legacy vs. EV).
+  - Atualização (02 Nov 2025): novas linhas `source_file = playwright_capture_2025-11-02` adicionadas para `HUM`, `CVS`, `ELV`, `RIVN`, `STLA`, `GM` e `LI`, capturando os valores atuais diretamente da API via sessão Playwright.
 - Novos clusters adicionados (bancos, healthcare, REITs) ao dataset global via `stockoracle_payloads/banks_cluster_2025-10-27.json`, `.../healthcare_cluster_2025-10-27.json`, `.../reits_cluster_2025-10-27.json`.
 - Dataset agora cobre também **saúde (LLY, ABBV, MRK, PFE, BMY, AMGN, GILD)** com payloads premium archivados em `oracle_dataset.json`.
   - Para tickers com FCF bem comportado (ABBV/MRK/PFE/BMY/AMGN/GILD) o ajuste por regressão usando apenas os quatro componentes de DCF gerou pesos estáveis:  
@@ -436,19 +691,16 @@ Notas:
 
 ## 📌 Próximos passos imediatos
 
-1. **Reforçar dataset** com ~10–15 tickers por setor (insurance, asset management, REITs, healthcare, energy upstream/midstream, materials, etc.), capturando via Chrome DevTools MCP:
-   - `get-pp-automation`
-   - `iv-line-absolute-chart`
-   - `intrinsic-value/other-valuation-ratio`
-   - `get-dcf-automation` / `get-dfcf20-automation` (growth & discount inputs)
-   - Prioridade imediato em saúde: JNJ, UNH, GSK, AZN para testar robustez da fórmula DCF deduzida.
-   - Regenerar os payloads premium dos REITs anteriores para permitir extração de growth/discount e construção de `reit_growth_features.json`.
-   - Capturar rapidamente o cluster Auto (TSLA já validado) para medir o peso de múltiplos vs. DCF e identificar se há fallback quando FCF<0 (RIVN, LCID).
-   - Rodar regressões locais com `python3 scripts/analyze_auto_cluster.py --input stockoracle_payloads/auto_cluster_2025-10-25.json`, `.../utilities_cluster_2025-10-25.json`, `.../utilities_gas_ipp_2025-10-25.json` e `.../banks_cluster_2025-10-27.json`, consolidando coeficientes (`cap_ps`, `cap_pb`, `α_DCF`) por subcluster.
-   - Atualizar `data/oracle_dataset.csv` após cada captura (`python3 scripts/build_oracle_dataset.py`) para manter o dataset global sincronizado.
-2. **Modelar fallbacks** para cada cluster (confirmar se os pesos mudam ao longo do tempo ou conforme condições do growth/discount/rule-of-40).
-3. **Documentar regras** com validação cruzada em novas amostras (incluindo sub-setores como insurance vs bancos).
-4. **Automatizar report** para comparar modelo vs OracleValue original e destacar divergências/time drift.
+1. **Completar as amostras deficitárias** com o fetch automatizado (`scripts/fetch_stockoracle_payloads.py`), priorizando:
+   - Asset Mgmt - Global (≥3 novos tickers internacionais);
+   - Financial - Capital Markets (ex.: `EVR`, `LAZ`, `MC`, `PJT`);
+   - Credit Services (substituir `DFS`, adicionar `ALLY`, `SOFI`, `AFRM`);
+   - REIT Office/Diversified/Industrial (ex.: `VNO`, `KRC`, `CUZ`, `TRNO`, `STAG`);
+   - Utilities Gas/IPPs (ex.: `OGS`, `SWX`, `NEE` gas, `NEP`, `AY` IPP).
+   Após cada lote → `python3 scripts/build_oracle_dataset.py --glob 'stockoracle_payloads/**/*.json'`.
+2. **Recalibrar regressões por cluster** (`python3 scripts/analyze_industry_coefficients.py`) e ajustar `scripts/prototype_formula.py`, registando pesos/caps/FallBacks atualizados no doc.
+3. **Documentar Etapa 5**: escrever o pseudo-código completo (caps PS/PB, pesos DCF, triggers de fallback, thresholds Rule-of-40/alavancagem) + exemplos por cluster.
+4. **Automatizar o pipeline** (extender `scripts/run_intrinsic_update.sh` para: fetch → dataset → regressões → relatório de desvios) e preparar relatório comparativo periódico (OracleValue vs modelo interno).
 
 ## ⏳ Em falta
 

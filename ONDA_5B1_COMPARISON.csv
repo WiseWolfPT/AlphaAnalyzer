@@ -1,0 +1,11 @@
+Stock,Ticker,Sector,Current Price ($),Intrinsic Value ($),Discount/Premium (%),Status,FCF TTM ($M),Cash ($M),Debt ($M),Shares (M),Net Debt ($M),Growth 1-5y (%),Growth 6-10 (%),Growth 11-20 (%),Beta,Discount Rate (%),Confidence,Data Quality
+Apple,AAPL,Technology,262.82,125.44,-52.27,Overvalued,108807,65171,119059,15408.10,53888,10.35,7.11,4.93,1.094,9.47,MED,✅ Perfect
+Microsoft,MSFT,Technology,523.61,162.50,-68.96,Overvalued,71611,94565,60588,7465.00,-33977,6.28,8.24,5.00,1.023,9.12,MED,✅ Perfect
+Alphabet,GOOGL,Technology,259.92,132.70,-48.94,Overvalued,72764,95657,25461,12447.00,-70196,14.16,6.65,4.79,1.000,9.00,MED,✅ Perfect
+Johnson & Johnson,JNJ,Healthcare,190.40,100.32,-47.31,Overvalued,19842,24522,37834,2429.40,13312,0.00,2.40,3.52,0.500,6.50,MED,✅ Perfect
+UnitedHealth,UNH,Healthcare,362.50,257.66,-28.92,Overvalued,20705,29113,76904,929.00,47791,0.72,3.50,3.85,0.500,6.50,MED,✅ Perfect
+JPMorgan Chase,JPM,Financials,302.38,null,null,Fair,-42012,866007,751146,2879.00,-114861,0.00,2.40,3.52,1.127,9.64,LOW,❌ Negative FCF
+Bank of America,BAC,Financials,52.77,null,null,Fair,-8805,642918,658428,7843.70,15510,0.00,2.40,3.52,1.334,10.67,LOW,❌ Negative FCF
+Walmart,WMT,Consumer,0.00,12.62,null,Undervalued,12660,9037,60114,8081.00,51077,0.00,2.40,3.52,0.671,7.36,MED,⚠️ Price missing
+Coca-Cola,KO,Consumer,69.71,7.00,-89.95,Overvalued,4741,14571,45735,4320.00,31164,0.00,2.40,3.52,0.500,6.50,MED,✅ Perfect
+Exxon Mobil,XOM,Energy,115.39,88.23,-23.53,Overvalued,30716,23029,41710,4298.00,18681,0.00,2.40,3.52,0.500,6.50,LOW,✅ Perfect

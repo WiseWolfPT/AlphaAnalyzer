@@ -1,0 +1,217 @@
+╔════════════════════════════════════════════════════════════════════════════╗
+║                    PRODUCTION HEALTH DASHBOARD - AGENT A                   ║
+║                         Hetzner 128.140.45.28                              ║
+║                          2025-11-05 18:30 UTC                              ║
+╚════════════════════════════════════════════════════════════════════════════╝
+
+┌─ SYSTEM HEALTH ────────────────────────────────────────────────────────────┐
+│                                                                             │
+│  Overall Status: 🟡 STABLE (needs optimization)                            │
+│  Uptime: 5.5 hours                                                         │
+│  Node Version: v20.19.4                                                    │
+│  Memory Usage: 173.95 MB                                                   │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+┌─ PM2 PROCESSES (6/7 ONLINE) ───────────────────────────────────────────────┐
+│                                                                             │
+│  🟢 alfalyzer                 [PID: 3503902]  167 MB  5h   (9 restarts)   │
+│  🟢 intelligent-warming       [PID: 3510808]   87 MB  5h   (3 restarts)   │
+│  🟢 iv-warming-worker         [PID: 3510489]   73 MB  5h   (3 restarts)   │
+│  🟢 earnings-monitor          [PID: 3314424]  106 MB  2d   (1 restart)    │
+│  🟢 price-worker              [PID: 3536656]   82 MB  30m  (39 restarts)  │
+│  🟢 transcripts-worker        [PID: 3314401]  109 MB  2d   (2 restarts)   │
+│  🔴 valuation-updater         [STOPPED]         0 MB  0s   (0 restarts)   │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+┌─ DEPLOYED FEATURES ────────────────────────────────────────────────────────┐
+│                                                                             │
+│  ✅ getBatchQuotes              (5 occurrences in bundle)                  │
+│  ✅ Cache batch optimization    (working)                                  │
+│  ✅ Batch warming worker        (partial - no rate limiter)               │
+│  ❌ TokenBucketRateLimiter      (NOT FOUND - CRITICAL ISSUE)              │
+│  ❌ getBatchFinancialData       (NOT FOUND)                                │
+│                                                                             │
+│  Bundle: index.cjs (1.5 MB)                                                │
+│  Hash: 3e197670a79743962c462b9168e5f88a                                    │
+│  Modified: 5.15 hours ago                                                  │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+┌─ API HEALTH ───────────────────────────────────────────────────────────────┐
+│                                                                             │
+│  🟢 Alpha Vantage     [HEALTHY]                                            │
+│  🟢 Finnhub           [HEALTHY]                                            │
+│  🟡 FMP               [THROTTLED - 37 × HTTP 429 errors]                  │
+│  🔴 TwelveData        [OFFLINE]                                            │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+┌─ CACHE PERFORMANCE ────────────────────────────────────────────────────────┐
+│                                                                             │
+│  Redis Connection: 🟢 HEALTHY                                              │
+│  Memory Usage: 11.71 MB (1,485 keys)                                       │
+│                                                                             │
+│  Application Layer (SimpleCacheService):                                   │
+│  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░░░░░░░ 77.63% hit rate ✅    │
+│  Hits: 5,808  |  Misses: 1,673                                             │
+│                                                                             │
+│  Redis Layer (Storage):                                                    │
+│  ▓▓▓░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ 9.27% hit rate ❌     │
+│  Hits: 10,328,295  |  Misses: 101,049,651                                 │
+│  ⚠️ CRITICALLY LOW - Target: >80%                                          │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+┌─ INTELLIGENT WARMING WORKER ───────────────────────────────────────────────┐
+│                                                                             │
+│  Status: 🟡 ACTIVE (hitting rate limits)                                   │
+│  Cycle: #62                                                                │
+│                                                                             │
+│  Last Cycle Performance:                                                   │
+│  ✅ Success: 26 stocks                                                     │
+│  ⏭️  Skipped: 24 stocks (FMP validation)                                   │
+│  ❌ Failed: 0                                                              │
+│  ⏱️  Duration: 8,855ms                                                     │
+│  📊 Bandwidth: 1.52 MB                                                     │
+│                                                                             │
+│  Daily Bandwidth:                                                          │
+│  ▓▓▓▓▓▓▓░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ 15.34% used           │
+│  Used: 104.71 MB / 682.67 MB budget                                        │
+│  Calls: 1,787 (avg 30 KB/call)                                             │
+│  Status: 🟢 OK (within budget)                                             │
+│                                                                             │
+│  Queue:                                                                    │
+│  • Size: 0                                                                 │
+│  • Completed: 862                                                          │
+│  • Failed: 412                                                             │
+│  • Avg Priority: 0                                                         │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+┌─ CRITICAL ERRORS ──────────────────────────────────────────────────────────┐
+│                                                                             │
+│  🚨 FMP Rate Limiting: 37 × HTTP 429 errors                                │
+│     Cause: NO TokenBucketRateLimiter deployed                              │
+│     Affected: MDT, UNP, TXN, PLD, AMD                                      │
+│                                                                             │
+│  ⚠️ Invalid IV Calculations: 8 stocks (negative values)                    │
+│     SO (-49.33), ORCL (-33.70), NEE (-12.12), LLY (-27.49)                │
+│     JPM (-111.49), INTC (-41.06), DUK (-109.19), DE (-35.69)              │
+│                                                                             │
+│  ❌ Portuguese Stocks: 5 symbols (100% failure rate)                       │
+│     NOS-LS, JMT-LS, ALTRI-LS, EDP-LS, GALP-LS                             │
+│     Each: 332 consecutive cache misses                                     │
+│                                                                             │
+│  ⏱️ FMP Timeouts: 3 endpoints (10s timeout exceeded)                       │
+│     CVX ratios, CRM ratios, CL key-metrics                                 │
+│                                                                             │
+│  🐌 Slow Responses (Cache Misses):                                         │
+│     AMZN: 4,791ms  |  NVDA: 1,251ms  |  TSLA: 1,788ms                     │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+┌─ RESPONSE TIME DISTRIBUTION ───────────────────────────────────────────────┐
+│                                                                             │
+│  Cached Requests (77.63% of traffic):                                      │
+│  ████████████████████████████████████████████████████ 5-15ms ✅            │
+│                                                                             │
+│  Cache Misses (22.37% of traffic):                                         │
+│  ████████████████████████████████████████████░░░░░░░ 1,000-5,000ms ⚠️     │
+│                                                                             │
+│  Average: Fast when cached, slow on misses                                 │
+│  Recommendation: Improve cache hit rate to reduce slow responses           │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+┌─ TOP CACHED STOCKS ────────────────────────────────────────────────────────┐
+│                                                                             │
+│  1. FTNT   ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓ 520 hits      │
+│  2. AAPL   ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░░░░░░░░░ 396 hits      │
+│  3. MSFT   ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░░░░░░░░░░ 389 hits      │
+│  4. GOOGL  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░░░░░░░░░░ 387 hits      │
+│  5. NVDA   ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░░░░░░░░░░░░░░░░░ 334 hits      │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+┌─ ACTION ITEMS (PRIORITY ORDER) ────────────────────────────────────────────┐
+│                                                                             │
+│  🔴 P0 - DEPLOY TokenBucketRateLimiter                                     │
+│     Impact: Fix 37 HTTP 429 errors, enable proper rate limiting           │
+│     Expected: Zero FMP throttling errors                                   │
+│                                                                             │
+│  🟠 P1 - DEPLOY getBatchFinancialData                                      │
+│     Impact: Reduce API calls by 70%                                        │
+│     Expected: Faster warming, lower bandwidth usage                        │
+│                                                                             │
+│  🟡 P2 - FIX Portuguese Stock Handling                                     │
+│     Impact: Clean up 1,660 error messages (5 stocks × 332 attempts)       │
+│     Expected: Cleaner logs, no wasted API calls                            │
+│                                                                             │
+│  🟡 P2 - INVESTIGATE Redis Hit Rate                                        │
+│     Impact: Improve 9.27% to target >80%                                   │
+│     Expected: Fewer cache misses, faster overall performance               │
+│                                                                             │
+│  🟢 P3 - FIX Invalid IV Calculations                                       │
+│     Impact: Enable valuation for 8 currently failing stocks                │
+│     Expected: Complete IV coverage for all non-Portuguese stocks           │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+┌─ DEPLOYMENT READINESS ─────────────────────────────────────────────────────┐
+│                                                                             │
+│  Current State: 🟡 PARTIAL                                                 │
+│                                                                             │
+│  Missing Critical Features:                                                │
+│  ❌ TokenBucketRateLimiter class (rate limiting)                           │
+│  ❌ getBatchFinancialData method (batch optimization)                      │
+│                                                                             │
+│  Code Quality:                                                             │
+│  ✅ Bundle integrity verified (md5 hash OK)                                │
+│  ✅ All worker files present                                               │
+│  ✅ Core API functionality working                                         │
+│                                                                             │
+│  Next Deployment Should Include:                                           │
+│  1. Full batch FMP provider with rate limiting                             │
+│  2. Batch financial data methods                                           │
+│  3. Portuguese stock validation/filtering                                  │
+│  4. Enhanced Redis caching strategy                                        │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+╔════════════════════════════════════════════════════════════════════════════╗
+║                           SUMMARY & VERDICT                                ║
+╚════════════════════════════════════════════════════════════════════════════╝
+
+  Status: 🟡 FUNCTIONAL BUT REQUIRES OPTIMIZATION
+
+  What's Working:
+  • Main API serving cached requests efficiently (5-15ms)
+  • 6/7 workers online and stable
+  • Application-layer cache performing well (77.63% hit rate)
+  • Bandwidth usage well within budget (15.34% of daily quota)
+
+  What Needs Fixing:
+  • FMP rate limiting causing 37 HTTP 429 errors (NO rate limiter deployed)
+  • Redis hit rate critically low (9.27% vs 80% target)
+  • Missing batch financial data optimization
+  • 8 stocks with invalid IV calculations
+  • Portuguese stocks spamming error logs (1,660+ errors)
+
+  Critical Path to Production-Ready:
+  1. Deploy TokenBucketRateLimiter → Zero rate limit errors
+  2. Deploy getBatchFinancialData → 70% fewer API calls
+  3. Fix stock validation → Clean logs, proper error handling
+  4. Optimize Redis strategy → >80% hit rate
+
+  Timeline:
+  • Quick wins (P0-P1): Can be deployed today
+  • Investigations (P2): 1-2 days
+  • Full optimization (P3): 3-5 days
+
+╔════════════════════════════════════════════════════════════════════════════╗
+║  Report Generated: 2025-11-05 18:30 UTC                                   ║
+║  Data Source: Live production (128.140.45.28)                             ║
+║  Agent: A (SSH Production State Analysis)                                 ║
+╚════════════════════════════════════════════════════════════════════════════╝

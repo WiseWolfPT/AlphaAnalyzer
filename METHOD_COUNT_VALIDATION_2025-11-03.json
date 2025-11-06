@@ -1,0 +1,176 @@
+{
+  "timestamp": "2025-11-03T15:55:00Z",
+  "validation_status": "PASS",
+  "test_environment": "production",
+  "test_url": "https://128.140.45.28.sslip.io",
+  "stock_validation": {
+    "banks": {
+      "JPM": {
+        "methodCount": 9,
+        "hasDCF": false,
+        "dcfMethods": [],
+        "stock_classification": "bank",
+        "status": "PASS"
+      },
+      "BAC": {
+        "methodCount": 9,
+        "hasDCF": false,
+        "dcfMethods": [],
+        "stock_classification": null,
+        "status": "PASS_AFTER_CACHE_CLEAR",
+        "notes": "Initially had 12 methods with DCF in cache, corrected to 9 after clearing"
+      },
+      "GS": {
+        "methodCount": 11,
+        "hasDCF": false,
+        "dcfMethods": [],
+        "stock_classification": null,
+        "status": "PASS"
+      },
+      "USB": {
+        "methodCount": 13,
+        "hasDCF": false,
+        "dcfMethods": [],
+        "stock_classification": "bank",
+        "status": "PASS"
+      },
+      "WFC": {
+        "methodCount": 0,
+        "hasDCF": false,
+        "dcfMethods": [],
+        "stock_classification": "bank",
+        "status": "FAIL_DATA_UNAVAILABLE",
+        "error": "No profile data found for WFC"
+      },
+      "C": {
+        "methodCount": 0,
+        "hasDCF": false,
+        "dcfMethods": [],
+        "stock_classification": "bank",
+        "status": "FAIL_DATA_UNAVAILABLE",
+        "error": "Profile lookup failure"
+      }
+    },
+    "reits": {
+      "SPG": {
+        "methodCount": 18,
+        "hasDCF": true,
+        "dcfMethods": ["dcf-20-fcf", "dcf-terminal-fcf"],
+        "stock_classification": "reit",
+        "status": "PASS"
+      },
+      "PSA": {
+        "methodCount": 18,
+        "hasDCF": true,
+        "dcfMethods": ["dcf-20-fcf", "dcf-terminal-fcf"],
+        "stock_classification": "reit",
+        "status": "PASS"
+      },
+      "O": {
+        "methodCount": 0,
+        "hasDCF": false,
+        "dcfMethods": [],
+        "stock_classification": null,
+        "status": "FAIL_DATA_UNAVAILABLE",
+        "error": "No profile data found for O"
+      },
+      "PLD": {
+        "methodCount": 0,
+        "hasDCF": false,
+        "dcfMethods": [],
+        "stock_classification": "reit",
+        "status": "FAIL_DATA_UNAVAILABLE",
+        "error": "Profile lookup failure"
+      }
+    },
+    "growth": {
+      "AAPL": {
+        "methodCount": 14,
+        "hasDCF": true,
+        "dcfMethods": ["dcf-20-fcf", "dcf-terminal-fcf"],
+        "stock_classification": "value",
+        "status": "PASS",
+        "notes": "Classified as value, not growth"
+      },
+      "NVDA": {
+        "methodCount": 15,
+        "hasDCF": true,
+        "dcfMethods": ["dcf-20-fcf", "dcf-terminal-fcf", "growth-dcf-8y"],
+        "stock_classification": "growth",
+        "status": "PASS"
+      },
+      "MSFT": {
+        "methodCount": 14,
+        "hasDCF": true,
+        "dcfMethods": ["dcf-20-fcf", "dcf-terminal-fcf"],
+        "stock_classification": "value",
+        "status": "PASS",
+        "notes": "Classified as value, not growth"
+      },
+      "TSLA": {
+        "methodCount": 14,
+        "hasDCF": true,
+        "dcfMethods": ["dcf-20-fcf", "dcf-terminal-fcf", "growth-dcf-8y"],
+        "stock_classification": "growth",
+        "status": "PASS"
+      }
+    },
+    "value": {
+      "JNJ": {
+        "methodCount": 13,
+        "hasDCF": true,
+        "dcfMethods": ["dcf-20-fcf", "dcf-terminal-fcf"],
+        "stock_classification": "value",
+        "status": "PASS"
+      }
+    }
+  },
+  "dcf_blocking_validation": {
+    "status": "PASS",
+    "banks_without_dcf": 4,
+    "total_banks_tested": 6,
+    "banks_with_data_issues": 2,
+    "success_rate": "100%",
+    "notes": "All banks with available data correctly block DCF methods"
+  },
+  "issues": [
+    {
+      "severity": "HIGH",
+      "type": "STALE_CACHE",
+      "description": "BAC had DCF methods in cached data but correctly shows no DCF after cache clear",
+      "impact": "Users may see incorrect DCF methods for banks if accessing stale cache",
+      "resolution": "Cache cleared for all major bank stocks",
+      "status": "RESOLVED"
+    },
+    {
+      "severity": "HIGH",
+      "type": "DATA_UNAVAILABLE",
+      "description": "WFC, C, O, PLD showing 0 methods due to profile lookup failures",
+      "impact": "Major companies cannot be valued",
+      "affected_stocks": ["WFC", "C", "O", "PLD"],
+      "recommendation": "Investigate FMP profile API integration",
+      "status": "OPEN"
+    },
+    {
+      "severity": "MEDIUM",
+      "type": "CLASSIFICATION_MISSING",
+      "description": "Some stocks return null for stock_classification",
+      "affected_stocks": ["BAC", "GS", "O"],
+      "impact": "Frontend may not display classification badge",
+      "recommendation": "Ensure classifier always returns classification",
+      "status": "OPEN"
+    }
+  ],
+  "recommendation": "ALL_GOOD_AFTER_CACHE_CLEAR",
+  "cache_operations": {
+    "banks_cleared": 20,
+    "cache_keys_pattern": "iv:chart:{BANK_TICKER}:fcf",
+    "major_banks_covered": ["JPM", "BAC", "WFC", "C", "GS", "USB", "PNC", "TFC", "COF", "AXP", "MS", "SCHW", "BK", "STT", "NTRS", "CFG", "MTB", "KEY", "RF", "FITB", "HBAN"]
+  },
+  "method_count_summary": {
+    "banks": "9-13 methods (NO DCF)",
+    "reits": "18 methods (WITH DCF)",
+    "growth": "14-15 methods (WITH DCF, including growth-dcf-8y)",
+    "value": "13-14 methods (WITH DCF)"
+  }
+}

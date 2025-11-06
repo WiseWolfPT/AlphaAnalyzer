@@ -1,0 +1,16 @@
+Priority,Method,Category,Stocks_Impacted,Complexity_1_10,Implementation_Hours,Business_Value,Data_Available,Key_Formula,Industry_Standard
+P0,P/TBV,Multiples,500,2,4,Banks standard (GS 1.54x),Yes,Price / ((Equity - Goodwill - Intangibles) / Shares),Goldman Sachs
+P0,FFO,REITs,200,5,4,REIT core metric,Yes,Net Income + D&A - Gains on Sales,NAREIT
+P0,AFFO,REITs,200,5,4,REIT cash available,Yes,FFO - Recurring Capex,NAREIT
+P0,P/FFO,REITs,200,5,4,REIT valuation ratio,Yes,Price / (FFO / Shares),NAREIT
+P0,EV/EBITDA,Universal,3000,3,6,M&A standard,Yes,(Market Cap + Debt - Cash) / EBITDA,Private Equity
+P1,Graham Number,Value,500,1,2,Value investing,Yes,√(22.5 × EPS × BVPS),Benjamin Graham
+P1,DDM,Dividend,400,4,6,Income investors,Yes,Div / (r - g),Gordon Growth
+P1,High-Growth DCF,Growth,200,4,8,Tesla NVIDIA,Yes,DCF with 30%+ growth rates,Hedge Funds
+P2,Forward P/E,All,5000,3,4,Incremental improvement,Yes,Price / Next_Year_EPS,Analyst Standard
+P2,PEG without NRI,Growth,300,3,4,Refinement,Yes,Adjusted P/E / Growth,Refinement
+P2,AFFO Yield,REITs,200,2,2,Dividend equivalent,Yes,(AFFO/Share) / Price,NAREIT
+P2,Dividend Yield,Dividend,1000,1,1,Income metric,Yes,Annual Div / Price,Universal
+P2,ROE,Banks,500,2,2,Profitability,Yes,Net Income / Equity,Banking Standard
+P2,ROA,Banks,500,2,2,Efficiency,Yes,Net Income / Assets,Banking Standard
+P2,Earnings Yield,Value,5000,1,1,Bond alternative,Yes,EPS / Price,Value Standard

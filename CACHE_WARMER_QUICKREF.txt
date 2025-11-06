@@ -1,0 +1,144 @@
+╔════════════════════════════════════════════════════════════════════════════╗
+║                  S&P 100 CACHE WARMER - QUICK REFERENCE                    ║
+╚════════════════════════════════════════════════════════════════════════════╝
+
+┌─ MISSION ──────────────────────────────────────────────────────────────────┐
+│ Boost IV cache hit rate: 42.93% → 75%+                                     │
+│ Increase safe capacity: 525 → 1,200+ concurrent users (+129%)              │
+└────────────────────────────────────────────────────────────────────────────┘
+
+┌─ DEPLOYMENT (10 minutes) ──────────────────────────────────────────────────┐
+│                                                                             │
+│ 1. Upload scripts:                                                          │
+│    scp scripts/cache-warmer-iv-sp100.sh \                                   │
+│        root@128.140.45.28:"/home/teste 1/scripts/"                          │
+│    scp scripts/monitoring/check-iv-cache-hit-rate.sh \                      │
+│        root@128.140.45.28:"/home/teste 1/scripts/monitoring/"               │
+│                                                                             │
+│ 2. Setup on server:                                                         │
+│    ssh root@128.140.45.28                                                   │
+│    cd "/home/teste 1"                                                       │
+│    chmod +x scripts/cache-warmer-iv-sp100.sh                                │
+│    chmod +x scripts/monitoring/check-iv-cache-hit-rate.sh                   │
+│    mkdir -p /var/log/alfalyzer/cache-warmer                                 │
+│                                                                             │
+│ 3. Get API key:                                                             │
+│    grep FMP_API_KEY .env.production                                         │
+│                                                                             │
+│ 4. Add cron job:                                                            │
+│    crontab -e                                                               │
+│    # Add (replace YOUR_KEY):                                                │
+│    */30 4-20 * * 1-5 cd '/home/teste 1' && \                                │
+│      TARGET_URL=https://128.140.45.28.sslip.io \                            │
+│      MARKET_DATA_API_KEY=YOUR_KEY \                                         │
+│      ./scripts/cache-warmer-iv-sp100.sh >> \                                │
+│      /var/log/alfalyzer/cache-warmer/cron.log 2>&1                          │
+│                                                                             │
+│ 5. Manual test:                                                             │
+│    TARGET_URL=https://128.140.45.28.sslip.io \                              │
+│    MARKET_DATA_API_KEY=your_key \                                           │
+│    ./scripts/cache-warmer-iv-sp100.sh                                       │
+│                                                                             │
+└────────────────────────────────────────────────────────────────────────────┘
+
+┌─ MONITORING ───────────────────────────────────────────────────────────────┐
+│                                                                             │
+│ Check cache hit rate:                                                       │
+│   ./scripts/monitoring/check-iv-cache-hit-rate.sh                           │
+│                                                                             │
+│ View warming logs:                                                          │
+│   tail -f /var/log/alfalyzer/cache-warmer/iv-sp100-$(date +%Y%m%d).log     │
+│                                                                             │
+│ Check cron execution:                                                       │
+│   tail -f /var/log/alfalyzer/cache-warmer/cron.log                          │
+│                                                                             │
+│ Count cached stocks:                                                        │
+│   redis-cli -a alfalyzer2025redis --no-auth-warning \                       │
+│     KEYS 'iv:chart:*' | wc -l                                               │
+│                                                                             │
+└────────────────────────────────────────────────────────────────────────────┘
+
+┌─ SUCCESS CRITERIA (T+24h) ─────────────────────────────────────────────────┐
+│                                                                             │
+│ ✓ Hit rate: ≥75%                                                            │
+│ ✓ Cached stocks: ≥100                                                       │
+│ ✓ Estimated capacity: ≥1,200 users                                          │
+│ ✓ Failure rate: <5% per cycle                                               │
+│                                                                             │
+└────────────────────────────────────────────────────────────────────────────┘
+
+┌─ TROUBLESHOOTING ──────────────────────────────────────────────────────────┐
+│                                                                             │
+│ High failure rate (>10 failures):                                           │
+│   1. grep FMP_API_KEY "/home/teste 1/.env.production"                       │
+│   2. curl -H "X-API-Key: key" \                                             │
+│        "https://128.140.45.28.sslip.io/api/iv/AAPL/chart"                   │
+│   3. pm2 logs alfalyzer --lines 50                                          │
+│                                                                             │
+│ Low hit rate (<60% after 24h):                                              │
+│   1. redis-cli -a alfalyzer2025redis --no-auth-warning \                    │
+│        KEYS 'iv:chart:*' | wc -l                                            │
+│   2. grep "failed" /var/log/alfalyzer/cache-warmer/iv-sp100-*.log           │
+│   3. grep cache-warmer /var/log/alfalyzer/cache-warmer/cron.log             │
+│                                                                             │
+│ Cron not running:                                                           │
+│   1. crontab -l | grep cache-warmer                                         │
+│   2. systemctl status cron                                                  │
+│   3. Test manual: ./scripts/cache-warmer-iv-sp100.sh                        │
+│                                                                             │
+└────────────────────────────────────────────────────────────────────────────┘
+
+┌─ ROLLBACK ─────────────────────────────────────────────────────────────────┐
+│                                                                             │
+│ Disable warming:                                                            │
+│   crontab -e                                                                │
+│   # Add # before cache-warmer line                                          │
+│                                                                             │
+│ Clear cache (optional):                                                     │
+│   redis-cli -a alfalyzer2025redis --no-auth-warning \                       │
+│     EVAL "return redis.call('del', \                                        │
+│       unpack(redis.call('keys', 'iv:chart:*')))" 0                          │
+│                                                                             │
+└────────────────────────────────────────────────────────────────────────────┘
+
+┌─ PERFORMANCE METRICS ──────────────────────────────────────────────────────┐
+│                                                                             │
+│ Stocks warmed: 100 (S&P 100)                                                │
+│ Frequency: Every 30 min (4-20 ET, Mon-Fri)                                  │
+│ Duration: ~50 seconds per cycle                                             │
+│ API calls: ~100 per cycle, 1,700 daily                                      │
+│ FMP usage: 0.5% of daily limit                                              │
+│ Cache TTL: 24 hours                                                         │
+│ Memory: 5-10 MB                                                             │
+│                                                                             │
+└────────────────────────────────────────────────────────────────────────────┘
+
+┌─ FILES CREATED ────────────────────────────────────────────────────────────┐
+│                                                                             │
+│ Scripts:                                                                    │
+│   /scripts/cache-warmer-iv-sp100.sh (2.6 KB)                                │
+│   /scripts/monitoring/check-iv-cache-hit-rate.sh (2.6 KB)                   │
+│   /scripts/cache-warmer/validate-warmer.sh (4.2 KB)                         │
+│                                                                             │
+│ Documentation:                                                              │
+│   /docs/CACHE_WARMER_DEPLOYMENT.md (12 KB)                                  │
+│   /DEPLOY_CACHE_WARMER.md (5 KB)                                            │
+│   /CACHE_WARMER_SUMMARY.md (15 KB)                                          │
+│   /CACHE_WARMER_QUICKREF.txt (this file)                                    │
+│                                                                             │
+└────────────────────────────────────────────────────────────────────────────┘
+
+┌─ TIMELINE ─────────────────────────────────────────────────────────────────┐
+│                                                                             │
+│ T+0h    Deploy scripts + configure cron                                     │
+│ T+0.5h  First warming cycle (100 stocks cached)                             │
+│ T+1h    Hit rate starts improving (~50%)                                    │
+│ T+6h    Hit rate reaches 60%+                                               │
+│ T+24h   Hit rate stabilizes at 75%+ ✅                                       │
+│ T+48h   Validate sustained performance                                      │
+│                                                                             │
+└────────────────────────────────────────────────────────────────────────────┘
+
+═══════════════════════════════════════════════════════════════════════════════
+Created: 2025-10-23  │  Version: 1.0  │  Status: Production Ready
+═══════════════════════════════════════════════════════════════════════════════

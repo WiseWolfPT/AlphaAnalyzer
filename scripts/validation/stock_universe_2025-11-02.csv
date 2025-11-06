@@ -1,0 +1,1494 @@
+symbol,company_name,exchange,sector,industry,type,can_calculate_iv
+0A7O.L,MicroStrategy Incorporated,LSE,N/A,N/A,LSE,MAYBE
+0A8E.L,Xeris Biopharma Holdings  Inc.,LSE,N/A,N/A,LSE,MAYBE
+0ELV.L,Guerbet S.A.,LSE,N/A,N/A,LSE,MAYBE
+0G5B.L,Sto SE & Co. KGaA,LSE,N/A,N/A,LSE,MAYBE
+0G68.L,Kendrion N.V.,LSE,N/A,N/A,LSE,MAYBE
+0GOX.L,Polytec Holding AG,LSE,N/A,N/A,LSE,MAYBE
+0H8T.L,Aclaris Therapeutics  Inc.,LSE,N/A,N/A,LSE,MAYBE
+0HC7.L,Albemarle Corporation,LSE,N/A,N/A,LSE,MAYBE
+0HCH.L,Alexandria Real Estate Equities  Inc.,LSE,N/A,N/A,LSE,MAYBE
+0HCT.L,Alliant Energy Corporation,LSE,N/A,N/A,LSE,MAYBE
+0HDK.L,Systemair AB (publ),LSE,N/A,N/A,LSE,MAYBE
+0HF7.L,AMETEK  Inc.,LSE,N/A,N/A,LSE,MAYBE
+0HFB.L,Amphenol Corporation,LSE,N/A,N/A,LSE,MAYBE
+0HJI.L,Automatic Data Processing  Inc.,LSE,N/A,N/A,LSE,MAYBE
+0HJL.L,AutoZone  Inc.,LSE,N/A,N/A,LSE,MAYBE
+0HKD.L,AxoGen  Inc.,LSE,N/A,N/A,LSE,MAYBE
+0HMG.L,Beazer Homes USA  Inc.,LSE,N/A,N/A,LSE,MAYBE
+0HQ7.L,The Buckle  Inc.,LSE,N/A,N/A,LSE,MAYBE
+0HQU.L,CF Industries Holdings  Inc.,LSE,N/A,N/A,LSE,MAYBE
+0HQW.L,C.H. Robinson Worldwide  Inc.,LSE,N/A,N/A,LSE,MAYBE
+0HVB.L,Centene Corporation,LSE,N/A,N/A,LSE,MAYBE
+0HW0.L,Kongsberg Automotive ASA,LSE,N/A,N/A,LSE,MAYBE
+0IIW.L,Etsy  Inc.,LSE,N/A,N/A,LSE,MAYBE
+0IMT.L,Photocure ASA,LSE,N/A,N/A,LSE,MAYBE
+0IUC.L,General Dynamics Corporation,LSE,N/A,N/A,LSE,MAYBE
+0IYU.L,Golden Minerals Company,LSE,N/A,N/A,LSE,MAYBE
+0J0N.L,Green Dot Corporation,LSE,N/A,N/A,LSE,MAYBE
+0J38.L,Harmonic Inc.,LSE,N/A,N/A,LSE,MAYBE
+0J3K.L,Hasbro  Inc.,LSE,N/A,N/A,LSE,MAYBE
+0J4V.L,Heron Therapeutics  Inc.,LSE,N/A,N/A,LSE,MAYBE
+0JG5.L,Bittium Oyj,LSE,N/A,N/A,LSE,MAYBE
+0JSU.L,Sipef N.V.,LSE,N/A,N/A,LSE,MAYBE
+0JU0.L,Lennar Corporation,LSE,N/A,N/A,LSE,MAYBE
+0JV3.L,Lincoln National Corporation,LSE,N/A,N/A,LSE,MAYBE
+0JZ1.L,Masco Corporation,LSE,N/A,N/A,LSE,MAYBE
+0K2F.L,Mohawk Industries  Inc.,LSE,N/A,N/A,LSE,MAYBE
+0KAK.L,Occidental Petroleum Corporation,LSE,N/A,N/A,LSE,MAYBE
+0KE0.L,PBF Energy Inc.,LSE,N/A,N/A,LSE,MAYBE
+0KEZ.L,Packaging Corporation of America,LSE,N/A,N/A,LSE,MAYBE
+0KO5.L,Principal Financial Group  Inc.,LSE,N/A,N/A,LSE,MAYBE
+0KTI.L,Enbridge Inc.,LSE,N/A,N/A,LSE,MAYBE
+0KTW.L,Range Resources Corporation,LSE,N/A,N/A,LSE,MAYBE
+0L3I.L,The Charles Schwab Corporation,LSE,N/A,N/A,LSE,MAYBE
+0LCX.L,Take-Two Interactive Software  Inc.,LSE,N/A,N/A,LSE,MAYBE
+0LEC.L,Cardlytics  Inc.,LSE,N/A,N/A,LSE,MAYBE
+0LHX.L,U.S. Global Investors  Inc.,LSE,N/A,N/A,LSE,MAYBE
+0LK6.L,Valero Energy Corporation,LSE,N/A,N/A,LSE,MAYBE
+0M30.L,Yum China Holdings  Inc.,LSE,N/A,N/A,LSE,MAYBE
+0MT8.L,Drägerwerk AG & Co. KGaA,LSE,N/A,N/A,LSE,MAYBE
+0NFS.L,Esprinet S.p.A.,LSE,N/A,N/A,LSE,MAYBE
+0OCQ.L,Transgene S.A.,LSE,N/A,N/A,LSE,MAYBE
+0Q76.L,CBo Territoria S.A.,LSE,N/A,N/A,LSE,MAYBE
+0QHK.L,SeSa S.p.A.,LSE,N/A,N/A,LSE,MAYBE
+0QIH.L,Grupo Ezentis  S.A.,LSE,N/A,N/A,LSE,MAYBE
+0QKP.L,Phoenix Mecano AG,LSE,N/A,N/A,LSE,MAYBE
+0QM6.L,Orior AG,LSE,N/A,N/A,LSE,MAYBE
+0QOH.L,naturenergie holding AG,LSE,N/A,N/A,LSE,MAYBE
+0QQF.L,Mikron Holding AG,LSE,N/A,N/A,LSE,MAYBE
+0QVW.L,Ateme S.A.,LSE,N/A,N/A,LSE,MAYBE
+0QZP.L,Bombardier Inc.,LSE,N/A,N/A,LSE,MAYBE
+0R1D.L,Sangamo Therapeutics  Inc.,LSE,N/A,N/A,LSE,MAYBE
+0R3M.L,Vivoryon Therapeutics N.V.,LSE,N/A,N/A,LSE,MAYBE
+0RDB.L,Oryzon Genomics S.A.,LSE,N/A,N/A,LSE,MAYBE
+0REW.L,Züblin Immobilien Holding AG,LSE,N/A,N/A,LSE,MAYBE
+0RP4.L,Italmobiliare S.p.A.,LSE,N/A,N/A,LSE,MAYBE
+0RPW.L,Janus Henderson Group plc,LSE,N/A,N/A,LSE,MAYBE
+0RUM.L,Allgeier SE,LSE,N/A,N/A,LSE,MAYBE
+0T9J.L,Orex Minerals Inc.,LSE,N/A,N/A,LSE,MAYBE
+0THK.L,Silver One Resources Inc.,LSE,N/A,N/A,LSE,MAYBE
+0UYS.L,GoviEx Uranium Inc.,LSE,N/A,N/A,LSE,MAYBE
+0V46.L,Liberty Gold Corp.,LSE,N/A,N/A,LSE,MAYBE
+0VCO.L,Peyto Exploration & Development Corp.,LSE,N/A,N/A,LSE,MAYBE
+0YB1.L,HUYA Inc.,LSE,N/A,N/A,LSE,MAYBE
+0YC0.L,Unity Biotechnology  Inc.,LSE,N/A,N/A,LSE,MAYBE
+0YG7.L,Beijer Alma AB (publ),LSE,N/A,N/A,LSE,MAYBE
+1COV.DE,Covestro AG,XETRA,N/A,N/A,COMMON,YES
+1ET.F,Prospector Metals Corp.,XETRA,N/A,N/A,COMMON,YES
+1SXP.F,SCHOTT Pharma AG & Co. KGaA,XETRA,N/A,N/A,COMMON,YES
+2BU.F,Bumitama Agri Ltd.,XETRA,N/A,N/A,COMMON,YES
+2LYA.F,High Tide Inc.,XETRA,N/A,N/A,COMMON,YES
+2RR.F,Alibaba Group Holding Limited,XETRA,N/A,N/A,COMMON,YES
+2VSA.F,Verastem  Inc.,XETRA,N/A,N/A,COMMON,YES
+2ZR.F,Braveheart Resources Inc.,XETRA,N/A,N/A,COMMON,YES
+3CP.F,Xiaomi Corporation,XETRA,N/A,N/A,COMMON,YES
+3LN.DE,Live Nation Entertainment Inc,XETRA,N/A,N/A,COMMON,YES
+450.L,450 Plc,LSE,N/A,N/A,LSE,MAYBE
+47T.F,TISCO Financial Group Public Company Limited,XETRA,N/A,N/A,COMMON,YES
+49GP.L,Croda International Plc,LSE,N/A,N/A,LSE,MAYBE
+4OQ1.F,AGNC Investment Corp.,XETRA,N/A,N/A,COMMON,YES
+4PN.DE,Carrier Global Corporation,XETRA,N/A,N/A,COMMON,YES
+5CV.DE,CureVac N.V.,XETRA,N/A,N/A,COMMON,YES
+5CV.F,CureVac N.V.,XETRA,N/A,N/A,COMMON,YES
+5G7.F,KB Components AB (publ),XETRA,N/A,N/A,COMMON,YES
+5Y7A.F,SCG Packaging Public Company Limited,XETRA,N/A,N/A,COMMON,YES
+5ZM.F,Zoom Communications Inc.,XETRA,N/A,N/A,COMMON,YES
+68V.DE,Baker Hughes Company,XETRA,N/A,N/A,COMMON,YES
+6N5.F,Cibus Nordic Real Estate AB (publ),XETRA,N/A,N/A,COMMON,YES
+7111.F,BIGG Digital Assets Inc.,XETRA,N/A,N/A,COMMON,YES
+7BP.F,Bangchak Corporation Public Company Limited,XETRA,N/A,N/A,COMMON,YES
+7F8.F,PTT Oil and Retail Business Public Company Limited,XETRA,N/A,N/A,COMMON,YES
+8GM.DE,General Motors Company,XETRA,N/A,N/A,COMMON,YES
+9KF.F,Midsona AB (publ),XETRA,N/A,N/A,COMMON,YES
+A,Agilent Technologies,N/A,Healthcare,N/A,COMMON,YES
+A6T.DE,artec technologies AG,XETRA,N/A,N/A,COMMON,YES
+AAG.DE,Aumann AG,XETRA,N/A,N/A,COMMON,YES
+AALB.AS,Aalberts N.V.,EURONEXT,N/A,N/A,COMMON,YES
+AAPL,Apple Inc.,NASDAQ,Technology,Consumer Electronics,COMMON,YES
+ABBV,AbbVie,N/A,Healthcare,N/A,COMMON,YES
+ABN.AS,ABN AMRO Bank N.V.,EURONEXT,N/A,N/A,COMMON,YES
+ABNB,Airbnb,N/A,Consumer Cyclical,N/A,COMMON,YES
+ABO.BR,ABO-Group Environment N.V.,EURONEXT,N/A,N/A,COMMON,YES
+ABT,Abbott Laboratories,N/A,Healthcare,N/A,COMMON,YES
+ABVX.PA,Abivax S.A.,EURONEXT,N/A,N/A,COMMON,YES
+ABX.DE,Advanced Blockchain AG,XETRA,N/A,N/A,COMMON,YES
+ACAN.PA,Acanthe Développement,EURONEXT,N/A,N/A,COMMON,YES
+ACCB.BR,Accentis N.V.,EURONEXT,N/A,N/A,COMMON,YES
+ACGL,Arch Capital Group,N/A,Financial Services,N/A,COMMON,YES
+ACKB.BR,Ackermans & Van Haaren N.V.,EURONEXT,N/A,N/A,COMMON,YES
+ACN,Accenture,N/A,Technology,N/A,COMMON,YES
+ACOMO.AS,Acomo N.V.,EURONEXT,N/A,N/A,COMMON,YES
+ACR.F,Accor S.A.,XETRA,N/A,N/A,COMMON,YES
+ACU,Acme United Corporation,AMEX,N/A,N/A,COMMON,YES
+ACX.MC,Acerinox  S.A.,BME,N/A,N/A,COMMON,YES
+AD.AS,Koninklijke Ahold Delhaize N.V.,EURONEXT,N/A,N/A,COMMON,YES
+ADBE,Adobe Inc.,NASDAQ,Technology,Software,COMMON,YES
+ADI,Analog Devices,N/A,Technology,N/A,COMMON,YES
+ADM,Archer Daniels Midland,N/A,Consumer Defensive,N/A,COMMON,YES
+ADP,ADP,N/A,Industrials,N/A,COMMON,YES
+ADP.PA,Aeroports de Paris S.A.,EURONEXT,N/A,N/A,COMMON,YES
+ADSK,Autodesk,N/A,Technology,N/A,COMMON,YES
+ADYEN.AS,Adyen N.V.,EURONEXT,N/A,N/A,COMMON,YES
+ADZ.MC,Adolfo Domínguez  S.A.,BME,N/A,N/A,COMMON,YES
+AED.BR,Aedifica S.A.,EURONEXT,N/A,N/A,COMMON,YES
+AEE,Ameren,N/A,Utilities,N/A,COMMON,YES
+AEP,American Electric Power,N/A,Utilities,N/A,COMMON,YES
+AES,AES Corporation,N/A,Utilities,N/A,COMMON,YES
+AFL,Aflac,N/A,Financial Services,N/A,COMMON,YES
+AFRM,Affirm Holdings Inc.,NASDAQ,Financials,BNPL,COMMON,YES
+AGFB.BR,Agfa-Gevaert N.V.,EURONEXT,N/A,N/A,COMMON,YES
+AGIL.MC,Agile Content  S.A.,BME,N/A,N/A,COMMON,YES
+AGN.AS,Aegon N.V.,EURONEXT,N/A,N/A,COMMON,YES
+AGS.BR,ageas SA/NV,EURONEXT,N/A,N/A,COMMON,YES
+AHLA.DE,Alibaba Group Holding Limited,XETRA,N/A,N/A,COMMON,YES
+AIEA.L,AIREA plc,LSE,N/A,N/A,LSE,MAYBE
+AIG,American International Group,N/A,Financial Services,N/A,COMMON,YES
+AIM,AIM ImmunoTech Inc.,AMEX,N/A,N/A,COMMON,YES
+AIR,Airbus SE,EURONEXT,Industrials,Aerospace & Defense,COMMON,YES
+AIRI,Air Industries Group,AMEX,N/A,N/A,COMMON,YES
+AIZ,Assurant,N/A,Financial Services,N/A,COMMON,YES
+AJAX.AS,AFC Ajax N.V.,EURONEXT,N/A,N/A,COMMON,YES
+AJG,Arthur J. Gallagher & Co.,N/A,Financial Services,N/A,COMMON,YES
+AKAM,Akamai Technologies,N/A,Technology,N/A,COMMON,YES
+AKZA.AS,Akzo Nobel N.V.,EURONEXT,N/A,N/A,COMMON,YES
+AL2SI.PA,2CRSI S.a.,EURONEXT,N/A,N/A,COMMON,YES
+ALADO.PA,Adomos S.A.,EURONEXT,N/A,N/A,COMMON,YES
+ALAMA.PA,AMA Corporation Plc,EURONEXT,N/A,N/A,COMMON,YES
+ALB,Albemarle Corporation,N/A,Basic Materials,N/A,COMMON,YES
+ALBLD.PA,Bilendi S.A.,EURONEXT,N/A,N/A,COMMON,YES
+ALBON.PA,Compagnie Lebon,EURONEXT,N/A,N/A,COMMON,YES
+ALBOO.PA,Boostheat S.A.,EURONEXT,N/A,N/A,COMMON,YES
+ALC.MC,Altia Consultores  S.A.,BME,N/A,N/A,COMMON,YES
+ALCOF.PA,Cofidur S.A.,EURONEXT,N/A,N/A,COMMON,YES
+ALCOI.PA,Coil S.A./N.V.,EURONEXT,N/A,N/A,COMMON,YES
+ALDUB.PA,Encres Dubuit,EURONEXT,N/A,N/A,COMMON,YES
+ALDVI.PA,Advicenne S.A.,EURONEXT,N/A,N/A,COMMON,YES
+ALEAC.PA,EdiliziAcrobatica S.p.A.,EURONEXT,N/A,N/A,COMMON,YES
+ALECR.PA,Eurofins-Cerep S.A.,EURONEXT,N/A,N/A,COMMON,YES
+ALEMS.BR,European Medical Solutions,EURONEXT,N/A,N/A,COMMON,YES
+ALEMV.PA,Emova Group S.A.,EURONEXT,N/A,N/A,COMMON,YES
+ALFEN.AS,Alfen N.V.,EURONEXT,N/A,N/A,COMMON,YES
+ALFLE.PA,Fleury Michon S.A.,EURONEXT,N/A,N/A,COMMON,YES
+ALFLO.PA,SAS Florentaise,EURONEXT,N/A,N/A,COMMON,YES
+ALGAE.PA,Fermentalg,EURONEXT,N/A,N/A,COMMON,YES
+ALGBE.PA,Global Bioenergies S.A.,EURONEXT,N/A,N/A,COMMON,YES
+ALGIR.PA,Signaux Girod S.A.,EURONEXT,N/A,N/A,COMMON,YES
+ALGN,Align Technology,N/A,Healthcare,N/A,COMMON,YES
+ALHG.PA,Louis Hachette Group S.A.,EURONEXT,N/A,N/A,COMMON,YES
+ALHOP.PA,Hopscotch Global PR Group,EURONEXT,N/A,N/A,COMMON,YES
+ALIMO.PA,Groupimo S.A.,EURONEXT,N/A,N/A,COMMON,YES
+ALINT.PA,IntegraGen S.A.,EURONEXT,N/A,N/A,COMMON,YES
+ALKEY.PA,Keyrus S.A.,EURONEXT,N/A,N/A,COMMON,YES
+ALKLA.PA,Klarsen,EURONEXT,N/A,N/A,COMMON,YES
+ALL,Allstate,N/A,Financial Services,N/A,COMMON,YES
+ALLAN.PA,Lanson-BCC,EURONEXT,N/A,N/A,COMMON,YES
+ALLE,Allegion,N/A,Industrials,N/A,COMMON,YES
+ALLFG.AS,Allfunds Group plc,EURONEXT,N/A,N/A,COMMON,YES
+ALLLN.PA,LleidaNetworks Serveis Telemàtics  S.A.,EURONEXT,N/A,N/A,COMMON,YES
+ALMDT.PA,Median Technologies S.A.,EURONEXT,N/A,N/A,COMMON,YES
+ALMER.PA,Sapmer S.A.,EURONEXT,N/A,N/A,COMMON,YES
+ALMOU.PA,Moulinvest S.A.,EURONEXT,N/A,N/A,COMMON,YES
+ALODC.PA,Omer-Decugis & Cie S.A.,EURONEXT,N/A,N/A,COMMON,YES
+ALO.PA,Alstom S.A.,EURONEXT,N/A,N/A,COMMON,YES
+ALORA.PA,Altheora S.A.,EURONEXT,N/A,N/A,COMMON,YES
+ALPAT.PA,Plant Advanced Technologies S.A.,EURONEXT,N/A,N/A,COMMON,YES
+ALPJT.PA,Poujoulat S.A.,EURONEXT,N/A,N/A,COMMON,YES
+ALPRI.PA,Prismaflex International  S.A.,EURONEXT,N/A,N/A,COMMON,YES
+ALQ.MC,Alquiber Quality  S.A.,BME,N/A,N/A,COMMON,YES
+ALREA.PA,Réalités,EURONEXT,N/A,N/A,COMMON,YES
+ALREW.PA,Reworld Media S.A.,EURONEXT,N/A,N/A,COMMON,YES
+ALSEN.PA,Sensorion S.A.,EURONEXT,N/A,N/A,COMMON,YES
+ALTA.PA,Altarea SCA,EURONEXT,N/A,N/A,COMMON,YES
+ALTRI.PA,Trilogiq S.A.,EURONEXT,N/A,N/A,COMMON,YES
+ALTR.LS,Altri  SGPS  S.A.,EURONEXT,N/A,N/A,PT_STOCK,YES
+ALTUV.PA,BIO-UV Group S.A.,EURONEXT,N/A,N/A,COMMON,YES
+ALTXC.PA,TXCOM Group,EURONEXT,N/A,N/A,COMMON,YES
+ALVG.PA,VEOM Group,EURONEXT,N/A,N/A,COMMON,YES
+ALVIO.PA,Valerio Therapeutics S.A.,EURONEXT,N/A,N/A,COMMON,YES
+AMAT,Applied Materials,N/A,Technology,N/A,COMMON,YES
+AMBI,Ambipar Emergency Response,AMEX,N/A,N/A,COMMON,YES
+AMBO,Ambow Education Holding Ltd.,AMEX,N/A,N/A,COMMON,YES
+AMCR,Amcor,N/A,Consumer Cyclical,N/A,COMMON,YES
+AMD,Advanced Micro Devices Inc.,N/A,Technology,N/A,COMMON,YES
+AME,Ametek,N/A,Industrials,N/A,COMMON,YES
+AMG.AS,AMG Critical Materials N.V.,EURONEXT,N/A,N/A,COMMON,YES
+AMGN,Amgen Inc.,N/A,Healthcare,N/A,COMMON,YES
+AMI.F,medondo holding AG,XETRA,N/A,N/A,COMMON,YES
+AMP,Ameriprise Financial,N/A,Financial Services,N/A,COMMON,YES
+AMP.MC,Amper  S.A.,BME,N/A,N/A,COMMON,YES
+AMS,American Shared Hospital Services,AMEX,N/A,N/A,COMMON,YES
+AMS.MC,Amadeus IT Group  S.A.,BME,N/A,N/A,COMMON,YES
+AMT,American Tower,N/A,Real Estate,N/A,REIT,SPECIAL
+AMUND.AS,Almunda Professionals N.V.,EURONEXT,N/A,N/A,COMMON,YES
+AMZN,Amazon.com Inc.,NASDAQ,Consumer Discretionary,Internet Retail,COMMON,YES
+ANA.MC,Acciona  S.A.,BME,N/A,N/A,COMMON,YES
+ANE.MC,Corporación Acciona Energías Renovables  S.A.,BME,N/A,N/A,COMMON,YES
+ANET,Arista Networks,N/A,Technology,N/A,COMMON,YES
+ANSS,Ansys,N/A,Technology,N/A,COMMON,YES
+AOMD.DE,Alstom S.A.,XETRA,N/A,N/A,COMMON,YES
+AON,Aon,N/A,Financial Services,N/A,COMMON,YES
+AOS,A. O. Smith,N/A,Industrials,N/A,COMMON,YES
+APA,APA Corporation,N/A,Energy,N/A,COMMON,YES
+APAM.AS,Aperam S.A.,EURONEXT,N/A,N/A,COMMON,YES
+APD,Air Products,N/A,Basic Materials,N/A,COMMON,YES
+APH,Amphenol,N/A,Technology,N/A,COMMON,YES
+APO,Apollo Global Management,N/A,Financial Services,N/A,COMMON,YES
+APP,Applovin Corp,N/A,Technology,N/A,COMMON,YES
+APT,Alpha Pro Tech  Ltd.,AMEX,N/A,N/A,COMMON,YES
+APTD.L,Aptitude Software Group plc,LSE,N/A,N/A,LSE,MAYBE
+APTV,Aptiv,N/A,Consumer Cyclical,N/A,COMMON,YES
+ARCAD.AS,Arcadis N.V.,EURONEXT,N/A,N/A,COMMON,YES
+ARE,Alexandria Real Estate Equities,N/A,Real Estate,N/A,REIT,SPECIAL
+AREN,The Arena Group Holdings  Inc.,AMEX,N/A,N/A,COMMON,YES
+ARGX.BR,argenx SE,EURONEXT,N/A,N/A,COMMON,YES
+ARM,Arm Holdings,N/A,Technology,N/A,COMMON,YES
+ARM.MC,Árima Real Estate SOCIMI  S.A.,BME,N/A,N/A,COMMON,YES
+ARMN,Aris Mining Corporation,AMEX,N/A,N/A,COMMON,YES
+ARMP,Armata Pharmaceuticals  Inc.,AMEX,N/A,N/A,COMMON,YES
+ART.MC,Arteche Lantegi Elkartea  S.A.,BME,N/A,N/A,COMMON,YES
+ASCE.BR,Ascencio S.A.,EURONEXT,N/A,N/A,COMMON,YES
+ASG.DE,Assicurazioni Generali S.p.A.,XETRA,N/A,N/A,COMMON,YES
+ASHM.L,Ashmore Group PLC,LSE,N/A,N/A,LSE,MAYBE
+ASM,Avino Silver & Gold Mines Ltd.,AMEX,N/A,N/A,COMMON,YES
+ASM.AS,ASM International N.V.,EURONEXT,N/A,N/A,COMMON,YES
+ASML,ASML Holding,NASDAQ,Technology,Semiconductor Equipment,COMMON,YES
+ASML.AS,ASML Holding N.V.,EURONEXT,N/A,N/A,COMMON,YES
+ASRNL.AS,ASR Nederland N.V.,EURONEXT,N/A,N/A,COMMON,YES
+ASY.L,Andrews Sykes Group plc,LSE,N/A,N/A,LSE,MAYBE
+ATCH,AtlasClear Holdings  Inc.,AMEX,N/A,N/A,COMMON,YES
+ATEB.BR,Atenor S.A.,EURONEXT,N/A,N/A,COMMON,YES
+ATNM,Actinium Pharmaceuticals  Inc.,AMEX,N/A,N/A,COMMON,YES
+ATO,Atmos Energy,N/A,Utilities,N/A,COMMON,YES
+ATO.PA,Atos SE,EURONEXT,N/A,N/A,COMMON,YES
+AUD.DE,Autodesk  Inc.,XETRA,N/A,N/A,COMMON,YES
+AUS.DE,AT & S Austria Technologie & Systemtechnik AG,XETRA,N/A,N/A,COMMON,YES
+AUST,Austin Gold Corp.,AMEX,N/A,N/A,COMMON,YES
+AVB,AvalonBay Communities,N/A,Real Estate,N/A,REIT,SPECIAL
+AVGO,Broadcom Inc.,N/A,Technology,N/A,COMMON,YES
+AVTX.AS,Avantium N.V.,EURONEXT,N/A,N/A,COMMON,YES
+AVY,Avery Dennison,N/A,Industrials,N/A,COMMON,YES
+AWK,American Water Works,N/A,Utilities,N/A,COMMON,YES
+AWX,Avalon Holdings Corporation,AMEX,N/A,N/A,COMMON,YES
+AXIL,AXIL Brands  Inc.,AMEX,N/A,N/A,COMMON,YES
+AXON,Axon Enterprise Inc.,N/A,Industrials,N/A,COMMON,YES
+AXP,American Express Company,N/A,Financial Services,N/A,COMMON,YES
+AXS.AS,Accsys Technologies PLC,EURONEXT,N/A,N/A,COMMON,YES
+AZE.BR,Azelis Group N.V.,EURONEXT,N/A,N/A,COMMON,YES
+AZN,AstraZeneca plc,LSE,Health Care,Pharmaceuticals,COMMON,YES
+AZO,AutoZone,N/A,Consumer Cyclical,N/A,COMMON,YES
+AZRN.AS,Azerion Group N.V.,EURONEXT,N/A,N/A,COMMON,YES
+AZTR,Azitra  Inc.,AMEX,N/A,N/A,COMMON,YES
+BA,The Boeing Company,N/A,Industrials,N/A,COMMON,YES
+BABA,Alibaba Group,NYSE,Consumer Discretionary,Internet Retail,COMMON,YES
+BAC,Bank of America,N/A,Financial Services,N/A,COMMON,YES
+BALL,Ball Corporation,N/A,Consumer Cyclical,N/A,COMMON,YES
+BAMNB.AS,Koninklijke BAM Groep nv,EURONEXT,N/A,N/A,COMMON,YES
+BANI.BR,Banimmo S.A.,EURONEXT,N/A,N/A,COMMON,YES
+BAR.BR,Barco N.V.,EURONEXT,N/A,N/A,COMMON,YES
+BATL,Battalion Oil Corporation,AMEX,N/A,N/A,COMMON,YES
+BAX,Baxter International,N/A,Healthcare,N/A,COMMON,YES
+BBY,Best Buy,N/A,Consumer Cyclical,N/A,COMMON,YES
+BC8.DE,Bechtle AG,XETRA,N/A,N/A,COMMON,YES
+BCOR,Grayscale Bitcoin Adopters ETF,AMEX,N/A,N/A,ETF,NO
+BCP.LS,Banco Comercial Português  S.A.,EURONEXT,N/A,N/A,PT_STOCK,YES
+BCY.DE,Barclays PLC,XETRA,N/A,N/A,COMMON,YES
+BDL,Flanigan's Enterprises  Inc.,AMEX,N/A,N/A,COMMON,YES
+BDX,Becton Dickinson,N/A,Healthcare,N/A,COMMON,YES
+BE0941243520.BR,Aliaxis SA,EURONEXT,N/A,N/A,COMMON,YES
+BEKB.BR,N.V. Bekaert S.A.,EURONEXT,N/A,N/A,COMMON,YES
+BELYS.BR,Belysse Group N.V.,EURONEXT,N/A,N/A,COMMON,YES
+BEM.L,Beowulf Mining plc,LSE,N/A,N/A,LSE,MAYBE
+BEN,Franklin Resources,N/A,Financial Services,N/A,COMMON,YES
+BESI.AS,BE Semiconductor Industries N.V.,EURONEXT,N/A,N/A,COMMON,YES
+BEVER.AS,Bever Holding N.V.,EURONEXT,N/A,N/A,COMMON,YES
+BEZ.L,Beazley plc,LSE,N/A,N/A,LSE,MAYBE
+BF-B,Brown–Forman,N/A,Consumer Defensive,N/A,COMMON,YES
+BG,Bunge Global,N/A,Consumer Defensive,N/A,COMMON,YES
+BGI,Birks Group Inc.,AMEX,N/A,N/A,COMMON,YES
+BHB,Bar Harbor Bankshares,AMEX,N/A,N/A,COMMON,YES
+BHL.L,Bradda Head Lithium Limited,LSE,N/A,N/A,LSE,MAYBE
+BHM,Bluerock Homes Trust  Inc.,AMEX,N/A,N/A,COMMON,YES
+BIDU,Baidu,NASDAQ,Communication Services,Internet Content,COMMON,YES
+BIIB,Biogen,N/A,Healthcare,N/A,COMMON,YES
+BIOS.BR,BioSenic S.A.,EURONEXT,N/A,N/A,COMMON,YES
+BIPS.L,Invesco Bond Income Plus Limited,LSE,N/A,N/A,LSE,MAYBE
+BIRG.DE,Bank of Ireland Group plc,XETRA,N/A,N/A,COMMON,YES
+BK,BNY Mellon,N/A,Financial Services,N/A,COMMON,YES
+BKNG,Booking Holdings,N/A,Consumer Cyclical,N/A,COMMON,YES
+BKR,Baker Hughes,N/A,Energy,N/A,COMMON,YES
+BKTI,BK Technologies Corporation,AMEX,N/A,N/A,COMMON,YES
+BLDR,Builders FirstSource,N/A,Industrials,N/A,COMMON,YES
+BLK,BlackRock,N/A,Financial Services,N/A,COMMON,YES
+BMNR,Bitmine Immersion Technologies  Inc.,AMEX,N/A,N/A,COMMON,YES
+BMW,Bayerische Motoren Werke AG,XETRA,Consumer Discretionary,Automotive,COMMON,YES
+BMW.DE,Bayerische Motoren Werke AG,XETRA,N/A,N/A,COMMON,YES
+BMY,Bristol Myers Squibb,N/A,Healthcare,N/A,COMMON,YES
+BNB.BR,Banque nationale de Belgique S.A.,EURONEXT,N/A,N/A,COMMON,YES
+BNJ.AS,Banijay Group N.V.,EURONEXT,N/A,N/A,COMMON,YES
+BNN.DE,BRAIN Biotech AG,XETRA,N/A,N/A,COMMON,YES
+BNR.DE,Brenntag SE,XETRA,N/A,N/A,COMMON,YES
+BON.PA,Bonduelle SCA,EURONEXT,N/A,N/A,COMMON,YES
+BOOT.L,Henry Boot PLC,LSE,N/A,N/A,LSE,MAYBE
+BOSS.DE,Hugo Boss AG,XETRA,N/A,N/A,COMMON,YES
+BP.,BP plc,LSE,Energy,Oil & Gas,COMMON,YES
+BPFG.F,Banpu Public Company Limited,XETRA,N/A,N/A,COMMON,YES
+BPOST.BR,bpost NV/SA,EURONEXT,N/A,N/A,COMMON,YES
+BR,Broadridge Financial Solutions,N/A,Technology,N/A,COMMON,YES
+BRBS,Blue Ridge Bankshares  Inc.,AMEX,N/A,N/A,COMMON,YES
+BREB.BR,Brederode S.A.,EURONEXT,N/A,N/A,COMMON,YES
+BRIA,Brillia Inc,AMEX,N/A,N/A,COMMON,YES
+BRK-B,Berkshire Hathaway,N/A,Financial Services,N/A,COMMON,YES
+BRN,Barnwell Industries  Inc.,AMEX,N/A,N/A,COMMON,YES
+BRNL.AS,Brunel International N.V.,EURONEXT,N/A,N/A,COMMON,YES
+BRO,Brown & Brown,N/A,Financial Services,N/A,COMMON,YES
+BSGR.AS,B&S Group S.A.,EURONEXT,N/A,N/A,COMMON,YES
+BSX,Boston Scientific,N/A,Healthcare,N/A,COMMON,YES
+BSX.F,Boston Scientific Corporation,XETRA,N/A,N/A,COMMON,YES
+BTG,B2Gold Corp.,AMEX,N/A,N/A,COMMON,YES
+BTLS.BR,Biotalys N.V.,EURONEXT,N/A,N/A,COMMON,YES
+BURU,Nuburu  Inc.,AMEX,N/A,N/A,COMMON,YES
+BVB.DE,Borussia Dortmund GmbH & Co. Kommanditgesellschaft auf Aktien,XETRA,N/A,N/A,COMMON,YES
+BX,Blackstone Inc.,N/A,Financial Services,N/A,COMMON,YES
+BXP,BXP  Inc.,N/A,Real Estate,N/A,REIT,SPECIAL
+BXP.L,Beximco Pharmaceuticals Limited,LSE,N/A,N/A,LSE,MAYBE
+BYG.L,Big Yellow Group Plc,LSE,N/A,N/A,LSE,MAYBE
+BYW6.DE,BayWa AG,XETRA,N/A,N/A,COMMON,YES
+BYW.DE,BayWa AG,XETRA,N/A,N/A,COMMON,YES
+C,Citigroup,N/A,Financial Services,N/A,COMMON,YES
+C9F.DE,Chipotle Mexican Grill  Inc.,XETRA,N/A,N/A,COMMON,YES
+CABKA.AS,Cabka N.V.,EURONEXT,N/A,N/A,COMMON,YES
+CABK.MC,CaixaBank  S.A.,BME,N/A,N/A,COMMON,YES
+CAC40.CSV,,N/A,N/A,N/A,COMMON,YES
+CAG,Conagra Brands,N/A,Consumer Defensive,N/A,COMMON,YES
+CAH,Cardinal Health,N/A,Healthcare,N/A,COMMON,YES
+CAMB.BR,Campine N.V.,EURONEXT,N/A,N/A,COMMON,YES
+CAND.BR,Candela Invest S.A.,EURONEXT,N/A,N/A,COMMON,YES
+CANF,Can-Fite BioPharma Ltd.,AMEX,N/A,N/A,COMMON,YES
+CA.PA,Carrefour S.A.,EURONEXT,N/A,N/A,COMMON,YES
+CAR,Avis Budget Group,NYSE,Consumer Discretionary,Auto Rental,COMMON,YES
+CARR,Carrier Global,N/A,Industrials,N/A,COMMON,YES
+CAT,Caterpillar Inc.,N/A,Industrials,N/A,COMMON,YES
+CATG.PA,S.A. Catana Group,EURONEXT,N/A,N/A,COMMON,YES
+CATX,Perspective Therapeutics  Inc.,AMEX,N/A,N/A,COMMON,YES
+CB,Chubb Limited,N/A,Financial Services,N/A,COMMON,YES
+CBOE,Cboe Global Markets,N/A,Financial Services,N/A,COMMON,YES
+CBRE,CBRE Group,N/A,Real Estate,N/A,REIT,SPECIAL
+CCEP,Coca-Cola Europacific Partners,N/A,Consumer Defensive,N/A,COMMON,YES
+CCEP.AS,Coca-Cola Europacific Partners PLC,EURONEXT,N/A,N/A,COMMON,YES
+CCEP.L,Coca-Cola Europacific Partners PLC,LSE,N/A,N/A,LSE,MAYBE
+CCI,Crown Castle,N/A,Real Estate,N/A,REIT,SPECIAL
+CCL,Carnival,N/A,Consumer Cyclical,N/A,COMMON,YES
+CDA.PA,Compagnie des Alpes S.A.,EURONEXT,N/A,N/A,COMMON,YES
+CDI.PA,Christian Dior SE,EURONEXT,N/A,N/A,COMMON,YES
+CDNS,Cadence Design Systems,N/A,Technology,N/A,COMMON,YES
+CDU.LS,Conduril - Engenharia  S.A.,EURONEXT,N/A,N/A,PT_STOCK,YES
+CDW,CDW Corporation,N/A,Technology,N/A,COMMON,YES
+CEA.DE,Friwo AG,XETRA,N/A,N/A,COMMON,YES
+CEC.DE,Ceconomy AG,XETRA,N/A,N/A,COMMON,YES
+CEG,Constellation Energy,N/A,Utilities,N/A,COMMON,YES
+CENER.BR,Cenergy Holdings S.A.,EURONEXT,N/A,N/A,COMMON,YES
+CEPS.L,CEPS Plc,LSE,N/A,N/A,LSE,MAYBE
+CF,CF Industries,N/A,Basic Materials,N/A,COMMON,YES
+CFEB.BR,Compagnie d'Entreprises CFE S.A.,EURONEXT,N/A,N/A,COMMON,YES
+CFG,Citizens Financial Group,N/A,Financial Services,N/A,COMMON,YES
+CGN.DE,Cigna Corporation,XETRA,N/A,N/A,COMMON,YES
+CHD,Church & Dwight,N/A,Consumer Defensive,N/A,COMMON,YES
+CHOW,ChowChow Cloud International Ho,AMEX,N/A,N/A,COMMON,YES
+CHRW,C.H. Robinson,N/A,Industrials,N/A,COMMON,YES
+CHSR.PA,Chausseria,EURONEXT,N/A,N/A,COMMON,YES
+CHTR,Charter Communications,N/A,Communication Services,N/A,COMMON,YES
+CI,Cigna,N/A,Healthcare,N/A,COMMON,YES
+CIE1.DE,Ciena Corporation,XETRA,N/A,N/A,COMMON,YES
+CINF,Cincinnati Financial,N/A,Financial Services,N/A,COMMON,YES
+CITY.MC,Club De Futbol Intercity Sad,BME,N/A,N/A,COMMON,YES
+CIX,CompX International Inc.,AMEX,N/A,N/A,COMMON,YES
+CKX,CKX Lands  Inc.,AMEX,N/A,N/A,COMMON,YES
+CL,Colgate-Palmolive,N/A,Consumer Defensive,N/A,COMMON,YES
+CLDI,Calidi Biotherapeutics  Inc.,AMEX,N/A,N/A,COMMON,YES
+CLNX.MC,Cellnex Telecom  S.A.,BME,N/A,N/A,COMMON,YES
+CLX,Clorox,N/A,Consumer Defensive,N/A,COMMON,YES
+CMCL,Caledonia Mining Corporation Plc,AMEX,N/A,N/A,COMMON,YES
+CMCOM.AS,CM.com N.V.,EURONEXT,N/A,N/A,COMMON,YES
+CMCSA,Comcast,N/A,Communication Services,N/A,COMMON,YES
+CME,CME Group,N/A,Financial Services,N/A,COMMON,YES
+CMG,Chipotle Mexican Grill,N/A,Consumer Cyclical,N/A,COMMON,YES
+CMI,Cummins,N/A,Industrials,N/A,COMMON,YES
+CMS,CMS Energy,N/A,Utilities,N/A,COMMON,YES
+CMT,Core Molding Technologies  Inc.,AMEX,N/A,N/A,COMMON,YES
+CNA.L,Centrica plc,LSE,N/A,N/A,LSE,MAYBE
+CNC,Centene Corporation,N/A,Healthcare,N/A,COMMON,YES
+CNP,CenterPoint Energy,N/A,Utilities,N/A,COMMON,YES
+COBH.BR,Brouwerij Handelsmaatschappij N.V.,EURONEXT,N/A,N/A,COMMON,YES
+COE,51Talk Online Education Group,AMEX,N/A,N/A,COMMON,YES
+COF,Capital One,N/A,Financial Services,N/A,COMMON,YES
+COFA.PA,Coface S.A.,EURONEXT,N/A,N/A,COMMON,YES
+COFB.BR,Cofinimmo S.A.,EURONEXT,N/A,N/A,COMMON,YES
+COHN,Cohen & Company Inc.,AMEX,N/A,N/A,COMMON,YES
+COH.PA,Coheris S.A.,EURONEXT,N/A,N/A,COMMON,YES
+COIN,Coinbase Global Inc.,NASDAQ,Financials,Crypto Exchange,COMMON,YES
+COLR.BR,Colruyt Group N.V.,EURONEXT,N/A,N/A,COMMON,YES
+COMB.BR,Compagnie du Bois Sauvage S.A.,EURONEXT,N/A,N/A,COMMON,YES
+COO,Cooper Companies (The),N/A,Healthcare,N/A,COMMON,YES
+COP,ConocoPhillips,N/A,Energy,N/A,COMMON,YES
+CO.PA,Casino  Guichard-Perrachon S.A.,EURONEXT,N/A,N/A,COMMON,YES
+COR,Cencora,N/A,Healthcare,N/A,COMMON,YES
+COR.LS,Corticeira Amorim  S.G.P.S.  S.A.,EURONEXT,N/A,N/A,PT_STOCK,YES
+COST,Costco,N/A,Consumer Defensive,N/A,COMMON,YES
+CPA.DE,Colgate-Palmolive Company,XETRA,N/A,N/A,COMMON,YES
+CPAY,Corpay,N/A,Technology,N/A,COMMON,YES
+CPB,Campbell Soup Company,N/A,Consumer Defensive,N/A,COMMON,YES
+CPHI,China Pharma Holdings  Inc.,AMEX,N/A,N/A,COMMON,YES
+CPRT,Copart,N/A,Consumer Cyclical,N/A,COMMON,YES
+CPT,Camden Property Trust,N/A,Real Estate,N/A,REIT,SPECIAL
+CQP,Cheniere Energy Partners  L.P.,AMEX,N/A,N/A,COMMON,YES
+CRAV.PA,Caisse régionale de Crédit Agricole Mutuel Atlantique Vendée,EURONEXT,N/A,N/A,COMMON,YES
+CRBP2.PA,Caisse Régionale de Crédit Agricole Mutuel Brie Picardie Société coopérative,EURONEXT,N/A,N/A,COMMON,YES
+CRL,Charles River Laboratories,N/A,Healthcare,N/A,COMMON,YES
+CRM,Salesforce  Inc.,N/A,Technology,N/A,COMMON,YES
+CRWD,CrowdStrike,N/A,Technology,N/A,COMMON,YES
+CSCO,Cisco Systems Inc.,NASDAQ,Technology,Networking,COMMON,YES
+CSGP,CoStar Group,N/A,Real Estate,N/A,REIT,SPECIAL
+CSRD.L,Cordiant Digital Infrastructure Limited,LSE,N/A,N/A,LSE,MAYBE
+CSSG.L,Croma Security Solutions Group plc,LSE,N/A,N/A,LSE,MAYBE
+CSX,CSX Corporation,N/A,Industrials,N/A,COMMON,YES
+CTAC.AS,Ctac N.V.,EURONEXT,N/A,N/A,COMMON,YES
+CTAS,Cintas,N/A,Industrials,N/A,COMMON,YES
+CTGO,Contango Ore  Inc.,AMEX,N/A,N/A,COMMON,YES
+CTM,Castellum  Inc.,AMEX,N/A,N/A,COMMON,YES
+CTNK.F,centrotherm international AG,XETRA,N/A,N/A,COMMON,YES
+CTPNV.AS,Ctp N.V.,EURONEXT,N/A,N/A,COMMON,YES
+CTRA,Coterra,N/A,Energy,N/A,COMMON,YES
+CTSH,Cognizant,N/A,Technology,N/A,COMMON,YES
+CTT.LS,CTT - Correios De Portugal  S.A.,EURONEXT,N/A,N/A,PT_STOCK,YES
+CTVA,Corteva,N/A,Basic Materials,N/A,COMMON,YES
+CVC.AS,CVC Capital Partners plc,EURONEXT,N/A,N/A,COMMON,YES
+CVM,CEL-SCI Corporation,AMEX,N/A,N/A,COMMON,YES
+CVR,Chicago Rivet & Machine Co.,AMEX,N/A,N/A,COMMON,YES
+CVS,CVS Health,N/A,Healthcare,N/A,COMMON,YES
+CVU,CPI Aerostructures  Inc.,AMEX,N/A,N/A,COMMON,YES
+CVX,Chevron Corporation,N/A,Energy,N/A,COMMON,YES
+CY1K.DE,Sbf AG,XETRA,N/A,N/A,COMMON,YES
+CY4.F,Kelsian Group Limited,XETRA,N/A,N/A,COMMON,YES
+CYAD.BR,Celyad Oncology S.A.,EURONEXT,N/A,N/A,COMMON,YES
+CYBN,Cybin Inc.,AMEX,N/A,N/A,COMMON,YES
+D,Dominion Energy,N/A,Utilities,N/A,COMMON,YES
+DAL,Delta Air Lines,N/A,Industrials,N/A,COMMON,YES
+DAL.L,Dalata Hotel Group plc,LSE,N/A,N/A,LSE,MAYBE
+DASH,DoorDash,N/A,Communication Services,N/A,COMMON,YES
+DAX.CSV,,N/A,N/A,N/A,COMMON,YES
+DAY,Dayforce,N/A,Technology,N/A,COMMON,YES
+DC,Dakota Gold Corp.,AMEX,N/A,N/A,COMMON,YES
+DD,DuPont,N/A,Basic Materials,N/A,COMMON,YES
+DDC,DDC Enterprise Limited,AMEX,N/A,N/A,COMMON,YES
+DDOG,Datadog,N/A,Technology,N/A,COMMON,YES
+DE,Deere & Company,N/A,Industrials,N/A,COMMON,YES
+DECB.BR,Deceuninck N.V.,EURONEXT,N/A,N/A,COMMON,YES
+DECK,Deckers Brands,N/A,Consumer Cyclical,N/A,COMMON,YES
+DELL,Dell Technologies,N/A,Technology,N/A,COMMON,YES
+DEME.BR,DEME Group N.V.,EURONEXT,N/A,N/A,COMMON,YES
+DG,Dollar General,N/A,Consumer Defensive,N/A,COMMON,YES
+DGX,Quest Diagnostics,N/A,Healthcare,N/A,COMMON,YES
+DHI,D. R. Horton,N/A,Consumer Cyclical,N/A,COMMON,YES
+DHR,Danaher Corporation,N/A,Healthcare,N/A,COMMON,YES
+DIA.MC,Distribuidora Internacional de Alimentación  S.A.,BME,N/A,N/A,COMMON,YES
+DIE.BR,D'Ieteren Group S.A.,EURONEXT,N/A,N/A,COMMON,YES
+DIS,Walt Disney Co.,NYSE,Communication Services,Entertainment,COMMON,YES
+DIS.L,Distil Plc,LSE,N/A,N/A,LSE,MAYBE
+DIT,AMCON Distributing Company,AMEX,N/A,N/A,COMMON,YES
+DLR,Digital Realty,N/A,Real Estate,N/A,REIT,SPECIAL
+DLTR,Dollar Tree,N/A,Consumer Defensive,N/A,COMMON,YES
+DMYY,dMY Squared Technology Group  Inc.,AMEX,N/A,N/A,COMMON,YES
+DMYY-UN,dMY Squared Technology Group  Inc.,AMEX,N/A,N/A,COMMON,YES
+DNN,Denison Mines Corp.,AMEX,N/A,N/A,COMMON,YES
+DOC,Healthpeak Properties,N/A,Real Estate,N/A,REIT,SPECIAL
+DOMO.MC,Domo Activos  S.A.,BME,N/A,N/A,COMMON,YES
+DOU.DE,Douglas AG,XETRA,N/A,N/A,COMMON,YES
+DOV,Dover Corporation,N/A,Industrials,N/A,COMMON,YES
+DOW,Dow Inc.,N/A,Basic Materials,N/A,COMMON,YES
+DPZ,Domino's,N/A,Consumer Cyclical,N/A,COMMON,YES
+DRI,Darden Restaurants,N/A,Consumer Cyclical,N/A,COMMON,YES
+DSFIR.AS,DSM-Firmenich AG,EURONEXT,N/A,N/A,COMMON,YES
+DSG.L,Dillistone Group Plc,LSE,N/A,N/A,LSE,MAYBE
+DSS,DSS  Inc.,AMEX,N/A,N/A,COMMON,YES
+DT3.DE,Dollar Tree  Inc.,XETRA,N/A,N/A,COMMON,YES
+DTE,DTE Energy,N/A,Utilities,N/A,COMMON,YES
+DUE.DE,Dürr AG,XETRA,N/A,N/A,COMMON,YES
+DUK,Duke Energy,N/A,Utilities,N/A,COMMON,YES
+DUL.DE,Alnylam Pharmaceuticals  Inc.,XETRA,N/A,N/A,COMMON,YES
+DVA,DaVita,N/A,Healthcare,N/A,COMMON,YES
+DVN,Devon Energy,N/A,Energy,N/A,COMMON,YES
+DVS,Dolly Varden Silver Corporation,AMEX,N/A,N/A,COMMON,YES
+DWD.DE,Morgan Stanley,XETRA,N/A,N/A,COMMON,YES
+DXCM,DexCom,N/A,Healthcare,N/A,COMMON,YES
+DXF,Eason Technology Limited,AMEX,N/A,N/A,COMMON,YES
+EA,Electronic Arts,N/A,Technology,N/A,COMMON,YES
+EAS2P.AS,Ease2pay N.V.,EURONEXT,N/A,N/A,COMMON,YES
+EAT.MC,AmRest Holdings SE,BME,N/A,N/A,COMMON,YES
+EBAY,eBay,N/A,Consumer Cyclical,N/A,COMMON,YES
+EBUS.AS,Ebusco Holding N.V.,EURONEXT,N/A,N/A,COMMON,YES
+ECGF.F,Electricity Generating Public Company Limited,XETRA,N/A,N/A,COMMON,YES
+ECL,Ecolab,N/A,Basic Materials,N/A,COMMON,YES
+ECMPA.AS,Eurocommercial Properties N.V.,EURONEXT,N/A,N/A,COMMON,YES
+ECO.L,Eco (Atlantic) Oil & Gas Ltd.,LSE,N/A,N/A,LSE,MAYBE
+ECONB.BR,Econocom Group SE,EURONEXT,N/A,N/A,COMMON,YES
+ECT.AS,Eurocastle Investment Limited,EURONEXT,N/A,N/A,COMMON,YES
+ED,Consolidated Edison,N/A,Utilities,N/A,COMMON,YES
+ED4.DE,EDAG Engineering Group AG,XETRA,N/A,N/A,COMMON,YES
+EDP.LS,Energias de Portugal,EURONEXT Lisbon,Utilities,Electric Utilities,PT_STOCK,YES
+EDPR.LS,EDP Renováveis  S.A.,EURONEXT,N/A,N/A,PT_STOCK,YES
+EFI.PA,Eurasia Fonciere Investissements S.A.,EURONEXT,N/A,N/A,COMMON,YES
+EFX,Equifax,N/A,Industrials,N/A,COMMON,YES
+EG,Everest Group,N/A,Financial Services,N/A,COMMON,YES
+EGG,Enigmatig Limited,AMEX,N/A,N/A,COMMON,YES
+EGL.LS,Mota-Engil  SGPS  S.A.,EURONEXT,N/A,N/A,PT_STOCK,YES
+EIX,Edison International,N/A,Utilities,N/A,COMMON,YES
+EKOP.BR,Ekopak N.V.,EURONEXT,N/A,N/A,COMMON,YES
+EL,Estée Lauder Companies (The),N/A,Consumer Defensive,N/A,COMMON,YES
+ELA,Envela Corporation,AMEX,N/A,N/A,COMMON,YES
+ELI.BR,Elia Group SA/NV,EURONEXT,N/A,N/A,COMMON,YES
+ELLO,Ellomay Capital Ltd.,AMEX,N/A,N/A,COMMON,YES
+ELMD,Electromed  Inc.,AMEX,N/A,N/A,COMMON,YES
+ELON,Battleshares TSLA vs F ETF,AMEX,N/A,N/A,ETF,NO
+ELV,Elevance Health,N/A,Healthcare,N/A,COMMON,YES
+EME,EMCOR Group  Inc.,N/A,Industrials,N/A,COMMON,YES
+EMN,Eastman Chemical Company,N/A,Basic Materials,N/A,COMMON,YES
+EMR,Emerson Electric,N/A,Industrials,N/A,COMMON,YES
+EMX,EMX Royalty Corporation,AMEX,N/A,N/A,COMMON,YES
+ENER.MC,Ecoener  S.A.,BME,N/A,N/A,COMMON,YES
+ENGI.PA,Engie S.A.,EURONEXT,N/A,N/A,COMMON,YES
+ENG.MC,Enagás  S.A.,BME,N/A,N/A,COMMON,YES
+ENI1.F,Eni S.p.A.,XETRA,N/A,N/A,COMMON,YES
+ENVI.AS,Envipco Holding N.V.,EURONEXT,N/A,N/A,COMMON,YES
+EOG,EOG Resources,N/A,Energy,N/A,COMMON,YES
+EONR,EON Resources Inc.,AMEX,N/A,N/A,COMMON,YES
+EP,Empire Petroleum Corporation,AMEX,N/A,N/A,COMMON,YES
+EPAM,EPAM Systems,N/A,Technology,N/A,COMMON,YES
+EPM,Evolution Petroleum Corporation,AMEX,N/A,N/A,COMMON,YES
+EQIX,Equinix,N/A,Real Estate,N/A,REIT,SPECIAL
+EQR,Equity Residential,N/A,Real Estate,N/A,REIT,SPECIAL
+EQT,EQT Corporation,N/A,Energy,N/A,COMMON,YES
+EQX,Equinox Gold Corp.,AMEX,N/A,N/A,COMMON,YES
+ERA.PA,Eramet S.a.,EURONEXT,N/A,N/A,COMMON,YES
+ERCG.DE,Telefonaktiebolaget LM Ericsson (publ),XETRA,N/A,N/A,COMMON,YES
+ERIE,Erie Indemnity,N/A,Financial Services,N/A,COMMON,YES
+ES,Eversource Energy,N/A,Utilities,N/A,COMMON,YES
+ESBA,Empire State Realty OP  L.P.,AMEX,N/A,N/A,COMMON,YES
+ESO.L,EPE Special Opportunities Limited,LSE,N/A,N/A,LSE,MAYBE
+ESON.LS,Estoril Sol  SGPS  S.A.,EURONEXT,N/A,N/A,PT_STOCK,YES
+ESOZ.L,EPE Special Opportunities Limited,LSE,N/A,N/A,LSE,MAYBE
+ESP,Espey Mfg. & Electronics Corp.,AMEX,N/A,N/A,COMMON,YES
+ESS,Essex Property Trust,N/A,Real Estate,N/A,REIT,SPECIAL
+ETN,Eaton Corporation,N/A,Industrials,N/A,COMMON,YES
+ETR,Entergy,N/A,Utilities,N/A,COMMON,YES
+EUZ.DE,Eckert & Ziegler Strahlen- und Medizintechnik AG,XETRA,N/A,N/A,COMMON,YES
+EVD.DE,CTS Eventim AG & Co. KGaA,XETRA,N/A,N/A,COMMON,YES
+EVI,EVI Industries  Inc.,AMEX,N/A,N/A,COMMON,YES
+EVPL.L,Everplay Group Plc,LSE,N/A,N/A,LSE,MAYBE
+EVRG,Evergy,N/A,Utilities,N/A,COMMON,YES
+EVS.BR,EVS Broadcast Equipment S.A.,EURONEXT,N/A,N/A,COMMON,YES
+EW,Edwards Lifesciences,N/A,Healthcare,N/A,COMMON,YES
+EXC,Exelon,N/A,Utilities,N/A,COMMON,YES
+EXE,Expand Energy,N/A,Energy,N/A,COMMON,YES
+EXM.BR,Exmar N.V.,EURONEXT,N/A,N/A,COMMON,YES
+EXO.AS,Exor N.V.,EURONEXT,N/A,N/A,COMMON,YES
+EXOD,Exodus Movement  Inc.,AMEX,N/A,N/A,COMMON,YES
+EXPD,Expeditors International,N/A,Industrials,N/A,COMMON,YES
+EXPE,Expedia Group,N/A,Consumer Cyclical,N/A,COMMON,YES
+EXR,Extra Space Storage,N/A,Real Estate,N/A,REIT,SPECIAL
+F,Ford Motor Company,N/A,Consumer Cyclical,N/A,COMMON,YES
+FACE.MC,Facephi Biometria  S.A.,BME,N/A,N/A,COMMON,YES
+FAGR.BR,Fagron N.V.,EURONEXT,N/A,N/A,COMMON,YES
+FANG,Diamondback Energy,N/A,Energy,N/A,COMMON,YES
+FAST,Fastenal,N/A,Industrials,N/A,COMMON,YES
+FAST.AS,Fastned B.V.,EURONEXT,N/A,N/A,COMMON,YES
+FCP.LS,Futebol Clube do Porto - Futebol  S.A.D.,EURONEXT,N/A,N/A,PT_STOCK,YES
+FCX,Freeport-McMoRan,N/A,Basic Materials,N/A,COMMON,YES
+FDJU.PA,FDJ United,EURONEXT,N/A,N/A,COMMON,YES
+FDS,FactSet,N/A,Financial Services,N/A,COMMON,YES
+FDX,FedEx,N/A,Industrials,N/A,COMMON,YES
+FE,FirstEnergy,N/A,Utilities,N/A,COMMON,YES
+FERGR.AS,Ferrari Group,EURONEXT,N/A,N/A,COMMON,YES
+FEV.DE,FORTEC Elektronik AG,XETRA,N/A,N/A,COMMON,YES
+FFARM.AS,ForFarmers N.V.,EURONEXT,N/A,N/A,COMMON,YES
+FFIV,F5  Inc.,N/A,Technology,N/A,COMMON,YES
+FGA.PA,Figeac Aero S.A.,EURONEXT,N/A,N/A,COMMON,YES
+FI,Fiserv,N/A,Technology,N/A,COMMON,YES
+FICO,Fair Isaac,N/A,Technology,N/A,COMMON,YES
+FIS,Fidelity National Information Services,N/A,Technology,N/A,COMMON,YES
+FISK,Empire State Realty OP  L.P.,AMEX,N/A,N/A,COMMON,YES
+FITB,Fifth Third Bancorp,N/A,Financial Services,N/A,COMMON,YES
+FJI.F,FUJIFILM Holdings Corporation,XETRA,N/A,N/A,COMMON,YES
+FKE.L,Fiske plc,LSE,N/A,N/A,LSE,MAYBE
+FLAG,Global X S&P 500 U.S. Market Leaders TOP 50 ETF,AMEX,N/A,N/A,ETF,NO
+FLOB.BR,Floridienne S.A.,EURONEXT,N/A,N/A,COMMON,YES
+FLOW.AS,Flow Traders N.V.,EURONEXT,N/A,N/A,COMMON,YES
+FLSP.BR,Flowsparks N.V.,EURONEXT,N/A,N/A,COMMON,YES
+FLUX.BR,Fluxys Belgium S.A.,EURONEXT,N/A,N/A,COMMON,YES
+FLYX,flyExclusive  Inc.,AMEX,N/A,N/A,COMMON,YES
+FLYX-WT,flyExclusive  Inc. WT,AMEX,N/A,N/A,COMMON,YES
+FLYY,Spirit Aviation Holdings  Inc.,AMEX,N/A,N/A,COMMON,YES
+FMC1.DE,Ford Motor Company,XETRA,N/A,N/A,COMMON,YES
+FOX,Fox Corporation (Class B),N/A,Communication Services,N/A,COMMON,YES
+FOXA,Fox Corporation (Class A),N/A,Communication Services,N/A,COMMON,YES
+FOXO,FOXO Technologies Inc.,AMEX,N/A,N/A,COMMON,YES
+FPE3.DE,Fuchs Petrolub SE,XETRA,N/A,N/A,COMMON,YES
+FR.PA,Valeo SE,EURONEXT,N/A,N/A,COMMON,YES
+FRT,Federal Realty Investment Trust,N/A,Real Estate,N/A,REIT,SPECIAL
+FRVIA.PA,Forvia SE,EURONEXT,N/A,N/A,COMMON,YES
+FSI,Flexible Solutions International  Inc.,AMEX,N/A,N/A,COMMON,YES
+FSLR,First Solar,N/A,Energy,N/A,COMMON,YES
+FSP,Franklin Street Properties Corp.,AMEX,N/A,N/A,COMMON,YES
+FTE.DE,Orange S.A.,XETRA,N/A,N/A,COMMON,YES
+FTNT,Fortinet,N/A,Technology,N/A,COMMON,YES
+FTSE100.CSV,,N/A,N/A,N/A,COMMON,YES
+FTV,Fortive,N/A,Technology,N/A,COMMON,YES
+FUR.AS,Fugro N.V.,EURONEXT,N/A,N/A,COMMON,YES
+FURY,Fury Gold Mines Limited,AMEX,N/A,N/A,COMMON,YES
+GALP.LS,Galp Energia,EURONEXT Lisbon,Energy,Oil & Gas,PT_STOCK,YES
+GATC.L,Gattaca plc,LSE,N/A,N/A,LSE,MAYBE
+GAU,Galiano Gold Inc.,AMEX,N/A,N/A,COMMON,YES
+GBF.DE,Bilfinger SE,XETRA,N/A,N/A,COMMON,YES
+GBLB.BR,Groupe Bruxelles Lambert S.A.,EURONEXT,N/A,N/A,COMMON,YES
+GBR,New Concept Energy  Inc.,AMEX,N/A,N/A,COMMON,YES
+GCB.F,PTT Global Chemical Public Company Limited,XETRA,N/A,N/A,COMMON,YES
+GCO.MC,Grupo Catalana Occidente  S.A.,BME,N/A,N/A,COMMON,YES
+GD,General Dynamics,N/A,Industrials,N/A,COMMON,YES
+GDDY,GoDaddy,N/A,Technology,N/A,COMMON,YES
+GDP.L,Goldplat PLC,LSE,N/A,N/A,LSE,MAYBE
+GE,GE Aerospace,N/A,Industrials,N/A,COMMON,YES
+GEA.PA,Grenobloise d'Electronique et d'Automatismes S.A.,EURONEXT,N/A,N/A,COMMON,YES
+GEHC,GE HealthCare,N/A,Healthcare,N/A,COMMON,YES
+GEM.L,Gemfields Group Limited,LSE,N/A,N/A,LSE,MAYBE
+GEN,Gen Digital,N/A,Technology,N/A,COMMON,YES
+GENC,Gencor Industries  Inc.,AMEX,N/A,N/A,COMMON,YES
+GEST.MC,Gestamp Automoción  S.A.,BME,N/A,N/A,COMMON,YES
+GEV,GE Vernova,N/A,Utilities,N/A,COMMON,YES
+GFG.DE,Global Fashion Group S.A.,XETRA,N/A,N/A,COMMON,YES
+GFRD.L,Galliford Try Holdings PLC,LSE,N/A,N/A,LSE,MAYBE
+GFS,GlobalFoundries,N/A,Technology,N/A,COMMON,YES
+GFTU.L,Grafton Group plc,LSE,N/A,N/A,LSE,MAYBE
+GIGA.MC,Gigas Hosting  S.A.,BME,N/A,N/A,COMMON,YES
+GILD,Gilead Sciences,N/A,Healthcare,N/A,COMMON,YES
+GIS,General Mills,N/A,Consumer Defensive,N/A,COMMON,YES
+GL,Globe Life,N/A,Financial Services,N/A,COMMON,YES
+GLDG,GoldMining Inc.,AMEX,N/A,N/A,COMMON,YES
+GLINT.LS,Glintt - Global Intelligent Technologies  S.A.,EURONEXT,N/A,N/A,PT_STOCK,YES
+GLO.PA,GL Events S.A.,EURONEXT,N/A,N/A,COMMON,YES
+GLPG.AS,Galapagos N.V.,EURONEXT,N/A,N/A,COMMON,YES
+GLW,Corning Inc.,N/A,Technology,N/A,COMMON,YES
+GM,General Motors,N/A,Consumer Cyclical,N/A,COMMON,YES
+GNRC,Generac,N/A,Industrials,N/A,COMMON,YES
+GNRO.PA,GeNeuro S.A.,EURONEXT,N/A,N/A,COMMON,YES
+GNS,Genius Group Limited,AMEX,N/A,N/A,COMMON,YES
+GOOG,Alphabet Inc. (Class C),N/A,Communication Services,N/A,COMMON,YES
+GOOGL,Alphabet Inc.,NASDAQ,Communication Services,Internet Content,COMMON,YES
+GORO,Gold Resource Corporation,AMEX,N/A,N/A,COMMON,YES
+GPA.LS,Imobiliária Construtora Grão Pará  S.A.,EURONEXT,N/A,N/A,PT_STOCK,YES
+GPC,Genuine Parts Company,N/A,Consumer Cyclical,N/A,COMMON,YES
+GPN,Global Payments,N/A,Industrials,N/A,COMMON,YES
+GRAF,Graf Global Corp.,AMEX,N/A,N/A,COMMON,YES
+GRAF-UN,Graf Global Corp.,AMEX,N/A,N/A,COMMON,YES
+GRE.MC,Grenergy Renovables  S.A.,BME,N/A,N/A,COMMON,YES
+GRI.MC,Griñó Ecologic  S.A.,BME,N/A,N/A,COMMON,YES
+GRMN,Garmin,N/A,Technology,N/A,COMMON,YES
+GROY,Gold Royalty Corp.,AMEX,N/A,N/A,COMMON,YES
+GROY-WT,Gold Royalty Corp.,AMEX,N/A,N/A,COMMON,YES
+GS,The Goldman Sachs Group  Inc.,N/A,Financial Services,N/A,COMMON,YES
+GSC1.DE,Gesco AG,XETRA,N/A,N/A,COMMON,YES
+GSJ.MC,Grupo Empresarial San José  S.A.,BME,N/A,N/A,COMMON,YES
+GTE,Gran Tierra Energy Inc.,AMEX,N/A,N/A,COMMON,YES
+GWW,W. W. Grainger,N/A,Industrials,N/A,COMMON,YES
+GZF.DE,Engie S.A.,XETRA,N/A,N/A,COMMON,YES
+HAA1.F,Hana Microelectronics Public Company Limited,XETRA,N/A,N/A,COMMON,YES
+HAL,Halliburton,N/A,Energy,N/A,COMMON,YES
+HAS,Hasbro,N/A,Consumer Cyclical,N/A,COMMON,YES
+HAVAS.AS,Havas S.A.,EURONEXT,N/A,N/A,COMMON,YES
+HBAN,Huntington Bancshares,N/A,Financial Services,N/A,COMMON,YES
+HBR.L,Harbour Energy plc,LSE,N/A,N/A,LSE,MAYBE
+HCA,HCA Healthcare,N/A,Healthcare,N/A,COMMON,YES
+HCWC,Healthy Choice Wellness Corp.,AMEX,N/A,N/A,COMMON,YES
+HD,Home Depot Inc.,NYSE,Consumer Discretionary,Home Improvement,COMMON,YES
+HEIA.AS,Heineken N.V.,EURONEXT,N/A,N/A,COMMON,YES
+HEIJM.AS,Koninklijke Heijmans N.V.,EURONEXT,N/A,N/A,COMMON,YES
+HEIO.AS,Heineken Holding N.V.,EURONEXT,N/A,N/A,COMMON,YES
+HFF.DE,The Hartford Financial Services Group  Inc.,XETRA,N/A,N/A,COMMON,YES
+HIG,Hartford (The),N/A,Financial Services,N/A,COMMON,YES
+HII,Huntington Ingalls Industries,N/A,Industrials,N/A,COMMON,YES
+HLT,Hilton Worldwide,N/A,Consumer Cyclical,N/A,COMMON,YES
+HMU.DE,HMS Bergbau AG,XETRA,N/A,N/A,COMMON,YES
+HNL.DE,Dr. Hönle AG,XETRA,N/A,N/A,COMMON,YES
+HOC.L,Hochschild Mining plc,LSE,N/A,N/A,LSE,MAYBE
+HOLCO.AS,Holland Colours N.V.,EURONEXT,N/A,N/A,COMMON,YES
+HOLX,Hologic,N/A,Healthcare,N/A,COMMON,YES
+HOMI.BR,Home Invest Belgium S.A.,EURONEXT,N/A,N/A,COMMON,YES
+HON,Honeywell International Inc.,N/A,Industrials,N/A,COMMON,YES
+HOOD,Robinhood Markets,NASDAQ,Financials,Brokerage,COMMON,YES
+HP3A.DE,Ringmetall SE,XETRA,N/A,N/A,COMMON,YES
+HPE,Hewlett Packard Enterprise,N/A,Technology,N/A,COMMON,YES
+HPQ,HP Inc.,N/A,Technology,N/A,COMMON,YES
+HRL,Hormel Foods,N/A,Consumer Defensive,N/A,COMMON,YES
+HRS.DE,L3Harris Technologies  Inc.,XETRA,N/A,N/A,COMMON,YES
+HSBA,HSBC Holdings plc,LSE,Financials,Banking,COMMON,YES
+HSIC,Henry Schein,N/A,Healthcare,N/A,COMMON,YES
+HST,Host Hotels & Resorts,N/A,Real Estate,N/A,REIT,SPECIAL
+HSY,Hershey Company (The),N/A,Consumer Defensive,N/A,COMMON,YES
+HTJ.F,HTC Corporation,XETRA,N/A,N/A,COMMON,YES
+HUBB,Hubbell Incorporated,N/A,Industrials,N/A,COMMON,YES
+HUM,Humana,N/A,Healthcare,N/A,COMMON,YES
+HUSA,Houston American Energy Corp.,AMEX,N/A,N/A,COMMON,YES
+HWM,Howmet Aerospace,N/A,Industrials,N/A,COMMON,YES
+HWM-P,Howmet Aerospace Inc.,AMEX,N/A,N/A,COMMON,YES
+HYDRA.AS,Hydratec Industries N.V.,EURONEXT,N/A,N/A,COMMON,YES
+HYL.BR,Hyloris Pharmaceuticals S.A.,EURONEXT,N/A,N/A,COMMON,YES
+HYSG.BR,Hybrid Software Group PLC,EURONEXT,N/A,N/A,COMMON,YES
+I9V.F,Titanium Transportation Group Inc.,XETRA,N/A,N/A,COMMON,YES
+IAUX,i-80 Gold Corp.,AMEX,N/A,N/A,COMMON,YES
+IBAB.BR,Ion Beam Applications S.A.,EURONEXT,N/A,N/A,COMMON,YES
+IBE.MC,Iberdrola S.A.,BME,Utilities,Electric Utilities,COMMON,YES
+IBKR,Interactive Brokers Group,N/A,Financial Services,N/A,COMMON,YES
+IBM,International Business Machines Corporation,N/A,Technology,N/A,COMMON,YES
+IBO,Impact BioMedical Inc.,AMEX,N/A,N/A,COMMON,YES
+IBS.LS,Ibersol  S.G.P.S.  S.A.,EURONEXT,N/A,N/A,PT_STOCK,YES
+ICE,Intercontinental Exchange,N/A,Financial Services,N/A,COMMON,YES
+IDR,Idaho Strategic Resources  Inc.,AMEX,N/A,N/A,COMMON,YES
+IDXX,Idexx Laboratories,N/A,Healthcare,N/A,COMMON,YES
+IE,Ivanhoe Electric Inc.,AMEX,N/A,N/A,COMMON,YES
+IE2A.F,Internet Thailand Public Company Limited,XETRA,N/A,N/A,COMMON,YES
+IEP.BR,Iep Invest  N.V.,EURONEXT,N/A,N/A,COMMON,YES
+IEX,IDEX Corporation,N/A,Industrials,N/A,COMMON,YES
+IFF,International Flavors & Fragrances,N/A,Basic Materials,N/A,COMMON,YES
+IGC,IGC Pharma  Inc.,AMEX,N/A,N/A,COMMON,YES
+IHT,InnSuites Hospitality Trust,AMEX,N/A,N/A,COMMON,YES
+IJ8.DE,ITM Power Plc,XETRA,N/A,N/A,COMMON,YES
+IMCD.AS,IMCD N.V.,EURONEXT,N/A,N/A,COMMON,YES
+IMC.MC,Inmocemento  S.A.,BME,N/A,N/A,COMMON,YES
+IMMO.BR,Immobel S.A.,EURONEXT,N/A,N/A,COMMON,YES
+IMO,Imperial Oil Limited,AMEX,N/A,N/A,COMMON,YES
+INCLU.BR,Inclusio S.A.,EURONEXT,N/A,N/A,COMMON,YES
+INCY,Incyte,N/A,Healthcare,N/A,COMMON,YES
+INDO,Indonesia Energy Corporation Limited,AMEX,N/A,N/A,COMMON,YES
+INFU,InfuSystem Holdings  Inc.,AMEX,N/A,N/A,COMMON,YES
+INGA.AS,ING Groep N.V.,EURONEXT,N/A,N/A,COMMON,YES
+INL.F,Intel Corporation,XETRA,N/A,N/A,COMMON,YES
+INLX,Intellinetics  Inc.,AMEX,N/A,N/A,COMMON,YES
+INPST.AS,InPost S.A.,EURONEXT,N/A,N/A,COMMON,YES
+INR.DE,International Consolidated Airlines Group S.A.,XETRA,N/A,N/A,COMMON,YES
+INTC,Intel Corp.,NASDAQ,Technology,Semiconductors,COMMON,YES
+INTT,inTEST Corporation,AMEX,N/A,N/A,COMMON,YES
+INTU,Intuit,N/A,Technology,N/A,COMMON,YES
+INUV,Inuvo  Inc.,AMEX,N/A,N/A,COMMON,YES
+INVH,Invitation Homes,N/A,Real Estate,N/A,REIT,SPECIAL
+IOR,Income Opportunity Realty Investors  Inc.,AMEX,N/A,N/A,COMMON,YES
+IP,International Paper,N/A,Consumer Cyclical,N/A,COMMON,YES
+IPB,Merrill Lynch Depositor Inc. 6.0518% Index Plus Trust Series 2003-1,AMEX,N/A,N/A,COMMON,YES
+IPG,Interpublic Group of Companies (The),N/A,Communication Services,N/A,COMMON,YES
+IPN.PA,Ipsen S.A.,EURONEXT,N/A,N/A,COMMON,YES
+IPR.LS,Impresa - Sociedade Gestora de Participações Sociais  S.A.,EURONEXT,N/A,N/A,PT_STOCK,YES
+IQV,IQVIA,N/A,Healthcare,N/A,COMMON,YES
+IR,Ingersoll Rand,N/A,Industrials,N/A,COMMON,YES
+IRM,Iron Mountain,N/A,Real Estate,N/A,REIT,SPECIAL
+IS7.DE,InTiCa Systems AG,XETRA,N/A,N/A,COMMON,YES
+ISOU,IsoEnergy Ltd.,AMEX,N/A,N/A,COMMON,YES
+ISRG,Intuitive Surgical,N/A,Healthcare,N/A,COMMON,YES
+IT,Gartner,N/A,Technology,N/A,COMMON,YES
+ITM.L,ITM Power Plc,LSE,N/A,N/A,LSE,MAYBE
+ITP,IT Tech Packaging  Inc.,AMEX,N/A,N/A,COMMON,YES
+ITRG,Integra Resources Corp.,AMEX,N/A,N/A,COMMON,YES
+ITW,Illinois Tool Works,N/A,Industrials,N/A,COMMON,YES
+ITX.MC,Industria de Diseño Textil S.A.,BME,Consumer Discretionary,Apparel Retail,COMMON,YES
+IVZ,Invesco,N/A,Financial Services,N/A,COMMON,YES
+IWM,iShares Russell 2000 ETF,NYSEARCA,ETF,Small Cap,ETF,NO
+IZER.MC,izertis  S.A.,BME,N/A,N/A,COMMON,YES
+J,Jacobs Solutions,N/A,Industrials,N/A,COMMON,YES
+JBHT,J.B. Hunt,N/A,Industrials,N/A,COMMON,YES
+JBL,Jabil,N/A,Technology,N/A,COMMON,YES
+JCI,Johnson Controls,N/A,Industrials,N/A,COMMON,YES
+JD,JD.com,NASDAQ,Consumer Discretionary,Internet Retail,COMMON,YES
+JDEP.AS,JDE Peet's N.V.,EURONEXT,N/A,N/A,COMMON,YES
+JEN.BR,Jensen-Group N.V.,EURONEXT,N/A,N/A,COMMON,YES
+JKHY,Jack Henry & Associates,N/A,Technology,N/A,COMMON,YES
+JMT.LS,Jerónimo Martins,EURONEXT Lisbon,Consumer Staples,Food Retail,PT_STOCK,YES
+JNJ,Johnson & Johnson,NYSE,Health Care,Pharmaceuticals,COMMON,YES
+JOB,GEE Group  Inc.,AMEX,N/A,N/A,COMMON,YES
+JPM,JPMorgan Chase & Co.,NYSE,Financials,Banking,COMMON,YES
+JY0.F,ParTec AG,XETRA,N/A,N/A,COMMON,YES
+K,Kellanova,N/A,Consumer Defensive,N/A,COMMON,YES
+KAPA,Kairos Pharma  Ltd.,AMEX,N/A,N/A,COMMON,YES
+KBCA.BR,KBC Ancora SCA,EURONEXT,N/A,N/A,COMMON,YES
+KBC.BR,KBC Group N.V.,EURONEXT,N/A,N/A,COMMON,YES
+KDP,Keurig Dr Pepper,N/A,Consumer Defensive,N/A,COMMON,YES
+KENDR.AS,Kendrion N.V.,EURONEXT,N/A,N/A,COMMON,YES
+KEY,KeyCorp,N/A,Financial Services,N/A,COMMON,YES
+KEYS,Keysight Technologies,N/A,Technology,N/A,COMMON,YES
+KFI1.DE,Kingfisher plc,XETRA,N/A,N/A,COMMON,YES
+KHC,Kraft Heinz,N/A,Consumer Defensive,N/A,COMMON,YES
+KHNZ.DE,The Kraft Heinz Company,XETRA,N/A,N/A,COMMON,YES
+KIM,Kimco Realty,N/A,Real Estate,N/A,REIT,SPECIAL
+KIN.BR,Kinepolis Group N.V.,EURONEXT,N/A,N/A,COMMON,YES
+KITW.L,Kitwave Group plc,LSE,N/A,N/A,LSE,MAYBE
+KKR,KKR,N/A,Financial Services,N/A,COMMON,YES
+KLAC,KLA Corporation,N/A,Technology,N/A,COMMON,YES
+KMB,Kimberly-Clark,N/A,Consumer Defensive,N/A,COMMON,YES
+KMI,Kinder Morgan,N/A,Energy,N/A,COMMON,YES
+KMX,CarMax,N/A,Consumer Cyclical,N/A,COMMON,YES
+KNW,Know Labs  Inc.,AMEX,N/A,N/A,COMMON,YES
+KO,The Coca-Cola Company,N/A,Consumer Defensive,N/A,COMMON,YES
+KPN.AS,Koninklijke KPN N.V.,EURONEXT,N/A,N/A,COMMON,YES
+KR,Kroger,N/A,Consumer Defensive,N/A,COMMON,YES
+KTB1.F,Krung Thai Bank Public Company Limited,XETRA,N/A,N/A,COMMON,YES
+KULR,KULR Technology Group  Inc.,AMEX,N/A,N/A,COMMON,YES
+KVUE,Kenvue,N/A,Consumer Defensive,N/A,COMMON,YES
+L,Loews Corporation,N/A,Financial Services,N/A,COMMON,YES
+L5L.F,GreenMerc AB (publ),XETRA,N/A,N/A,COMMON,YES
+LBG.L,LBG Media plc,LSE,N/A,N/A,LSE,MAYBE
+LCTX,Lineage Cell Therapeutics  Inc.,AMEX,N/A,N/A,COMMON,YES
+LDOS,Leidos,N/A,Technology,N/A,COMMON,YES
+LEGT,Legato Merger Corp. III,AMEX,N/A,N/A,COMMON,YES
+LEGT-UN,Legato Merger Corp. III,AMEX,N/A,N/A,COMMON,YES
+LEN,Lennar,N/A,Consumer Cyclical,N/A,COMMON,YES
+LEN.DE,Lenzing AG,XETRA,N/A,N/A,COMMON,YES
+LEU,Centrus Energy Corp.,AMEX,N/A,N/A,COMMON,YES
+LGCY,Legacy Education Inc.,AMEX,N/A,N/A,COMMON,YES
+LGL,The LGL Group  Inc.,AMEX,N/A,N/A,COMMON,YES
+LGL-WT,The LGL Group  Inc.,AMEX,N/A,N/A,COMMON,YES
+LGPS,LogProstyle Inc.,AMEX,N/A,N/A,COMMON,YES
+LH,LabCorp,N/A,Healthcare,N/A,COMMON,YES
+LHOG.F,Land and Houses Public Company Limited,XETRA,N/A,N/A,COMMON,YES
+LHX,L3Harris,N/A,Industrials,N/A,COMMON,YES
+LIGHT.AS,Signify N.V.,EURONEXT,N/A,N/A,COMMON,YES
+LII,Lennox International,N/A,Industrials,N/A,COMMON,YES
+LIKE.L,Likewise Group plc,LSE,N/A,N/A,LSE,MAYBE
+LIN,Linde plc,N/A,Basic Materials,N/A,COMMON,YES
+LKQ,LKQ Corporation,N/A,Consumer Cyclical,N/A,COMMON,YES
+LLY,Lilly (Eli),N/A,Healthcare,N/A,COMMON,YES
+LMT,Lockheed Martin,N/A,Industrials,N/A,COMMON,YES
+LNT,Alliant Energy,N/A,Utilities,N/A,COMMON,YES
+LOCAL.PA,Solocal Group S.A.,EURONEXT,N/A,N/A,COMMON,YES
+LODE,Comstock Inc.,AMEX,N/A,N/A,COMMON,YES
+LOG.MC,Logista Integral  S.A.,BME,N/A,N/A,COMMON,YES
+LORD.L,Lords Group Trading PLC,LSE,N/A,N/A,LSE,MAYBE
+LOTB.BR,Lotus Bakeries N.V.,EURONEXT,N/A,N/A,COMMON,YES
+LOW,Lowe's,N/A,Consumer Cyclical,N/A,COMMON,YES
+LPA,Logistic Properties of the Americas,AMEX,N/A,N/A,COMMON,YES
+LRCX,Lam Research,N/A,Technology,N/A,COMMON,YES
+LSF,Laird Superfood  Inc.,AMEX,N/A,N/A,COMMON,YES
+LUD,Luda Technology Group Limited,AMEX,N/A,N/A,COMMON,YES
+LULU,Lululemon Athletica,N/A,Consumer Cyclical,N/A,COMMON,YES
+LUV,Southwest Airlines,N/A,Industrials,N/A,COMMON,YES
+LVIDE.AS,Lavide Holding N.V.,EURONEXT,N/A,N/A,COMMON,YES
+LVS,Las Vegas Sands,N/A,Consumer Cyclical,N/A,COMMON,YES
+LW,Lamb Weston,N/A,Consumer Defensive,N/A,COMMON,YES
+LYB,LyondellBasell,N/A,Basic Materials,N/A,COMMON,YES
+LYV,Live Nation Entertainment,N/A,Communication Services,N/A,COMMON,YES
+M11.F,First Graphene Limited,XETRA,N/A,N/A,COMMON,YES
+M3BK.DE,Pyramid AG,XETRA,N/A,N/A,COMMON,YES
+MA,Mastercard,N/A,Financial Services,N/A,COMMON,YES
+MAA,Mid-America Apartment Communities,N/A,Real Estate,N/A,REIT,SPECIAL
+MAIA,MAIA Biotechnology  Inc.,AMEX,N/A,N/A,COMMON,YES
+MAKS.MC,Making Science Group  S.A.,BME,N/A,N/A,COMMON,YES
+MAR,Marriott International,N/A,Consumer Cyclical,N/A,COMMON,YES
+MARA,Marathon Digital Holdings,NASDAQ,Financials,Crypto Mining,COMMON,YES
+MAR.LS,Martifer SGPS  S.A.,EURONEXT,N/A,N/A,PT_STOCK,YES
+MAS,Masco,N/A,Industrials,N/A,COMMON,YES
+MC,LVMH,EURONEXT,Consumer Discretionary,Luxury Goods,COMMON,YES
+MCC.BR,Immo Mechelen City Center Naamloze vennootschap,EURONEXT,N/A,N/A,COMMON,YES
+MCD,McDonald's Corporation,N/A,Consumer Cyclical,N/A,COMMON,YES
+MCHP,Microchip Technology,N/A,Technology,N/A,COMMON,YES
+MCK,McKesson Corporation,N/A,Healthcare,N/A,COMMON,YES
+MCO,Moody's Corporation,N/A,Financial Services,N/A,COMMON,YES
+MCP.LS,Grupo Media Capital  SGPS  S.A.,EURONEXT,N/A,N/A,PT_STOCK,YES
+MCRP,Micropolis Holding Company,AMEX,N/A,N/A,COMMON,YES
+MDLZ,Mondelez International,N/A,Consumer Defensive,N/A,COMMON,YES
+MDM.PA,Maisons du Monde S.A.,EURONEXT,N/A,N/A,COMMON,YES
+MDT,Medtronic,N/A,Healthcare,N/A,COMMON,YES
+MELE.BR,Melexis N.V.,EURONEXT,N/A,N/A,COMMON,YES
+MELI,MercadoLibre,N/A,Consumer Cyclical,N/A,COMMON,YES
+MEMS.PA,Memscap  S.a.,EURONEXT,N/A,N/A,COMMON,YES
+MET,MetLife,N/A,Financial Services,N/A,COMMON,YES
+META,Meta Platforms Inc.,NASDAQ,Communication Services,Social Media,COMMON,YES
+MF.PA,Wendel,EURONEXT,N/A,N/A,COMMON,YES
+MGLD,The Marygold Companies  Inc.,AMEX,N/A,N/A,COMMON,YES
+MGM,MGM Resorts,N/A,Consumer Cyclical,N/A,COMMON,YES
+MHH,Mastech Digital  Inc.,AMEX,N/A,N/A,COMMON,YES
+MHK,Mohawk Industries,N/A,Consumer Cyclical,N/A,COMMON,YES
+MI,NFT Limited,AMEX,N/A,N/A,COMMON,YES
+MIDW.L,Midwich Group plc,LSE,N/A,N/A,LSE,MAYBE
+MIKO.BR,Miko N.V.,EURONEXT,N/A,N/A,COMMON,YES
+MIO.MC,Media Investment Optimization  S.A.,BME,N/A,N/A,COMMON,YES
+MITQ,Moving iMage Technologies  Inc.,AMEX,N/A,N/A,COMMON,YES
+MKC,McCormick & Company,N/A,Consumer Defensive,N/A,COMMON,YES
+MLAEM.PA,Ashler et Manson S.A.,EURONEXT,N/A,N/A,COMMON,YES
+MLCLI.PA,Maison Clio Blue S.A.,EURONEXT,N/A,N/A,COMMON,YES
+MLEDS.PA,Editions Du Signe S.A.,EURONEXT,N/A,N/A,COMMON,YES
+MLFMV.LS,Farminveste  S.G.P.S.  S.A.,EURONEXT,N/A,N/A,PT_STOCK,YES
+MLIRF.PA,Innovative-RFK S.p.A.,EURONEXT,N/A,N/A,COMMON,YES
+MLM,Martin Marietta Materials,N/A,Basic Materials,N/A,COMMON,YES
+MLMAZ.BR,Mazaro N.V.,EURONEXT,N/A,N/A,COMMON,YES
+MLOCT.PA,Octopus Biosafety S.A.,EURONEXT,N/A,N/A,COMMON,YES
+MLP.DE,Mlp Se,XETRA,N/A,N/A,COMMON,YES
+MLPRX.PA,Parx Materials N.V.,EURONEXT,N/A,N/A,COMMON,YES
+MLRZE.LS,Raize - Instituição de Pagamentos  S.A.,EURONEXT,N/A,N/A,PT_STOCK,YES
+MLSS,Milestone Scientific Inc.,AMEX,N/A,N/A,COMMON,YES
+MLTRO.PA,Troc de l'Ile S.A.,EURONEXT,N/A,N/A,COMMON,YES
+MLTV.BR,Choice N.V.,EURONEXT,N/A,N/A,COMMON,YES
+MMA,Mixed Martial Arts Group Limited,AMEX,N/A,N/A,COMMON,YES
+MMC,Marsh McLennan,N/A,Financial Services,N/A,COMMON,YES
+MMM,3M Company,N/A,Industrials,N/A,COMMON,YES
+MNST,Monster Beverage,N/A,Consumer Defensive,N/A,COMMON,YES
+MO,Altria,N/A,Consumer Defensive,N/A,COMMON,YES
+MOH,Molina Healthcare,N/A,Healthcare,N/A,COMMON,YES
+MOH.L,MOH Nippon Plc,LSE,N/A,N/A,LSE,MAYBE
+MONT.BR,Montea Comm. VA,EURONEXT,N/A,N/A,COMMON,YES
+MOP.BR,Palmboomen Cultuur Maatschappij Mopoli (Palmeraies De Mopoli) N.V.,EURONEXT,N/A,N/A,COMMON,YES
+MORE.AS,Morefield Group N.V.,EURONEXT,N/A,N/A,COMMON,YES
+MOS,Mosaic Company (The),N/A,Basic Materials,N/A,COMMON,YES
+MOUR.BR,Moury Construct S.A.,EURONEXT,N/A,N/A,COMMON,YES
+MPC,Marathon Petroleum,N/A,Energy,N/A,COMMON,YES
+MPN.DE,Marathon Petroleum Corporation,XETRA,N/A,N/A,COMMON,YES
+MPTI,M-tron Industries  Inc.,AMEX,N/A,N/A,COMMON,YES
+MPU,Mega Matrix Corp.,AMEX,N/A,N/A,COMMON,YES
+MPWR,Monolithic Power Systems,N/A,Technology,N/A,COMMON,YES
+MRK,Merck & Co.  Inc.,N/A,Healthcare,N/A,COMMON,YES
+MRL.LS,MERLIN Properties SOCIMI  S.A.,EURONEXT,N/A,N/A,PT_STOCK,YES
+MRL.MC,MERLIN Properties SOCIMI  S.A.,BME,N/A,N/A,COMMON,YES
+MRNA,Moderna,N/A,Healthcare,N/A,COMMON,YES
+MRN.PA,Mersen S.A.,EURONEXT,N/A,N/A,COMMON,YES
+MRT,Marti Technologies  Inc.,AMEX,N/A,N/A,COMMON,YES
+MRVL,Marvell Technology,N/A,Technology,N/A,COMMON,YES
+MS,Morgan Stanley,N/A,Financial Services,N/A,COMMON,YES
+MSCI,MSCI,N/A,Financial Services,N/A,COMMON,YES
+MSFT,Microsoft Corp.,NASDAQ,Technology,Software,COMMON,YES
+MSI,Motorola Solutions,N/A,Technology,N/A,COMMON,YES
+MSN,Emerson Radio Corp.,AMEX,N/A,N/A,COMMON,YES
+MSTR,MicroStrategy Incorporated,NASDAQ,Technology,Software,COMMON,YES
+MTA,Metalla Royalty & Streaming Ltd.,AMEX,N/A,N/A,COMMON,YES
+MT.AS,ArcelorMittal S.A.,EURONEXT,N/A,N/A,COMMON,YES
+MTB,M&T Bank,N/A,Financial Services,N/A,COMMON,YES
+MTCH,Match Group,N/A,Communication Services,N/A,COMMON,YES
+MTD,Mettler Toledo,N/A,Healthcare,N/A,COMMON,YES
+MTNB,Matinas BioPharma Holdings  Inc.,AMEX,N/A,N/A,COMMON,YES
+MTRK.AS,MotorK plc,EURONEXT,N/A,N/A,COMMON,YES
+MU,Micron Technology,N/A,Technology,N/A,COMMON,YES
+MUM.DE,Mensch und Maschine Software SE,XETRA,N/A,N/A,COMMON,YES
+MWE.L,M.T.I Wireless Edge Ltd.,LSE,N/A,N/A,LSE,MAYBE
+MWG,Multi Ways Holdings Limited,AMEX,N/A,N/A,COMMON,YES
+MXC,Mexco Energy Corporation,AMEX,N/A,N/A,COMMON,YES
+MYND,Mynd.ai  Inc.,AMEX,N/A,N/A,COMMON,YES
+N3IA.F,NIO Inc.,XETRA,N/A,N/A,COMMON,YES
+NAI.AS,New Amsterdam Invest N.V.,EURONEXT,N/A,N/A,COMMON,YES
+NAK,Northern Dynasty Minerals Ltd.,AMEX,N/A,N/A,COMMON,YES
+NAT.MC,Iffe Futura  S.A.,BME,N/A,N/A,COMMON,YES
+NB2.F,Northern Data AG,XETRA,N/A,N/A,COMMON,YES
+NBA.LS,Novabase S.G.P.S.  S.A.,EURONEXT,N/A,N/A,PT_STOCK,YES
+NBB.L,Norman Broadbent plc,LSE,N/A,N/A,LSE,MAYBE
+NBI.MC,NBI Bearings Europe  S.A.,BME,N/A,N/A,COMMON,YES
+NBY,NovaBay Pharmaceuticals  Inc.,AMEX,N/A,N/A,COMMON,YES
+NCL,Northann Corp.,AMEX,N/A,N/A,COMMON,YES
+NCLH,Norwegian Cruise Line Holdings,N/A,Consumer Cyclical,N/A,COMMON,YES
+NDAQ,Nasdaq  Inc.,N/A,Financial Services,N/A,COMMON,YES
+NDSN,Nordson Corporation,N/A,Industrials,N/A,COMMON,YES
+NEDAP.AS,Nedap N.V.,EURONEXT,N/A,N/A,COMMON,YES
+NEDSE.AS,MKB Nedsense N.V.,EURONEXT,N/A,N/A,COMMON,YES
+NEE,NextEra Energy,N/A,Utilities,N/A,COMMON,YES
+NEM,Newmont,N/A,Basic Materials,N/A,COMMON,YES
+NEN,New England Realty Associates Limited Partnership,AMEX,N/A,N/A,COMMON,YES
+NEWP,New Pacific Metals Corp.,AMEX,N/A,N/A,COMMON,YES
+NEXTA.BR,Nextensa NV/SA,EURONEXT,N/A,N/A,COMMON,YES
+NF4.DE,Netfonds AG,XETRA,N/A,N/A,ETF,NO
+NFGC,New Found Gold Corp.,AMEX,N/A,N/A,COMMON,YES
+NFLX,Netflix Inc.,NASDAQ,Communication Services,Streaming,ETF,NO
+NFN.DE,NFON AG,XETRA,N/A,N/A,COMMON,YES
+NG,NovaGold Resources Inc.,AMEX,N/A,N/A,COMMON,YES
+NGD,New Gold Inc.,AMEX,N/A,N/A,COMMON,YES
+NHC,National HealthCare Corporation,AMEX,N/A,N/A,COMMON,YES
+NHH.MC,Minor Hotels Europe & Americas  S.A.,BME,N/A,N/A,COMMON,YES
+NI,NiSource,N/A,Utilities,N/A,COMMON,YES
+NKE,Nike  Inc.,N/A,Consumer Cyclical,N/A,COMMON,YES
+NKE.DE,NIKE  Inc.,XETRA,N/A,N/A,COMMON,YES
+NN.AS,NN Group N.V.,EURONEXT,N/A,N/A,COMMON,YES
+NNVC,NanoViricides  Inc.,AMEX,N/A,N/A,COMMON,YES
+NOC,Northrop Grumman,N/A,Industrials,N/A,COMMON,YES
+NOS.LS,NOS SGPS,EURONEXT Lisbon,Communication Services,Telecom,PT_STOCK,YES
+NOW,ServiceNow,N/A,Technology,N/A,COMMON,YES
+NP5.DE,Newron Pharmaceuticals S.p.A.,XETRA,N/A,N/A,COMMON,YES
+NRA.DE,NRG Energy  Inc.,XETRA,N/A,N/A,COMMON,YES
+NRG,NRG Energy,N/A,Utilities,N/A,COMMON,YES
+NRO.PA,Neurones S.A.,EURONEXT,N/A,N/A,COMMON,YES
+NRP.AS,NEPI Rockcastle S.A.,EURONEXT,N/A,N/A,COMMON,YES
+NSC,Norfolk Southern Railway,N/A,Industrials,N/A,COMMON,YES
+NSE.AS,New Sources Energy N.V.,EURONEXT,N/A,N/A,COMMON,YES
+NSI.AS,Nsi N.V.,EURONEXT,N/A,N/A,COMMON,YES
+NSRX,Nasus Pharma Ltd.,AMEX,N/A,N/A,COMMON,YES
+NTA.DE,NetApp  Inc.,XETRA,N/A,N/A,COMMON,YES
+NTAP,NetApp,N/A,Technology,N/A,COMMON,YES
+NTH.MC,Naturhouse Health  S.A.,BME,N/A,N/A,COMMON,YES
+NTIP,Network-1 Technologies  Inc.,AMEX,N/A,N/A,COMMON,YES
+NTRS,Northern Trust,N/A,Financial Services,N/A,COMMON,YES
+NUE,Nucor,N/A,Basic Materials,N/A,COMMON,YES
+NVDA,NVIDIA Corp.,NASDAQ,Technology,Semiconductors,COMMON,YES
+NVG.LS,The Navigator Company  S.A.,EURONEXT,N/A,N/A,PT_STOCK,YES
+NVM.DE,Novem Group S.A.,XETRA,N/A,N/A,COMMON,YES
+NVO,Novo Nordisk,NYSE,Health Care,Pharmaceuticals,COMMON,YES
+NVR,NVR  Inc.,N/A,Consumer Cyclical,N/A,COMMON,YES
+NWS,News Corp (Class B),N/A,Communication Services,N/A,COMMON,YES
+NWSA,News Corp (Class A),N/A,Communication Services,N/A,COMMON,YES
+NXFIL.AS,NX Filtration N.V.,EURONEXT,N/A,N/A,COMMON,YES
+NXPI,NXP Semiconductors,N/A,Technology,N/A,COMMON,YES
+NYE.MC,Nyesa Valores Corporación  S.A.,BME,N/A,N/A,COMMON,YES
+NYR.BR,Nyrstar N.V.,EURONEXT,N/A,N/A,COMMON,YES
+O,Realty Income,N/A,Real Estate,N/A,REIT,SPECIAL
+OBE,Obsidian Energy Ltd.,AMEX,N/A,N/A,COMMON,YES
+OBEL.BR,Orange Belgium S.A.,EURONEXT,N/A,N/A,COMMON,YES
+OCI.AS,Oci N.V.,EURONEXT,N/A,N/A,COMMON,YES
+ODFL,Old Dominion Freight Line,N/A,Industrials,N/A,COMMON,YES
+OGCP,Empire State Realty OP  L.P.,AMEX,N/A,N/A,COMMON,YES
+OGEN,Oragenics  Inc.,AMEX,N/A,N/A,COMMON,YES
+OHB.DE,Ohb Se,XETRA,N/A,N/A,COMMON,YES
+OHLA.MC,Obrascón Huarte Lain  S.A.,BME,N/A,N/A,COMMON,YES
+OKE,ONEOK,N/A,Energy,N/A,COMMON,YES
+OMC,Omnicom Group,N/A,Communication Services,N/A,COMMON,YES
+ON,Onsemi,N/A,Technology,N/A,COMMON,YES
+ONTEX.BR,Ontex Group N.V.,EURONEXT,N/A,N/A,COMMON,YES
+ONWD.BR,Onward Medical N.V.,EURONEXT,N/A,N/A,COMMON,YES
+OPTI.BR,Crescent N.V.,EURONEXT,N/A,N/A,COMMON,YES
+OPTT,Ocean Power Technologies  Inc.,AMEX,N/A,N/A,COMMON,YES
+OR,Pernod Ricard,EURONEXT,Consumer Staples,Beverages,COMMON,YES
+ORCL,Oracle Corporation,N/A,Technology,N/A,COMMON,YES
+ORLA,Orla Mining Ltd.,AMEX,N/A,N/A,COMMON,YES
+ORLY,O'Reilly Automotive,N/A,Consumer Cyclical,N/A,COMMON,YES
+OTIS,Otis Worldwide,N/A,Industrials,N/A,COMMON,YES
+OVH.PA,OVH Groupe S.A.,EURONEXT,N/A,N/A,COMMON,YES
+OXUR.BR,Oxurion N.V.,EURONEXT,N/A,N/A,COMMON,YES
+OXY,Occidental Petroleum,N/A,Energy,N/A,COMMON,YES
+OZ,Belpointe PREP  LLC,AMEX,N/A,N/A,COMMON,YES
+PANW,Palo Alto Networks,N/A,Technology,N/A,COMMON,YES
+PAPL,Pineapple Financial Inc.,AMEX,N/A,N/A,COMMON,YES
+PAR.MC,Parlem Telecom Companyia de Telecomunicacions  S.A.,BME,N/A,N/A,COMMON,YES
+PAY.BR,Payton Planar Magnetics Ltd.,EURONEXT,N/A,N/A,COMMON,YES
+PAYC,Paycom,N/A,Technology,N/A,COMMON,YES
+PAYX,Paychex,N/A,Industrials,N/A,COMMON,YES
+PCAR,Paccar,N/A,Industrials,N/A,COMMON,YES
+PCG,PG&E Corporation,N/A,Utilities,N/A,COMMON,YES
+PCG-PA,Pacific Gas and Electric Company,AMEX,N/A,N/A,COMMON,YES
+PCG-PB,Pacific Gas and Electric Company,AMEX,N/A,N/A,COMMON,YES
+PCG-PC,Pacific Gas and Electric Company PFD 1ST 5%,AMEX,N/A,N/A,COMMON,YES
+PCG-PD,Pacific Gas and Electric Company,AMEX,N/A,N/A,COMMON,YES
+PCG-PE,Pacific Gas and Electric Company,AMEX,N/A,N/A,COMMON,YES
+PCG-PG,Pacific Gas and Electric Company,AMEX,N/A,N/A,COMMON,YES
+PCG-PH,Pacific Gas and Electric Company,AMEX,N/A,N/A,COMMON,YES
+PCG-PI,Pacific Gas and Electric Company PFD 1ST 4.36%,AMEX,N/A,N/A,COMMON,YES
+PCZ.DE,ProCredit Holding AG & Co. KGaA,XETRA,N/A,N/A,COMMON,YES
+PDD,PDD Holdings,NYSE,Consumer Discretionary,Internet Retail,COMMON,YES
+PED,PEDEVCO Corp.,AMEX,N/A,N/A,COMMON,YES
+PEG,Public Service Enterprise Group,N/A,Utilities,N/A,COMMON,YES
+PEN.L,Pennant International Group plc,LSE,N/A,N/A,LSE,MAYBE
+PEP,PepsiCo,N/A,Consumer Defensive,N/A,COMMON,YES
+PERR.PA,Gérard Perrier Industrie S.A.,EURONEXT,N/A,N/A,COMMON,YES
+PET.L,Petrel Resources Plc,LSE,N/A,N/A,LSE,MAYBE
+PEYS.L,Partners Group Private Equity Limited,LSE,N/A,N/A,LSE,MAYBE
+PFE,Pfizer,N/A,Healthcare,N/A,COMMON,YES
+PFG,Principal Financial Group,N/A,Financial Services,N/A,COMMON,YES
+PG,Procter & Gamble Co.,NYSE,Consumer Staples,Household Products,COMMON,YES
+PGR,Progressive Corporation,N/A,Financial Services,N/A,COMMON,YES
+PH,Parker Hannifin,N/A,Industrials,N/A,COMMON,YES
+PHARM.AS,Pharming Group N.V.,EURONEXT,N/A,N/A,COMMON,YES
+PHGE,BiomX Inc.,AMEX,N/A,N/A,COMMON,YES
+PHIA.AS,Koninklijke Philips N.V.,EURONEXT,N/A,N/A,COMMON,YES
+PHM,PulteGroup,N/A,Consumer Cyclical,N/A,COMMON,YES
+PHR.LS,Pharol  SGPS S.A.,EURONEXT,N/A,N/A,PT_STOCK,YES
+PIG.PA,Haulotte Group S.A.,EURONEXT,N/A,N/A,COMMON,YES
+PIP.L,PipeHawk plc,LSE,N/A,N/A,LSE,MAYBE
+PKG,Packaging Corporation of America,N/A,Consumer Cyclical,N/A,COMMON,YES
+PLAG,Planet Green Holdings Corp.,AMEX,N/A,N/A,COMMON,YES
+PLD,Prologis,N/A,Real Estate,N/A,REIT,SPECIAL
+PLG,Platinum Group Metals Ltd.,AMEX,N/A,N/A,COMMON,YES
+PLTR,Palantir Technologies,NYSE,Technology,Software,COMMON,YES
+PLUN.DE,Plug Power Inc.,XETRA,N/A,N/A,COMMON,YES
+PLUN.F,Plug Power Inc.,XETRA,N/A,N/A,COMMON,YES
+PLX,Protalix BioTherapeutics  Inc.,AMEX,N/A,N/A,COMMON,YES
+PM,Philip Morris International,N/A,Consumer Defensive,N/A,COMMON,YES
+PMG.L,The Parkmead Group plc,LSE,N/A,N/A,LSE,MAYBE
+PNC,PNC Financial Services,N/A,Financial Services,N/A,COMMON,YES
+PNL.AS,PostNL N.V.,EURONEXT,N/A,N/A,COMMON,YES
+PNR,Pentair,N/A,Industrials,N/A,COMMON,YES
+PNS.L,Panther Securities PLC,LSE,N/A,N/A,LSE,MAYBE
+PNW,Pinnacle West,N/A,Utilities,N/A,COMMON,YES
+POAS,Phaos Technology Holdings (Cayman) Limited,AMEX,N/A,N/A,COMMON,YES
+PODD,Insulet Corporation,N/A,Healthcare,N/A,COMMON,YES
+POH1.DE,Carnival Corporation & plc,XETRA,N/A,N/A,COMMON,YES
+POOL,Pool Corporation,N/A,Industrials,N/A,COMMON,YES
+PORF.AS,B.V. Delftsch Aardewerkfabriek De Porceleyne Fles Anno 1653,EURONEXT,N/A,N/A,COMMON,YES
+POXEL.PA,Poxel S.A.,EURONEXT,N/A,N/A,COMMON,YES
+PPG,PPG Industries,N/A,Basic Materials,N/A,COMMON,YES
+PPL,PPL Corporation,N/A,Utilities,N/A,COMMON,YES
+PREVA.AS,Value8 N.V.,EURONEXT,N/A,N/A,COMMON,YES
+PRK,Park National Corporation,AMEX,N/A,N/A,COMMON,YES
+PROX.BR,Proximus PLC,EURONEXT,N/A,N/A,COMMON,YES
+PRS.MC,Promotora de Informaciones  S.A.,BME,N/A,N/A,COMMON,YES
+PRU,Prudential Financial,N/A,Financial Services,N/A,COMMON,YES
+PRX.AS,Prosus N.V.,EURONEXT,N/A,N/A,COMMON,YES
+PSA,Public Storage,N/A,Real Estate,N/A,REIT,SPECIAL
+PSKY,Paramount Skydance Corp,N/A,Communication Services,N/A,COMMON,YES
+PSM.DE,ProSiebenSat.1 Media SE,XETRA,N/A,N/A,COMMON,YES
+PSQ.F,Somboon Advance Technology Public Company Limited,XETRA,N/A,N/A,COMMON,YES
+PSX,Phillips 66,N/A,Energy,N/A,COMMON,YES
+PTC,PTC Inc.,N/A,Technology,N/A,COMMON,YES
+PUB.PA,Publicis Groupe S.A.,EURONEXT,N/A,N/A,COMMON,YES
+PW,Power REIT,AMEX,N/A,N/A,REIT,SPECIAL
+PWR,Quanta Services,N/A,Industrials,N/A,COMMON,YES
+PYPL,PayPal Holdings,NASDAQ,Technology,Payments,COMMON,YES
+PZG,Paramount Gold Nevada Corp.,AMEX,N/A,N/A,COMMON,YES
+QCOM,Qualcomm,N/A,Technology,N/A,COMMON,YES
+QEV.AS,SPEAR Investments I B.V.,EURONEXT,N/A,N/A,COMMON,YES
+QFG.BR,Quest for Growth Belgium,EURONEXT,N/A,N/A,COMMON,YES
+QRF.BR,Qrf Comm. VA,EURONEXT,N/A,N/A,COMMON,YES
+R4.MC,Renta 4 Banco  S.A.,BME,N/A,N/A,COMMON,YES
+RAM.LS,Ramada Investimentos e Industria  S.A.,EURONEXT,N/A,N/A,PT_STOCK,YES
+RAND.AS,Randstad N.V.,EURONEXT,N/A,N/A,COMMON,YES
+RBLX,Roblox Corporation,NYSE,Communication Services,Entertainment,COMMON,YES
+RBT.MC,Robot  S.A.,BME,N/A,N/A,COMMON,YES
+RCGH.L,RC365 Holding plc,LSE,N/A,N/A,LSE,MAYBE
+RCL,Royal Caribbean Group,N/A,Consumer Cyclical,N/A,COMMON,YES
+RCN.L,Redcentric plc,LSE,N/A,N/A,LSE,MAYBE
+REAL.BR,Realco S.A.,EURONEXT,N/A,N/A,COMMON,YES
+RECT.BR,Recticel SA/NV,EURONEXT,N/A,N/A,COMMON,YES
+REG,Regency Centers,N/A,Real Estate,N/A,REIT,SPECIAL
+REGN,Regeneron Pharmaceuticals,N/A,Healthcare,N/A,COMMON,YES
+REI,Ring Energy  Inc.,AMEX,N/A,N/A,COMMON,YES
+REINA.AS,Reinet Investments S.C.A.,EURONEXT,N/A,N/A,COMMON,YES
+REN.AS,RELX Plc,EURONEXT,N/A,N/A,COMMON,YES
+RENE.LS,REN - Redes Energéticas Nacionais  SGPS  S.A.,EURONEXT,N/A,N/A,PT_STOCK,YES
+RENX.L,Renalytix Plc,LSE,N/A,N/A,LSE,MAYBE
+REPX,Riley Exploration Permian  Inc.,AMEX,N/A,N/A,COMMON,YES
+RET.BR,Retail Estates N.V.,EURONEXT,N/A,N/A,COMMON,YES
+RF,Regions Financial Corporation,N/A,Financial Services,N/A,COMMON,YES
+RGNT,Regentis Biomaterials Ltd.,AMEX,N/A,N/A,COMMON,YES
+RIO1.DE,Rio Tinto Group,XETRA,N/A,N/A,COMMON,YES
+RIOT,RIOT Platforms Inc.,NASDAQ,Financials,Crypto Mining,COMMON,YES
+RJF,Raymond James Financial,N/A,Financial Services,N/A,COMMON,YES
+RL,Ralph Lauren Corporation,N/A,Consumer Cyclical,N/A,COMMON,YES
+RLE.L,Real Estate Investors plc,LSE,N/A,N/A,LSE,MAYBE
+RLGT,Radiant Logistics  Inc.,AMEX,N/A,N/A,COMMON,YES
+RLIA.MC,Realia Business  S.A.,BME,N/A,N/A,COMMON,YES
+RLI.F,Reliance Industries Limited,XETRA,N/A,N/A,COMMON,YES
+RMD,ResMed,N/A,Healthcare,N/A,COMMON,YES
+RN70.F,Regions Financial Corporation,XETRA,N/A,N/A,COMMON,YES
+ROK,Rockwell Automation,N/A,Industrials,N/A,COMMON,YES
+ROL,Rollins  Inc.,N/A,Consumer Cyclical,N/A,COMMON,YES
+ROLR,High Roller Technologies  Inc.,AMEX,N/A,N/A,COMMON,YES
+ROP,Roper Technologies,N/A,Industrials,N/A,COMMON,YES
+ROST,Ross Stores,N/A,Consumer Cyclical,N/A,COMMON,YES
+ROU.BR,Roularta Media Group N.V.,EURONEXT,N/A,N/A,COMMON,YES
+RSG,Republic Services,N/A,Industrials,N/A,COMMON,YES
+RSL2.DE,R. Stahl AG,XETRA,N/A,N/A,COMMON,YES
+RSO.DE,Ross Stores Inc,XETRA,N/A,N/A,COMMON,YES
+RTX,RTX Corporation,N/A,Industrials,N/A,COMMON,YES
+RVP,Retractable Technologies  Inc.,AMEX,N/A,N/A,COMMON,YES
+RVTY,Revvity,N/A,Healthcare,N/A,COMMON,YES
+RWS.L,RWS Holdings plc,LSE,N/A,N/A,LSE,MAYBE
+RXO,RXO Inc.,NYSE,Industrials,Trucking,COMMON,YES
+RYDE,Ryde Group Ltd.,AMEX,N/A,N/A,COMMON,YES
+SAB.MC,Banco de Sabadell  S.A.,BME,N/A,N/A,COMMON,YES
+SACH,Sachem Capital Corp.,AMEX,N/A,N/A,COMMON,YES
+SACH-PA,Sachem Capital Corp.,AMEX,N/A,N/A,COMMON,YES
+SAN.MC,Banco Santander S.A.,BME,Financials,Banking,COMMON,YES
+SAP,SAP SE,XETRA,Technology,Software,COMMON,YES
+SAX.DE,Ströer SE & Co. KGaA,XETRA,N/A,N/A,COMMON,YES
+SBAC,SBA Communications,N/A,Real Estate,N/A,REIT,SPECIAL
+SBEV,Splash Beverage Group  Inc.,AMEX,N/A,N/A,COMMON,YES
+SBEV-WT,Splash Beverage Group  Inc.,AMEX,N/A,N/A,COMMON,YES
+SBID.L,State Bank of India,LSE,N/A,N/A,LSE,MAYBE
+SBMO.AS,SBM Offshore N.V.,EURONEXT,N/A,N/A,COMMON,YES
+SBUX,Starbucks,N/A,Consumer Cyclical,N/A,COMMON,YES
+SCB.LS,Sporting Clube de Braga - Futebol  SAD,EURONEXT,N/A,N/A,PT_STOCK,YES
+SCCC,Sachem Capital Corp. 7.75% Note,AMEX,N/A,N/A,COMMON,YES
+SCCD,Sachem Capital Corp. 6.00% Notes Due 2026,AMEX,N/A,N/A,COMMON,YES
+SCCF,Sachem Capital Corp. 7.125% Not,AMEX,N/A,N/A,COMMON,YES
+SCCG,Sachem Capital Corp. 8.00% Note,AMEX,N/A,N/A,COMMON,YES
+SCE.DE,Schweizer Electronic AG,XETRA,N/A,N/A,COMMON,YES
+SCHW,Charles Schwab Corporation,N/A,Financial Services,N/A,COMMON,YES
+SCP.LS,Sporting Clube de Portugal - Futebol  SAD,EURONEXT,N/A,N/A,PT_STOCK,YES
+SCR.PA,SCOR Se,EURONEXT,N/A,N/A,COMMON,YES
+SCT.LS,Toyota Caetano Portugal  S.A.,EURONEXT,N/A,N/A,PT_STOCK,YES
+SCYR.MC,Sacyr  S.A.,BME,N/A,N/A,COMMON,YES
+SEB,Seaboard Corporation,AMEX,N/A,N/A,COMMON,YES
+SEC.PA,Soditech S.A.,EURONEXT,N/A,N/A,COMMON,YES
+SEEN.L,SEEEN plc,LSE,N/A,N/A,LSE,MAYBE
+SEFER.PA,SergeFerrari Group S.A.,EURONEXT,N/A,N/A,COMMON,YES
+SEM.LS,Semapa - Sociedade de Investimento e Gestão  SGPS  S.A.,EURONEXT,N/A,N/A,PT_STOCK,YES
+SENS,Senseonics Holdings  Inc.,AMEX,N/A,N/A,COMMON,YES
+SEQUA.BR,Sequana Medical N.V.,EURONEXT,N/A,N/A,COMMON,YES
+SFE.DE,Synchrony Financial,XETRA,N/A,N/A,COMMON,YES
+SFQ.DE,SAF-Holland SE,XETRA,N/A,N/A,COMMON,YES
+SGN,Signing Day Sports  Inc.,AMEX,N/A,N/A,COMMON,YES
+SHA0.DE,Schaeffler AG,XETRA,N/A,N/A,COMMON,YES
+SHELL.AS,Shell plc,EURONEXT,N/A,N/A,COMMON,YES
+SHI.L,SIG plc,LSE,N/A,N/A,LSE,MAYBE
+SHIP.L,Tufton Oceanic Assets Limited,LSE,N/A,N/A,LSE,MAYBE
+SHOP,Shopify,N/A,Technology,N/A,COMMON,YES
+SHUR.BR,Shurgard Self Storage S.A.,EURONEXT,N/A,N/A,COMMON,YES
+SHW,Sherwin-Williams,N/A,Basic Materials,N/A,COMMON,YES
+SIE,Siemens AG,XETRA,Industrials,Industrial Conglomerates,COMMON,YES
+SIEMENS,Siemens AG,XETRA,Industrials,Industrial Conglomerates,COMMON,YES
+SIF,SIFCO Industries  Inc.,AMEX,N/A,N/A,COMMON,YES
+SIFG.AS,Sif Holding N.V.,EURONEXT,N/A,N/A,COMMON,YES
+SIGHT.PA,GenSight Biologics S.A.,EURONEXT,N/A,N/A,COMMON,YES
+SIM,Grupo Simec  S.A.B. de C.V.,AMEX,N/A,N/A,COMMON,YES
+SIP.BR,Sipef N.V.,EURONEXT,N/A,N/A,COMMON,YES
+SIX2.DE,Sixt SE,XETRA,N/A,N/A,COMMON,YES
+SJM,J.M. Smucker Company (The),N/A,Consumer Defensive,N/A,COMMON,YES
+SKB.DE,Koenig & Bauer AG,XETRA,N/A,N/A,COMMON,YES
+SKL.L,Skillcast Group plc,LSE,N/A,N/A,LSE,MAYBE
+SK.PA,Seb S.A.,EURONEXT,N/A,N/A,COMMON,YES
+SKYH,Sky Harbour Group Corporation,AMEX,N/A,N/A,COMMON,YES
+SKYH-WT,Sky Harbour Group Corporation,AMEX,N/A,N/A,COMMON,YES
+SLB,Schlumberger,N/A,Energy,N/A,COMMON,YES
+SLBEN.LS,Sport Lisboa e Benfica - Futebol  SAD,EURONEXT,N/A,N/A,PT_STOCK,YES
+SLI,Standard Lithium Ltd.,AMEX,N/A,N/A,COMMON,YES
+SLIGR.AS,Sligro Food Group N.V.,EURONEXT,N/A,N/A,COMMON,YES
+SLND,Southland Holdings  Inc.,AMEX,N/A,N/A,COMMON,YES
+SLSR,Solaris Resources Inc.,AMEX,N/A,N/A,COMMON,YES
+SMCI,Super Micro Computer Inc.,NASDAQ,Technology,Servers,COMMON,YES
+SMCP.PA,SMCP S.a.,EURONEXT,N/A,N/A,COMMON,YES
+SNA,Snap-on,N/A,Industrials,N/A,COMMON,YES
+SNC.LS,Sonaecom  S.G.P.S.  S.A.,EURONEXT,N/A,N/A,PT_STOCK,YES
+SNG.MC,Singular People  S.A.,BME,N/A,N/A,COMMON,YES
+SNPS,Synopsys,N/A,Technology,N/A,COMMON,YES
+SO,Southern Company,N/A,Utilities,N/A,COMMON,YES
+SOAR,Volato Group  Inc.,AMEX,N/A,N/A,COMMON,YES
+SOF.BR,Sofina S.A.,EURONEXT,N/A,N/A,COMMON,YES
+SOFI,SoFi Technologies,NASDAQ,Financials,Fintech,COMMON,YES
+SOFT.BR,Softimat S.A.,EURONEXT,N/A,N/A,COMMON,YES
+SOLB.BR,Solvay S.A.,EURONEXT,N/A,N/A,COMMON,YES
+SOLI.L,Solid State plc,LSE,N/A,N/A,LSE,MAYBE
+SOLV,Solventum,N/A,Healthcare,N/A,COMMON,YES
+SOLV.BR,Solvac S.A.,EURONEXT,N/A,N/A,COMMON,YES
+SOM.L,Somero Enterprises  Inc.,LSE,N/A,N/A,LSE,MAYBE
+SON.LS,Sonae  SGPS  S.A.,EURONEXT,N/A,N/A,PT_STOCK,YES
+SONY,Sony Group,NYSE,Communication Services,Entertainment,COMMON,YES
+SPA.BR,Spadel S.a.,EURONEXT,N/A,N/A,COMMON,YES
+SPEC.L,INSPECS Group plc,LSE,N/A,N/A,LSE,MAYBE
+SPG,Simon Property Group,N/A,Real Estate,N/A,REIT,SPECIAL
+SPGI,S&P Global,N/A,Financial Services,N/A,COMMON,YES
+SPH.MC,Profithol  S.A.,BME,N/A,N/A,COMMON,YES
+SPSC.L,Spectra Systems Corporation,LSE,N/A,N/A,LSE,MAYBE
+SQ,Block Inc.,NYSE,Technology,Payments,COMMON,YES
+SQU.DE,Vinci S.A.,XETRA,N/A,N/A,COMMON,YES
+SRE,Sempra,N/A,Utilities,N/A,COMMON,YES
+STE,Steris,N/A,Healthcare,N/A,COMMON,YES
+STG.L,Strip Tinning Holdings plc,LSE,N/A,N/A,LSE,MAYBE
+STLD,Steel Dynamics,N/A,Basic Materials,N/A,COMMON,YES
+STO3.DE,Sto SE & Co. KGaA,XETRA,N/A,N/A,COMMON,YES
+STRW,Strawberry Fields REIT LLC,AMEX,N/A,N/A,REIT,SPECIAL
+STT,State Street Corporation,N/A,Financial Services,N/A,COMMON,YES
+STX,Seagate Technology,N/A,Technology,N/A,COMMON,YES
+STXS,Stereotaxis  Inc.,AMEX,N/A,N/A,COMMON,YES
+STZ,Constellation Brands,N/A,Consumer Defensive,N/A,COMMON,YES
+SVM,Silvercorp Metals Inc.,AMEX,N/A,N/A,COMMON,YES
+SW,Smurfit WestRock,N/A,Consumer Cyclical,N/A,COMMON,YES
+SWK,Stanley Black & Decker,N/A,Industrials,N/A,COMMON,YES
+SWKS,Skyworks Solutions,N/A,Technology,N/A,COMMON,YES
+SW.PA,Sodexo S.A.,EURONEXT,N/A,N/A,COMMON,YES
+SYENS.BR,Syensqo SA/NV,EURONEXT,N/A,N/A,COMMON,YES
+SYF,Synchrony Financial,N/A,Financial Services,N/A,COMMON,YES
+SYK,Stryker Corporation,N/A,Healthcare,N/A,COMMON,YES
+SYNT.L,Synthomer plc,LSE,N/A,N/A,LSE,MAYBE
+SYNX,Silynxcom Ltd.,AMEX,N/A,N/A,COMMON,YES
+SYT.DE,Softing AG,XETRA,N/A,N/A,COMMON,YES
+SYY,Sysco,N/A,Consumer Defensive,N/A,COMMON,YES
+SZU.DE,Südzucker AG,XETRA,N/A,N/A,COMMON,YES
+T,AT&T,N/A,Communication Services,N/A,COMMON,YES
+TA1.DE,Telekom Austria AG,XETRA,N/A,N/A,COMMON,YES
+TAP,Molson Coors Beverage Company,N/A,Consumer Defensive,N/A,COMMON,YES
+TBX0.F,tick Trading Software AG,XETRA,N/A,N/A,COMMON,YES
+TCEHY,Tencent Holdings,OTC,Communication Services,Internet Content,COMMON,YES
+TCF.L,Theracryf Plc,LSE,N/A,N/A,LSE,MAYBE
+TDG,TransDigm Group,N/A,Industrials,N/A,COMMON,YES
+TDSA.LS,Teixeira Duarte  S.A.,EURONEXT,N/A,N/A,PT_STOCK,YES
+TDY,Teledyne Technologies,N/A,Technology,N/A,COMMON,YES
+TEAM,Atlassian,N/A,Technology,N/A,COMMON,YES
+TECH,Bio-Techne,N/A,Healthcare,N/A,COMMON,YES
+TEF.MC,Telefónica  S.A.,BME,N/A,N/A,COMMON,YES
+TEL,TE Connectivity,N/A,Technology,N/A,COMMON,YES
+TER,Teradyne,N/A,Technology,N/A,COMMON,YES
+TESB.BR,Tessenderlo Group N.V.,EURONEXT,N/A,N/A,COMMON,YES
+TEXF.BR,Texaf S.A.,EURONEXT,N/A,N/A,COMMON,YES
+TFC,Truist Financial,N/A,Financial Services,N/A,COMMON,YES
+TFG.AS,Tetragon Financial Group Limited,EURONEXT,N/A,N/A,COMMON,YES
+TGB,Taseko Mines Limited,AMEX,N/A,N/A,COMMON,YES
+TGEN,Tecogen Inc.,AMEX,N/A,N/A,COMMON,YES
+TGT,Target Corporation,N/A,Consumer Defensive,N/A,COMMON,YES
+THEON.AS,Theon International PLC,EURONEXT,N/A,N/A,COMMON,YES
+THM,International Tower Hill Mines Ltd.,AMEX,N/A,N/A,COMMON,YES
+TIC,Acuren Corporation,AMEX,N/A,N/A,COMMON,YES
+TINC.BR,TINC N.V.,EURONEXT,N/A,N/A,COMMON,YES
+TJX,TJX Companies,N/A,Consumer Cyclical,N/A,COMMON,YES
+TKA.DE,thyssenkrupp AG,XETRA,N/A,N/A,COMMON,YES
+TKO,TKO Group Holdings,N/A,Communication Services,N/A,COMMON,YES
+TKWY.AS,Just Eat Takeaway.com N.V.,EURONEXT,N/A,N/A,COMMON,YES
+TLGO.MC,Talgo  S.A.,BME,N/A,N/A,COMMON,YES
+TLT.AS,The London Tunnels PLC,EURONEXT,N/A,N/A,COMMON,YES
+TM,Toyota Motor,NYSE,Consumer Discretionary,Automotive,COMMON,YES
+TMDE,TMD Energy Limited,AMEX,N/A,N/A,COMMON,YES
+TMG.L,The Mission Group plc,LSE,N/A,N/A,LSE,MAYBE
+TMO,Thermo Fisher Scientific,N/A,Healthcare,N/A,COMMON,YES
+TMP,Tompkins Financial Corporation,AMEX,N/A,N/A,COMMON,YES
+TMQ,Trilogy Metals Inc.,AMEX,N/A,N/A,COMMON,YES
+TMUS,T-Mobile US,N/A,Communication Services,N/A,COMMON,YES
+TN8.DE,Thermo Fisher Scientific Inc.,XETRA,N/A,N/A,COMMON,YES
+TNE5.DE,Telefónica  S.A.,XETRA,N/A,N/A,COMMON,YES
+TOM2.AS,TomTom N.V.,EURONEXT,N/A,N/A,COMMON,YES
+TOON,Kartoon Studios Inc.,AMEX,N/A,N/A,COMMON,YES
+TOPP,Toppoint Holdings Inc.,AMEX,N/A,N/A,COMMON,YES
+TOST,Toast Inc.,NYSE,Technology,POS,COMMON,YES
+TOVX,Theriva Biologics  Inc.,AMEX,N/A,N/A,COMMON,YES
+TPET,Trio Petroleum Corp.,AMEX,N/A,N/A,COMMON,YES
+TPIG.F,IRPC Public Company Limited,XETRA,N/A,N/A,COMMON,YES
+TPL,Texas Pacific Land Corporation,N/A,Energy,N/A,COMMON,YES
+TPR,Tapestry  Inc.,N/A,Consumer Cyclical,N/A,COMMON,YES
+TRG.MC,Tubos Reunidos  S.A.,BME,N/A,N/A,COMMON,YES
+TRGP,Targa Resources,N/A,Energy,N/A,COMMON,YES
+TRMB,Trimble Inc.,N/A,Technology,N/A,COMMON,YES
+TROW,T. Rowe Price,N/A,Financial Services,N/A,COMMON,YES
+TRT,Trio-Tech International,AMEX,N/A,N/A,COMMON,YES
+TRT.L,Transense Technologies plc,LSE,N/A,N/A,LSE,MAYBE
+TRV,The Travelers Companies  Inc.,N/A,Financial Services,N/A,COMMON,YES
+TRX,TRX Gold Corporation,AMEX,N/A,N/A,COMMON,YES
+TSCO,Tractor Supply,N/A,Consumer Cyclical,N/A,COMMON,YES
+TSLA,Tesla Inc.,NASDAQ,Consumer Discretionary,Automotive,COMMON,YES
+TSM,Taiwan Semiconductor,NYSE,Technology,Semiconductors,COMMON,YES
+TSN,Tyson Foods,N/A,Consumer Defensive,N/A,COMMON,YES
+TSTL.L,Tristel PLC,LSE,N/A,N/A,LSE,MAYBE
+TT,Trane Technologies,N/A,Industrials,N/A,COMMON,YES
+TTD,The Trade Desk Inc.,NASDAQ,Communication Services,Advertising,COMMON,YES
+TTE.L,TotalEnergies SE,LSE,N/A,N/A,LSE,MAYBE
+TTE.PA,TotalEnergies SE,EURONEXT,N/A,N/A,COMMON,YES
+TTO.DE,TTL Beteiligungs- und Grundbesitz-AG,XETRA,N/A,N/A,COMMON,YES
+TTWO,Take-Two Interactive,N/A,Technology,N/A,COMMON,YES
+TUB.BR,Financière de Tubize S.A.,EURONEXT,N/A,N/A,COMMON,YES
+TUB.MC,Tubacex  S.A.,BME,N/A,N/A,COMMON,YES
+TWEKA.AS,TKH Group N.V.,EURONEXT,N/A,N/A,COMMON,YES
+TX3A.F,Airports of Thailand Public Company Limited,XETRA,N/A,N/A,COMMON,YES
+TXN,Texas Instruments,N/A,Technology,N/A,COMMON,YES
+TXT,Textron,N/A,Industrials,N/A,COMMON,YES
+TYL,Tyler Technologies,N/A,Technology,N/A,COMMON,YES
+TYM.L,Tertiary Minerals plc,LSE,N/A,N/A,LSE,MAYBE
+TYT.L,Toyota Motor Corporation,LSE,N/A,N/A,LSE,MAYBE
+U,Unity Software Inc.,NYSE,Technology,Game Engine,COMMON,YES
+UAL,United Airlines Holdings,N/A,Industrials,N/A,COMMON,YES
+UAVS,AgEagle Aerial Systems  Inc.,AMEX,N/A,N/A,COMMON,YES
+UBER,Uber,N/A,Technology,N/A,COMMON,YES
+UCB.BR,Ucb S.A.,EURONEXT,N/A,N/A,COMMON,YES
+UDR,UDR  Inc.,N/A,Real Estate,N/A,REIT,SPECIAL
+UEC,Uranium Energy Corp.,AMEX,N/A,N/A,COMMON,YES
+UHS,Universal Health Services,N/A,Healthcare,N/A,COMMON,YES
+ULTA,Ulta Beauty,N/A,Consumer Cyclical,N/A,COMMON,YES
+UMAC,Unusual Machines  Inc.,AMEX,N/A,N/A,COMMON,YES
+UMG.AS,Universal Music Group N.V.,EURONEXT,N/A,N/A,COMMON,YES
+UMI.BR,Umicore S.A.,EURONEXT,N/A,N/A,COMMON,YES
+UMR.L,Unicorn Mineral Resources Public Limited Company,LSE,N/A,N/A,LSE,MAYBE
+UNA.AS,Unilever PLC,EURONEXT,N/A,N/A,COMMON,YES
+UNH,UnitedHealth Group Inc.,NYSE,Health Care,Managed Health Care,COMMON,YES
+UNH.DE,UnitedHealth Group Incorporated,XETRA,N/A,N/A,COMMON,YES
+UNP,Union Pacific Corporation,N/A,Industrials,N/A,COMMON,YES
+UPAB.DE,United Parcel Service  Inc.,XETRA,N/A,N/A,COMMON,YES
+UPR.L,Uniphar plc,LSE,N/A,N/A,LSE,MAYBE
+UPS,United Parcel Service,N/A,Industrials,N/A,COMMON,YES
+UPST,Upstart Holdings Inc.,NASDAQ,Financials,AI Lending,COMMON,YES
+URG,Ur-Energy Inc.,AMEX,N/A,N/A,COMMON,YES
+URI,United Rentals,N/A,Industrials,N/A,COMMON,YES
+URW.PA,Unibail-Rodamco-Westfield SE,EURONEXT,N/A,N/A,COMMON,YES
+USAS,Americas Gold and Silver Corporation,AMEX,N/A,N/A,COMMON,YES
+USB,U.S. Bancorp,N/A,Financial Services,N/A,COMMON,YES
+UUU,Universal Safety Products  Inc.,AMEX,N/A,N/A,COMMON,YES
+UUUU,Energy Fuels Inc.,AMEX,N/A,N/A,COMMON,YES
+V,Visa Inc.,NYSE,Financials,Payments,COMMON,YES
+VAF.LS,Vista Alegre Atlantis  SGPS  S.A.,EURONEXT,N/A,N/A,PT_STOCK,YES
+VALUE.AS,Value8 N.V.,EURONEXT,N/A,N/A,COMMON,YES
+VANA.MC,Vanadi Coffee S.A.,EURONEXT,N/A,N/A,COMMON,YES
+VANTI.PA,Vantiva S.A.,EURONEXT,N/A,N/A,COMMON,YES
+VASTB.BR,Vastned Belgium,EURONEXT,N/A,N/A,COMMON,YES
+VCP.L,Victoria PLC,LSE,N/A,N/A,LSE,MAYBE
+VEE.DE,Veeva Systems Inc.,XETRA,N/A,N/A,COMMON,YES
+VENU,Venu Holding Corporation,AMEX,N/A,N/A,COMMON,YES
+VG0K.F,Vivanco Gruppe AG,XETRA,N/A,N/A,COMMON,YES
+VGP.BR,Vgp N.V.,EURONEXT,N/A,N/A,COMMON,YES
+VGZ,Vista Gold Corp.,AMEX,N/A,N/A,COMMON,YES
+VIB3.DE,Villeroy & Boch AG,XETRA,N/A,N/A,COMMON,YES
+VICI,Vici Properties,N/A,Real Estate,N/A,REIT,SPECIAL
+VIL.PA,VIEL & Cie  S.A.,EURONEXT,N/A,N/A,COMMON,YES
+VIO.BR,Viohalco S.A.,EURONEXT,N/A,N/A,COMMON,YES
+VIS.MC,Viscofan  S.A.,BME,N/A,N/A,COMMON,YES
+VLK.AS,Van Lanschot Kempen N.V.,EURONEXT,N/A,N/A,COMMON,YES
+VLO,Valero Energy,N/A,Energy,N/A,COMMON,YES
+VLTO,Veralto,N/A,Industrials,N/A,COMMON,YES
+VMC,Vulcan Materials Company,N/A,Basic Materials,N/A,COMMON,YES
+VNA.F,Vonovia SE,XETRA,N/A,N/A,COMMON,YES
+VNRX,VolitionRx Limited,AMEX,N/A,N/A,COMMON,YES
+VNTG,Vantage Corp,AMEX,N/A,N/A,COMMON,YES
+VOS.DE,Vossloh AG,XETRA,N/A,N/A,COMMON,YES
+VPK.AS,Koninklijke Vopak N.V.,EURONEXT,N/A,N/A,COMMON,YES
+VRSK,Verisk,N/A,Industrials,N/A,COMMON,YES
+VRSN,Verisign,N/A,Technology,N/A,COMMON,YES
+VRTX,Vertex Pharmaceuticals,N/A,Healthcare,N/A,COMMON,YES
+VST,Vistra Corp.,N/A,Utilities,N/A,COMMON,YES
+VTAK,Catheter Precision  Inc.,AMEX,N/A,N/A,COMMON,YES
+VTR,Ventas,N/A,Real Estate,N/A,REIT,SPECIAL
+VTRS,Viatris,N/A,Healthcare,N/A,COMMON,YES
+VVY.AS,Vivoryon Therapeutics N.V.,EURONEXT,N/A,N/A,COMMON,YES
+VZ,Verizon Communications Inc.,N/A,Communication Services,N/A,COMMON,YES
+VZLA,Vizsla Silver Corp.,AMEX,N/A,N/A,COMMON,YES
+WAB,Wabtec,N/A,Industrials,N/A,COMMON,YES
+WAT,Waters Corporation,N/A,Healthcare,N/A,COMMON,YES
+WAVE.PA,Wavestone S.A.,EURONEXT,N/A,N/A,COMMON,YES
+WBD,Warner Bros. Discovery,N/A,Communication Services,N/A,COMMON,YES
+WDAY,Workday  Inc.,N/A,Technology,N/A,COMMON,YES
+WDC,Western Digital,N/A,Technology,N/A,COMMON,YES
+WEB.BR,Warehouses Estates Belgium SCA,EURONEXT,N/A,N/A,COMMON,YES
+WEC,WEC Energy Group,N/A,Utilities,N/A,COMMON,YES
+WELL,Welltower,N/A,Real Estate,N/A,REIT,SPECIAL
+WFC,Wells Fargo,N/A,Financial Services,N/A,COMMON,YES
+WHA.AS,Wereldhave N.V.,EURONEXT,N/A,N/A,COMMON,YES
+WHATS.BR,What's Cooking Group NV/SA,EURONEXT,N/A,N/A,COMMON,YES
+WKL.AS,Wolters Kluwer N.V.,EURONEXT,N/A,N/A,COMMON,YES
+WM,Waste Management,N/A,Industrials,N/A,COMMON,YES
+WMB,Williams Companies,N/A,Energy,N/A,COMMON,YES
+WMB.DE,The Williams Companies  Inc.,XETRA,N/A,N/A,COMMON,YES
+WMT,Walmart Inc.,NYSE,Consumer Staples,General Merchandise,COMMON,YES
+WRB,W. R. Berkley Corporation,N/A,Financial Services,N/A,COMMON,YES
+WRN,Western Copper and Gold Corporation,AMEX,N/A,N/A,COMMON,YES
+WSM,Williams-Sonoma,N/A,Consumer Cyclical,N/A,COMMON,YES
+WST,West Pharmaceutical Services,N/A,Healthcare,N/A,COMMON,YES
+WTW,Willis Towers Watson,N/A,Financial Services,N/A,COMMON,YES
+WWR,Westwater Resources  Inc.,AMEX,N/A,N/A,COMMON,YES
+WY,Weyerhaeuser,N/A,Real Estate,N/A,REIT,SPECIAL
+WYNN,Wynn Resorts,N/A,Consumer Cyclical,N/A,COMMON,YES
+WYY,WidePoint Corporation,AMEX,N/A,N/A,COMMON,YES
+XBBAR.MC,Banco BBVA Argentina S.A.,BME,N/A,N/A,COMMON,YES
+XBBDC.MC,Banco Bradesco S.A.,BME,N/A,N/A,COMMON,YES
+XEL,Xcel Energy,N/A,Utilities,N/A,COMMON,YES
+XIOR.BR,Xior Student Housing N.V.,EURONEXT,N/A,N/A,COMMON,YES
+XNEO.MC,Neoenergia S.A.,BME,N/A,N/A,COMMON,YES
+XOM,ExxonMobil,N/A,Energy,N/A,COMMON,YES
+XPL,Solitario Zinc Corp.,AMEX,N/A,N/A,COMMON,YES
+XTNT,Xtant Medical Holdings  Inc.,AMEX,N/A,N/A,COMMON,YES
+XUSIO.MC,Usinas Siderúrgicas de Minas Gerais S.A.,BME,N/A,N/A,COMMON,YES
+XYL,Xylem Inc.,N/A,Industrials,N/A,COMMON,YES
+XYZ,Block  Inc.,N/A,Technology,N/A,COMMON,YES
+YATRA.AS,Yatra Capital Limited,EURONEXT,N/A,N/A,COMMON,YES
+YCBD,cbdMD  Inc.,AMEX,N/A,N/A,COMMON,YES
+YCBD-PA,cbdMD  Inc.,AMEX,N/A,N/A,COMMON,YES
+YGMP.MC,GMP Property SOCIMI  S.A.,BME,N/A,N/A,COMMON,YES
+YIPS.MC,Inversa Prime SOCIMI  S.A.,BME,N/A,N/A,COMMON,YES
+YMHRE.MC,Millenium Hospitality Real Estate  SOCIMI  S.A.,BME,N/A,N/A,COMMON,YES
+YSON.F,Sonae  SGPS  S.A.,XETRA,N/A,N/A,COMMON,YES
+YUM,Yum! Brands,N/A,Consumer Cyclical,N/A,COMMON,YES
+ZBH,Zimmer Biomet,N/A,Healthcare,N/A,COMMON,YES
+ZBRA,Zebra Technologies,N/A,Technology,N/A,COMMON,YES
+ZDGE,Zedge  Inc.,AMEX,N/A,N/A,COMMON,YES
+ZEN.BR,Immo-Zenobe Gramme S.A.,EURONEXT,N/A,N/A,COMMON,YES
+ZONE,CleanCore Solutions  Inc.,AMEX,N/A,N/A,COMMON,YES
+ZPHR.L,Zephyr Energy plc,LSE,N/A,N/A,LSE,MAYBE
+ZS,Zscaler,N/A,Technology,N/A,COMMON,YES
+ZTS,Zoetis,N/A,Healthcare,N/A,COMMON,YES

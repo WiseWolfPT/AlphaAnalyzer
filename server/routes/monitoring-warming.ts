@@ -19,6 +19,13 @@ import { Router, Request, Response } from 'express';
 import { redisCacheService } from '../cache/redis-cache-service';
 import { getBandwidthStatsForMonitoring } from '../middleware/bandwidth-protection';
 import { logger } from '../lib/logger';
+import {
+  getTierStats,
+  getStockTier,
+  getStocksByTier,
+  calculateExpectedApiCalls,
+  StockTiersConfig
+} from '../data/stock-tiers';
 
 const router = Router();
 
@@ -504,6 +511,409 @@ function projectEndOfDay(bandwidth: {
   const projectedTotal = ratePerHour * 24;
 
   return `${projectedTotal.toFixed(2)} MB`;
+}
+
+/**
+ * GET /api/monitoring/warming/tiers
+ *
+ * AGENT 12: Smart Warming Tiers Analytics
+ *
+ * Real-time tier coverage, cache freshness, and API call projection
+ */
+router.get('/tiers', async (req: Request, res: Response) => {
+  try {
+    const tierStats = getTierStats();
+    const apiCallProjection = calculateExpectedApiCalls();
+
+    // Get cache coverage per tier
+    const tier1Tickers = getStocksByTier('tier1_hot');
+    const tier2Tickers = getStocksByTier('tier2_warm');
+    const tier3Tickers = getStocksByTier('tier3_cold');
+
+    // Sample cache coverage (check first 50 stocks per tier to avoid slow queries)
+    const [tier1Coverage, tier2Coverage, tier3Coverage] = await Promise.all([
+      calculateTierCoverage(tier1Tickers.slice(0, 50)),
+      calculateTierCoverage(tier2Tickers.slice(0, 50)),
+      calculateTierCoverage(tier3Tickers.slice(0, 50))
+    ]);
+
+    const response = {
+      tiers: {
+        tier1_hot: {
+          name: 'Tier 1: HOT (S&P 100)',
+          stockCount: tierStats.tier1_hot.count,
+          refreshInterval: {
+            marketHours: `${tierStats.tier1_hot.refreshMin} minutes`,
+            afterHours: `${tierStats.tier1_hot.refreshMax} minutes`
+          },
+          coverage: tier1Coverage,
+          priority: 10,
+          description: 'Most popular stocks, real-time requirement',
+          expectedApiCallsPerDay: apiCallProjection.tier1
+        },
+
+        tier2_warm: {
+          name: 'Tier 2: WARM (S&P 500)',
+          stockCount: tierStats.tier2_warm.count,
+          refreshInterval: {
+            marketHours: `${tierStats.tier2_warm.refreshMin} minutes`,
+            afterHours: `${tierStats.tier2_warm.refreshMax} minutes`
+          },
+          coverage: tier2Coverage,
+          priority: 5,
+          description: 'Popular stocks, semi-real-time',
+          expectedApiCallsPerDay: apiCallProjection.tier2
+        },
+
+        tier3_cold: {
+          name: 'Tier 3: COLD (Extended Universe)',
+          stockCount: tierStats.tier3_cold.count,
+          refreshInterval: {
+            marketHours: 'On-demand (24h TTL)',
+            afterHours: 'On-demand (24h TTL)'
+          },
+          coverage: tier3Coverage,
+          priority: 1,
+          description: 'Rarely viewed, earnings-driven warming only',
+          expectedApiCallsPerDay: apiCallProjection.tier3
+        }
+      },
+
+      apiCallProjection: {
+        totalPerDay: apiCallProjection.total,
+        reductionVsHourly: `${apiCallProjection.reduction}%`,
+        breakdown: {
+          tier1: apiCallProjection.tier1,
+          tier2: apiCallProjection.tier2,
+          tier3: apiCallProjection.tier3
+        },
+        comparison: {
+          baseline: tierStats.total * StockTiersConfig.METHODS_PER_STOCK * 24,
+          tiered: apiCallProjection.total,
+          saved: (tierStats.total * StockTiersConfig.METHODS_PER_STOCK * 24) - apiCallProjection.total
+        }
+      },
+
+      recommendations: generateTierRecommendations(tier1Coverage, tier2Coverage, tier3Coverage),
+
+      timestamp: new Date().toISOString()
+    };
+
+    res.json({ success: true, data: response });
+  } catch (error) {
+    logger.error('[WarmingMonitor] Error fetching tier analytics:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch tier analytics',
+      message: error instanceof Error ? error.message : 'Unknown error'
+    });
+  }
+});
+
+/**
+ * Helper: Calculate cache coverage for a tier (sample-based)
+ */
+async function calculateTierCoverage(tickers: string[]): Promise<{
+  cached: number;
+  total: number;
+  coveragePercent: string;
+  avgAge: string;
+  hotness: {
+    hot: number;    // <1h
+    warm: number;   // 1-6h
+    cold: number;   // 6-12h
+    stale: number;  // >12h
+  };
+}> {
+  if (tickers.length === 0) {
+    return {
+      cached: 0,
+      total: 0,
+      coveragePercent: '0.00',
+      avgAge: 'N/A',
+      hotness: { hot: 0, warm: 0, cold: 0, stale: 0 }
+    };
+  }
+
+  const methodCount = METHOD_IDS.length;
+  const totalPossible = tickers.length * methodCount;
+  let cachedCount = 0;
+  let totalAge = 0;
+  const hotness = { hot: 0, warm: 0, cold: 0, stale: 0 };
+
+  // Check cache for each ticker × method
+  for (const ticker of tickers) {
+    for (const methodId of METHOD_IDS) {
+      const cacheKey = `iv:method:${ticker.toUpperCase()}:${methodId}`;
+      const cached = await redisCacheService.get(cacheKey);
+
+      if (cached) {
+        cachedCount++;
+
+        // Get age (TTL)
+        const ttl = await redisCacheService.ttl(cacheKey);
+        const ageSeconds = (24 * 60 * 60) - ttl; // Assuming 24h TTL
+        totalAge += ageSeconds;
+
+        // Categorize hotness
+        const ageHours = ageSeconds / 3600;
+        if (ageHours < 1) {
+          hotness.hot++;
+        } else if (ageHours < 6) {
+          hotness.warm++;
+        } else if (ageHours < 12) {
+          hotness.cold++;
+        } else {
+          hotness.stale++;
+        }
+      }
+    }
+  }
+
+  const coveragePercent = ((cachedCount / totalPossible) * 100).toFixed(2);
+  const avgAgeHours = cachedCount > 0 ? (totalAge / cachedCount / 3600).toFixed(1) : 'N/A';
+
+  return {
+    cached: cachedCount,
+    total: totalPossible,
+    coveragePercent,
+    avgAge: avgAgeHours === 'N/A' ? 'N/A' : `${avgAgeHours}h`,
+    hotness
+  };
+}
+
+/**
+ * Helper: Generate recommendations based on tier coverage
+ */
+function generateTierRecommendations(
+  tier1: { coveragePercent: string; avgAge: string },
+  tier2: { coveragePercent: string; avgAge: string },
+  tier3: { coveragePercent: string; avgAge: string }
+): string[] {
+  const recommendations: string[] = [];
+
+  // Tier 1 (HOT) recommendations
+  const tier1Coverage = parseFloat(tier1.coveragePercent);
+  if (tier1Coverage < 80) {
+    recommendations.push('🔴 CRITICAL: Tier 1 (S&P 100) coverage below 80% - increase warming frequency');
+  } else if (tier1Coverage >= 95) {
+    recommendations.push('✅ Excellent Tier 1 coverage - most popular stocks always fresh');
+  }
+
+  // Tier 2 (WARM) recommendations
+  const tier2Coverage = parseFloat(tier2.coveragePercent);
+  if (tier2Coverage < 60) {
+    recommendations.push('⚠️  Tier 2 (S&P 500) coverage below 60% - consider extending warming window');
+  } else if (tier2Coverage >= 80) {
+    recommendations.push('✅ Good Tier 2 coverage - popular stocks well-maintained');
+  }
+
+  // Tier 3 (COLD) recommendations
+  const tier3Coverage = parseFloat(tier3.coveragePercent);
+  if (tier3Coverage > 50) {
+    recommendations.push('💡 Tier 3 coverage high - you may be over-warming rarely viewed stocks');
+  } else if (tier3Coverage < 10) {
+    recommendations.push('✅ Tier 3 properly on-demand - bandwidth optimized');
+  }
+
+  // API call efficiency
+  const apiCallProjection = calculateExpectedApiCalls();
+  if (apiCallProjection.reduction > 50) {
+    recommendations.push(`🎯 Excellent API efficiency: ${apiCallProjection.reduction}% reduction vs hourly warming`);
+  }
+
+  if (recommendations.length === 0) {
+    recommendations.push('🔄 System operating normally - continue monitoring');
+  }
+
+  return recommendations;
+}
+
+/**
+ * GET /api/monitoring/warming/sectors
+ *
+ * AGENT 18: Sector-Based Warming Analytics
+ *
+ * Real-time sector warming metrics:
+ * - Stock count per GICS sector
+ * - Cache coverage per sector
+ * - Refresh intervals by sector
+ * - Priority stock distribution
+ * - API call projection per sector
+ */
+router.get('/sectors', async (req: Request, res: Response) => {
+  try {
+    // Import sector services (lazy load to avoid circular dependencies)
+    const { gicsSectorService } = await import('../services/gics-sector-service');
+    const {
+      SECTOR_WARMING_CONFIG,
+      calculateSectorApiCalls,
+      GICS_SECTORS
+    } = await import('../config/sector-warming-config');
+    const { isPriorityStock } = await import('../data/priority-stocks-index');
+
+    // Get sector distribution
+    const sectorDistribution = gicsSectorService.getSectorDistribution();
+
+    // Calculate API projection
+    const apiProjection = calculateSectorApiCalls(sectorDistribution);
+
+    // Build sector metrics
+    const sectorMetrics: Record<string, any> = {};
+
+    for (const [sectorName, config] of Object.entries(SECTOR_WARMING_CONFIG)) {
+      const stocks = gicsSectorService.getStocksBySector(sectorName);
+      const stocksWithIV = gicsSectorService.getStocksBySectorWithIV(sectorName);
+      const priorityStocks = stocks.filter(s => isPriorityStock(s));
+
+      // Sample cache coverage (check first 50 stocks)
+      let cachedCount = 0;
+      let freshCount = 0;
+
+      for (const ticker of stocks.slice(0, 50)) {
+        for (const methodId of METHOD_IDS) {
+          const cacheKey = `iv:method:${ticker.toUpperCase()}:${methodId}`;
+          const cached = await redisCacheService.get(cacheKey);
+
+          if (cached) {
+            cachedCount++;
+
+            // Check freshness (is it within refresh interval?)
+            const ttl = await redisCacheService.ttl(cacheKey);
+            const ageSeconds = (24 * 60 * 60) - ttl;
+            const refreshInterval = config.refreshIntervalMarketHours / 1000; // to seconds
+
+            if (ageSeconds < refreshInterval) {
+              freshCount++;
+            }
+          }
+        }
+      }
+
+      const sampleSize = Math.min(50, stocks.length);
+      const totalPossible = sampleSize * METHOD_IDS.length;
+      const coveragePercent = totalPossible > 0 ? ((cachedCount / totalPossible) * 100).toFixed(1) : '0.0';
+      const freshnessPercent = cachedCount > 0 ? ((freshCount / cachedCount) * 100).toFixed(1) : '0.0';
+
+      sectorMetrics[sectorName] = {
+        refreshInterval: {
+          marketHours: config.refreshIntervalMarketHours / 60000 + ' min',
+          afterHours: config.refreshIntervalAfterHours / 60000 + ' min'
+        },
+        priority: config.priority,
+        marketHoursOnly: config.marketHoursOnly,
+        volatilityClass: config.volatilityClass,
+        reason: config.reason,
+        stockCount: {
+          total: stocks.length,
+          withIV: stocksWithIV.length,
+          priority: priorityStocks.length,
+          nonPriority: stocks.length - priorityStocks.length
+        },
+        cacheCoverage: {
+          sampleSize,
+          cachedEntries: cachedCount,
+          freshEntries: freshCount,
+          coveragePercent,
+          freshnessPercent
+        },
+        apiCalls: {
+          perDay: apiProjection.bySector[sectorName] || 0,
+          percentOfTotal: apiProjection.bySector[sectorName]
+            ? ((apiProjection.bySector[sectorName] / apiProjection.total) * 100).toFixed(1) + '%'
+            : '0.0%'
+        }
+      };
+    }
+
+    const response = {
+      summary: {
+        totalApiCallsPerDay: apiProjection.total,
+        reductionVsUniform: `${apiProjection.reduction}%`,
+        totalStocks: gicsSectorService.getTotalStockCount(),
+        sectorCount: Object.keys(SECTOR_WARMING_CONFIG).length
+      },
+
+      sectorGroups: {
+        highFrequency: {
+          sectors: GICS_SECTORS.HIGH_FREQUENCY,
+          refreshInterval: '5 min',
+          description: 'Most volatile, highest user traffic'
+        },
+        mediumFrequency: {
+          sectors: GICS_SECTORS.MEDIUM_FREQUENCY,
+          refreshInterval: '15 min',
+          description: 'Moderate volatility, steady interest'
+        },
+        lowFrequency: {
+          sectors: GICS_SECTORS.LOW_FREQUENCY,
+          refreshInterval: '30 min',
+          description: 'Low volatility, defensive stocks'
+        }
+      },
+
+      sectors: sectorMetrics,
+
+      recommendations: generateSectorRecommendations(sectorMetrics),
+
+      timestamp: new Date().toISOString()
+    };
+
+    res.json({ success: true, data: response });
+  } catch (error) {
+    logger.error('[WarmingMonitor] Error fetching sector metrics:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch sector metrics',
+      message: error instanceof Error ? error.message : 'Unknown error'
+    });
+  }
+});
+
+/**
+ * Helper: Generate sector-specific recommendations
+ */
+function generateSectorRecommendations(sectorMetrics: Record<string, any>): string[] {
+  const recommendations: string[] = [];
+
+  for (const [sectorName, metrics] of Object.entries(sectorMetrics)) {
+    const coverage = parseFloat(metrics.cacheCoverage.coveragePercent);
+    const freshness = parseFloat(metrics.cacheCoverage.freshnessPercent);
+    const priority = metrics.priority;
+
+    // High-priority sectors (tech, comm, consumer disc)
+    if (priority >= 9) {
+      if (coverage < 80) {
+        recommendations.push(`🔴 CRITICAL: ${sectorName} cache coverage ${coverage}% (target: >80% for high-priority sector)`);
+      } else if (freshness < 90) {
+        recommendations.push(`⚠️  ${sectorName} freshness ${freshness}% (target: >90% for high-priority sector)`);
+      } else {
+        recommendations.push(`✅ ${sectorName} performing excellently (${coverage}% cached, ${freshness}% fresh)`);
+      }
+    }
+
+    // Medium-priority sectors
+    else if (priority >= 6) {
+      if (coverage < 60) {
+        recommendations.push(`⚠️  ${sectorName} cache coverage ${coverage}% (target: >60% for medium-priority sector)`);
+      } else if (coverage >= 80) {
+        recommendations.push(`✅ ${sectorName} well-maintained (${coverage}% cached)`);
+      }
+    }
+
+    // Low-priority sectors
+    else {
+      if (coverage > 50) {
+        recommendations.push(`💡 ${sectorName} coverage ${coverage}% - you may be over-warming this low-priority sector`);
+      }
+    }
+  }
+
+  if (recommendations.length === 0) {
+    recommendations.push('🎯 All sectors performing within expected parameters');
+  }
+
+  return recommendations;
 }
 
 export default router;

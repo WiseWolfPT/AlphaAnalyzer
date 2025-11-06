@@ -1,0 +1,204 @@
+================================================================================
+AGENT 16: GICS Sector Data Fetcher
+================================================================================
+
+Loading mapping from: /Users/antoniofrancisco/Documents/teste 1/server/data/gics-sector-mapping.json
+Total stocks in mapping: 1301
+Stocks with Unknown sector: 785
+
+Will fetch sector data for 785 stocks...
+Estimated time: 4 minutes
+
+[1/785] Fetching: 1COV.DE (Covestro AG)
+  ✓ Updated: Materials (Chemicals - Specialty)
+[2/785] Fetching: 1ET.F (Prospector Metals Corp.)
+  ✓ Updated: Materials (Gold)
+[3/785] Fetching: 1SXP.F (SCHOTT Pharma AG & Co. KGaA)
+  ✓ Updated: Health Care (Medical - Instruments & Supplies)
+[4/785] Fetching: 2BU.F (Bumitama Agri Ltd.)
+  ✓ Updated: Consumer Staples (Agricultural Farm Products)
+[5/785] Fetching: 2LYA.F (High Tide Inc.)
+  ✓ Updated: Health Care (Medical - Pharmaceuticals)
+[6/785] Fetching: 2RR.F (Alibaba Group Holding Limited)
+  ✓ Updated: Consumer Discretionary (Specialty Retail)
+[7/785] Fetching: 2VSA.F (Verastem  Inc.)
+  ✓ Updated: Health Care (Biotechnology)
+[8/785] Fetching: 2ZR.F (Braveheart Resources Inc.)
+  ✓ Updated: Materials (Other Precious Metals)
+[9/785] Fetching: 3CP.F (Xiaomi Corporation)
+  ✓ Updated: Information Technology (Consumer Electronics)
+[10/785] Fetching: 3LN.DE (Live Nation Entertainment Inc)
+  ✓ Updated: Information Technology (Media & Entertainment)
+
+Progress: 10 updated, 0 still unknown, 0 failed
+Rate limiting... waiting 2.5 seconds...
+
+[11/785] Fetching: 47T.F (TISCO Financial Group Public Company Limited)
+  ✓ Updated: Financials (Banks - Regional)
+[12/785] Fetching: 4OQ1.F (AGNC Investment Corp.)
+  ✓ Updated: Real Estate (REIT - Mortgage)
+[13/785] Fetching: 4PN.DE (Carrier Global Corporation)
+  ✓ Updated: Industrials (Construction)
+[14/785] Fetching: 5CV.DE (CureVac N.V.)
+  ✓ Updated: Health Care (Biotechnology)
+[15/785] Fetching: 5CV.F (CureVac N.V.)
+  ✓ Updated: Health Care (Biotechnology)
+[16/785] Fetching: 5G7.F (KB Components AB (publ))
+  ✓ Updated: Industrials (Manufacturing - Miscellaneous)
+[17/785] Fetching: 5Y7A.F (SCG Packaging Public Company Limited)
+  ✓ Updated: Consumer Discretionary (Packaging & Containers)
+[18/785] Fetching: 5ZM.F (Zoom Communications Inc.)
+  ✓ Updated: Information Technology (Software - Application)
+[19/785] Fetching: 68V.DE (Baker Hughes Company)
+  ✓ Updated: Energy (Oil & Gas Energy)
+[20/785] Fetching: 6N5.F (Cibus Nordic Real Estate AB (publ))
+  ✓ Updated: Real Estate (Real Estate - Services)
+
+Progress: 20 updated, 0 still unknown, 0 failed
+Rate limiting... waiting 2.5 seconds...
+
+[21/785] Fetching: 7111.F (BIGG Digital Assets Inc.)
+  ✓ Updated: Financials (Financial - Capital Markets)
+[22/785] Fetching: 7BP.F (Bangchak Corporation Public Company Limited)
+  ✓ Updated: Energy (Oil & Gas Refining & Marketing)
+[23/785] Fetching: 7F8.F (PTT Oil and Retail Business Public Company Limited)
+  ✓ Updated: Energy (Oil & Gas Refining & Marketing)
+[24/785] Fetching: 8GM.DE (General Motors Company)
+  ✓ Updated: Consumer Discretionary (Auto - Manufacturers)
+[25/785] Fetching: 9KF.F (Midsona AB (publ))
+  ✓ Updated: Consumer Staples (Packaged Foods)
+[26/785] Fetching: A6T.DE (artec technologies AG)
+  ✓ Updated: Information Technology (Consumer Electronics)
+[27/785] Fetching: AAG.DE (Aumann AG)
+  ✓ Updated: Industrials (Industrial - Machinery)
+[28/785] Fetching: AALB.AS (Aalberts N.V.)
+  ✓ Updated: Industrials (Industrial - Machinery)
+[29/785] Fetching: ABN.AS (ABN AMRO Bank N.V.)
+  ✓ Updated: Financials (Banks - Diversified)
+[30/785] Fetching: ABO.BR (ABO-Group Environment N.V.)
+  ✓ Updated: Industrials (Waste Management)
+
+Progress: 30 updated, 0 still unknown, 0 failed
+Rate limiting... waiting 2.5 seconds...
+
+[31/785] Fetching: ABVX.PA (Abivax S.A.)
+  ✓ Updated: Health Care (Biotechnology)
+[32/785] Fetching: ABX.DE (Advanced Blockchain AG)
+  ✓ Updated: Information Technology (Software - Application)
+[33/785] Fetching: ACAN.PA (Acanthe Développement)
+  ✓ Updated: Real Estate (REIT - Office)
+[34/785] Fetching: ACCB.BR (Accentis N.V.)
+  ✓ Updated: Real Estate (Real Estate - Services)
+[35/785] Fetching: ACKB.BR (Ackermans & Van Haaren N.V.)
+  ✓ Updated: Industrials (Engineering & Construction)
+[36/785] Fetching: ACOMO.AS (Acomo N.V.)
+  ✓ Updated: Consumer Staples (Food Distribution)
+[37/785] Fetching: ACR.F (Accor S.A.)
+  ✓ Updated: Consumer Discretionary (Travel Lodging)
+[38/785] Fetching: ACU (Acme United Corporation)
+  ✓ Updated: Consumer Staples (Household & Personal Products)
+[39/785] Fetching: ACX.MC (Acerinox  S.A.)
+  ✓ Updated: Materials (Steel)
+[40/785] Fetching: AD.AS (Koninklijke Ahold Delhaize N.V.)
+  ✓ Updated: Consumer Staples (Grocery Stores)
+
+Progress: 40 updated, 0 still unknown, 0 failed
+Rate limiting... waiting 2.5 seconds...
+
+[41/785] Fetching: ADP.PA (Aeroports de Paris S.A.)
+  ✓ Updated: Industrials (Airlines, Airports & Air Services)
+[42/785] Fetching: ADYEN.AS (Adyen N.V.)
+  ✓ Updated: Information Technology (Software - Infrastructure)
+[43/785] Fetching: ADZ.MC (Adolfo Domínguez  S.A.)
+  ✓ Updated: Consumer Discretionary (Apparel - Manufacturers)
+[44/785] Fetching: AED.BR (Aedifica S.A.)
+  ✓ Updated: Real Estate (REIT - Healthcare Facilities)
+[45/785] Fetching: AGFB.BR (Agfa-Gevaert N.V.)
+  ✓ Updated: Industrials (Industrial - Machinery)
+[46/785] Fetching: AGIL.MC (Agile Content  S.A.)
+  ✓ Updated: Information Technology (Software - Infrastructure)
+[47/785] Fetching: AGN.AS (Aegon N.V.)
+  ✓ Updated: Financials (Insurance - Diversified)
+[48/785] Fetching: AGS.BR (ageas SA/NV)
+  ✓ Updated: Financials (Insurance - Diversified)
+[49/785] Fetching: AHLA.DE (Alibaba Group Holding Limited)
+  ✓ Updated: Consumer Discretionary (Specialty Retail)
+[50/785] Fetching: AIM (AIM ImmunoTech Inc.)
+  ✓ Updated: Health Care (Biotechnology)
+
+Progress: 50 updated, 0 still unknown, 0 failed
+Rate limiting... waiting 2.5 seconds...
+
+[51/785] Fetching: AIRI (Air Industries Group)
+  ✓ Updated: Industrials (Aerospace & Defense)
+[52/785] Fetching: AJAX.AS (AFC Ajax N.V.)
+  ✓ Updated: Communication Services (Entertainment)
+[53/785] Fetching: AKZA.AS (Akzo Nobel N.V.)
+  ✓ Updated: Materials (Chemicals - Specialty)
+[54/785] Fetching: AL2SI.PA (2CRSI S.a.)
+  ✓ Updated: Information Technology (Computer Hardware)
+[55/785] Fetching: ALADO.PA (Adomos S.A.)
+  ✓ Updated: Real Estate (Real Estate - Services)
+[56/785] Fetching: ALAMA.PA (AMA Corporation Plc)
+  ✓ Updated: Health Care (Medical - Healthcare Information Services)
+[57/785] Fetching: ALBLD.PA (Bilendi S.A.)
+  ✓ Updated: Communication Services (Advertising Agencies)
+[58/785] Fetching: ALBON.PA (Compagnie Lebon)
+  ✓ Updated: Financials (Asset Management)
+[59/785] Fetching: ALBOO.PA (Boostheat S.A.)
+  ✓ Updated: Information Technology (Consumer Electronics)
+[60/785] Fetching: ALC.MC (Altia Consultores  S.A.)
+  ✓ Updated: Information Technology (Information Technology Services)
+
+Progress: 60 updated, 0 still unknown, 0 failed
+Rate limiting... waiting 2.5 seconds...
+
+[61/785] Fetching: ALCOF.PA (Cofidur S.A.)
+  ✓ Updated: Information Technology (Hardware, Equipment & Parts)
+[62/785] Fetching: ALCOI.PA (Coil S.A./N.V.)
+  ✓ Updated: Materials (Aluminum)
+[63/785] Fetching: ALDUB.PA (Encres Dubuit)
+  ✓ Updated: Materials (Chemicals - Specialty)
+[64/785] Fetching: ALDVI.PA (Advicenne S.A.)
+  ✓ Updated: Health Care (Biotechnology)
+[65/785] Fetching: ALEAC.PA (EdiliziAcrobatica S.p.A.)
+  ✓ Updated: Industrials (Specialty Business Services)
+[66/785] Fetching: ALECR.PA (Eurofins-Cerep S.A.)
+  ✓ Updated: Health Care (Medical - Diagnostics & Research)
+[67/785] Fetching: ALEMS.BR (European Medical Solutions)
+  ✓ Updated: Health Care (Biotechnology)
+[68/785] Fetching: ALEMV.PA (Emova Group S.A.)
+  ✓ Updated: Consumer Discretionary (Specialty Retail)
+[69/785] Fetching: ALFEN.AS (Alfen N.V.)
+  ✓ Updated: Industrials (Electrical Equipment & Parts)
+[70/785] Fetching: ALFLE.PA (Fleury Michon S.A.)
+  ✓ Updated: Consumer Staples (Packaged Foods)
+
+Progress: 70 updated, 0 still unknown, 0 failed
+Rate limiting... waiting 2.5 seconds...
+
+[71/785] Fetching: ALFLO.PA (SAS Florentaise)
+  ✓ Updated: Materials (Agricultural Inputs)
+[72/785] Fetching: ALGAE.PA (Fermentalg)
+  ✓ Updated: Health Care (Biotechnology)
+[73/785] Fetching: ALGBE.PA (Global Bioenergies S.A.)
+  ✓ Updated: Utilities (Diversified Utilities)
+[74/785] Fetching: ALGIR.PA (Signaux Girod S.A.)
+  ✓ Updated: Industrials (Railroads)
+[75/785] Fetching: ALHG.PA (Louis Hachette Group S.A.)
+  ✓ Updated: Communication Services (Publishing)
+[76/785] Fetching: ALHOP.PA (Hopscotch Global PR Group)
+  ✓ Updated: Communication Services (Advertising Agencies)
+[77/785] Fetching: ALIMO.PA (Groupimo S.A.)
+  ✓ Updated: Real Estate (Real Estate - Services)
+[78/785] Fetching: ALINT.PA (IntegraGen S.A.)
+  ✓ Updated: Health Care (Biotechnology)
+[79/785] Fetching: ALKEY.PA (Keyrus S.A.)
+  ✓ Updated: Information Technology (Information Technology Services)
+[80/785] Fetching: ALKLA.PA (Klarsen)
+  ✓ Updated: Communication Services (Advertising Agencies)
+
+Progress: 80 updated, 0 still unknown, 0 failed
+Rate limiting... waiting 2.5 seconds...
+
+[81/785] Fetching: ALLAN.PA (Lanson-BCC)

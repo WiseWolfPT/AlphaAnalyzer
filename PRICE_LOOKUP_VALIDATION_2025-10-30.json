@@ -1,0 +1,3847 @@
+{
+  "pass": [
+    {
+      "symbol": "A",
+      "price": 143.2,
+      "name": ""
+    },
+    {
+      "symbol": "AAPL",
+      "price": 269.7,
+      "name": ""
+    },
+    {
+      "symbol": "ABBV",
+      "price": 225.14,
+      "name": ""
+    },
+    {
+      "symbol": "ABNB",
+      "price": 126.48,
+      "name": ""
+    },
+    {
+      "symbol": "ABT",
+      "price": 124.43,
+      "name": ""
+    },
+    {
+      "symbol": "ACGL",
+      "price": 85.85,
+      "name": ""
+    },
+    {
+      "symbol": "ACN",
+      "price": 247.75,
+      "name": ""
+    },
+    {
+      "symbol": "ACU",
+      "price": 38.39,
+      "name": ""
+    },
+    {
+      "symbol": "ADBE",
+      "price": 337.86,
+      "name": ""
+    },
+    {
+      "symbol": "ADI",
+      "price": 235.04,
+      "name": ""
+    },
+    {
+      "symbol": "ADM",
+      "price": 60.52,
+      "name": ""
+    },
+    {
+      "symbol": "ADP",
+      "price": 261.22,
+      "name": ""
+    },
+    {
+      "symbol": "ADSK",
+      "price": 297.08,
+      "name": ""
+    },
+    {
+      "symbol": "AEE",
+      "price": 102.28,
+      "name": ""
+    },
+    {
+      "symbol": "AEP",
+      "price": 122.11,
+      "name": ""
+    },
+    {
+      "symbol": "AES",
+      "price": 14.37,
+      "name": ""
+    },
+    {
+      "symbol": "AFL",
+      "price": 105.7,
+      "name": ""
+    },
+    {
+      "symbol": "AFRM",
+      "price": 72.66,
+      "name": ""
+    },
+    {
+      "symbol": "AIG",
+      "price": 77.98,
+      "name": ""
+    },
+    {
+      "symbol": "AIM",
+      "price": 2.38,
+      "name": ""
+    },
+    {
+      "symbol": "AIR",
+      "price": 84.84,
+      "name": ""
+    },
+    {
+      "symbol": "AIRI",
+      "price": 3.26,
+      "name": ""
+    },
+    {
+      "symbol": "AIZ",
+      "price": 208.11,
+      "name": ""
+    },
+    {
+      "symbol": "AJG",
+      "price": 262.02,
+      "name": ""
+    },
+    {
+      "symbol": "AKAM",
+      "price": 73.01,
+      "name": ""
+    },
+    {
+      "symbol": "ALB",
+      "price": 97.8,
+      "name": ""
+    },
+    {
+      "symbol": "ALGN",
+      "price": 131.91,
+      "name": ""
+    },
+    {
+      "symbol": "ALL",
+      "price": 190,
+      "name": ""
+    },
+    {
+      "symbol": "ALLE",
+      "price": 165.59,
+      "name": ""
+    },
+    {
+      "symbol": "AMAT",
+      "price": 235.75,
+      "name": ""
+    },
+    {
+      "symbol": "AMBI",
+      "price": 0.5396,
+      "name": ""
+    },
+    {
+      "symbol": "AMBO",
+      "price": 4.13,
+      "name": ""
+    },
+    {
+      "symbol": "AMCR",
+      "price": 8,
+      "name": ""
+    },
+    {
+      "symbol": "AMD",
+      "price": 264.33,
+      "name": ""
+    },
+    {
+      "symbol": "AME",
+      "price": 184.19,
+      "name": ""
+    },
+    {
+      "symbol": "AMGN",
+      "price": 291.77,
+      "name": ""
+    },
+    {
+      "symbol": "AMP",
+      "price": 478.54,
+      "name": ""
+    },
+    {
+      "symbol": "AMS",
+      "price": 2.21,
+      "name": ""
+    },
+    {
+      "symbol": "AMT",
+      "price": 179.08,
+      "name": ""
+    },
+    {
+      "symbol": "AMZN",
+      "price": 230.3,
+      "name": ""
+    },
+    {
+      "symbol": "ANET",
+      "price": 162.03,
+      "name": ""
+    },
+    {
+      "symbol": "ANSS",
+      "price": 374.3,
+      "name": ""
+    },
+    {
+      "symbol": "AON",
+      "price": 326.07,
+      "name": ""
+    },
+    {
+      "symbol": "AOS",
+      "price": 65.58,
+      "name": ""
+    },
+    {
+      "symbol": "APA",
+      "price": 22.54,
+      "name": ""
+    },
+    {
+      "symbol": "APD",
+      "price": 248.34,
+      "name": ""
+    },
+    {
+      "symbol": "APH",
+      "price": 139.75,
+      "name": ""
+    },
+    {
+      "symbol": "APO",
+      "price": 124.88,
+      "name": ""
+    },
+    {
+      "symbol": "APP",
+      "price": 631.2,
+      "name": ""
+    },
+    {
+      "symbol": "APT",
+      "price": 4.61,
+      "name": ""
+    },
+    {
+      "symbol": "APTV",
+      "price": 85.77,
+      "name": ""
+    },
+    {
+      "symbol": "ARE",
+      "price": 58.76,
+      "name": ""
+    },
+    {
+      "symbol": "AREN",
+      "price": 5.78,
+      "name": ""
+    },
+    {
+      "symbol": "ARM",
+      "price": 170.39,
+      "name": ""
+    },
+    {
+      "symbol": "ARMN",
+      "price": 9.34,
+      "name": ""
+    },
+    {
+      "symbol": "ARMP",
+      "price": 5.46,
+      "name": ""
+    },
+    {
+      "symbol": "ASM",
+      "price": 4.79,
+      "name": ""
+    },
+    {
+      "symbol": "ASML",
+      "price": 1070.84,
+      "name": ""
+    },
+    {
+      "symbol": "ATCH",
+      "price": 0.4172,
+      "name": ""
+    },
+    {
+      "symbol": "ATNM",
+      "price": 1.46,
+      "name": ""
+    },
+    {
+      "symbol": "ATO",
+      "price": 171.66,
+      "name": ""
+    },
+    {
+      "symbol": "AUST",
+      "price": 1.89,
+      "name": ""
+    },
+    {
+      "symbol": "AVB",
+      "price": 176.29,
+      "name": ""
+    },
+    {
+      "symbol": "AVGO",
+      "price": 385.98,
+      "name": ""
+    },
+    {
+      "symbol": "AVY",
+      "price": 176.2,
+      "name": ""
+    },
+    {
+      "symbol": "AWK",
+      "price": 130.06,
+      "name": ""
+    },
+    {
+      "symbol": "AWX",
+      "price": 2.7,
+      "name": ""
+    },
+    {
+      "symbol": "AXIL",
+      "price": 5.34,
+      "name": ""
+    },
+    {
+      "symbol": "AXON",
+      "price": 759.44,
+      "name": ""
+    },
+    {
+      "symbol": "AXP",
+      "price": 358.22,
+      "name": ""
+    },
+    {
+      "symbol": "AZN",
+      "price": 82.23,
+      "name": ""
+    },
+    {
+      "symbol": "AZO",
+      "price": 3709.12,
+      "name": ""
+    },
+    {
+      "symbol": "AZTR",
+      "price": 0.4978,
+      "name": ""
+    }
+  ],
+  "fail": [
+    {
+      "symbol": "BA",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "BABA",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "BAC",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "BALL",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "BATL",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "BAX",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "BBY",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "BCOR",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "BDL",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "BDX",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "BEN",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "BG",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "BGI",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "BHB",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "BHM",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "BIDU",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "BIIB",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "BK",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "BKNG",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "BKR",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "BKTI",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "BLDR",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "BLK",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "BMNR",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "BMW",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "BMY",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "BR",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "BRBS",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "BRIA",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "BRN",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "BRO",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "BSX",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "BTG",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "BURU",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "BX",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "BXP",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "C",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "CAG",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "CAH",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "CANF",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "CAR",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "CARR",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "CAT",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "CATX",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "CB",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "CBOE",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "CBRE",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "CCEP",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "CCI",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "CCL",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "CDNS",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "CDW",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "CEG",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "CF",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "CFG",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "CHD",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "CHOW",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "CHRW",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "CHTR",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "CI",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "CINF",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "CIX",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "CKX",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "CL",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "CLDI",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "CLX",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "CMCL",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "CMCSA",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "CME",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "CMG",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "CMI",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "CMS",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "CMT",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "CNC",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "CNP",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "COE",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "COF",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "COHN",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "COIN",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "COO",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "COP",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "COR",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "COST",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "CPAY",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "CPB",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "CPHI",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "CPRT",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "CPT",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "CQP",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "CRL",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "CRM",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "CRWD",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "CSCO",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "CSGP",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "CSX",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "CTAS",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "CTGO",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "CTM",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "CTRA",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "CTSH",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "CTVA",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "CVM",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "CVR",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "CVS",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "CVU",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "CVX",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "CYBN",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "D",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "DAL",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "DASH",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "DAY",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "DC",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "DD",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "DDC",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "DDOG",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "DE",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "DECK",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "DELL",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "DG",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "DGX",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "DHI",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "DHR",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "DIS",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "DIT",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "DLR",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "DLTR",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "DMYY",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "DNN",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "DOC",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "DOV",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "DOW",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "DPZ",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "DRI",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "DSS",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "DTE",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "DUK",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "DVA",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "DVN",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "DVS",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "DXCM",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "DXF",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "EA",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "EBAY",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "ECL",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "ED",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "EFX",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "EG",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "EGG",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "EIX",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "EL",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "ELA",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "ELLO",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "ELMD",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "ELON",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "ELV",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "EME",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "EMN",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "EMR",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "EMX",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "EOG",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "EONR",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "EP",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "EPAM",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "EPM",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "EQIX",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "EQR",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "EQT",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "EQX",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "ERIE",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "ES",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "ESBA",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "ESP",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "ESS",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "ETN",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "ETR",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "EVI",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "EVRG",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "EW",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "EXC",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "EXE",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "EXOD",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "EXPD",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "EXPE",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "EXR",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "F",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "FANG",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "FAST",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "FCX",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "FDS",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "FDX",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "FE",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "FFIV",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "FI",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "FICO",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "FIS",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "FISK",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "FITB",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "FLAG",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "FLYX",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "FLYY",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "FOX",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "FOXA",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "FOXO",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "FRT",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "FSI",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "FSLR",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "FSP",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "FTNT",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "FTV",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "FURY",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "GAU",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "GBR",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "GD",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "GDDY",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "GE",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "GEHC",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "GEN",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "GENC",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "GEV",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "GFS",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "GILD",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "GIS",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "GL",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "GLDG",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "GLW",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "GM",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "GNRC",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "GNS",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "GOOG",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "GOOGL",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "GORO",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "GPC",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "GPN",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "GRAF",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "GRMN",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "GROY",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "GS",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "GTE",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "GWW",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "HAL",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "HAS",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "HBAN",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "HCA",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "HCWC",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "HD",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "HIG",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "HII",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "HLT",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "HOLX",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "HON",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "HOOD",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "HPE",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "HPQ",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "HRL",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "HSBA",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "HSIC",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "HST",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "HSY",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "HUBB",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "HUM",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "HUSA",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "HWM",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "IAUX",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "IBKR",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "IBM",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "IBO",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "ICE",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "IDR",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "IDXX",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "IE",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "IEX",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "IFF",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "IGC",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "IHT",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "IMO",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "INCY",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "INDO",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "INFU",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "INLX",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "INTC",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "INTT",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "INTU",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "INUV",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "INVH",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "IOR",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "IP",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "IPB",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "IPG",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "IQV",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "IR",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "IRM",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "ISOU",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "ISRG",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "IT",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "ITP",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "ITRG",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "ITW",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "IVZ",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "IWM",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "J",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "JBHT",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "JBL",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "JCI",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "JD",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "JKHY",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "JNJ",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "JOB",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "JPM",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "K",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "KAPA",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "KDP",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "KEY",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "KEYS",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "KHC",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "KIM",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "KKR",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "KLAC",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "KMB",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "KMI",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "KMX",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "KNW",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "KO",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "KR",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "KULR",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "KVUE",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "L",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "LCTX",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "LDOS",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "LEGT",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "LEN",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "LEU",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "LGCY",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "LGL",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "LGPS",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "LH",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "LHX",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "LII",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "LIN",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "LKQ",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "LLY",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "LMT",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "LNT",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "LODE",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "LOW",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "LPA",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "LRCX",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "LSF",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "LUD",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "LULU",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "LUV",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "LVS",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "LW",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "LYB",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "LYV",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "MA",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "MAA",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "MAIA",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "MAR",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "MARA",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "MAS",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "MC",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "MCD",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "MCHP",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "MCK",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "MCO",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "MCRP",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "MDLZ",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "MDT",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "MELI",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "MET",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "META",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "MGLD",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "MGM",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "MHH",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "MHK",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "MI",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "MITQ",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "MKC",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "MLM",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "MLSS",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "MMA",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "MMC",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "MMM",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "MNST",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "MO",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "MOH",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "MOS",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "MPC",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "MPTI",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "MPU",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "MPWR",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "MRK",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "MRNA",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "MRT",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "MRVL",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "MS",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "MSCI",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "MSFT",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "MSI",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "MSN",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "MSTR",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "MTA",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "MTB",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "MTCH",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "MTD",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "MTNB",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "MU",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "MWG",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "MXC",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "MYND",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "NAK",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "NBY",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "NCL",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "NCLH",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "NDAQ",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "NDSN",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "NEE",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "NEM",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "NEN",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "NEWP",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "NFGC",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "NFLX",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "NG",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "NGD",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "NHC",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "NI",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "NKE",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "NNVC",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "NOC",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "NOW",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "NRG",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "NSC",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "NSRX",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "NTAP",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "NTIP",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "NTRS",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "NUE",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "NVDA",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "NVO",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "NVR",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "NWS",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "NWSA",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "NXPI",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "O",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "OBE",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "ODFL",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "OGCP",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "OGEN",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "OKE",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "OMC",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "ON",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "OPTT",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "OR",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "ORCL",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "ORLA",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "ORLY",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "OTIS",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "OXY",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "OZ",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "PANW",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "PAPL",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "PAYC",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "PAYX",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "PCAR",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "PCG",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "PDD",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "PED",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "PEG",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "PEP",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "PFE",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "PFG",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "PG",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "PGR",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "PH",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "PHGE",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "PHM",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "PKG",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "PLAG",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "PLD",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "PLG",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "PLTR",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "PLX",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "PM",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "PNC",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "PNR",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "PNW",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "POAS",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "PODD",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "POOL",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "PPG",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "PPL",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "PRK",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "PRU",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "PSA",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "PSKY",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "PSX",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "PTC",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "PW",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "PWR",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "PYPL",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "PZG",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "QCOM",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "RBLX",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "RCL",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "REG",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "REGN",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "REI",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "REPX",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "RF",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "RGNT",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "RIOT",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "RJF",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "RL",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "RLGT",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "RMD",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "ROK",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "ROL",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "ROLR",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "ROP",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "ROST",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "RSG",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "RTX",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "RVP",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "RVTY",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "RXO",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "RYDE",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "SACH",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "SAP",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "SBAC",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "SBEV",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "SBUX",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "SCCC",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "SCCD",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "SCCF",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "SCCG",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "SCHW",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "SEB",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "SENS",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "SGN",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "SHOP",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "SHW",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "SIE",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "SIF",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "SIM",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "SJM",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "SKYH",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "SLB",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "SLI",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "SLND",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "SLSR",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "SMCI",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "SNA",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "SNPS",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "SO",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "SOAR",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "SOFI",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "SOLV",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "SONY",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "SPG",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "SPGI",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "SQ",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "SRE",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "STE",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "STLD",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "STRW",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "STT",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "STX",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "STXS",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "STZ",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "SVM",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "SW",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "SWK",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "SWKS",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "SYF",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "SYK",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "SYNX",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "SYY",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "T",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "TAP",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "TCEHY",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "TDG",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "TDY",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "TEAM",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "TECH",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "TEL",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "TER",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "TFC",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "TGB",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "TGEN",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "TGT",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "THM",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "TIC",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "TJX",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "TKO",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "TM",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "TMDE",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "TMO",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "TMP",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "TMQ",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "TMUS",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "TOON",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "TOPP",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "TOST",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "TOVX",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "TPET",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "TPL",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "TPR",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "TRGP",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "TRMB",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "TROW",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "TRT",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "TRV",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "TRX",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "TSCO",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "TSLA",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "TSM",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "TSN",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "TT",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "TTD",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "TTWO",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "TXN",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "TXT",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "TYL",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "U",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "UAL",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "UAVS",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "UBER",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "UDR",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "UEC",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "UHS",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "ULTA",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "UMAC",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "UNH",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "UNP",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "UPS",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "UPST",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "URG",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "URI",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "USAS",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "USB",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "UUU",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "UUUU",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "V",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "VENU",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "VGZ",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "VICI",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "VLO",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "VLTO",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "VMC",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "VNRX",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "VNTG",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "VRSK",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "VRSN",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "VRTX",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "VST",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "VTAK",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "VTR",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "VTRS",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "VZ",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "VZLA",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "WAB",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "WAT",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "WBD",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "WDAY",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "WDC",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "WEC",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "WELL",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "WFC",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "WM",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "WMB",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "WMT",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "WRB",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "WRN",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "WSM",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "WST",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "WTW",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "WWR",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "WY",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "WYNN",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "WYY",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "XEL",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "XOM",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "XPL",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "XTNT",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "XYL",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "XYZ",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "YCBD",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "YUM",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "ZBH",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "ZBRA",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "ZDGE",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "ZONE",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "ZS",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    },
+    {
+      "symbol": "ZTS",
+      "error": "HTTP 429",
+      "errorType": "http_error"
+    }
+  ],
+  "errors": {
+    "http_error": 694
+  },
+  "startTime": "2025-10-30T01:35:03.753Z",
+  "endTime": "2025-10-30T01:39:34.609Z",
+  "durationMinutes": "4.51"
+}

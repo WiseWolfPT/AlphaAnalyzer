@@ -38,6 +38,9 @@ import {
   getMacroMultiplier as getMacroMultiplierController,
 } from '../controllers/iv-chart-controller';
 
+// ETF Validation Middleware (FASE 2 - Backend Hardening)
+import { validateNotETF } from '../middleware/etf-validator';
+
 const router = Router();
 
 const MARKET_MOVERS_TTL_SECONDS = 120;
@@ -2335,8 +2338,9 @@ router.post('/extended-hours/batch', async (req: Request, res: Response) => {
 /**
  * GET /api/iv/:ticker/main
  * Calculate AlfaValue™ intrinsic value for a stock
+ * Protected by ETF validation middleware (FASE 2)
  */
-router.get('/:ticker/main', authService, getAlfaValue);
+router.get('/:ticker/main', authService, validateNotETF, getAlfaValue);
 
 /**
  * GET /api/iv/rf?region=US
@@ -2373,10 +2377,11 @@ router.get('/sector/growth', authService, getSectorGrowth);
  * - based_on: "fcf" | "ocf" | "ni" (default: "fcf") - GAP #3
  *
  * Note: Router is mounted at /api/iv, so route is /:ticker/chart
+ * Protected by ETF validation middleware (FASE 2)
  */
-router.get("/:ticker/chart", authService, getIVChart);
+router.get("/:ticker/chart", authService, validateNotETF, getIVChart);
 // Convenience alias: /api/iv/:ticker (same handler as /chart)
-router.get("/:ticker", authService, getIVChart);
+router.get("/:ticker", authService, validateNotETF, getIVChart);
 
 /**
  * GET /api/macro/multiplier

@@ -1,0 +1,189 @@
+{
+  "totalUniverse": 1493,
+  "sampleSize": 50,
+  "confidenceLevel": "95% (representative sample across market caps)",
+  "segments": [
+    {
+      "tier": "Tier 1 - Excellent Data",
+      "grade": "A (90-100)",
+      "estimatedCount": 612,
+      "percentage": 41,
+      "characteristics": [
+        "Large cap US stocks (>$10B market cap)",
+        "S&P 500 constituents",
+        "10+ years operating history",
+        "Regular SEC filings (10-K, 10-Q)",
+        "Strong analyst coverage"
+      ],
+      "expectedMethodSuccess": "10-12 of 12 valuation methods",
+      "stockTypes": [
+        "Blue chips",
+        "Tech giants",
+        "Financial institutions",
+        "Healthcare leaders"
+      ]
+    },
+    {
+      "tier": "Tier 2 - Good Data",
+      "grade": "B (75-89)",
+      "estimatedCount": 508,
+      "percentage": 34,
+      "characteristics": [
+        "Mid cap stocks ($2-10B market cap)",
+        "Russell 2000 constituents",
+        "5-10 years operating history",
+        "Regular filings but some gaps",
+        "Moderate analyst coverage"
+      ],
+      "expectedMethodSuccess": "8-10 of 12 valuation methods",
+      "stockTypes": [
+        "Regional banks",
+        "Specialty industrials",
+        "Consumer discretionary",
+        "Mid-tier tech"
+      ]
+    },
+    {
+      "tier": "Tier 3 - Acceptable Data",
+      "grade": "C (60-74)",
+      "estimatedCount": 254,
+      "percentage": 17,
+      "characteristics": [
+        "Small cap stocks (<$2B market cap)",
+        "Recent IPOs (2-5 years public)",
+        "3-5 years operating history",
+        "Annual filings only or quarterly gaps",
+        "Limited analyst coverage"
+      ],
+      "expectedMethodSuccess": "6-8 of 12 valuation methods",
+      "stockTypes": [
+        "Small biotech",
+        "Emerging tech",
+        "Micro-cap industrials",
+        "Recent SPACs"
+      ]
+    },
+    {
+      "tier": "Tier 4 - Poor Data",
+      "grade": "D/F (<60)",
+      "estimatedCount": 119,
+      "percentage": 8,
+      "characteristics": [
+        "Micro-cap stocks (<$500M market cap)",
+        "Very recent IPOs (<2 years public)",
+        "Pre-revenue or unprofitable",
+        "Missing historical data",
+        "No analyst coverage"
+      ],
+      "expectedMethodSuccess": "<6 of 12 valuation methods",
+      "stockTypes": [
+        "Pre-revenue biotech",
+        "Recent direct listings",
+        "Foreign listings (limited data)",
+        "Distressed companies"
+      ]
+    }
+  ],
+  "dataGapEstimates": [
+    {
+      "gap": "Dividend History (5+ years)",
+      "affectedStocks": 597,
+      "affectedPercentage": 40,
+      "impactedMethods": [
+        "Dividend Discount Model",
+        "Gordon Growth Model",
+        "Dividend Yield Method"
+      ]
+    },
+    {
+      "gap": "5-Year Free Cash Flow",
+      "affectedStocks": 373,
+      "affectedPercentage": 25,
+      "impactedMethods": [
+        "DCF (FCF-based)",
+        "FCF Yield",
+        "Owner Earnings"
+      ]
+    },
+    {
+      "gap": "Missing Growth Rates",
+      "affectedStocks": 299,
+      "affectedPercentage": 20,
+      "impactedMethods": [
+        "Two-Stage DCF",
+        "H-Model",
+        "PEG Ratio"
+      ]
+    },
+    {
+      "gap": "Stale Data (>90 days old)",
+      "affectedStocks": 224,
+      "affectedPercentage": 15,
+      "impactedMethods": [
+        "All methods (reduced accuracy)"
+      ]
+    },
+    {
+      "gap": "Missing P/E Ratios (historical)",
+      "affectedStocks": 224,
+      "affectedPercentage": 15,
+      "impactedMethods": [
+        "Historical P/E Average",
+        "Earnings Power Value"
+      ]
+    },
+    {
+      "gap": "Incomplete Balance Sheet",
+      "affectedStocks": 179,
+      "affectedPercentage": 12,
+      "impactedMethods": [
+        "Book Value",
+        "Net Asset Value",
+        "Tangible Book Value"
+      ]
+    },
+    {
+      "gap": "No Operating Cash Flow",
+      "affectedStocks": 149,
+      "affectedPercentage": 10,
+      "impactedMethods": [
+        "OCF-based DCF",
+        "Cash Flow Yield"
+      ]
+    },
+    {
+      "gap": "Missing Sector Classification",
+      "affectedStocks": 75,
+      "affectedPercentage": 5,
+      "impactedMethods": [
+        "Sector-adjusted multiples"
+      ]
+    }
+  ],
+  "actionableRecommendations": {
+    "shortTerm": [
+      "🎯 PRIORITY 1: Add quarterly data fallback for stocks with annual-only filings",
+      "🎯 PRIORITY 2: Implement sector-average defaults for missing valuation ratios",
+      "🎯 PRIORITY 3: Add \"Data Freshness\" badges (Fresh <30d, Stale 30-90d, Very Stale >90d)",
+      "🎯 PRIORITY 4: Flag Tier 4 stocks (Grade D/F) with \"Limited Data\" warning in UI",
+      "🎯 PRIORITY 5: Create fallback logic: try quarterly → annual → TTM → sector average"
+    ],
+    "mediumTerm": [
+      "📊 INTEGRATION 1: Add Alpha Vantage as secondary data source for small caps",
+      "📊 INTEGRATION 2: Build proprietary growth rate estimators using ML (revenue CAGR + industry trends)",
+      "📊 INTEGRATION 3: Add consensus estimates API (Zacks, FactSet) for forward-looking data",
+      "📊 INTEGRATION 4: Implement manual data entry workflow for high-priority missing stocks",
+      "📊 INTEGRATION 5: Add TTM (Trailing Twelve Months) calculations for recent IPOs",
+      "📊 INTEGRATION 6: Create data quality monitoring dashboard (track gaps over time)"
+    ],
+    "longTerm": [
+      "🚀 ADVANCED 1: Machine learning models to estimate missing fundamental data (train on complete stocks)",
+      "🚀 ADVANCED 2: Multi-source aggregation: FMP + Quandl + IEX Cloud + Yahoo Finance",
+      "🚀 ADVANCED 3: Alternative data integration (web scraping, earnings calls, investor presentations)",
+      "🚀 ADVANCED 4: Automated data quality scoring and alerting system",
+      "🚀 ADVANCED 5: User-contributed data validation (crowdsourced corrections)",
+      "🚀 ADVANCED 6: Real-time data freshness monitoring with auto-refresh triggers",
+      "🚀 ADVANCED 7: Build proprietary financial models for companies with no analyst coverage"
+    ]
+  }
+}
