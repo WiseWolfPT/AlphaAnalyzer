@@ -39,6 +39,7 @@ import { useExtendedHours } from "@/hooks/use-extended-hours";
 import { useStockDetails } from "@/hooks/use-stock-queries";
 import { useAlfaValue } from "@/hooks/use-alfa-value";
 import { ClientOnly } from "@/components/shared/client-only";
+import { InsiderTradingTab } from "@/components/insider-trading/insider-trading-tab";
 // Transcripts per-symbol view moved to dedicated routes
 
 // Mock company data
@@ -360,7 +361,7 @@ export default function StockDetail() {
 
         {/* Main Content Tabs */}
         <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
+          <TabsList className="grid w-full grid-cols-3 md:grid-cols-3 lg:grid-cols-6">
             <TabsTrigger value="overview" className="flex items-center gap-2">
               <Activity className="h-4 w-4" />
               <span className="hidden sm:inline">Overview</span>
@@ -377,6 +378,10 @@ export default function StockDetail() {
             <TabsTrigger value="news" className="flex items-center gap-2">
               <Newspaper className="h-4 w-4" />
               <span className="hidden sm:inline">News</span>
+            </TabsTrigger>
+            <TabsTrigger value="insider" className="flex items-center gap-2">
+              <Star className="h-4 w-4" />
+              <span className="hidden sm:inline">Insider Trading</span>
             </TabsTrigger>
             <TabsTrigger value="compare" className="flex items-center gap-2">
               <ChartLine className="h-4 w-4" />
@@ -685,6 +690,11 @@ export default function StockDetail() {
                 <StockNewsFeed articles={news} isLoading={isLoadingDetails} />
               </div>
             </div>
+          </TabsContent>
+
+          <TabsContent value="insider" className="space-y-6">
+            {/* Insider Trading Tab */}
+            <InsiderTradingTab symbol={symbol} />
           </TabsContent>
 
           <TabsContent value="compare" className="space-y-6">

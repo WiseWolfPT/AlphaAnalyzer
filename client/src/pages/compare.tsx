@@ -33,6 +33,7 @@ import { MiniChart } from "@/components/stock/mini-charts";
 import { useRealtimeQuote } from "@/hooks/use-realtime-quotes";
 import { useQuery } from '@tanstack/react-query';
 import { fetchIntrinsicValueData, normalizeIntrinsicValue } from '@/lib/intrinsic-value';
+import { useStockPeers } from '@/hooks/use-stock-peers';
 
 interface ComparisonStock {
   symbol: string;
@@ -42,17 +43,17 @@ interface ComparisonStock {
 }
 
 export default function ComparePage() {
-  const [comparisonStocks, setComparisonStocks] = useState<ComparisonStock[]>([
-    { symbol: "AAPL" },
-    { symbol: "MSFT" }
-  ]);
+  const [comparisonStocks, setComparisonStocks] = useState<ComparisonStock[]>([]);
   const [searchSymbol, setSearchSymbol] = useState("");
   // Use cached prices by default; realtime can be toggled on
   const [useRealtime, setUseRealtime] = useState(false);
 
-  const addStock = () => {
-    if (searchSymbol.trim() && comparisonStocks.length < 4) {
-      const symbol = searchSymbol.trim().toUpperCase();
+  // Fetch peers for the first stock if available
+  const { data: peers, isLoading: isLoadingPeers } = useStockPeers(comparisonStocks[0]?.symbol || '');
+
+  const addStock = (symbolToAdd?: string) => {
+    const symbol = (symbolToAdd || searchSymbol).trim().toUpperCase();
+    if (symbol && comparisonStocks.length < 4) {
       if (!comparisonStocks.find(s => s.symbol === symbol)) {
         setComparisonStocks([...comparisonStocks, { symbol }]);
         setSearchSymbol("");
@@ -299,7 +300,7 @@ export default function ComparePage() {
             disabled={comparisonStocks.length >= 4}
           />
           <Button
-            onClick={addStock}
+            onClick={() => addStock()}
             disabled={!searchSymbol.trim() || comparisonStocks.length >= 4}
             className="bg-teya-green text-teya-dark hover:bg-teya-green/90"
           >
@@ -307,6 +308,41 @@ export default function ComparePage() {
           </Button>
         </div>
       </div>
+
+      {/* Peer Suggestions */}
+      {peers && peers.length > 0 && comparisonStocks.length > 0 && comparisonStocks.length < 4 && (
+        <Card className="border-teya-green/20 bg-teya-green/5">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3 mb-3">
+              <Target className="h-4 w-4 text-teya-green" />
+              <p className="text-sm font-medium text-teya-green">
+                Suggested peers for {comparisonStocks[0].symbol}:
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {peers
+                .filter(peer => !comparisonStocks.find(s => s.symbol === peer.symbol))
+                .slice(0, 4)
+                .map(peer => (
+                  <Button
+                    key={peer.symbol}
+                    onClick={() => addStock(peer.symbol)}
+                    variant="outline"
+                    size="sm"
+                    className="border-teya-green/30 hover:bg-teya-green/10 hover:border-teya-green"
+                    disabled={comparisonStocks.length >= 4}
+                  >
+                    <Plus className="h-3 w-3 mr-1" />
+                    {peer.symbol}
+                    <span className="ml-1 text-xs text-muted-foreground hidden sm:inline">
+                      ({peer.name.split(' ')[0]})
+                    </span>
+                  </Button>
+                ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Comparison Grid */}
       {comparisonStocks.length > 0 ? (
