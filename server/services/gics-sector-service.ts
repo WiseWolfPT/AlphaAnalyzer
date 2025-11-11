@@ -25,6 +25,7 @@ import { logger } from '../lib/logger';
 import fs from 'fs/promises';
 import path from 'path';
 import { parse } from 'csv-parse/sync';
+import { getManualPeers, hasManualPeers } from '../data/manual-peers';
 
 export interface StockSectorData {
   symbol: string;
@@ -34,6 +35,25 @@ export interface StockSectorData {
   exchange: string;
   type: string;
   canCalculateIV: boolean;
+}
+
+export interface StockPeer {
+  symbol: string;
+  name: string;
+  sector: string;
+  industry: string;
+  marketCap: number;
+  price: number;
+  change: number;
+  changePercent: number;
+}
+
+export interface StockPeersResponse {
+  symbol: string;
+  peers: StockPeer[];
+  source: 'algorithm' | 'manual_fallback';
+  cached?: boolean;
+  timestamp: string;
 }
 
 export class GICSSectorService {
@@ -47,6 +67,66 @@ export class GICSSectorService {
     Object.values(Sector).forEach(sector => {
       this.sectorToStocks.set(sector, new Set());
     });
+  }
+
+  /**
+   * Determines if a stock symbol is from a supported exchange
+   * Only US stocks are supported by FMP API
+   */
+  private isSupportedExchange(symbol: string): boolean {
+    // ❌ REJECT: Foreign exchange suffixes
+    const UNSUPPORTED_SUFFIXES = [
+      '.BO',  // Bombay Stock Exchange
+      '.NS',  // National Stock Exchange of India
+      '.TO',  // Toronto Stock Exchange
+      '.T',   // Tokyo Stock Exchange
+      '.L',   // London Stock Exchange
+      '-LS',  // Euronext Lisbon
+      '.LS',  // Euronext Lisbon (alternate)
+      '.DE',  // Frankfurt Xetra
+      '.F',   // Frankfurt Stock Exchange
+      '.HK',  // Hong Kong Stock Exchange
+      '.SS',  // Shanghai Stock Exchange
+      '.SZ',  // Shenzhen Stock Exchange
+      '.PA',  // Euronext Paris
+      '.AS',  // Euronext Amsterdam
+      '.BR',  // Euronext Brussels
+      '.MC',  // Madrid Stock Exchange
+      '.MI',  // Milan Stock Exchange
+      '.SW',  // Swiss Exchange
+      '.ST',  // Stockholm Stock Exchange
+      '.CO',  // Copenhagen Stock Exchange
+      '.OL',  // Oslo Stock Exchange
+      '.HE',  // Helsinki Stock Exchange
+      '.IC',  // Iceland Stock Exchange
+      '.VI',  // Vienna Stock Exchange
+      '.PR',  // Prague Stock Exchange
+    ];
+
+    const upperSymbol = symbol.toUpperCase();
+
+    // Check for any unsupported suffix
+    for (const suffix of UNSUPPORTED_SUFFIXES) {
+      if (upperSymbol.endsWith(suffix)) {
+        logger.debug(`[GICSSectorService] Skipping foreign exchange symbol: ${symbol}`);
+        return false;
+      }
+    }
+
+    // ❌ REJECT: Numeric Asian tickers (e.g., 600519.SS, 000001.SZ)
+    if (/^\d+\./.test(symbol)) {
+      logger.debug(`[GICSSectorService] Skipping numeric Asian ticker: ${symbol}`);
+      return false;
+    }
+
+    // ✅ ACCEPT: US stocks only (1-5 letters, optional .A/.B class)
+    if (/^[A-Z]{1,5}(\.[AB])?$/i.test(upperSymbol)) {
+      return true;
+    }
+
+    // ❌ REJECT: Everything else
+    logger.debug(`[GICSSectorService] Skipping non-US symbol: ${symbol}`);
+    return false;
   }
 
   /**
@@ -80,39 +160,71 @@ export class GICSSectorService {
 
       logger.info(`[GICSSectorService] Loaded ${records.length} stocks from CSV`);
 
+      // ✅ Filter to US-only stocks BEFORE processing
+      const allStocks = records;
+      const usStocks = allStocks.filter(record =>
+        this.isSupportedExchange(record.symbol)
+      );
+
+      const filteredCount = allStocks.length - usStocks.length;
+      logger.info(`[GICSSectorService] Filtered to ${usStocks.length} US stocks (removed ${filteredCount} foreign stocks)`);
+
       // Build mappings
-      let validStocks = 0;
+      let stored = 0;
+      let skipped = 0;
       let unknownSectors = 0;
 
-      for (const record of records) {
-        const symbol = record.symbol.toUpperCase().trim();
-        const sector = this.normalizeSectorName(record.sector);
-        const canCalculateIV = record.can_calculate_iv.toUpperCase() === 'YES';
+      for (const record of usStocks) {
+        try {
+          const symbol = record.symbol.toUpperCase().trim();
+          const sector = this.normalizeSectorName(record.sector);
+          const canCalculateIV = record.can_calculate_iv.toUpperCase() === 'YES';
 
-        // Store full stock data
-        this.stockData.set(symbol, {
-          symbol,
-          companyName: record.company_name,
-          sector,
-          industry: record.industry,
-          exchange: record.exchange,
-          type: record.type,
-          canCalculateIV
-        });
+          // Store full stock data
+          this.stockData.set(symbol, {
+            symbol,
+            companyName: record.company_name,
+            sector,
+            industry: record.industry,
+            exchange: record.exchange,
+            type: record.type,
+            canCalculateIV
+          });
 
-        // Map stock to sector
-        this.stockToSector.set(symbol, sector);
+          // Map stock to sector
+          this.stockToSector.set(symbol, sector);
 
-        // Add to sector set
-        const sectorSet = this.sectorToStocks.get(sector);
-        if (sectorSet) {
-          sectorSet.add(symbol);
-          validStocks++;
-        } else {
-          // Unknown sector - add to 'Other'
-          this.sectorToStocks.get(Sector.OTHER)?.add(symbol);
-          unknownSectors++;
+          // Add to sector set
+          const sectorSet = this.sectorToStocks.get(sector);
+          if (sectorSet) {
+            sectorSet.add(symbol);
+            stored++;
+          } else {
+            // Unknown sector - add to 'Other'
+            this.sectorToStocks.get(Sector.OTHER)?.add(symbol);
+            unknownSectors++;
+            stored++;
+          }
+        } catch (error: any) {
+          logger.error(`[GICSSectorService] Error storing ${record.symbol}:`, error.message);
+          skipped++;
         }
+      }
+
+      logger.info(`[GICSSectorService] Stored ${stored} US stocks, skipped ${skipped} errors`);
+
+      // Log exchange breakdown of filtered stocks
+      const exchangeCounts: Record<string, number> = {};
+      for (const stock of allStocks) {
+        if (!this.isSupportedExchange(stock.symbol)) {
+          const match = stock.symbol.match(/\.(BO|NS|TO|T|L|LS|DE|F|HK|SS|SZ|PA|AS|BR|MC|MI|SW|ST|CO|OL|HE|IC|VI|PR)$/);
+          const exchange = match ? match[1] : 'OTHER';
+          exchangeCounts[exchange] = (exchangeCounts[exchange] || 0) + 1;
+        }
+      }
+
+      if (Object.keys(exchangeCounts).length > 0) {
+        logger.info('[GICSSectorService] Foreign stocks filtered (by exchange):', exchangeCounts);
       }
 
       this.initialized = true;
@@ -124,8 +236,9 @@ export class GICSSectorService {
       }
 
       logger.info('[GICSSectorService] Initialization complete:', {
-        totalStocks: records.length,
-        validStocks,
+        totalStocksInCSV: records.length,
+        foreignStocksFiltered: filteredCount,
+        usStocksStored: stored,
         unknownSectors,
         sectorDistribution: sectorStats
       });
@@ -317,6 +430,290 @@ export class GICSSectorService {
       Sector.UTILITIES,
       Sector.REAL_ESTATE
     ];
+  }
+
+  /**
+   * Get stock peers using algorithm with manual fallback
+   *
+   * Algorithm attempts to find peers in same sector with similar market cap.
+   * If algorithm fails (returns 0 peers) and symbol has manual peers defined,
+   * uses manual fallback with hand-picked peers.
+   *
+   * @param symbol - Stock ticker
+   * @param fmpProvider - FMP provider instance for fetching profiles
+   * @returns StockPeersResponse with peers array and metadata
+   */
+  async getStockPeers(symbol: string, fmpProvider: any): Promise<StockPeersResponse> {
+    const upperSymbol = symbol.toUpperCase().trim();
+
+    try {
+      // Step 1: Get stock profile to extract sector and market cap
+      const profile = await fmpProvider.getProfile(upperSymbol);
+
+      if (!profile) {
+        logger.warn(`[GICSSectorService] No profile found for ${upperSymbol}`);
+
+        // Try manual fallback immediately if profile fails
+        if (hasManualPeers(upperSymbol)) {
+          return await this.getManualPeersResponse(upperSymbol, fmpProvider);
+        }
+
+        return {
+          symbol: upperSymbol,
+          peers: [],
+          source: 'algorithm',
+          cached: false,
+          timestamp: new Date().toISOString()
+        };
+      }
+
+      const sector = profile.sector;
+      const marketCap = profile.mktCap;
+
+      if (!sector || !marketCap) {
+        logger.warn(`[GICSSectorService] Missing sector or market cap for ${upperSymbol}`);
+
+        // Try manual fallback if data is insufficient
+        if (hasManualPeers(upperSymbol)) {
+          return await this.getManualPeersResponse(upperSymbol, fmpProvider);
+        }
+
+        return {
+          symbol: upperSymbol,
+          peers: [],
+          source: 'algorithm',
+          cached: false,
+          timestamp: new Date().toISOString()
+        };
+      }
+
+      logger.info(`[GICSSectorService] Finding peers for ${upperSymbol}: Sector=${sector}, MarketCap=$${(marketCap / 1e9).toFixed(2)}B`);
+
+      // Step 2: Calculate market cap range (±50%)
+      const marketCapMin = Math.floor(marketCap * 0.5);
+      const marketCapMax = Math.floor(marketCap * 1.5);
+
+      // Step 3: Try to find peers using FMP screener
+      const apiKey = process.env.FMP_API_KEY;
+      if (!apiKey || apiKey === 'demo') {
+        logger.error('[GICSSectorService] FMP API key not configured');
+
+        if (hasManualPeers(upperSymbol)) {
+          return await this.getManualPeersResponse(upperSymbol, fmpProvider);
+        }
+
+        return {
+          symbol: upperSymbol,
+          peers: [],
+          source: 'algorithm',
+          cached: false,
+          timestamp: new Date().toISOString()
+        };
+      }
+
+      // Map GICS sector to FMP sector names
+      const fmpSectorNames = this.mapGICSToFMPSectors(sector);
+      logger.info(`[GICSSectorService] GICS sector "${sector}" → FMP sectors: ${fmpSectorNames.join(', ')}`);
+
+      let allPeers: any[] = [];
+
+      // Try each FMP sector name
+      for (const fmpSector of fmpSectorNames) {
+        try {
+          const screenerUrl = `https://financialmodelingprep.com/api/v3/stock-screener?sector=${encodeURIComponent(fmpSector)}&marketCapMoreThan=${marketCapMin}&marketCapLowerThan=${marketCapMax}&limit=50&apikey=${apiKey}`;
+
+          logger.debug(`[GICSSectorService] Querying screener for FMP sector: ${fmpSector}`);
+          const screenerRes = await fetch(screenerUrl);
+
+          if (!screenerRes.ok) {
+            logger.warn(`[GICSSectorService] Screener API failed for sector ${fmpSector}: ${screenerRes.status}`);
+            continue;
+          }
+
+          const screenerData = await screenerRes.json();
+
+          if (!Array.isArray(screenerData)) {
+            logger.warn(`[GICSSectorService] Invalid screener response format for sector ${fmpSector}`);
+            continue;
+          }
+
+          logger.debug(`[GICSSectorService] Found ${screenerData.length} candidates for FMP sector: ${fmpSector}`);
+
+          if (screenerData.length > 0) {
+            allPeers.push(...screenerData);
+          }
+        } catch (error) {
+          logger.warn(`[GICSSectorService] Error querying sector ${fmpSector}:`, error);
+          continue;
+        }
+      }
+
+      // Step 4: Filter and rank peers
+      const filtered = allPeers
+        .filter(stock => stock.symbol !== upperSymbol) // Exclude target stock
+        .filter(stock => stock.isActivelyTrading === true) // Only active stocks
+        .filter(stock => !stock.isEtf && !stock.isFund) // Exclude ETFs/funds
+        .sort((a, b) => (b.volume || 0) - (a.volume || 0)) // Sort by volume DESC
+        .slice(0, 5) // Top 5
+        .map(stock => ({
+          symbol: stock.symbol,
+          name: stock.companyName || stock.name,
+          sector: stock.sector,
+          industry: stock.industry,
+          marketCap: stock.marketCap,
+          price: stock.price,
+          change: stock.change || 0,
+          changePercent: stock.changesPercentage || 0
+        }));
+
+      // Algorithm succeeded - return peers
+      if (filtered.length > 0) {
+        logger.info(`[GICSSectorService] Found ${filtered.length} peers for ${upperSymbol} using algorithm`);
+        return {
+          symbol: upperSymbol,
+          peers: filtered,
+          source: 'algorithm',
+          cached: false,
+          timestamp: new Date().toISOString()
+        };
+      }
+
+      // Algorithm failed - try manual fallback
+      if (hasManualPeers(upperSymbol)) {
+        logger.info(`[GICSSectorService] Algorithm returned 0 peers, trying manual fallback for ${upperSymbol}`);
+        return await this.getManualPeersResponse(upperSymbol, fmpProvider);
+      }
+
+      // No peers found (algorithm + manual fallback both failed)
+      logger.warn(`[GICSSectorService] No peers found for ${upperSymbol} (tried algorithm + manual fallback)`);
+      return {
+        symbol: upperSymbol,
+        peers: [],
+        source: 'algorithm',
+        cached: false,
+        timestamp: new Date().toISOString()
+      };
+
+    } catch (error) {
+      logger.error(`[GICSSectorService] Error getting peers for ${upperSymbol}:`, error);
+
+      // Last resort: try manual fallback on error
+      if (hasManualPeers(upperSymbol)) {
+        logger.info(`[GICSSectorService] Error occurred, trying manual fallback for ${upperSymbol}`);
+        try {
+          return await this.getManualPeersResponse(upperSymbol, fmpProvider);
+        } catch (fallbackError) {
+          logger.error(`[GICSSectorService] Manual fallback also failed for ${upperSymbol}:`, fallbackError);
+        }
+      }
+
+      return {
+        symbol: upperSymbol,
+        peers: [],
+        source: 'algorithm',
+        cached: false,
+        timestamp: new Date().toISOString()
+      };
+    }
+  }
+
+  /**
+   * Get manual peers response (private helper)
+   *
+   * Fetches profile data for manually curated peer list
+   *
+   * @param symbol - Stock ticker
+   * @param fmpProvider - FMP provider instance
+   * @returns StockPeersResponse with manual peers
+   */
+  private async getManualPeersResponse(symbol: string, fmpProvider: any): Promise<StockPeersResponse> {
+    const manualPeerSymbols = getManualPeers(symbol);
+
+    if (!manualPeerSymbols) {
+      return {
+        symbol,
+        peers: [],
+        source: 'manual_fallback',
+        cached: false,
+        timestamp: new Date().toISOString()
+      };
+    }
+
+    logger.info(`[GICSSectorService] Using manual fallback peers for ${symbol}:`, manualPeerSymbols);
+
+    try {
+      // Fetch profile data for manual peers
+      const manualPeers = await Promise.all(
+        manualPeerSymbols.map(async (peerSymbol) => {
+          try {
+            const profile = await fmpProvider.getProfile(peerSymbol);
+            return {
+              symbol: profile.symbol,
+              name: profile.companyName,
+              sector: profile.sector,
+              industry: profile.industry,
+              marketCap: profile.mktCap,
+              price: profile.price,
+              change: profile.changes || 0,
+              changePercent: profile.changesPercentage || 0
+            };
+          } catch (error) {
+            logger.warn(`[GICSSectorService] Failed to fetch manual peer ${peerSymbol}:`, error);
+            return null;
+          }
+        })
+      );
+
+      // Filter out nulls and return
+      const validPeers = manualPeers.filter((p): p is StockPeer => p !== null);
+
+      if (validPeers.length > 0) {
+        logger.info(`[GICSSectorService] Returning ${validPeers.length} manual peers for ${symbol}`);
+        return {
+          symbol,
+          peers: validPeers,
+          source: 'manual_fallback',
+          cached: false,
+          timestamp: new Date().toISOString()
+        };
+      }
+    } catch (error) {
+      logger.error(`[GICSSectorService] Failed to fetch manual peers for ${symbol}:`, error);
+    }
+
+    return {
+      symbol,
+      peers: [],
+      source: 'manual_fallback',
+      cached: false,
+      timestamp: new Date().toISOString()
+    };
+  }
+
+  /**
+   * Map GICS sector to FMP sector names
+   *
+   * FMP uses different sector naming than GICS
+   *
+   * @param gicsSector - GICS sector name
+   * @returns Array of FMP sector names to try
+   */
+  private mapGICSToFMPSectors(gicsSector: string): string[] {
+    const sectorMap: Record<string, string[]> = {
+      [Sector.INFORMATION_TECHNOLOGY]: ['Technology'],
+      [Sector.HEALTHCARE]: ['Healthcare'],
+      [Sector.FINANCIALS]: ['Financial Services', 'Financials'],
+      [Sector.CONSUMER_DISCRETIONARY]: ['Consumer Cyclical'],
+      [Sector.COMMUNICATION_SERVICES]: ['Communication Services'],
+      [Sector.INDUSTRIALS]: ['Industrials'],
+      [Sector.CONSUMER_STAPLES]: ['Consumer Defensive'],
+      [Sector.ENERGY]: ['Energy'],
+      [Sector.MATERIALS]: ['Basic Materials'],
+      [Sector.REAL_ESTATE]: ['Real Estate'],
+      [Sector.UTILITIES]: ['Utilities']
+    };
+
+    return sectorMap[gicsSector] || [gicsSector];
   }
 }
 

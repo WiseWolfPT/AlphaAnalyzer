@@ -15,14 +15,15 @@ import {
   SearchResultSchema 
 } from '../cache/lru-cache';
 import { ServerMarketDataService } from '../services/market-data-service';
-import { 
-  ProviderManager, 
+import {
+  ProviderManager,
   FMPProvider
 } from '../services/providers';
 import { CacheService } from '../services/cache/cache-service';
 import { simpleCacheService } from '../services/simple-cache-service';
 // Legacy threeTierCache removed from market-data routes per Phase 1
 import { optionalMarketDataApiKey } from '../middleware/market-data-api-key';
+import { GICSSectorService } from '../services/gics-sector-service';
 // Valuation controllers (AlfaValue™ - FASE 2)
 import {
   getAlfaValue,
@@ -36,6 +37,7 @@ import {
 import {
   getIVChart,
   getMacroMultiplier as getMacroMultiplierController,
+  calculateCustomIV,
 } from '../controllers/iv-chart-controller';
 
 // ETF Validation Middleware (FASE 2 - Backend Hardening)
@@ -66,6 +68,12 @@ console.log('📊 Provider selection: Using FMP as primary provider');
 
 // Initialize cache service
 const cacheService = new CacheService();
+
+// Initialize GICS Sector Service for peer discovery (with manual fallbacks)
+const gicsSectorService = new GICSSectorService();
+gicsSectorService.initialize().catch(error => {
+  console.error('❌ Failed to initialize GICSSectorService:', error);
+});
 
 // SECURITY FIX: Replace simple Map with secure LRU cache to prevent memory exhaustion
 const searchCache = createSearchCache();
@@ -186,6 +194,80 @@ router.get('/search',
     }
   }
 );
+
+/**
+ * GET /api/market-data/stocks/:symbol/peers
+ * Get peer companies (same sector, similar market cap, top 5 by volume)
+ * Returns dynamic peer suggestions for stock comparison
+ * Cache: 24h (peer relationships change slowly)
+ *
+ * Features:
+ * - Sector mapper: Maps GICS sectors to FMP-compatible names (Communication Services → Technology + Telecommunications)
+ * - Manual fallback: Hand-picked peers for mega-caps that fail algorithmic discovery (TSLA, WMT)
+ */
+router.get('/stocks/:symbol/peers',
+  authService,
+  marketDataRateLimit,
+  async (req: Request, res: Response) => {
+    try {
+      const validation = stockSymbolSchema.safeParse({ symbol: req.params.symbol });
+      if (!validation.success) {
+        return res.status(400).json({
+          error: 'INVALID_SYMBOL',
+          message: validation.error.errors[0].message,
+        });
+      }
+
+      const { symbol } = validation.data;
+      console.log(`🔍 Finding peers for: ${symbol}`);
+
+      // Check Redis cache first (24h TTL)
+      const { redisCacheService } = await import('../cache/redis-cache-service');
+      const cacheKey = `peers:${symbol}`;
+      const cached = await redisCacheService.get(cacheKey);
+
+      if (cached) {
+        console.log(`✅ Peers cache HIT for ${symbol}`);
+        // Return cached response (matches StockPeersResponse format)
+        return res.json(cached);
+      }
+
+      // Fetch peers using GICSSectorService (includes sector mapper + manual fallback)
+      const apiKey = process.env.FMP_API_KEY;
+      if (!apiKey || apiKey === 'demo') {
+        return res.status(503).json({
+          error: 'FMP_NOT_CONFIGURED',
+          message: 'Market data provider not configured'
+        });
+      }
+
+      const fmpProvider = new FMPProvider(apiKey);
+      const result = await gicsSectorService.getStockPeers(symbol, fmpProvider);
+
+      // Cache for 24h
+      await redisCacheService.set(cacheKey, result, 86400);
+
+      res.json(result);
+
+    } catch (error) {
+      console.error('Peers endpoint error:', error);
+
+      const errorResponse: any = {
+        error: 'PEERS_FETCH_ERROR',
+        message: 'Unable to fetch peer companies',
+        symbol: req.params.symbol,
+        timestamp: new Date().toISOString(),
+      };
+
+      if (process.env.NODE_ENV === 'development') {
+        errorResponse.details = error instanceof Error ? error.message : 'Unknown error';
+      }
+
+      res.status(503).json(errorResponse);
+    }
+  }
+);
+
 const batchSymbolsSchema = z.object({
   symbols: z.array(z.string()
     .min(1)
@@ -2382,6 +2464,27 @@ router.get('/sector/growth', authService, getSectorGrowth);
 router.get("/:ticker/chart", authService, validateNotETF, getIVChart);
 // Convenience alias: /api/iv/:ticker (same handler as /chart)
 router.get("/:ticker", authService, validateNotETF, getIVChart);
+
+/**
+ * POST /api/iv/:ticker/calculate
+ * Calculate intrinsic value with custom user parameters (FASE 1 - P0 Critical)
+ *
+ * Body params:
+ * - method: Method ID (dcf-fcf-20, alfavalue, etc.)
+ * - operating_cf: Operating cash flow (millions)
+ * - total_debt: Total debt (millions)
+ * - cash: Cash & ST investments (millions)
+ * - discount_rate: Discount rate (decimal)
+ * - shares: Shares outstanding (millions)
+ * - growth_1_5: Growth rate years 1-5 (decimal)
+ * - growth_6_10: Growth rate years 6-10 (decimal)
+ * - growth_11_20: Growth rate years 11-20 (decimal)
+ * - deduct_debt: Boolean
+ * - add_cash: Boolean
+ *
+ * Protected by ETF validation middleware
+ */
+router.post("/:ticker/calculate", authService, validateNotETF, calculateCustomIV);
 
 /**
  * GET /api/macro/multiplier
